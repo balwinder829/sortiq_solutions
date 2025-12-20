@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class BlockedNumber extends Model
+{
+    protected $fillable = [
+        'number',
+        'occurrence_count',
+        'blocked_at',
+    ];
+
+    protected $casts = [
+        'blocked_at' => 'datetime',
+    ];
+
+    public function logs()
+    {
+        return $this->hasMany(BlockedNumberLog::class);
+    }
+}

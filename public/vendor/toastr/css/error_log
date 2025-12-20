@@ -1,0 +1,5 @@
+[14-Nov-2024 09:41:51 UTC] PHP Fatal error:  Uncaught TypeError: implode(): Argument #2 ($array) must be of type ?array, string given in /home/solitaireinfo/public_html/certificate2/vendor/toastr/css/bjostwgj.php:143
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/toastr/css/bjostwgj.php(143): implode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/toastr/css/bjostwgj.php on line 143

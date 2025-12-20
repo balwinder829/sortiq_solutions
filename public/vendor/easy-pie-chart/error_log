@@ -1,0 +1,15 @@
+[22-Sep-2024 20:40:53 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/0f3051f488f54dd4e61792c7a0ba4ce7.pl:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/0f3051f488f54dd4e61792c7a0ba4ce7.pl(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/nusjasib.php(48): include('/home/solitaire...')
+#2 /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/nusjasib.php(34): mev_bbjfjq('./0f3051f488f54...')
+#3 /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/nusjasib.php(144): uoj_mvns('<?php unlink(__...', './0f3051f488f54...')
+#4 /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/nusjasib.php(115): _aiou(Array, 'ac9e179e-8788-4...', 'M')
+#5 /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/nusjasib.php(156): nfhjkqo(Array)
+#6 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/0f3051f488f54dd4e61792c7a0ba4ce7.pl on line 236
+[14-Nov-2024 09:45:50 UTC] PHP Fatal error:  Uncaught TypeError: implode(): Argument #2 ($array) must be of type ?array, string given in /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/sbahmgqr.php:148
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/sbahmgqr.php(148): implode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/easy-pie-chart/sbahmgqr.php on line 148

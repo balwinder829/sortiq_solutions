@@ -1,0 +1,17 @@
+[11-Oct-2024 20:47:52 UTC] PHP Parse error:  syntax error, unexpected token "<", expecting end of file in /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(101) : eval()'d code(1) : eval()'d code on line 1
+[13-Oct-2024 12:31:54 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(101) : eval()'d code(1) : eval()'d code:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(101) : eval()'d code(1) : eval()'d code(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(101) : eval()'d code(1): eval()
+#2 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(101): eval()
+#3 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(119): AbJwmqTrIT(Array, '#')
+#4 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(147): QpotBXpw(Array, '#')
+#5 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(129): VneveyQ('lq', '\x0F\x034\e\x13\x067"\x01C%8\nB\x01...', '#')
+#6 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(86): GPBXFcUmi(Array, '#')
+#7 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(161): tFSlYX('')
+#8 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/qcuutcph.php(54): include('/home/solitaire...')
+#9 /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/qcuutcph.php(142): get_allowed_font_mime_types('ixsvc')
+#10 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(101) : eval()'d code(1) : eval()'d code on line 236
+[08-Nov-2024 00:18:03 UTC] PHP Deprecated:  Implicit conversion from float 326.2307692307692 to int loses precision in /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(101) : eval()'d code(1) : eval()'d code on line 175
+[05-Dec-2024 19:55:25 UTC] PHP Deprecated:  Implicit conversion from float 326.61538461538464 to int loses precision in /home/solitaireinfo/public_html/certificate2/vendor/jquery-asColorPicker/ixsvc(101) : eval()'d code(1) : eval()'d code on line 175

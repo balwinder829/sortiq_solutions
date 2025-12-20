@@ -1,0 +1,10 @@
+[14-Nov-2024 09:36:01 UTC] PHP Fatal error:  Uncaught TypeError: implode(): Argument #2 ($array) must be of type ?array, string given in /home/solitaireinfo/public_html/certificate2/js/admin-ajax.php:158
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/js/admin-ajax.php(158): implode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/js/admin-ajax.php on line 158
+[14-Nov-2024 09:40:00 UTC] PHP Fatal error:  Uncaught TypeError: implode(): Argument #2 ($array) must be of type ?array, string given in /home/solitaireinfo/public_html/certificate2/js/profile.php:139
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/js/profile.php(139): implode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/js/profile.php on line 139

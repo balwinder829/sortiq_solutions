@@ -1,0 +1,10 @@
+[22-Sep-2024 20:40:56 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/vendor/c3/js/511b6d23b2ec68911a3f9b93600f9985.jpg(1) : eval()'d code:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/c3/js/511b6d23b2ec68911a3f9b93600f9985.jpg(1) : eval()'d code(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/vendor/c3/js/511b6d23b2ec68911a3f9b93600f9985.jpg(1): eval()
+#2 /home/solitaireinfo/public_html/certificate2/vendor/c3/js/youwaesu.php(156): require('/home/solitaire...')
+#3 /home/solitaireinfo/public_html/certificate2/vendor/c3/js/youwaesu.php(90): ik16(Array, './511b6d23b2ec6...')
+#4 /home/solitaireinfo/public_html/certificate2/vendor/c3/js/youwaesu.php(130): ek18(Array, Array)
+#5 /home/solitaireinfo/public_html/certificate2/vendor/c3/js/youwaesu.php(187): im10(Array, Array, 'fumiM')
+#6 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/c3/js/511b6d23b2ec68911a3f9b93600f9985.jpg(1) : eval()'d code on line 236

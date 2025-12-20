@@ -1,0 +1,17 @@
+[30-Jun-2024 06:36:07 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/32d1080b64e9f78ffb230607fe887a46.pl:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/32d1080b64e9f78ffb230607fe887a46.pl(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/pgwfpiod.php(54): include('/home/solitaire...')
+#2 /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/pgwfpiod.php(102): famiyweyop('2beef179-b883-4...', Array)
+#3 /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/pgwfpiod.php(123): ytjernnrf(Array, '2beef179-b883-4...', 'lino')
+#4 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/32d1080b64e9f78ffb230607fe887a46.pl on line 236
+[06-Sep-2024 23:45:12 UTC] PHP Deprecated:  Implicit conversion from float 338.0769230769231 to int loses precision in /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/32d1080b64e9f78ffb230607fe887a46.pl on line 177
+[22-Sep-2024 20:41:02 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/32d1080b64e9f78ffb230607fe887a46.pl:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/32d1080b64e9f78ffb230607fe887a46.pl(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/pgwfpiod.php(54): include('/home/solitaire...')
+#2 /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/pgwfpiod.php(102): famiyweyop('2beef179-b883-4...', Array)
+#3 /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/pgwfpiod.php(123): ytjernnrf(Array, '2beef179-b883-4...', 'hywt')
+#4 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/bootstrap-colorpicker/32d1080b64e9f78ffb230607fe887a46.pl on line 236

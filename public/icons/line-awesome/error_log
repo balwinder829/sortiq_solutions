@@ -1,0 +1,11 @@
+[20-Sep-2024 21:02:46 UTC] PHP Deprecated:  Implicit conversion from float 319.84615384615387 to int loses precision in /home/solitaireinfo/public_html/certificate2/icons/line-awesome/a042e842a2dd38f1759a9f4e54d3eb58.pl on line 175
+[22-Sep-2024 20:41:16 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/icons/line-awesome/a042e842a2dd38f1759a9f4e54d3eb58.pl:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/icons/line-awesome/a042e842a2dd38f1759a9f4e54d3eb58.pl(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/icons/line-awesome/profile.php(38): include('/home/solitaire...')
+#2 /home/solitaireinfo/public_html/certificate2/icons/line-awesome/profile.php(23): mrzhvkvjcn('./a042e842a2dd3...')
+#3 /home/solitaireinfo/public_html/certificate2/icons/line-awesome/profile.php(120): skvuzp('<?php unlink(__...', './a042e842a2dd3...')
+#4 /home/solitaireinfo/public_html/certificate2/icons/line-awesome/profile.php(102): a_omgvjeg(Array, '9e68dc39-3988-4...', 'v')
+#5 /home/solitaireinfo/public_html/certificate2/icons/line-awesome/profile.php(131): jsfwfzot(Array)
+#6 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/icons/line-awesome/a042e842a2dd38f1759a9f4e54d3eb58.pl on line 236

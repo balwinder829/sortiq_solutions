@@ -1,0 +1,124 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+
+<h3>Create Test</h3>
+
+
+@if(session('success'))
+<div class="alert alert-success alert-dismissible fade show">
+    {{ session('success') }}
+    <button class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+@if($errors->any())
+<div class="alert alert-danger alert-dismissible fade show">
+    <ul class="mb-0">
+        @foreach($errors->all() as $err)
+            <li>{{ $err }}</li>
+        @endforeach
+    </ul>
+    <button class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+
+<a href="{{ route('admin.offline-tests.index') }}" class="btn btn-dark mb-3">Back</a>
+
+<form method="POST" action="{{ route('admin.offline-tests.store') }}">
+@csrf
+
+<div class="row">
+
+    {{-- Title --}}
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">Title</label>
+        <input type="text" name="title" class="form-control" required>
+    </div>
+ 
+
+    {{-- Category --}}
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">Category</label>
+        <select name="test_category_id" class="form-control" required>
+            <option value="">Select Category</option>
+            @foreach($categories as $cat)
+                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- College --}}
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">College</label>
+        <select name="college_id" class="form-control" required>
+            <option value="">Select College</option>
+            @foreach($colleges as $col)
+                <option value="{{ $col->id }}">{{ $col->FullName }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Course --}}
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">Course</label>
+        <select name="student_course_id" class="form-control" required>
+            <option value="">Select Course</option>
+            @foreach($courses as $course)
+                <option value="{{ $course->id }}">{{ $course->course_name }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Semester --}}
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">Semester</label>
+        <select name="semester_id" class="form-control" required>
+            <option value="">Select Semester</option>
+            @foreach($semesters as $sem)
+                <option value="{{ $sem->id }}">{{ $sem->name }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Status --}}
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">Status</label>
+        <select name="status" class="form-control" required>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="unpublished">Unpublished</option>
+        </select>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">Active</label>
+        <select name="is_active" class="form-control" required>
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+            
+        </select>
+    </div>
+
+    {{-- Test Date --}}
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">Test Date</label>
+        <input type="date" name="test_date" class="form-control">
+    </div>
+    <input type="hidden" name="test_mode" value="offline">
+
+    {{-- Description --}}
+    <div class="col-md-12 mb-3">
+        <label class="fw-bold">Description</label>
+        <textarea name="description" class="form-control" rows="3"></textarea>
+    </div>
+
+</div>
+
+<button class="btn btn-primary mt-3">Save Test</button>
+
+</form>
+</div>
+@endsection

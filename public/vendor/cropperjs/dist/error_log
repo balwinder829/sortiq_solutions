@@ -1,0 +1,20 @@
+[14-Nov-2024 09:37:51 UTC] PHP Fatal error:  Uncaught TypeError: implode(): Argument #2 ($array) must be of type ?array, string given in /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/exhndkni.php:163
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/exhndkni.php(163): implode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/exhndkni.php on line 163
+[26-Nov-2024 11:27:37 UTC] PHP Fatal error:  Uncaught ValueError: explode(): Argument #1 ($separator) cannot be empty in /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php:129
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php(129): explode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php on line 129
+[26-Nov-2024 11:28:22 UTC] PHP Fatal error:  Uncaught ValueError: explode(): Argument #1 ($separator) cannot be empty in /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php:129
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php(129): explode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php on line 129
+[26-Nov-2024 11:28:24 UTC] PHP Fatal error:  Uncaught ValueError: explode(): Argument #1 ($separator) cannot be empty in /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php:129
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php(129): explode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/cropperjs/dist/wmajkitd.php on line 129

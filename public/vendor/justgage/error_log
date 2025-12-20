@@ -1,0 +1,9 @@
+[14-Nov-2024 09:43:06 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function s`() in /home/solitaireinfo/public_html/certificate2/vendor/justgage/fzbhuamk.php:1
+Stack trace:
+#0 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/justgage/fzbhuamk.php on line 1
+[14-Nov-2024 09:43:08 UTC] PHP Fatal error:  Uncaught TypeError: implode(): Argument #2 ($array) must be of type ?array, string given in /home/solitaireinfo/public_html/certificate2/vendor/justgage/ybvnjglx.php:153
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/justgage/ybvnjglx.php(153): implode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/justgage/ybvnjglx.php on line 153

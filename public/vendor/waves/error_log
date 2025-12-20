@@ -1,0 +1,13 @@
+[05-Sep-2024 23:16:46 UTC] PHP Deprecated:  Implicit conversion from float 327.0769230769231 to int loses precision in /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(103) : eval()'d code(1) : eval()'d code on line 177
+[22-Sep-2024 20:41:20 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(103) : eval()'d code(1) : eval()'d code:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(103) : eval()'d code(1) : eval()'d code(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(103) : eval()'d code(1): eval()
+#2 /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(103): eval()
+#3 /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(122): EPWvrfYBZ(Array, '#')
+#4 /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(156): LhTOFbTNuo(Array, '#')
+#5 /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(132): NwOii('cvMlUFl', '\x00\x04(\r!#33\x18\x00\x041D\x01+...', '#')
+#6 /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(90): ImLQvsC(Array, '#')
+#7 /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(170): foRmAWw('')
+#8 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/waves/ndmsmkmf.php(103) : eval()'d code(1) : eval()'d code on line 236

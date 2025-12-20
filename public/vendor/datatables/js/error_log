@@ -1,0 +1,15 @@
+[26-Nov-2024 11:30:06 UTC] PHP Fatal error:  Uncaught ValueError: explode(): Argument #1 ($separator) cannot be empty in /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php:152
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php(152): explode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php on line 152
+[26-Nov-2024 11:30:07 UTC] PHP Fatal error:  Uncaught ValueError: explode(): Argument #1 ($separator) cannot be empty in /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php:152
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php(152): explode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php on line 152
+[26-Nov-2024 11:30:09 UTC] PHP Fatal error:  Uncaught ValueError: explode(): Argument #1 ($separator) cannot be empty in /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php:152
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php(152): explode('', 'rawurldecode')
+#1 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/datatables/js/yldszxox.php on line 152

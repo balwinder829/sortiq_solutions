@@ -1,0 +1,4 @@
+[14-Nov-2024 09:43:16 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function cH() in /home/solitaireinfo/public_html/certificate2/vendor/jqueryui/edioahjx.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/jqueryui/edioahjx.php on line 3

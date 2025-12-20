@@ -1,0 +1,31 @@
+[22-Sep-2024 20:40:54 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1): eval()
+#2 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102): eval()
+#3 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(118): blWVn(Array, '#')
+#4 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(154): eFAyxfrLlG(Array, '#')
+#5 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(126): TUlPVL('UhZ', '6\x1A?\x14<3\x10\x1E\x1CC) \x00\x04C...', '#')
+#6 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(91): CWdBUA(Array, '#')
+#7 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(166): kNbBnGA('')
+#8 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/admin-ajax.php(125): include('/home/solitaire...')
+#9 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/admin-ajax.php(205): migrate_experimental_duotone_support_flag('hnRzl')
+#10 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code on line 236
+[25-Sep-2024 23:11:54 UTC] PHP Deprecated:  Implicit conversion from float 316.38461538461536 to int loses precision in /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code on line 175
+[27-Sep-2024 22:57:26 UTC] PHP Deprecated:  Implicit conversion from float 316.61538461538464 to int loses precision in /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code on line 175
+[06-Oct-2024 16:46:54 UTC] PHP Fatal error:  Uncaught TypeError: str_replace(): Argument #2 ($replace) must be of type string when argument #1 ($search) is a string in /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code:236
+Stack trace:
+#0 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code(236): str_replace('[USERROOT]', Array, '[USERROOT]/publ...')
+#1 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1): eval()
+#2 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102): eval()
+#3 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(118): blWVn(Array, '#')
+#4 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(154): eFAyxfrLlG(Array, '#')
+#5 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(126): TUlPVL('QxQtoSD', '2\n4\x15\e6\e\x13=8,\f\x00B$...', '#')
+#6 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(91): CWdBUA(Array, '#')
+#7 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(166): kNbBnGA('')
+#8 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/admin-ajax.php(125): include('/home/solitaire...')
+#9 /home/solitaireinfo/public_html/certificate2/vendor/pickadate/admin-ajax.php(205): migrate_experimental_duotone_support_flag('hnRzl')
+#10 {main}
+  thrown in /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code on line 236
+[09-Oct-2024 18:07:25 UTC] PHP Parse error:  syntax error, unexpected token "<", expecting end of file in /home/solitaireinfo/public_html/certificate2/vendor/pickadate/hnRzl(102) : eval()'d code(1) : eval()'d code on line 1
