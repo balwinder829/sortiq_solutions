@@ -413,7 +413,6 @@ class StudentController extends Controller
 
     public function confirmStudent($id)
     {
-        dd('here');
         // $student = Student::findOrFail($id);
         // $student = Student::with('sessionData')->find($id);
         $student = Student::with(['sessionData', 'durationData','collegeData'])->find($id);
