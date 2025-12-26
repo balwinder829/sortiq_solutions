@@ -67,7 +67,7 @@
                 @enderror
             </div>
 
-            {{-- Relieving Date (experience only) --}}
+            {{-- Relieving Date (Experience only) --}}
             @if($letter->letter_type === 'experience')
             <div class="form-group col-md-6">
                 <label>Relieving Date</label>
@@ -107,6 +107,45 @@
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
+
+            {{-- Salary (All Letter Types) --}}
+            <div class="form-group col-md-6">
+                <label>Salary</label>
+                <input type="number"
+                       name="salary"
+                       class="form-control @error('salary') is-invalid @enderror"
+                       value="{{ old('salary', $letter->salary) }}"
+                       required>
+                @error('salary')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Probation Period (Appointment only) --}}
+            @if($letter->letter_type === 'appointment')
+            <div class="form-group col-md-6">
+                <label>Probation Period (Months)</label>
+                <input type="number"
+                       name="probation_period"
+                       class="form-control @error('probation_period') is-invalid @enderror"
+                       value="{{ old('probation_period', $letter->probation_period) }}">
+                @error('probation_period')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Bond Period (Appointment only) --}}
+            <div class="form-group col-md-6">
+                <label>Bond Period (Years)</label>
+                <input type="number"
+                       name="bond_period"
+                       class="form-control @error('bond_period') is-invalid @enderror"
+                       value="{{ old('bond_period', $letter->bond_period) }}">
+                @error('bond_period')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+            @endif
 
         </div>
 

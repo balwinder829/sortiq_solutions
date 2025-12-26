@@ -18,5 +18,8 @@ class Letter extends Model
         'send_count',
         'issue_date',
         'email',
+        'salary',
+        'bond_period',
+        'probation_period',
     ];
 }

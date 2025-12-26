@@ -17,8 +17,9 @@
                         class="form-control @error('letter_type') is-invalid @enderror"
                         required>
                     <option value="">Select Letter Type</option>
-                    <option value="offer">Offer Letter</option>
-                    <option value="experience">Experience Letter</option>
+                    <option value="offer" {{ old('letter_type')=='offer'?'selected':'' }}>Offer Letter</option>
+                    <option value="experience" {{ old('letter_type')=='experience'?'selected':'' }}>Experience Letter</option>
+                    <option value="appointment" {{ old('letter_type')=='appointment'?'selected':'' }}>Appointment Letter</option>
                 </select>
                 @error('letter_type')
                     <small class="text-danger">{{ $message }}</small>
@@ -111,6 +112,43 @@
                 @enderror
             </div>
 
+            {{-- Salary (All Letter Types) --}}
+            <div class="form-group col-md-6">
+                <label>Salary</label>
+                <input type="number"
+                       name="salary"
+                       class="form-control @error('salary') is-invalid @enderror"
+                       value="{{ old('salary') }}"
+                       required>
+                @error('salary')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Probation Period (Appointment only) --}}
+            <div class="form-group col-md-6 d-none" id="probationField">
+                <label>Probation Period (Months)</label>
+                <input type="number"
+                       name="probation_period"
+                       class="form-control @error('probation_period') is-invalid @enderror"
+                       value="{{ old('probation_period') }}">
+                @error('probation_period')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Bond Period (Appointment only) --}}
+            <div class="form-group col-md-6 d-none" id="bondField">
+                <label>Bond Period (Years)</label>
+                <input type="number"
+                       name="bond_period"
+                       class="form-control @error('bond_period') is-invalid @enderror"
+                       value="{{ old('bond_period') }}">
+                @error('bond_period')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
         </div>
 
         <button class="btn btn-primary mt-3">Save</button>
@@ -121,9 +159,25 @@
 
 @push('scripts')
 <script>
-document.getElementById('letterType').addEventListener('change', function () {
-    document.getElementById('relievingField')
-        .classList.toggle('d-none', this.value !== 'experience');
+document.addEventListener('DOMContentLoaded', function () {
+    const letterType = document.getElementById('letterType');
+
+    function toggleFields() {
+        const isExperience = letterType.value === 'experience';
+        const isAppointment = letterType.value === 'appointment';
+
+        document.getElementById('relievingField')
+            .classList.toggle('d-none', !isExperience);
+
+        document.getElementById('probationField')
+            .classList.toggle('d-none', !isAppointment);
+
+        document.getElementById('bondField')
+            .classList.toggle('d-none', !isAppointment);
+    }
+
+    letterType.addEventListener('change', toggleFields);
+    toggleFields(); // for old() values
 });
 </script>
 @endpush

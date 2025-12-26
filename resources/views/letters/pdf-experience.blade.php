@@ -61,7 +61,7 @@ body {
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						This is to certify that <strong>Mr./Ms {{ $letter->emp_name }}</strong> was working with "Sortiq Solutions Pvt. Ltd." from <strong>{{ \Carbon\Carbon::parse($letter->joining_date)->format('d M Y') }}</strong> to <strong>{{ \Carbon\Carbon::parse($letter->relieving_date)->format('d M Y') }}</strong> His/her last served designation was <strong>{{ $letter->position }}</strong> with the salary <strong>--</strong> per month.
+						This is to certify that <strong>Mr./Ms {{ $letter->emp_name }}</strong> was working with "Sortiq Solutions Pvt. Ltd." from <strong>{{ \Carbon\Carbon::parse($letter->joining_date)->format('d M Y') }}</strong> to <strong>{{ \Carbon\Carbon::parse($letter->relieving_date)->format('d M Y') }}</strong> His/her last served designation was <strong>{{ $letter->position }}</strong> with the salary <strong>{{ is_numeric($letter->salary) ? number_format($letter->salary, 2) : 'N/A' }}</strong> per month.
 					</td>
 				</tr>
 				<tr>

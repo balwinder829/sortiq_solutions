@@ -27,6 +27,10 @@
                     {{ ($selectedType ?? '') === 'experience' ? 'selected' : '' }}>
                     Experience Letter
                 </option>
+                <option value="appointment"
+                    {{ ($selectedType ?? '') === 'appointment' ? 'selected' : '' }}>
+                    Appointment Letter
+                </option>
             </select>
 
             <button type="submit" class="btn btn-primary">

@@ -39,14 +39,18 @@ class LetterController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'letter_type'   => 'required|in:offer,experience',
+            'letter_type'   => 'required|in:offer,experience,appointment',
             'emp_name'      => 'required',
             'position'      => 'required',
+            'salary'      => 'required',
             'joining_date'  => 'required|date',
             'issue_date'    => 'required|date',
             'email'         => 'required|email',
+            'email'         => 'required|email',
 
-            'relieving_date'=> 'required_if:letter_type,experience'
+            'relieving_date'=> 'required_if:letter_type,experience',
+            'probation_period'=> 'required_if:letter_type,appointment',
+            'bond_period'=> 'required_if:letter_type,appointment'
         ]);
 
         if ($request->letter_type === 'experience') {
@@ -63,67 +67,7 @@ class LetterController extends Controller
             ->with('success','Letter saved');
     }
 
-    // DOWNLOAD PDF
-    // public function download(Letter $letter)
-    // {
-    //     $filePath = $this->generateLetter($letter);
-
-    //     // $view = $letter->letter_type === 'offer'
-    //     //     ? 'letters.pdf-offer'
-    //     //     : 'letters.pdf-experience';
-
-    //     // $pdf = PDF::loadView($view, compact('letter'));
-
-    //     // return $pdf->download(
-    //     //     strtoupper($letter->letter_type).'_LETTER.pdf'
-    //     // );
-    // }
-
-    // private function generateLetter(Letter $letter){
-
-    //      $mpdf = new Mpdf([
-    //             'mode' => 'utf-8',
-    //             'format' => 'A4',
-    //             'orientation' => 'P',
-    //             'margin_left' => 15,
-    //             'margin_right' => 15,
-    //             'margin_top' => 20,
-    //             'margin_bottom' => 20,
-    //         ]);
-            
-    //         $view = $letter->letter_type === 'offer'
-    //         ? 'letters.pdf-offer'
-    //         : 'letters.pdf-experience';
-
-    //         $html = view($view, compact('letter'))->render();
-        
-    //         $mpdf->WriteHTML($html);
-    //         $mpdf->Output($filePath, 'F');
-
-    //         return $filePath;
-    // }
-    // // SEND EMAIL
-    // public function sendEmail(Letter $letter)
-    // {
-    //     $view = $letter->letter_type === 'offer'
-    //         ? 'letters.pdf-offer'
-    //         : 'letters.pdf-experience';
-
-    //     $pdf = PDF::loadView($view, compact('letter'));
-
-    //     Mail::send([], [], function ($m) use ($letter, $pdf) {
-    //         $m->to($letter->email)
-    //           ->subject(strtoupper($letter->letter_type).' Letter')
-    //           ->attachData(
-    //               $pdf->output(),
-    //               strtoupper($letter->letter_type).'_LETTER.pdf'
-    //           );
-    //     });
-
-    //     return back()->with('success','Email sent');
-    // }
-
-
+  
     private function generateLetterPdf(Letter $letter): string
     {
         $mpdf = new Mpdf([
@@ -137,10 +81,16 @@ class LetterController extends Controller
             'tempDir' => storage_path('app/mpdf'), // IMPORTANT
         ]);
 
-        $view = $letter->letter_type === 'offer'
-            ? 'letters.pdf-offer'
-            : 'letters.pdf-experience';
+        // $view = $letter->letter_type === 'offer'
+        //     ? 'letters.pdf-offer'
+        //     : 'letters.pdf-experience';
 
+         $view = match ($letter->letter_type) {
+            'offer' => 'letters.pdf-offer',
+            'experience' => 'letters.pdf-experience',
+            'appointment' => 'letters.pdf-appointment',
+            default => 'letters.pdf-offer',
+        };
 
         $html = View::make($view, compact('letter'))->render();
         $mpdf->SetHTMLHeader($this->getPDFHeader());
@@ -158,8 +108,9 @@ class LetterController extends Controller
 
     public function download(Letter $letter)
     {
+        // dd($letter);
         $pdfContent = $this->generateLetterPdf($letter);
-
+        // dd($pdfContent);
         return response($pdfContent)
             ->header('Content-Type', 'application/pdf')
             ->header(
@@ -200,7 +151,9 @@ class LetterController extends Controller
             'joining_date' => 'required|date',
             'issue_date'   => 'required|date',
             'email'        => 'required|email',
-
+            'salary'      => 'required',
+            'probation_period'=> 'required_if:letter_type,appointment',
+            'bond_period'=> 'required_if:letter_type,appointment',
             'relieving_date' => 'required_if:letter_type,experience'
         ]);
 
