@@ -10,7 +10,7 @@
       @php 
       @endphp
       <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
-         <div class="head-main" style="padding-top: 150px;">
+         <div class="head-main" style="padding-top: 110px;">
             <div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
                <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
@@ -51,7 +51,7 @@
                <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                      <td colspan="2" style="text-align: center;">
-                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>CONFIRMATION LETTER</strong></h2>
+                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Confirmation Letter</strong></h2>
                      </td>
                   </tr>
                </table>
@@ -66,7 +66,7 @@
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Dear Sir/Madam,					</td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						We are pleased to confirm that {{ $title }} <strong>{{ ucwords($student->student_name) }},</strong> {{ $relation }} <strong>{{ ucwords($student->f_name) }}</strong> and a student of your esteemed institution, has been enrolled in our {{ $durationName }} industrial training for the session <strong>{{ $sessionStart }} to {{ $sessionEnd }}</strong>					</td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						We are pleased to confirm that {{ $title }} <strong>{{ ucwords($student->student_name) }},</strong> {{ $relation }} <strong>{{ ucwords($student->f_name) }}</strong> and a student of your esteemed institution, has been enrolled in our <strong>{{ $durationName }}</strong> industrial training for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>					</td>
                   </tr>
                   <tr>
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						The candidate's performance will be closely evaluated by the management throughout the duration of the internship.					</td>

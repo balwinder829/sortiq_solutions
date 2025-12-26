@@ -13,7 +13,7 @@
 
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
 	
-	<div class="head-main" style="padding-top: 130px;">
+	<div class="head-main" style="padding-top: 110px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
