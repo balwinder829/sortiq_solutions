@@ -1,4 +1,4 @@
-@extends('layouts.exam')
+@extends('layouts.exam_header')
 
 @section('content')
 
@@ -7,39 +7,75 @@
     Time Remaining: --
 </div>
 
-<!-- ================= SCROLLABLE CONTENT ================= -->
-<div class="container-fluid exam-content">
-
-<form id="examForm" method="POST" action="{{ route('student.test.submit', $test->id) }}">
-@csrf
-
-@foreach($test->questions as $question)
-<div class="card m-3">
-    <div class="card-body">
-        <h5>{{ $loop->iteration }}. {{ $question->question }}</h5>
-
-        @foreach($question->options as $option)
-        <div class="form-check">
-            <input class="form-check-input"
-                type="radio"
-                name="answers[{{ $question->id }}]"
-                value="{{ $option->id }}"
-                @checked(isset($answers[$question->id]) && $answers[$question->id] == $option->id)>
-            <label class="form-check-label">
-                {{ $option->option_text }}
-            </label>
+<div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
+    <div class="head-shape">
+        <img style="width: 100%; display: block;" src="{{ asset('images/head-shape-test.png') }}"/>
+    </div>
+    <div class="head-main" style="padding-top: 50px;">
+        <div class="inner-container">
+            <div class="rw-flex">
+                <div class="apd-6">
+                    <div class="h-logo">
+                        <img style="width: 100%; max-width: 200px;" src="{{ asset('images/logo-sortiq.png') }}" width="200"/>
+                    </div>
+                </div>
+                <div class="apd-6">
+                    <div class="h-detials">
+                            <p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ asset('certificate_images/cl.png') }}" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">+91 96465 22110</span></p>
+                            <p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ asset('certificate_images/email.png') }}" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">info@sortiqsolutions.com</span></p>
+                            <p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%; font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ asset('certificate_images/globe.png') }}" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">www.sortiqsolutions.com</span></p>
+                        </div>
+                </div>
+            </div>
         </div>
-        @endforeach
+    </div>
+    <form id="examForm" method="POST" action="{{ route('student.test.submit', $test->id) }}">
+    @csrf
+     <div class="certi-body" style="padding-top: 60px;">
+            <div class="apt-body-content">
+                <div class="apt-body-title">
+                    <div class="inner-container">
+                        <h2><strong>{{ ucwords($test->title) }}</strong></h2>
+                    </div>
+                </div>
+
+                <div class="apt-qs-main">
+                    <div class="inner-container">
+                        <div class="apt-rep">
+                       @foreach($test->questions as $question)
+                        <div class="apt-question">
+                            <h3>{{ $loop->iteration }}. {{ $question->question }}</h3>
+                            <div class="apt-options">
+                                <ul class="opt-list">
+                                     @foreach($question->options as $option)
+                                    <li class="radio">
+                                        <input id="first_{{ $question->id }}_{{ $option->id }}" type="radio" name="answers[{{ $question->id }}]"
+                value="{{ $option->id }}" class="form-check-input" 
+                @checked(isset($answers[$question->id]) && $answers[$question->id] == $option->id)>  
+                                        <label for="first_{{ $question->id }}_{{ $option->id }}">{{ $option->option_text }}</label>     
+                                    </li>
+                                     
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        @endforeach
+                        </div>
+                        <div class="apt-submit">
+                            <button>Submit Answer</button>
+                        </div>
+                    </div>
+                </div>
+             
+        </div>
+    </div>
+    </form>
+    <div class="footer-shape">
+        <img style="width: 100%; display: block;" src="{{ asset('images/footer-shape-1-test.png') }}"/>
     </div>
 </div>
-@endforeach
-
-<div class="text-center mb-5">
-    <button class="btn btn-success btn-lg">Submit Test</button>
-</div>
-
-</form>
-</div>
+<!-- ================= SCROLLABLE CONTENT ================= -->
+ 
 
 <!-- ================= STYLES ================= -->
 <style>
@@ -53,6 +89,8 @@
     border-radius: 30px;
     box-shadow: 0 4px 10px rgba(0,0,0,.2);
     transition: background-color 0.4s ease;
+     background: #ffffff !important; /* FORCE white background */
+    color: #000 !important;  
 }
 
 .exam-content {
