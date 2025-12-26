@@ -16,6 +16,7 @@ use App\Imports\EnquiriesImport;
 use App\Notifications\LeadAssignedNotification;
 use Illuminate\Support\Facades\DB;
 use App\Exports\RegistrationsExport;
+use App\Exports\EnquiriesExport;
 
 
 class EnquiryController extends Controller
@@ -1142,5 +1143,13 @@ public function bulkConvertl(Request $request)
     public function exportPending()
     {
         return Excel::download(new RegistrationsExport(true), 'pending_registrations.xlsx');
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new EnquiriesExport($request->all()),
+            'filtered-enquiries.xlsx'
+        );
     }
 }

@@ -569,6 +569,9 @@ Route::middleware(['auth', 'permission'])->group(function () {
     Route::get('/registrations/export/pending', [EnquiryController::class, 'exportPending'])
     ->name('registrations.export.pending');
 
+    Route::get('/enquiries-export', [EnquiryController::class, 'export'])
+    ->name('enquiries.export');
+
     Route::post('/registrations/bulk-convert',
     [EnquiryController::class, 'bulkConvert'])
     ->name('registrations.bulk.convert');

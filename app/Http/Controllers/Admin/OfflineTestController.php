@@ -17,13 +17,16 @@ use Illuminate\Support\Str;
 use App\Models\Student;
 use App\Models\StudentCourse;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Mpdf\Mpdf;
+use Illuminate\Support\Facades\View;
+use App\Traits\PdfLayoutTrait;
 
 
 
 class OfflineTestController extends Controller
 {   
 
+    use PdfLayoutTrait;
     public function index(Request $request)
 {
     $gender = $request->filled('gender')
@@ -545,12 +548,32 @@ public function store(Request $request)
             ];
         });
 
-        $pdf = Pdf::loadView(
-            'pdf.questions_pdf',
-            compact('test', 'questions')
-        )->setPaper('a4');
+         $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 0,
+            'margin_right' => 0,
+            'margin_top' => 0,
+            'margin_bottom' => 0,
+            'tempDir' => storage_path('app/mpdf'), // IMPORTANT
+        ]);
 
-        return $pdf->download($test->title . '-question-paper.pdf');
+         $html = View::make('pdf.aptitude-test-pdf', compact('questions','test'))->render();
+         // $mpdf->SetHTMLHeader($this->getPDFHeader());
+            // $mpdf->SetHTMLFooter($this->getPDFFooter());
+            $mpdf->WriteHTML($html);
+
+         return response()->streamDownload(
+            fn () => $mpdf->Output('', 'D'),
+            $test->title . '-question-paper.pdf'
+        );
+        // $pdf = Pdf::loadView(
+        //     'pdf.aptitude-test-pdf',
+        //     compact('test', 'questions')
+        // )->setPaper('a4');
+
+        // return $pdf->download($test->title . '-question-paper.pdf');
     }
 
     /* FUTURE METHODS (placeholders) */

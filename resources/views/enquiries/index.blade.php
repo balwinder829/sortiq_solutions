@@ -43,7 +43,7 @@
                     @foreach($colleges as $college)
                         <option value="{{ $college->id }}"
                             {{ request('college') == $college->id ? 'selected' : '' }}>
-                            {{ $college->college_name }}
+                            {{ $college->FullName }}
                         </option>
                     @endforeach
                 </select>
@@ -164,6 +164,11 @@
                 </button>
                 <a href="{{ route('enquiries.index') }}" class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
+                </a>
+
+                <a href="{{ route('enquiries.export', request()->query()) }}"
+                   class="btn btn-success">
+                    <i class="fa fa-file-excel"></i> Download Excel
                 </a>
             </div>
         </div>
