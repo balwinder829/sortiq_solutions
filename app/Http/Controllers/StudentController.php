@@ -1105,7 +1105,7 @@ private function generatePdf($student)
 
         $mpdf = new Mpdf([
             'mode'           => 'utf-8',
-            'format'         => [5.5, 4.25]
+            'format'         => [5.5, 4.25],
             'orientation'    => 'L',
             'margin_left'    => 10,
             'margin_right'   => 10,
