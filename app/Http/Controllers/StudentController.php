@@ -1105,12 +1105,12 @@ private function generatePdf($student)
 
         $mpdf = new Mpdf([
             'mode'           => 'utf-8',
-            'format'         => [5.5, 4.25],
+            'format'         => 'A5',
             'orientation'    => 'L',
             'margin_left'    => 10,
             'margin_right'   => 10,
-            'margin_top'     => 10,
-            'margin_bottom'  => 10,
+            'margin_top'     => 5,
+            'margin_bottom'  => 5,
             'default_font'   => 'sans-serif',
             'dpi'            => 150,
         ]);
