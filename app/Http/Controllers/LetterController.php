@@ -93,8 +93,21 @@ class LetterController extends Controller
         };
 
         $html = View::make($view, compact('letter'))->render();
-        $mpdf->SetHTMLHeader($this->getPDFHeader());
-        $mpdf->SetHTMLFooter($this->getPDFFooter());
+
+        if ($letter->letter_type === 'appointment') {
+            $mpdf->SetHTMLHeader('');
+            $mpdf->SetHTMLFooter('');
+            
+
+        } else {
+
+            // ✅ Other letters (single page)
+            $mpdf->SetHTMLHeader($this->getPDFHeader());
+            $mpdf->SetHTMLFooter($this->getPDFFooter());
+        }
+
+        // $mpdf->SetHTMLHeader($this->getPDFHeader());
+        // $mpdf->SetHTMLFooter($this->getPDFFooter());
         $mpdf->WriteHTML($html);
 
 
