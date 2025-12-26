@@ -283,9 +283,8 @@
     <div class="mb-2">
         {{-- Issue --}}
 
-        <form action="{{ route('students.confirmStudent', $student->id) }}" method="POST" style="display:inline-block;"  class="confirm-single-form" >
+        <form action="{{ route('students.confirmStudent', $student->id) }}" method="POST" style="display:inline-block;">
             @csrf
-            <input type="hidden" name="is_internship" class="isInternshipHiddenSingle">
             <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate"
                 onclick="return confirm('Send certificate to {{ $student->email_id }}?')">
                 <i class="fa-solid fa-file-lines"></i>
@@ -571,15 +570,7 @@
 </div>   
 </div>
 {{-- Buttons for selected students --}}
-<div class="form-check mb-2">
-    <input type="checkbox" class="form-check-input" id="isInternship" name="is_internship">
-    <label class="form-check-label" for="isInternship">
-        Check it for Internship Certificate
-    </label>
-</div>
-
 <div class="mt-3 tble-bts">
-
     <button id="issueSelected" class="btn btn-primary">Confirm Student</button>
     <button id="downloadissueSelected" class="btn btn-primary">Download Confirm Letter</button>
     <button id="downloadReceipts" class="btn btn-warning">Download Receipts</button>
@@ -590,10 +581,8 @@
 </div>
 
 {{-- Hidden form for bulk issuing (submits like single-row form) --}}
-<input type="hidden" id="isInternshipHidden">
 <form id="bulkIssueForm" method="POST" action="{{ route('students.confirmMultiple') }}" style="display:none;">
     @csrf
-        <input type="hidden" name="is_internship">
     <input type="hidden" name="ids" id="bulkIds">
 </form>
 
@@ -605,7 +594,6 @@
 
 <form id="bulkDownloadForm" method="POST" action="{{ route('students.downloadconfirmMultiple') }}" style="display:none;">
     @csrf
-    <input type="hidden" name="is_internship">
     <input type="hidden" name="ids" id="bulkDownloadIds">
 </form>
 
@@ -631,12 +619,6 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
 <script>
 $(document).ready(function () {
-    $('.confirm-single-form').on('submit', function () {
-        let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
-        $(this).find('.isInternshipHiddenSingle').val(isInternship);
-    });
-
-    
     var table = $('#studentsTable').DataTable({
         "pageLength": 10,
         "lengthMenu": [5, 10, 25, 50, 100],
@@ -724,17 +706,8 @@ $(document).ready(function () {
             return;
         }
 
-        let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
-
-        // set global hidden value
-        $('#isInternshipHidden').val(isInternship);
-
-        // copy value into each form before submit
-        $('input[name="is_internship"]').val(isInternship);
-
         // Put IDs as JSON into hidden input and submit the form
         $('#bulkIds').val(JSON.stringify(ids));
-         $('#isInternshipHidden').val(isInternship);
         $('#bulkIssueForm').submit(); // normal submit -> page reload
     });
 
@@ -842,14 +815,6 @@ $(document).ready(function () {
         if (!confirm('Download confirm letter(s) for selected student(s)?')) {
             return;
         }
-
-         let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
-
-        // set global hidden value
-        $('#isInternshipHidden').val(isInternship);
-
-        // copy value into each form before submit
-        $('input[name="is_internship"]').val(isInternship);
 
         // Put JSON string of IDs into hidden input and submit form
         $('#bulkDownloadIds').val(JSON.stringify(ids));

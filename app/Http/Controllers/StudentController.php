@@ -412,10 +412,12 @@ class StudentController extends Controller
         }
     }
 
-    public function confirmStudent($id)
+    public function confirmStudent(Request $request, $id)
     {
         // $student = Student::findOrFail($id);
         // $student = Student::with('sessionData')->find($id);
+        $isInternship = $request->boolean('is_internship');
+        // dd($isInternship);
         $student = Student::with(['sessionData', 'durationData','collegeData'])->find($id);
 
         // 🔥 1. Check if pending fees exists
@@ -428,7 +430,7 @@ class StudentController extends Controller
         }
 
         // 2. Generate PDF dynamically
-        $filePath = $this->generateConfirmationPdf($student);
+        $filePath = $this->generateConfirmationPdf($student,$isInternship);
         $receiptPath = $this->generatePaymentReceiptPdf($student);
 
         // 3. Send email with attachment
@@ -456,6 +458,7 @@ class StudentController extends Controller
     {
         // Expecting JSON string or array in $request->ids
         $idsPayload = $request->input('ids');
+        $isInternship = $request->boolean('is_internship');
 
         if (empty($idsPayload)) {
             return back()->with('error', 'No students selected.');
@@ -491,7 +494,7 @@ class StudentController extends Controller
             if (!$student) continue; // defensive
 
                // 2. Generate PDF dynamically
-            $filePath = $this->generateConfirmationPdf($student);
+            $filePath = $this->generateConfirmationPdf($student, $isInternship);
             $receiptPath = $this->generatePaymentReceiptPdf($student);
 
             // 3. Send email with attachment
@@ -513,7 +516,8 @@ class StudentController extends Controller
     public function downloadconfirmMultiple(Request $request)
     {
         $ids = json_decode($request->ids, true);
-
+         $isInternship = $request->boolean('is_internship');
+         // dd($isInternship);
         if (!is_array($ids) || count($ids) === 0) {
             return back()->with('error', 'No students selected.');
         }
@@ -530,7 +534,7 @@ class StudentController extends Controller
         // Generate (or reuse) PDFs and collect file paths
         $pdfPaths = [];
         foreach ($students as $student) {
-            $pdfPath = $this->generateConfirmationPdf($student);
+            $pdfPath = $this->generateConfirmationPdf($student, $isInternship);
 
             if (file_exists($pdfPath)) {
                 $pdfPaths[] = $pdfPath;
@@ -833,7 +837,7 @@ class StudentController extends Controller
         return back()->with('success', 'Certificates issued to selected students.');
     }
 
-    private function generateConfirmationPdf($student)
+    private function generateConfirmationPdf($student, $isInternship = false)
     {
      // Create folder path for today
         $date = Carbon::now()->format('Y-m-d');
@@ -877,7 +881,7 @@ class StudentController extends Controller
             $mpdf->SetHTMLHeader($this->getPDFHeader());
             $mpdf->SetHTMLFooter($this->getPDFFooter());
 
-            $html = view('pdf.confirmation_detail', compact('student'))->render();
+            $html = view('pdf.confirmation_detail', compact('student','isInternship'))->render();
         
             $mpdf->WriteHTML($html);
             $mpdf->Output($filePath, 'F');
@@ -1345,6 +1349,48 @@ private function generatePdf($student)
                            ->paginate(10);
 
         return view('pending_fees', compact('students'));
+    }
+
+
+    //Pending STudent whose session not added
+     public function pendingStudents(Request $request)
+    {   
+        $notificationMode = $request->notification ?? null;
+
+        $query = Student::query();
+        
+        $query->where(function ($q) {
+            $q->whereNull('session')
+              ->orWhere('session', '');
+        });
+        
+        $students = $query->paginate(100);
+
+        $sessions = StudentSession::all();
+        $colleges = College::all();
+        $courses = Course::all();
+        $batches = Batch::all();
+        $references = Reference::all();
+        $departments = Department::all();
+        $users = User::all();
+        $student_status = StudentStatus::all();
+
+        //pending fee
+        $dismissed = session('dismiss_pending_fee');
+        $activeSessionNo = session('admin_session_id');
+            
+            $pendingStudents = !$dismissed
+                ? Student::where('pending_fees', '>', 0)
+                    ->whereDate('next_due_date', '<=', now())
+                    ->where('session', $activeSessionNo)
+                    ->where('certificate_status', 1)
+                    ->orderBy('next_due_date', 'asc')
+                    ->take(10)
+                    ->get()
+                : collect();
+        
+
+        return view('students.pending_student_index', compact('students','sessions','colleges','courses','batches','references','departments','users','student_status','pendingStudents'));
     }
 
 }

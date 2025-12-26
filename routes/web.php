@@ -277,6 +277,9 @@ Route::middleware(['auth', 'permission'])->group(function () {
     Route::post('/students/download-certificate-multiple', [StudentController::class, 'downloadCertificateMultiple'])
     ->name('students.downloadCertificateMultiple');
 
+    Route::get('/admin/pending-students', [StudentController::class, 'pendingStudents'])
+        ->name('admin.pendingstudents.list');
+
 
     // Route::resource('office-expenses', OfficeExpenseController::class);
     Route::resource('placement-companies', PlacementCompanyController::class);

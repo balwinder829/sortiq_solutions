@@ -9,9 +9,12 @@ use PDF;
 use Mail;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
+use App\Traits\PdfLayoutTrait;
+
 
 class LetterController extends Controller
 {
+    use PdfLayoutTrait;
     public function index(Request $request)
     {
         $query = Letter::query();
@@ -127,10 +130,10 @@ class LetterController extends Controller
             'mode' => 'utf-8',
             'format' => 'A4',
             'orientation' => 'P',
-            'margin_left' => 15,
-            'margin_right' => 15,
-            'margin_top' => 20,
-            'margin_bottom' => 20,
+            'margin_left' => 0,
+            'margin_right' => 0,
+            'margin_top' => 0,
+            'margin_bottom' => 0,
             'tempDir' => storage_path('app/mpdf'), // IMPORTANT
         ]);
 
@@ -138,9 +141,16 @@ class LetterController extends Controller
             ? 'letters.pdf-offer'
             : 'letters.pdf-experience';
 
-        $html = View::make($view, compact('letter'))->render();
 
+        $html = View::make($view, compact('letter'))->render();
+        $mpdf->SetHTMLHeader($this->getPDFHeader());
+        $mpdf->SetHTMLFooter($this->getPDFFooter());
         $mpdf->WriteHTML($html);
+
+
+        // $html = View::make($view, compact('letter'))->render();
+
+        // $mpdf->WriteHTML($html);
 
         // 🔑 Return PDF as STRING (not file)
         return $mpdf->Output('', 'S');

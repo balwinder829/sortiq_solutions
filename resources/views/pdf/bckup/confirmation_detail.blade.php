@@ -60,7 +60,7 @@
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						To <br>						Training & Placement Officer <br>						{{ $collegename }}					</td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Subject: <strong>Confirmation of {{ ucwords($durationName) }} Industrial {{ $isInternship ? 'Internship' : 'Training' }}</strong>					</td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Subject: <strong>Confirmation of {{ strtoupper($durationName) }} Industrial Training</strong>					</td>
                   </tr>
                   <tr>
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Dear Sir/Madam,					</td>
