@@ -44,7 +44,7 @@
          // Safe college
          $collegename = optional($student->collegeData)->college_name ?? '';
          // Safe duration
-         $durationName = optional($student->durationData)->name ?? '';
+         $durationName = optional($student->durationData)->name ?? ''; 
          @endphp	
          <div class="certi-body" style=" background:url('{{ public_path('images/certificates_images/bg-shape.jpg') }}')  no-repeat center; background-size:860px; padding-top: 60px;">
             <div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
