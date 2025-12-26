@@ -38,13 +38,13 @@ class SendEventReminder extends Command
         }
 
         // Define Admin Email (or multiple)
-        // $adminEmail = config('app.admin_email', 'admin@example.com');
+        $adminEmail = config('app.admin_email', 'admin@example.com');
         // $recipients = "mehlakrish07@gmail.com";
-        $recipients = ['mehlakrish07@gmail.com']; // <-- Replace with your admin email
-
-        foreach ($recipients as $email) {
-            Mail::to($email)->send(new EventReminderMail($events, $subject));
-        }
+        // $recipients = ['mehlakrish07@gmail.com']; // <-- Replace with your admin email
+        Mail::to($adminEmail)->send(new EventReminderMail($events, $subject));
+        // foreach ($recipients as $email) {
+            // Mail::to($email)->send(new EventReminderMail($events, $subject));
+        // }
 
         $this->info("Event reminder email sent for $type.");
     }

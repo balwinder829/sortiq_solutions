@@ -19649,7 +19649,43 @@ button.swal2-confirm.swal2-styled.swal2-default-outline {
 .sidebar-close:hover {
     opacity: 0.8;
 }
+}.mobile-view {    display: none;}.table-card-view {    display: flex;    flex-wrap: wrap;    margin-left: -10px;    margin-right: -10px;}.table-card-wd {    width: 50%;    padding: 0 10px;}.table-card {    background-color: rgb(107 81 223 / 12%);    border-radius: 15px;    overflow: hidden;}.tbl-status {    background: #06b162;    color: #fff;    padding: 3px 20px;    border-radius: 10px;    text-align: center;    font-size: 14px;    font-weight: 700;    line-height: normal;    display: inline-block;}.tble-hd h2 {    font-size: 16px;    display: flex;    align-items: center;    gap: 15px;    margin: 10px 0 0;    justify-content: center;    color: #fff;}.tble-rep h3 {    font-size: 18px;    font-weight: 700;    color: #6b51df;    margin: 0 0 5px;    border-bottom: 1px solid #6b51df;    padding-bottom: 2px;}.tble-rep {    margin-top: 0px;    padding: 15px 10px;}.tbl-list {    padding: 0;    list-style: none;    margin: 0;    display: flex;    flex-wrap: wrap;}.tbl-list li {    width: 100%;    font-size: 14px;    display: flex;    justify-content: space-between;    font-weight: 600;    padding: 2px 10px;    background-color: #edeafb;}.tbl-list li span {    font-weight: 400;}.sp-dtl {    font-weight: 600 !important;}.tble-row {    display: grid;    grid-template-columns: 1fr 1fr 1fr;    gap: 10px;    text-align: center;}.tble-action .btn {    padding: 6px 10px !important;    border-radius: 5px !important;    width: 100% !important;}.delete-btn {    background-color: #dc3545 !important;    color: #fff !important;}.tble-action {    margin-top: 0;    padding: 0 10px 10px;}.edit-btn {    background-color: #ffc107 !important;}.view-btn {    background-color: #0d6efd !important;    color: #fff !important;}.tble-hd {    background-color: #6b51df;    padding: 15px 10px;    text-align: center;}.tbl-list li:nth-child(2n) {    background-color: #fff;}
+.tble-bts {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
 }
+.tble-bts button {
+    margin-left: 0 !important;
+}
+.table-accordian {
+    margin: 0 0 20px;
+}
+.table-accordian .accordion-button:focus {
+    box-shadow: none !important;
+}
+
+.table-accordian .accordion-item {
+    border-radius: 0 !important;
+    margin: 0 0 10px;
+    border-top: 1px solid #dee2e6 !important;
+}
+
+.table-accordian .accordion-button:not(.collapsed) {
+    background-color: #ffffff;
+    border-bottom: 1px solid #dee2e6 !important;
+    color: #343957;
+}
+.table-accordian .accordion-body {
+    padding: 10px;
+}
+.table-accordian button.accordion-button {
+    border-radius: 0 !important;
+    background-color: #f5f5f5;
+    font-weight: 500;
+    padding: 14px 10px;
+}
+@media only screen and (max-width:1024px){.mobile-view {    display: block;}.desktop-view{display:none;}	}@media only screen and (max-width:991px){.header {    padding-left: 150px !important;}.header .header-content {    padding-left: 40px;    padding-right: 20px;}.nav-header {    width: 130px;}.header-right .nav-item .nav-link {    font-size: 14px;}.header-right li.nav-item.dropdown.mx-2 {    margin: 0 !important;}.navbar-expand .navbar-nav {    flex-direction: unset !important;    flex-wrap: wrap;}.brand-logo img {    max-width: 90px;    width: 100%;    height: auto !important;}.nav-header .brand-logo {    margin-left: 0 !important;}.hamburger {    left: 0;}.nav-control {    left: 140px;}	}@media only screen and (max-width:767px){.nav-header {	width: 100px;	height: 4rem;}.header {	padding-left: 110px !important;	height: 4rem;}.header .header-content {	padding-left: 0px;}.nav-control {	left: 100px;}.brand-logo img {	max-width: 75px;}.header-right .nav-item:first-child {    display: none;}.navbar-expand .navbar-nav .nav-link {    padding: 0 !important;}.notification-badge {    top: -5px;} .tble-bts { display: grid; gap: 5px; grid-template-columns: repeat(auto-fit, minmax(177px, 1fr)); } .tble-bts button { margin: 0px 0px !important; line-height: 14px; padding: 10px 10px; font-size: 14px; width: 100%; }.btn { font-size: 14px !important; } .form-control { font-size: 14px !important; }.pagination .page-item .page-link { font-size: 14px !important; }	.content-body .container-fluid {    padding-right: 10px;    padding-left: 10px;}	.table-card-wd {    width: 100%;	margin-bottom: 10px;}	}
 
 
 

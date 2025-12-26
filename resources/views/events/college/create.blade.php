@@ -33,6 +33,24 @@
         @enderror
     </div>
 
+    {{-- COLLEGE --}}
+    <div class="mb-3">
+        <label>College <span class="text-danger">*</span></label>
+        <select name="college_id" class="form-control" required>
+            <option value="">-- Select College --</option>
+            @foreach($colleges as $college)
+                <option value="{{ $college->id }}"
+                    {{ old('college_id') == $college->id ? 'selected' : '' }}>
+                    {{ $college->FullName }}
+                </option>
+            @endforeach
+        </select>
+
+        @error('college_id')
+            <small class="text-danger">{{ $message }}</small>
+        @enderror
+    </div>
+
     {{-- DESCRIPTION --}}
     <div class="mb-3">
         <label>Description</label>

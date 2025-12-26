@@ -3,107 +3,157 @@
 @section('content')
 <div class="container">
 
+    {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Company Profiles</h2>
-        <a href="{{ route('company_profile.create') }}" class="btn btn-primary" style="background-color: #343957; color: white;">
+        <h4 class="mb-0">Company Profiles</h4>
+        <a href="{{ route('company_profile.create') }}"
+           class="btn"
+           style="background-color:#343957;color:#fff;">
             <i class="bx bx-plus"></i> Add Company Profile
         </a>
     </div>
 
     {{-- Filters --}}
     <div class="mb-3">
-        <a href="{{ route('company_profile.index') }}" 
-           class="btn btn-sm btn-outline-secondary {{ request('filter')==null ? 'active' : '' }}">All</a>
+        <a href="{{ route('company_profile.index') }}"
+           class="btn btn-sm btn-outline-secondary {{ request('filter')==null ? 'active' : '' }}">
+            All
+        </a>
 
-        <a href="{{ route('company_profile.index', ['filter'=>'active']) }}" 
-           class="btn btn-sm btn-outline-success {{ request('filter')=='active' ? 'active' : '' }}">Active</a>
+        <a href="{{ route('company_profile.index',['filter'=>'active']) }}"
+           class="btn btn-sm btn-outline-success {{ request('filter')=='active' ? 'active' : '' }}">
+            Active
+        </a>
 
-       <!--  <a href="{{ route('company_profile.index', ['filter'=>'upcoming']) }}" 
-           class="btn btn-sm btn-outline-info {{ request('filter')=='upcoming' ? 'active' : '' }}">Upcoming</a>
- -->
-        <a href="{{ route('company_profile.index', ['filter'=>'expired']) }}" 
-           class="btn btn-sm btn-outline-warning {{ request('filter')=='expired' ? 'active' : '' }}">Expired</a>
+        <a href="{{ route('company_profile.index',['filter'=>'expired']) }}"
+           class="btn btn-sm btn-outline-warning {{ request('filter')=='expired' ? 'active' : '' }}">
+            Expired
+        </a>
     </div>
 
-    <div class="row">
-        @foreach($companyProfiles as $cp)
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
+    {{-- TABLE --}}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead>
+                <tr class="table-light">
+                    <th>#</th>
+                    <th>Preview</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Schedule</th>
+                    <th>Downloads</th>
+                    <th style="width:260px;">Action</th>
+                </tr>
+            </thead>
 
-                {{-- Thumbnail --}}
-                @if($cp->file_type === 'image')
-                    <img src="{{ route('company_profile.view', $cp->id) }}" 
-                         class="card-img-top" 
-                         style="height:180px; object-fit:cover;">
-                @else
-                    <iframe src="{{ route('company_profile.view', $cp->id) }}"
-                        style="width:100%;height:180px;border:1px solid #ddd;"
-                        class="rounded">
-                    </iframe>
-                @endif
+            <tbody>
+                @forelse($companyProfiles as $cp)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ $cp->title }}</h5>
+                        {{-- Preview --}}
+                        <td>
+                            @if($cp->file_type === 'image')
+                                <img src="{{ route('company_profile.view', $cp->id) }}"
+                                     style="height:50px;width:70px;object-fit:cover;">
+                            @else
+                                <i class="bx bxs-file-pdf text-danger fs-4"></i>
+                            @endif
+                        </td>
 
-                    <p class="text-muted small mb-2">
-                        {{ Str::limit($cp->description, 120) }}
-                    </p>
+                        {{-- Title --}}
+                        <td>
+                            <strong>{{ $cp->title }}</strong><br>
+                            <small class="text-muted">
+                                {{ Str::limit($cp->description, 60) }}
+                            </small>
+                        </td>
 
-                    {{-- Status --}}
-                    <div class="mb-2">
-                        @if(!$cp->is_active)
-                            <span class="badge bg-secondary">Disabled</span>
-                        @elseif($cp->isCurrentlyVisible())
-                            <span class="badge bg-success">Visible</span>
-                        @else
-                            <span class="badge bg-info">Scheduled</span>
-                        @endif
+                        {{-- Status --}}
+                        <td>
+                            @if(!$cp->is_active)
+                                <span class="badge bg-secondary">Disabled</span>
+                            @elseif($cp->isCurrentlyVisible())
+                                <span class="badge bg-success">Active</span>
+                            @else
+                                <span class="badge bg-info">Scheduled</span>
+                            @endif
+                        </td>
 
-                        @if($cp->start_at)
-                            <small class="text-muted ms-2">From {{ $cp->start_at->format('d M') }}</small>
-                        @endif
-                    </div>
+                        {{-- Schedule --}}
+                        <td>
+                            @if($cp->start_at)
+                                <small>
+                                    {{ $cp->start_at->format('d M Y') }}
+                                    →
+                                    {{ optional($cp->end_at)->format('d M Y') ?? '—' }}
+                                </small>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
 
-                    {{-- Action buttons --}}
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <a class="btn btn-sm btn-outline-primary"
-                               href="{{ route('company_profile.edit', $cp->id) }}">
-                               Edit
+                        {{-- Downloads --}}
+                        <td>
+                            <span class="badge bg-dark">
+                                {{ $cp->download_count }}
+                            </span>
+                        </td>
+
+                        {{-- Actions --}}
+                        <td class="no-wrap">
+
+                            {{-- View --}}
+                            <a href="{{ route('company_profile.admin.view', $cp->id) }}"
+                               class="btn btn-sm btn-outline-primary"
+                               target="_blank">
+                                <i class="fa fa-eye"></i>
                             </a>
 
-                            <form action="{{ route('company_profile.destroy', $cp->id) }}" 
-                                  method="POST" class="d-inline"
+                            {{-- Download --}}
+                            <a href="{{ route('company_profile.admin.download', $cp->id) }}"
+                               class="btn btn-sm btn-success">
+                                <i class="fa fa-download"></i>
+                            </a>
+
+                            {{-- Edit --}}
+                            <a href="{{ route('company_profile.edit', $cp->id) }}"
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fa fa-edit"></i>
+                            </a>
+
+                            {{-- Delete --}}
+                            <form action="{{ route('company_profile.destroy', $cp->id) }}"
+                                  method="POST"
+                                  class="d-inline"
                                   onsubmit="return confirm('Delete this company profile?');">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="fa fa-trash"></i>
+                                </button>
                             </form>
-                        </div>
 
-                        <div>
-                            <a href="{{ route('company_profile.download', $cp->id) }}" 
-                               class="btn btn-sm btn-success" target="_blank">
-                               Download
-                            </a>
-
-                            <button class="btn btn-sm btn-secondary"
+                            {{-- Share --}}
+                            <button class="btn btn-sm btn-outline-dark"
                                     onclick="copyShare('{{ route('company_profile.preview', $cp->share_token) }}')">
-                                Share
+                                <i class="fa fa-share"></i>
                             </button>
-                        </div>
-                    </div>
 
-                </div>
-
-                <div class="card-footer small text-muted">
-                    Downloads: {{ $cp->download_count }}
-                </div>
-
-            </div>
-        </div>
-        @endforeach
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            No company profiles found.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 
+    {{-- Pagination --}}
     <div class="mt-3">
         {{ $companyProfiles->links() }}
     </div>

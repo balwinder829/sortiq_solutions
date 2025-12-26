@@ -21,7 +21,7 @@
 
 
     </div> -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 st-head">
     <h3>Students</h3>
 
     <div class="d-flex gap-2">
@@ -38,32 +38,19 @@
 <form method="GET" action="{{ route('students.index') }}" class="mb-4">
     <div class="row g-2">
         {{-- Student Name --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-6">
             <input type="text" name="student_name" class="form-control"
                    placeholder="Student Name" value="{{ request('student_name') }}">
         </div>
 
-        {{-- Father Name --}}
-        <!-- <div class="col-md-2">
-            <input type="text" name="f_name" class="form-control"
-                   placeholder="Father Name" value="{{ request('f_name') }}">
-        </div> -->
-
-        {{-- Gender --}}
-        <!-- <div class="col-md-1">
-            <select name="gender" class="form-control">
-                <option value="">Gender</option>
-                <option value="Male" {{ request('gender')=='Male' ? 'selected' : '' }}>Male</option>
-                <option value="Female" {{ request('gender')=='Female' ? 'selected' : '' }}>Female</option>
-            </select>
-        </div> -->
+         
          {{-- S no. --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-6">
             <input type="text" name="sno" class="form-control"
                    placeholder="S. No" value="{{ request('sno') }}">
         </div>
         {{-- Session --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-6">
             <select name="session" class="form-control session" id="ddl_session">
                 <option value="">--Session Name--</option>
                 @foreach($sessions as $session)
@@ -76,7 +63,7 @@
         </div>
 
         {{-- College --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-6">
             <select name="college_name" class="form-control collegeName" id="txtcollege">
                 <option value="">--College--</option>
                 @foreach($colleges as $college)
@@ -103,7 +90,7 @@
             </div>
         </div>
         {{-- Status --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-6">
             <select name="status" class="form-control statusData">
                 <option value="" {{ request('status') == '' ? 'selected' : '' }}>--Status--</option>
 
@@ -117,7 +104,7 @@
         </div>
 
         {{-- Technology / Course --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-6">
             <select name="technology" class="form-control technology" id="txttechnology">
                 <option value="">--Technology--</option>
                 @foreach($courses as $course)
@@ -130,7 +117,7 @@
         </div>
 
         {{-- Part-Time Offer --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-6">
             <select name="part_time_offer" class="form-control">
                 <option value="">--Part-Time Offer--</option>
                 <option value="1" {{ request('part_time_offer') === '1' ? 'selected' : '' }}>Yes</option>
@@ -139,7 +126,7 @@
         </div>
 
         {{-- Placement Offer --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-6">
             <select name="placement_offer" class="form-control">
                 <option value="">--Placement Offer--</option>
                 <option value="1" {{ request('placement_offer') === '1' ? 'selected' : '' }}>Yes</option>
@@ -148,7 +135,7 @@
         </div>
 
         {{-- PG Offer --}}
-        <div class="col-md-2">
+        <div class="col-md-2 col-12">
             <select name="pg_offer" class="form-control">
                 <option value="">--PG Offer--</option>
                 <option value="1" {{ request('pg_offer') === '1' ? 'selected' : '' }}>Yes</option>
@@ -176,15 +163,12 @@
                 <label class="form-check-label" for="pending_fees">Pending Fee Only</label>
             </div>
         </div>
-
-        {{-- Buttons --}}
-        <div class="col-md-1 d-grid">
-            <button type="submit" class="btn" style="background-color: #6b51df; color: #fff;">Search</button>
-        </div>
-        <div class="col-md-1 d-grid">
-            <a href="{{ route('students.index') }}" class="btn btn-secondary">Reset</a>
-        </div>
     </div>
+	{{-- Buttons --}}
+	<div class="mt-2 tble-bts">
+		<button type="submit" class="btn" style="background-color: #6b51df; color: #fff;">Search</button>
+		<a href="{{ route('students.index') }}" class="btn btn-secondary">Reset</a>
+	</div>
 </form>
 
 @if(session('success'))
@@ -199,8 +183,9 @@
         {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-@endif
+@endif<style></style>
 
+<div class="desktop-view">
 <div class="table-responsive">
     <table id="studentsTable" class="table table-bordered table-striped">
         <thead class="table-light">
@@ -249,7 +234,8 @@
         style="background-color:#fff3cd;" {{-- Due Today --}}
     @endif
 >
-                <td><input type="checkbox" class="record_checked" value="{{ $student->id }}"  {{ ($student->email_count_confirmation > 0 && $student->count_receipt_download > 0) ? '' : 'disabled' }}></td>
+                <td><input type="checkbox" class="record_checked" value="{{ $student->id }}" data-email="{{ $student->email_count_confirmation }}"
+       data-receipt="{{ $student->count_receipt_download }}"></td>
                 <td>{{ $student->sno }}</td>
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
@@ -328,9 +314,263 @@
         </tbody>
     </table>
 </div>
-
+</div>
+<div class="mobile-view">
+<div class="accordion table-accordian" id="accordionExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">Vikas Mehra</button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <div class="table-card-view">
+			<div class="table-card-wd">
+				<div class="table-card">
+					<div class="tble-hd">
+						<div class="tbl-status">Joined</div>
+						<h2><input type="checkbox" id="checkAll1" /> <span>Serial No: 123432</span></h2>
+					</div>
+					<div class="tble-rep">
+						<h3>Personal detail:</h3>
+						<ul class="tbl-list">
+							<li><span class="sp-dtl">Name:</span> <span>Vikas Mehra</span></li>
+							<li><span class="sp-dtl">Father Name:</span> <span>Vikram</span></li>
+							<li><span class="sp-dtl">Gender:</span> <span>Male</span></li>
+							<li><span class="sp-dtl">Contact:</span> <span>9127150108</span></li>
+							<li><span class="sp-dtl">Email:</span> <span>vikas.mehra@yopmail.com</span></li>
+							<li><span class="sp-dtl">College:</span> <span>Royal Professional College</span></li>
+						</ul>
+					</div>
+					<div class="tble-rep">
+						<h3>Course detail:</h3>
+						<ul class="tbl-list">
+							<li><span class="sp-dtl">Session:</span> <span>8 Week Session</span></li>
+							<li><span class="sp-dtl">Technology:</span> <span>Python/AI</span></li>
+							<li><span class="sp-dtl">Total Fees:</span> <span>10000.00</span></li>
+							<li><span class="sp-dtl">Reg Fees:</span> <span>1000.00</span></li>
+							<li><span class="sp-dtl">Pending Fees:</span> <span>9000.00</span></li>
+							<li><span class="sp-dtl">Next Due Date:</span> <span></span></li>
+							<li><span class="sp-dtl">Date of Joining:</span> <span>13 Dec 2025</span></li>
+							<li><span class="sp-dtl">Duration:</span> <span></span></li>
+							<li><span class="sp-dtl">Start Date:</span> <span>19 Dec 2025</span></li>
+							<li><span class="sp-dtl">End Date:</span> <span>19 Dec 2025</span></li>
+						</ul>
+					</div>
+					<div class="tble-action">
+						<div class="tble-row">
+							<div class="tb-cl-4">
+								<form>
+									<button type="submit" class="btn btn-sm view-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" >
+										<i class="fa-solid fa-file-lines"></i>
+									</button>
+								</form>
+							</div>
+							<div class="tb-cl-4">
+								<a href="#" class="btn btn-sm edit-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Student" >
+									<i class="fa fa-edit"></i>
+								</a>
+							</div>
+							<div class="tb-cl-4">
+								<form>
+									<button type="submit" class="btn btn-sm delete-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" >
+										<i class="fa fa-trash"></i>
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="table-card-wd">
+				<div class="table-card">
+					<div class="tble-hd">
+						<div class="tbl-status">Joined</div>
+						<h2><input type="checkbox" id="checkAll2" /> <span>Serial No: 123432</span></h2>
+					</div>
+					<div class="tble-rep">
+						<h3>Personal detail:</h3>
+						<ul class="tbl-list">
+							<li><span class="sp-dtl">Name:</span> <span>Vikas Mehra</span></li>
+							<li><span class="sp-dtl">Father Name:</span> <span>Vikram</span></li>
+							<li><span class="sp-dtl">Gender:</span> <span>Male</span></li>
+							<li><span class="sp-dtl">Contact:</span> <span>9127150108</span></li>
+							<li><span class="sp-dtl">Email:</span> <span>vikas.mehra@yopmail.com</span></li>
+							<li><span class="sp-dtl">College:</span> <span>Royal Professional College</span></li>
+						</ul>
+					</div>
+					<div class="tble-rep">
+						<h3>Course detail:</h3>
+						<ul class="tbl-list">
+							<li><span class="sp-dtl">Session:</span> <span>8 Week Session</span></li>
+							<li><span class="sp-dtl">Technology:</span> <span>Python/AI</span></li>
+							<li><span class="sp-dtl">Total Fees:</span> <span>10000.00</span></li>
+							<li><span class="sp-dtl">Reg Fees:</span> <span>1000.00</span></li>
+							<li><span class="sp-dtl">Pending Fees:</span> <span>9000.00</span></li>
+							<li><span class="sp-dtl">Next Due Date:</span> <span></span></li>
+							<li><span class="sp-dtl">Date of Joining:</span> <span>13 Dec 2025</span></li>
+							<li><span class="sp-dtl">Duration:</span> <span></span></li>
+							<li><span class="sp-dtl">Start Date:</span> <span>19 Dec 2025</span></li>
+							<li><span class="sp-dtl">End Date:</span> <span>19 Dec 2025</span></li>
+						</ul>
+					</div>
+					<div class="tble-action">
+						<div class="tble-row">
+							<div class="tb-cl-4">
+								<form>
+									<button type="submit" class="btn btn-sm view-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" >
+										<i class="fa-solid fa-file-lines"></i>
+									</button>
+								</form>
+							</div>
+							<div class="tb-cl-4">
+								<a href="#" class="btn btn-sm edit-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Student" >
+									<i class="fa fa-edit"></i>
+								</a>
+							</div>
+							<div class="tb-cl-4">
+								<form>
+									<button type="submit" class="btn btn-sm delete-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" >
+										<i class="fa fa-trash"></i>
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Accordion Item #2</button>
+    </h2>
+    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        <div class="table-card-view">
+			<div class="table-card-wd">
+				<div class="table-card">
+					<div class="tble-hd">
+						<div class="tbl-status">Joined</div>
+						<h2><input type="checkbox" id="checkAll2" /> <span>Serial No: 123432</span></h2>
+					</div>
+					<div class="tble-rep">
+						<h3>Personal detail:</h3>
+						<ul class="tbl-list">
+							<li><span class="sp-dtl">Name:</span> <span>Vikas Mehra</span></li>
+							<li><span class="sp-dtl">Father Name:</span> <span>Vikram</span></li>
+							<li><span class="sp-dtl">Gender:</span> <span>Male</span></li>
+							<li><span class="sp-dtl">Contact:</span> <span>9127150108</span></li>
+							<li><span class="sp-dtl">Email:</span> <span>vikas.mehra@yopmail.com</span></li>
+							<li><span class="sp-dtl">College:</span> <span>Royal Professional College</span></li>
+						</ul>
+					</div>
+					<div class="tble-rep">
+						<h3>Course detail:</h3>
+						<ul class="tbl-list">
+							<li><span class="sp-dtl">Session:</span> <span>8 Week Session</span></li>
+							<li><span class="sp-dtl">Technology:</span> <span>Python/AI</span></li>
+							<li><span class="sp-dtl">Total Fees:</span> <span>10000.00</span></li>
+							<li><span class="sp-dtl">Reg Fees:</span> <span>1000.00</span></li>
+							<li><span class="sp-dtl">Pending Fees:</span> <span>9000.00</span></li>
+							<li><span class="sp-dtl">Next Due Date:</span> <span></span></li>
+							<li><span class="sp-dtl">Date of Joining:</span> <span>13 Dec 2025</span></li>
+							<li><span class="sp-dtl">Duration:</span> <span></span></li>
+							<li><span class="sp-dtl">Start Date:</span> <span>19 Dec 2025</span></li>
+							<li><span class="sp-dtl">End Date:</span> <span>19 Dec 2025</span></li>
+						</ul>
+					</div>
+					<div class="tble-action">
+						<div class="tble-row">
+							<div class="tb-cl-4">
+								<form>
+									<button type="submit" class="btn btn-sm view-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" >
+										<i class="fa-solid fa-file-lines"></i>
+									</button>
+								</form>
+							</div>
+							<div class="tb-cl-4">
+								<a href="#" class="btn btn-sm edit-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Student" >
+									<i class="fa fa-edit"></i>
+								</a>
+							</div>
+							<div class="tb-cl-4">
+								<form>
+									<button type="submit" class="btn btn-sm delete-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" >
+										<i class="fa fa-trash"></i>
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="table-card-wd">
+				<div class="table-card">
+					<div class="tble-hd">
+						<div class="tbl-status">Joined</div>
+						<h2><input type="checkbox" id="checkAll1" /> <span>Serial No: 123432</span></h2>
+					</div>
+					<div class="tble-rep">
+						<h3>Personal detail:</h3>
+						<ul class="tbl-list">
+							<li><span class="sp-dtl">Name:</span> <span>Vikas Mehra</span></li>
+							<li><span class="sp-dtl">Father Name:</span> <span>Vikram</span></li>
+							<li><span class="sp-dtl">Gender:</span> <span>Male</span></li>
+							<li><span class="sp-dtl">Contact:</span> <span>9127150108</span></li>
+							<li><span class="sp-dtl">Email:</span> <span>vikas.mehra@yopmail.com</span></li>
+							<li><span class="sp-dtl">College:</span> <span>Royal Professional College</span></li>
+						</ul>
+					</div>
+					<div class="tble-rep">
+						<h3>Course detail:</h3>
+						<ul class="tbl-list">
+							<li><span class="sp-dtl">Session:</span> <span>8 Week Session</span></li>
+							<li><span class="sp-dtl">Technology:</span> <span>Python/AI</span></li>
+							<li><span class="sp-dtl">Total Fees:</span> <span>10000.00</span></li>
+							<li><span class="sp-dtl">Reg Fees:</span> <span>1000.00</span></li>
+							<li><span class="sp-dtl">Pending Fees:</span> <span>9000.00</span></li>
+							<li><span class="sp-dtl">Next Due Date:</span> <span></span></li>
+							<li><span class="sp-dtl">Date of Joining:</span> <span>13 Dec 2025</span></li>
+							<li><span class="sp-dtl">Duration:</span> <span></span></li>
+							<li><span class="sp-dtl">Start Date:</span> <span>19 Dec 2025</span></li>
+							<li><span class="sp-dtl">End Date:</span> <span>19 Dec 2025</span></li>
+						</ul>
+					</div>
+					<div class="tble-action">
+						<div class="tble-row">
+							<div class="tb-cl-4">
+								<form>
+									<button type="submit" class="btn btn-sm view-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" >
+										<i class="fa-solid fa-file-lines"></i>
+									</button>
+								</form>
+							</div>
+							<div class="tb-cl-4">
+								<a href="#" class="btn btn-sm edit-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Student" >
+									<i class="fa fa-edit"></i>
+								</a>
+							</div>
+							<div class="tb-cl-4">
+								<form>
+									<button type="submit" class="btn btn-sm delete-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" >
+										<i class="fa fa-trash"></i>
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+      </div>
+    </div>
+  </div>
+</div>   
+</div>
 {{-- Buttons for selected students --}}
-<div class="mt-3">
+<div class="mt-3 tble-bts">
     <button id="issueSelected" class="btn btn-primary">Confirm Student</button>
     <button id="downloadissueSelected" class="btn btn-primary">Download Confirm Letter</button>
     <button id="downloadReceipts" class="btn btn-warning">Download Receipts</button>
@@ -471,22 +711,94 @@ $(document).ready(function () {
         $('#bulkIssueForm').submit(); // normal submit -> page reload
     });
 
+    // $('#moveSelected').click(function () {
+    //     var ids = getSelectedIds();
+
+    //     if (ids.length === 0) {
+    //         alert('Select at least one student');
+    //         return;
+    //     }
+
+    //     if (!confirm('Send students to certificate section?')) {
+    //         return;
+    //     }
+
+    //     // Put IDs as JSON into hidden input and submit the form
+    //     $('#bulkmove').val(JSON.stringify(ids));
+    //     $('#bulkMoveStudent').submit(); // normal submit -> page reload
+    // });
+
     $('#moveSelected').click(function () {
-        var ids = getSelectedIds();
 
-        if (ids.length === 0) {
-            alert('Select at least one student');
-            return;
+    let eligibleIds = [];
+    let ineligibleIds = [];
+
+    $('.record_checked:checked').each(function () {
+        let emailCount = parseInt($(this).data('email'));
+        let receiptCount = parseInt($(this).data('receipt'));
+
+        if (emailCount > 0 && receiptCount > 0) {
+            eligibleIds.push($(this).val());
+        } else {
+            ineligibleIds.push($(this).val());
         }
-
-        if (!confirm('Send students to certificate section?')) {
-            return;
-        }
-
-        // Put IDs as JSON into hidden input and submit the form
-        $('#bulkmove').val(JSON.stringify(ids));
-        $('#bulkMoveStudent').submit(); // normal submit -> page reload
     });
+
+    if (eligibleIds.length === 0) {
+        alert('None of the selected students are eligible for certificates.');
+        return;
+    }
+
+    let message = '';
+    if (ineligibleIds.length > 0) {
+        message = ineligibleIds.length +
+            ' selected student(s) are not eligible and will be skipped.\n\n';
+    }
+
+    message += 'Send eligible students to certificate section?';
+
+    if (!confirm(message)) {
+        return;
+    }
+
+    $('#bulkmove').val(JSON.stringify(eligibleIds));
+    $('#bulkMoveStudent').submit();
+});
+
+    $('#moveSelected1').click(function () {
+    let ids = [];
+    let invalidFound = false;
+
+    $('.record_checked:checked').each(function () {
+        let emailCount = parseInt($(this).data('email'));
+        let receiptCount = parseInt($(this).data('receipt'));
+
+        if (emailCount > 0 && receiptCount > 0) {
+            ids.push($(this).val());
+        } else {
+            invalidFound = true;
+        }
+    });
+
+    if (ids.length === 0) {
+        alert('Selected students are not eligible for certificates.');
+        return;
+    }
+
+    if (invalidFound) {
+        if (!confirm('Some selected students are not eligible and will be skipped. Continue?')) {
+            return;
+        }
+    }
+
+    if (!confirm('Send students to certificate section?')) {
+        return;
+    }
+
+    $('#bulkmove').val(JSON.stringify(ids));
+    $('#bulkMoveStudent').submit();
+});
+
 
 
     

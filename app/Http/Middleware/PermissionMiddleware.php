@@ -14,6 +14,18 @@ class PermissionMiddleware
     {
         $user = auth()->user();
 
+
+        // ❌ Block any role greater than 4
+        // if ($user && $user->role > 4) {
+        //     return response()->view('errors.unauthorized', [], 403);
+        // }
+
+        // ONLY Admin (1) and Manager (2)
+        if (!in_array($user->role, [1, 4])) {
+
+            return response()->view('errors.unauthorized', [], 403);
+        }
+        // dd($user->role);
         // Admin bypass
         if ($user->role == 1) {
             return $next($request);

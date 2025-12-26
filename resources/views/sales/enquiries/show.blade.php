@@ -90,6 +90,10 @@
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
 
+             @if(session('error'))
+                <div class="alert alert-success">{{ session('error') }}</div>
+            @endif
+
             <form action="{{ route('sales.enquiries.followup.store', $enquiry->id) }}" method="POST">
                 @csrf
 
@@ -224,7 +228,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
 
-            <form method="POST" action="{{ route('sales.enquiries.register', $enquiry->id) }}">
+            <form method="POST" action="{{ route('sales.enquiries.register', $enquiry->id) }}" enctype="multipart/form-data">
                 @csrf
 
                 <div class="modal-header bg-success text-white">
@@ -256,6 +260,15 @@
                             <option value="full">Full</option>
                         </select>
                     </div>
+
+                    <div class="mb-3">
+                        <label><strong>Payment Proof (Image)</strong></label>
+                        <input type="file"
+                               name="payment_image"
+                               class="form-control"
+                               accept="image/*">
+                    </div>
+
 
                 </div>
 

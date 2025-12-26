@@ -42,10 +42,10 @@
             <div class="border rounded p-3 bg-light">
 
                 @if($companyProfile->file_type === 'image')
-                    <img src="{{ route('company_profile.preview', $companyProfile->share_token) }}"
+                    <img src="{{ route('company_profile.admin.view', $companyProfile->id) }}"
                          style="height:180px;object-fit:cover;">
                 @else
-                    <iframe src="{{ route('company_profile.preview', $companyProfile->share_token) }}"
+                    <iframe src="{{ route('company_profile.admin.view', $companyProfile->id) }}"
                         style="width:100%;height:180px;border:1px solid #ddd;"
                         class="rounded">
                     </iframe>

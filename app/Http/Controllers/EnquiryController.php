@@ -6,6 +6,7 @@ use App\Models\Enquiry;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\College;
+use App\Models\Registration;
 use App\Models\EnquiryFollowup;
 use App\Models\EnquiryActivity;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\EnquiriesImport;
 use App\Notifications\LeadAssignedNotification;
 use Illuminate\Support\Facades\DB;
+use App\Exports\RegistrationsExport;
 
 
 class EnquiryController extends Controller
@@ -571,7 +573,7 @@ public function salespersonShow(Request $request, $id)
     //  STATUS FILTER
     // ============================
     if ($request->status) {
-        $leadsQuery->where('status', $request->status);
+        $leadsQuery->where('lead_status', $request->status);
     }
 
     // ============================
@@ -924,6 +926,221 @@ public function callDashboard(Request $request)
     ));
 }
 
+public function registeredIndex(Request $request)
+{   
 
 
+    $query = Registration::with(['enquiry.student', 'collector']);
+
+    /* ================= DATE RANGE FILTER ================= */
+    if ($request->from_date) {
+        $query->whereDate('registered_at', '>=', $request->from_date);
+    }
+
+    if ($request->to_date) {
+        $query->whereDate('registered_at', '<=', $request->to_date);
+    }
+
+    /* ================= SALESPERSON FILTER ================= */
+    if ($request->salesperson_id) {
+        $query->where('collected_by', $request->salesperson_id);
+    }
+
+    $allRegistrations = (clone $query)->latest('registered_at')->get();
+
+    $pendingRegistrations = (clone $query)
+        ->whereDoesntHave('enquiry.student')
+        ->latest('registered_at')
+        ->get();
+
+    $salesUsers = User::where('role', '3')->get();
+
+    return view('enquiries.registered-list', compact(
+        'allRegistrations',
+        'pendingRegistrations',
+        'salesUsers'
+    ));
+    // All registered (payment done)
+    // $allRegistered = Registration::with('enquiry.assignedTo')
+    //     ->latest('registered_at')
+    //     ->get();
+
+    // // Registered but NOT converted to student
+    // $pendingRegistered = Registration::with('enquiry.assignedTo')
+    //     ->whereDoesntHave('enquiry.student')
+    //     ->latest('registered_at')
+    //     ->get();
+
+    // return view('enquiries.registered-list', compact(
+    //     'allRegistered',
+    //     'pendingRegistered'
+    // ));
+}
+
+
+private function createStudentFromEnquiry(\App\Models\Enquiry $enquiry, $amountPaid = null)
+{
+     // 🔒 Strong duplicate check
+    $studentExists = Student::where('enquiry_id', $enquiry->id)
+        ->orWhere('contact', $enquiry->mobile)
+        ->orWhere('email_id', $enquiry->email)
+        ->exists();
+
+    if ($studentExists) {
+        return null; // ⛔ Skip if already exists
+    }
+
+    $student = Student::create([
+        'student_name' => $enquiry->name,
+        'f_name'       => '',
+        'email_id'     => $enquiry->email,
+        'contact'      => $enquiry->mobile,
+        'college_name' => $enquiry->college,
+        'reg_fees'     => $amountPaid, // optional
+        'enquiry_id'   => $enquiry->id,
+        'created_by'   => Auth::id(),
+    ]);
+
+    // ✅ Notify assigned sales user
+    $salesUser = $enquiry->assignedTo;
+    if ($salesUser) {
+        $salesUser->notify(
+            new \App\Notifications\StudentRegisteredSalesNotification($student)
+        );
+    }
+
+    return $student;
+}
+
+
+public function convertToStudent(Enquiry $enquiry)
+{
+    if ($enquiry->student) {
+        return back()->with('error', 'Already converted to student.');
+    }
+
+    // Get registration amount (latest payment)
+    $registration = Registration::where('enquiry_id', $enquiry->id)
+        ->latest('registered_at')
+        ->first();
+
+    $this->createStudentFromEnquiry(
+        $enquiry,
+        optional($registration)->amount_paid
+    );
+
+    EnquiryActivity::create([
+        'enquiry_id' => $enquiry->id,
+        'user_id'    => Auth::id(),
+        'type'       => 'converted_to_student',
+        'details'    => 'Converted manually (single)',
+    ]);
+
+    return back()->with('success', 'Student converted successfully.');
+}
+
+public function bulkConvert(Request $request)
+{
+    $request->validate([
+        'enquiry_ids' => 'required|array'
+    ]);
+
+    \DB::transaction(function () use ($request) {
+
+        foreach ($request->enquiry_ids as $enquiryId) {
+
+            $enquiry = Enquiry::find($enquiryId);
+
+            if (! $enquiry || $enquiry->student) {
+                continue;
+            }
+
+            // Get latest registration payment
+            $registration = Registration::where('enquiry_id', $enquiry->id)
+                ->latest('registered_at')
+                ->first();
+
+            $this->createStudentFromEnquiry(
+                $enquiry,
+                optional($registration)->amount_paid
+            );
+
+            EnquiryActivity::create([
+                'enquiry_id' => $enquiry->id,
+                'user_id'    => Auth::id(),
+                'type'       => 'converted_to_student',
+                'details'    => 'Converted via bulk action',
+            ]);
+        }
+    });
+
+    return response()->json([
+        'message' => 'Selected registrations converted successfully'
+    ]);
+}
+
+
+public function bulkConvertl(Request $request)
+{
+    $request->validate([
+        'enquiry_ids' => 'required|array'
+    ]);
+
+    DB::transaction(function () use ($request) {
+        foreach ($request->enquiry_ids as $enquiryId) {
+            $enquiry = \App\Models\Enquiry::find($enquiryId);
+
+
+              $student = Student::create([
+                'student_name' => $enquiry->name,
+                'f_name'       => '',
+                'email_id'     => $enquiry->email,
+                'contact'      => $enquiry->mobile,
+                'college_name' => $enquiry->college,
+                'reg_fees'     => $request->amount_paid,
+                'enquiry_id'   => $enquiry->id,
+                'created_by'   => Auth::id(),
+            ]);
+
+            //Notify assigned sales user
+            $salesUser = $enquiry->assignedTo;
+            if ($salesUser) {
+                $salesUser->notify(
+                    new \App\Notifications\StudentRegisteredSalesNotification($student)
+                );
+            }
+
+
+
+
+
+            if ($enquiry && !$enquiry->student) {
+                \App\Models\Student::create([
+                    'student_name' => $enquiry->name,
+                    'email_id'     => $enquiry->email,
+                    'contact'      => $enquiry->mobile,
+                    'college_name' => $enquiry->college,
+                    'enquiry_id'   => $enquiry->id,
+                    'created_by'   => auth()->id(),
+                ]);
+            }
+        }
+    });
+
+    return response()->json(['message' => 'Converted successfully']);
+}
+
+
+     
+
+
+    public function exportAll()
+    {
+        return Excel::download(new RegistrationsExport(false), 'all_registrations.xlsx');
+    }
+
+    public function exportPending()
+    {
+        return Excel::download(new RegistrationsExport(true), 'pending_registrations.xlsx');
+    }
 }

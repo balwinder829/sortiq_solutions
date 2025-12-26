@@ -54,4 +54,19 @@ class Enquiry extends Model
     {
         return $this->hasOne(Registration::class);
     }
+
+    public function assignedTo()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+     public function student()
+    {
+        return $this->hasOne(Student::class, 'enquiry_id');
+    }
+
+    public function collegeData()
+    {
+        return $this->belongsTo(College::class,'college','id');
+    }
 }

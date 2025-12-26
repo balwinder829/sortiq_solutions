@@ -20,7 +20,8 @@ class UserController extends Controller
     // Blade: show create form
     public function create()
     {
-        $roles = Role::whereIn('id', [2, 3, 4])->get();
+        // $roles = Role::whereIn('id', [2, 3, 4])->get();
+        $roles = Role::whereNotIn('name', ['Admin', 'Trainer'])->get();
         return view('users.create', compact('roles'));
     }
 
@@ -30,7 +31,7 @@ class UserController extends Controller
         $data = $request->validate([
             'username' => 'required|string|unique:users',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:2,3,4',
+            'role' => 'required',
             'phone'        => 'required|max:20|unique:users,phone',
             'username'        => 'required|max:20|unique:users,username',
             'email'        => 'required|email|unique:users,email',
@@ -65,7 +66,8 @@ class UserController extends Controller
     // Blade: show edit form
     public function edit(User $user)
     {
-        $roles = Role::whereIn('id', [2, 3, 4])->get();
+        // $roles = Role::whereIn('id', [2, 3, 4])->get();
+        $roles = Role::whereNotIn('name', ['Admin', 'Trainer'])->get();
         return view('users.edit', compact('user', 'roles'));
     }
 
@@ -82,7 +84,7 @@ class UserController extends Controller
 
         // 🔒 Apply role validation ONLY if admin is NOT editing admin
         if (!($loggedInUser->role == 1 && $user->role == 1)) {
-            $rules['role'] = 'required|in:2,3,4';
+            $rules['role'] = 'required';
         }
 
         $data = $request->validate($rules);

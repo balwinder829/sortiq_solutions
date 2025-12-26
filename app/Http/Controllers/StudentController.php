@@ -22,6 +22,7 @@ use Carbon\Carbon;
 use App\Imports\StudentsImport;
 use Maatwebsite\Excel\Facades\Excel;
 use ZipArchive;
+use Mpdf\Mpdf;
 
 class StudentController extends Controller
 {
@@ -624,6 +625,64 @@ class StudentController extends Controller
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
+    public function downloadCertificateMultiple(Request $request)
+    {
+        $ids = json_decode($request->ids, true);
+
+        if (!is_array($ids) || count($ids) === 0) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Ensure IDs are integers
+        $ids = array_map('intval', $ids);
+
+        $students = Student::whereIn('id', $ids)->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'Selected students not found.');
+        }
+
+        // Generate (or reuse) PDFs and collect file paths
+        $pdfPaths = [];
+        foreach ($students as $student) {
+            // $pdfPath = $this->generateConfirmationPdf($student);
+            $pdfPath = $this->generatePdf($student);
+
+            if (file_exists($pdfPath)) {
+                $pdfPaths[] = $pdfPath;
+            }
+        }
+
+        // If only one PDF, return it directly
+        if (count($pdfPaths) === 1) {
+            $singlePath = $pdfPaths[0];
+            $downloadName = basename($singlePath);
+
+            // Return the single PDF with proper headers
+            return response()->download($singlePath, $downloadName, [
+                'Content-Type' => 'application/pdf'
+            ]);
+        }
+
+        // Otherwise create ZIP
+        $zipFileName = 'certificate_letters_' . time() . '.zip';
+        $zipFullPath = storage_path('app/' . $zipFileName);
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipFullPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+            foreach ($pdfPaths as $path) {
+                // Use a friendlier name inside zip (only filename)
+                $zip->addFile($path, basename($path));
+            }
+            $zip->close();
+
+            // Return and delete zip after download
+            return response()->download($zipFullPath, $zipFileName)->deleteFileAfterSend(true);
+        }
+
+        return back()->with('error', 'Could not create ZIP file.');
+    }
+
     public function moveMultipleToCertificate(Request $request)
     {
         // Expecting JSON string or array in $request->ids
@@ -752,8 +811,9 @@ class StudentController extends Controller
             $student = Student::find($studentId);
             if (!$student) continue; // defensive
 
+            //return view('pdf.student_certificate', compact('student'));
             $filePath = $this->generatePdf($student);
-
+            //die();
             // Send email
             Mail::to($student->email_id)->send(new CertificateIssuedMail($student, $filePath));
 
@@ -801,6 +861,87 @@ class StudentController extends Controller
         }
 
         // Generate or overwrite PDF if needed
+
+        if ($regenerate) {
+            
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'orientation' => 'P',
+                'margin_left' => 0,
+                'margin_right' => 0,
+                'margin_top' => 0,
+                'margin_bottom' => 0,
+            ]);
+        
+            $mpdf->SetHTMLHeader($this->getPDFHeader());
+            $mpdf->SetHTMLFooter($this->getPDFFooter());
+
+            $html = view('pdf.confirmation_detail', compact('student'))->render();
+        
+            $mpdf->WriteHTML($html);
+            $mpdf->Output($filePath, 'F');
+            //return response()->download($filePath);
+        }
+
+         return $filePath;
+        // if ($regenerate) {
+        //     $pdf = Pdf::loadView('pdf.confirmation_detail', ['student' => $student])
+        //               ->setPaper('a4', 'portrait')  // or 'portrait'
+        //               ->setOption('dpi', 150)        // higher resolution
+        //               ->setOption('defaultFont', 'sans-serif');
+
+        //     $pdf->save($filePath);
+        // }
+        return $filePath;
+    }
+
+
+    function getPDFHeader()
+    {
+        return '<div style="position: fixed; top: -35px;" class="head-shape">
+            <img src="'. public_path('images/confirmation_images/head-shape.png').'"/>
+        </div>';
+    }
+
+
+
+    function getPDFFooter()
+    {
+        return '<div style="position: fixed; bottom: -35px;" class="ct-footer-shape">
+                    <img src="'.public_path('images/confirmation_images/footer-shape-1.png').'"/>
+                </div>';
+    }
+
+
+    private function generateConfirmationPdf_22dec($student)
+    {
+     // Create folder path for today
+        $date = Carbon::now()->format('Y-m-d');
+        $folderPath = public_path("studentConfirmation/{$date}");
+
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+
+        // Create PDF file name
+        $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
+        $filePath = $folderPath . '/' . $fileName;
+
+        $regenerate = true;
+
+        // Check if file exists and whether student data changed
+        if (file_exists($filePath)) {
+            $fileModified = filemtime($filePath);
+            $studentUpdated = strtotime($student->updated_at);
+
+            // Only skip regeneration if PDF is newer than student update
+            if ($studentUpdated <= $fileModified) {
+                //$regenerate = false;
+            }
+        }
+
+        // Generate or overwrite PDF if needed
         if ($regenerate) {
             $pdf = Pdf::loadView('pdf.confirmation_detail', ['student' => $student])
                       ->setPaper('a4', 'portrait')  // or 'portrait'
@@ -816,7 +957,61 @@ class StudentController extends Controller
         return $filePath;
     }
 
-    private function generatePdf($student)
+private function generatePdf($student)
+    {
+     // Create folder path for today
+        $date = Carbon::now()->format('Y-m-d');
+        $folderPath = public_path("student_certificate/{$date}");
+
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+
+        // Create PDF file name
+        $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
+        $filePath = $folderPath . '/' . $fileName;
+
+        $regenerate = true;
+
+        // Check if file exists and whether student data changed
+        if (file_exists($filePath)) {
+            $fileModified = filemtime($filePath);
+            $studentUpdated = strtotime($student->updated_at);
+
+            // Only skip regeneration if PDF is newer than student update
+            if ($studentUpdated <= $fileModified) {
+                //$regenerate = false;
+            }
+        }
+        // echo $filePath;
+        // Generate or overwrite PDF if needed
+        if ($regenerate) {
+            
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'orientation' => 'P',
+                'margin_left' => 0,
+                'margin_right' => 0,
+                'margin_top' => 0,
+                'margin_bottom' => 0,
+            ]);
+        
+            $mpdf->SetHTMLHeader($this->getPDFHeader());
+
+            $mpdf->SetHTMLFooter($this->getPDFFooter());
+
+            $html = view('pdf.student_certificate', compact('student'))->render();
+        
+            $mpdf->WriteHTML($html);
+            $mpdf->Output($filePath, 'F');
+            //return response()->download($filePath);
+        }
+
+        return $filePath;
+    }
+    
+    private function generatePdf_old($student)
     {
      // Create folder path for today
         $date = Carbon::now()->format('Y-m-d');
@@ -850,11 +1045,12 @@ class StudentController extends Controller
         // dd($html);
         // Generate or overwrite PDF if needed
         if ($regenerate) {
-            $pdf = Pdf::loadView('pdf.certificate_detail', ['student' => $student])
-                      ->setPaper('a4', 'portrait')  // or 'portrait'
-                      ->setOption('dpi', 150)        // higher resolution
-                      ->setOption('defaultFont', 'sans-serif');
-
+            // $pdf = Pdf::loadView('pdf.student_certificate', ['student' => $student])
+            //           ->setPaper('a4', 'portrait')  // or 'portrait'
+            //           ->setOption('dpi', 150)        // higher resolution
+            //           ->setOption('defaultFont', 'sans-serif');
+            // return $pdf->stream('student-certificate.pdf');
+            // return $pdf->download('student-certificate.pdf');
             $pdf->save($filePath);
         }
 
@@ -863,6 +1059,79 @@ class StudentController extends Controller
 
 
    private function generatePaymentReceiptPdf($student)
+    {
+        $date = \Carbon\Carbon::now()->format('Y-m-d');
+        $folderPath = public_path("paymentReceipts/{$date}");
+
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+
+        // Receipt No.
+        $receiptNumber = strtoupper(uniqid("RCT"));
+
+        // Payment amount (you can change this)
+        $amount = $student->reg_fees;
+
+        // Convert amount to words
+        $amountInWords = ucwords(
+            (new \NumberFormatter('en', \NumberFormatter::SPELLOUT))->format($amount)
+        );
+
+        // PDF Name
+        $safeName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $student->student_name);
+        $fileName = $student->id . '_' . $safeName . '_receipt.pdf';
+        $filePath = $folderPath . '/' . $fileName;
+
+        // Render PDF with ALL dynamic values
+        // $pdf = \PDF::loadView('pdf.payment_receipt', [
+        //     'student'        => $student,
+        //     'receiptNumber'  => $receiptNumber,
+        //     'amount'         => $amount,
+        //     'amountInWords'  => $amountInWords,
+        //     'payment_mode'   => 'Cash',   // default
+        //     'transaction_no' => 'N/A',    // default
+        // ])
+        // ->setPaper('a4')
+        // ->setOption('dpi', 150)
+        // ->setOption('defaultFont', 'sans-serif');
+
+        // $pdf->save($filePath);
+
+
+        $mpdf = new Mpdf([
+            'mode'           => 'utf-8',
+            'format'         => 'A4',
+            'orientation'    => 'P',
+            'margin_left'    => 15,
+            'margin_right'   => 15,
+            'margin_top'     => 20,
+            'margin_bottom'  => 20,
+            'default_font'   => 'sans-serif',
+            'dpi'            => 150,
+        ]);
+
+        // Render Blade view to HTML
+        $html = view('pdf.payment_receipt', [
+            'student'        => $student,
+            'receiptNumber'  => $receiptNumber,
+            'amount'         => $amount,
+            'amountInWords'  => $amountInWords,
+            'payment_mode'   => 'Cash',
+            'transaction_no' => 'N/A',
+        ])->render();
+
+        // Write HTML to PDF
+        $mpdf->WriteHTML($html);
+
+        // Save PDF to file path
+        $mpdf->Output($filePath, 'F');
+
+
+        return $filePath;
+    }
+
+    private function generatePaymentReceiptPdf22dec($student)
     {
         $date = \Carbon\Carbon::now()->format('Y-m-d');
         $folderPath = public_path("paymentReceipts/{$date}");

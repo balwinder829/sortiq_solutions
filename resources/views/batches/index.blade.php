@@ -119,7 +119,7 @@
                     <th>Batch Mode</th>
                     <th>Batch Status</th>
                     <th>Total Student</th>
-                    <th>Duration</th>
+                    <!-- <th>Duration</th> -->
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -145,7 +145,7 @@
                         </span>
                     </td>
 
-                    <td>{{ $batch->durationData->name ?? '-' }}</td>
+                    <!-- <td>{{ $batch->durationData->name ?? '-' }}</td> -->
 
                     <td class="text-center">
                         <div class="mb-3" style="width:80px;">

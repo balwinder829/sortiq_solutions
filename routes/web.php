@@ -60,6 +60,15 @@ use App\Http\Controllers\EventExpenseController;
 use App\Http\Controllers\TravelExpenseController;
 use App\Http\Controllers\OfficeAssetController;
 use App\Http\Controllers\BlockedNumberController;
+use App\Http\Controllers\JoiningStudentController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\ChangePasswordController;
+use App\Http\Controllers\LetterController;
+use App\Http\Controllers\RechargeController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TutorialController;
+use App\Http\Controllers\CvController;
+use App\Http\Controllers\DailyInterviewController;
 
 use App\Models\Test;
 use App\Models\StudentTest;
@@ -70,9 +79,58 @@ use App\Models\StudentTest;
 |--------------------------------------------------------------------------
 */
 
+// Frontend
+Route::get('/join', [JoiningStudentController::class, 'create'])->name('joining_student.front');
+Route::post('/join', [JoiningStudentController::class, 'store'])->name('joining_student.store');
+
 
 Route::middleware(['auth', 'permission'])->group(function () {
     Route::resource('students', StudentController::class);
+    Route::get('/admin/joining-students',
+        [JoiningStudentController::class, 'index']
+    )->name('joined_students.index');
+
+    Route::get('/admin/joining-students/links',
+        [JoiningStudentController::class, 'adminUrl']
+    )->name('joined_students.adminUrl');
+
+     Route::get('/admin/joining-students/{id}/edit',
+        [JoiningStudentController::class, 'edit']
+    )->name('joined_students.edit');
+
+    // UPDATE
+    Route::put('/joining-students/{id}',
+        [JoiningStudentController::class, 'update']
+    )->name('joined_students.update');
+
+    // DELETE (Soft Delete)
+    Route::delete('/joining-students/{id}',
+        [JoiningStudentController::class, 'destroy']
+    )->name('joined_students.destroy');
+
+
+    Route::resource('letters', LetterController::class);
+
+    Route::get(
+        'letters/{letter}/download',
+        [LetterController::class,'download']
+    )->name('letters.download');
+
+    Route::post(
+        'letters/{letter}/email',
+        [LetterController::class,'sendEmail']
+    )->name('letters.email');
+
+    Route::resource('recharges', RechargeController::class);
+    // quick status update
+    Route::post('recharges/{recharge}/set-status', [RechargeController::class, 'setStatus'])->name('recharges.setStatus');
+
+    Route::resource('projects', ProjectController::class);
+    Route::resource('tutorials', TutorialController::class);
+    Route::resource('cvs', CvController::class);
+    Route::resource('daily-interviews', DailyInterviewController::class);
+
+
 });
 
 Route::prefix('sales')
@@ -213,6 +271,12 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
     Route::post('/students/moveMultiple', [StudentController::class, 'moveMultipleToCertificate'])
     ->name('students.moveMultiple');
+
+    // new routes for download certificate
+
+    Route::post('/students/download-certificate-multiple', [StudentController::class, 'downloadCertificateMultiple'])
+    ->name('students.downloadCertificateMultiple');
+
 
     // Route::resource('office-expenses', OfficeExpenseController::class);
     Route::resource('placement-companies', PlacementCompanyController::class);
@@ -461,6 +525,9 @@ Route::get(
 
     });
 
+    Route::resource('employees', EmployeeController::class);
+    Route::post('/change-password', [ChangePasswordController::class, 'update'])
+        ->name('change.password');
 
 });
 
@@ -483,6 +550,25 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
     Route::get('/trainers/{id}/batches-ajax', [TrainerController::class, 'batchesAjax'])
         ->name('trainers.batches.ajax');
+
+
+    Route::get('/registrations', [EnquiryController::class, 'registeredIndex'])
+     ->name('registrations.index');
+
+    Route::post(
+        '/registrations/{enquiry}/convert-to-student',
+        [EnquiryController::class, 'convertToStudent']
+    )->name('convert.to.student');
+
+    Route::get('/registrations/export/all', [EnquiryController::class, 'exportAll'])
+    ->name('registrations.export.all');
+
+    Route::get('/registrations/export/pending', [EnquiryController::class, 'exportPending'])
+    ->name('registrations.export.pending');
+
+    Route::post('/registrations/bulk-convert',
+    [EnquiryController::class, 'bulkConvert'])
+    ->name('registrations.bulk.convert');
 
 });
 
@@ -578,7 +664,7 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:2,3'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Employee section
     Route::get('/attendance', [AttendanceController::class, 'employeePanel'])
         ->name('attendance.employee');
@@ -812,6 +898,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
 
         Route::resource('brochures', BrochureController::class);
+        
         Route::resource('company_profile', CompanyProfileController::class);
         Route::get('/company_profile/view/{company_profile}', [CompanyProfileController::class, 'view'])
          ->name('company_profile.view');
@@ -821,6 +908,14 @@ Route::middleware(['auth', 'permission'])->group(function () {
          Route::get('/company_profile/preview/{token}', 
     [CompanyProfileController::class, 'preview']
 )->name('company_profile.preview');
+
+         Route::get('/company_profile/{company_profile}/admin-view',
+            [CompanyProfileController::class, 'adminView'])
+            ->name('company_profile.admin.view');
+
+        Route::get('/company_profile/{company_profile}/admin-download',
+            [CompanyProfileController::class, 'adminDownload'])
+            ->name('company_profile.admin.download');
 
 
 
@@ -838,6 +933,17 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
         Route::get('/brochure/view/{brochure}', [BrochureController::class, 'view'])
          ->name('brochures.view');
+
+         Route::get('/brochures/{brochure}/admin-view',
+            [BrochureController::class, 'adminView'])
+            ->name('brochures.admin.view');
+
+        Route::get('/brochures/{brochure}/admin-download',
+            [BrochureController::class, 'adminDownload'])
+            ->name('brochures.admin.download');
+
+
+
 
          //***** PLACEMENT*****//
 
@@ -896,6 +1002,16 @@ Route::get('/b/{brochure}', [BrochureController::class, 'preview'])
 
 Route::get('/b/{brochure}/download', [BrochureController::class, 'download'])
     ->name('brochures.secure.download');
+
+
+Route::get('/company_profile/view/{company_profile}', [CompanyProfileController::class, 'view'])
+     ->name('company_profile.view');
+
+Route::get('/c/{company_profile}', [CompanyProfileController::class, 'preview'])
+    ->name('company_profile.preview');
+
+Route::get('/c/{company_profile}/download', [CompanyProfileController::class, 'download'])
+    ->name('company_profile.secure.download');
 
 // Route::get('/b/{token}', [BrochureController::class, 'publicShow'])
 //     ->name('brochures.public.show');

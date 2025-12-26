@@ -1,119 +1,210 @@
 @extends('layouts.app')
 
 @section('content')
+
+<style>
+    table.dataTable td {
+        vertical-align: middle;
+        text-transform: capitalize;
+    }
+
+    thead th {
+        background-color: #f8f9fa !important;
+        font-weight: 600;
+        border-bottom: 1px solid #dee2e6 !important;
+    }
+
+    table.table-bordered > :not(caption) > * > * {
+        border-color: #dee2e6;
+    }
+
+    .badge {
+        font-size: 12px;
+        padding: 5px 8px;
+    }
+
+    .no-wrap {
+        white-space: nowrap;
+    }
+</style>
+
 <div class="container">
 
+    {{-- ================= HEADER ================= --}}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Brochures</h2>
-        <a href="{{ route('brochures.create') }}" class="btn btn-primary" style="background-color: #343957; color: white;">
+        <h4 class="mb-0">Brochures</h4>
+
+        <a href="{{ route('brochures.create') }}"
+           class="btn btn-primary"
+           style="background-color:#343957;color:#fff;">
             <i class="bx bx-plus"></i> Add Brochure
         </a>
     </div>
 
-    {{-- Filters --}}
+    {{-- ================= FILTERS ================= --}}
     <div class="mb-3">
-        <a href="{{ route('brochures.index') }}" 
-           class="btn btn-sm btn-outline-secondary {{ request('filter')==null ? 'active' : '' }}">All</a>
+        <a href="{{ route('brochures.index') }}"
+           class="btn btn-sm btn-outline-secondary {{ request('filter')==null ? 'active' : '' }}">
+            All
+        </a>
 
-        <a href="{{ route('brochures.index', ['filter'=>'active']) }}" 
-           class="btn btn-sm btn-outline-success {{ request('filter')=='active' ? 'active' : '' }}">Active</a>
+        <a href="{{ route('brochures.index', ['filter'=>'active']) }}"
+           class="btn btn-sm btn-outline-success {{ request('filter')=='active' ? 'active' : '' }}">
+            Active
+        </a>
 
-       <!--  <a href="{{ route('brochures.index', ['filter'=>'upcoming']) }}" 
-           class="btn btn-sm btn-outline-info {{ request('filter')=='upcoming' ? 'active' : '' }}">Upcoming</a>
- -->
-        <a href="{{ route('brochures.index', ['filter'=>'expired']) }}" 
-           class="btn btn-sm btn-outline-warning {{ request('filter')=='expired' ? 'active' : '' }}">Expired</a>
+        <a href="{{ route('brochures.index', ['filter'=>'expired']) }}"
+           class="btn btn-sm btn-outline-warning {{ request('filter')=='expired' ? 'active' : '' }}">
+            Expired
+        </a>
     </div>
 
-    <div class="row">
-        @foreach($brochures as $b)
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm h-100">
+    {{-- ================= FLASH ================= --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-                {{-- Thumbnail --}}
-                @if($b->file_type === 'image')
-                    <img src="{{ route('brochures.view', $b->id) }}" 
-                         class="card-img-top" 
-                         style="height:180px; object-fit:cover;">
-                @else
-                     
-                         <iframe src="{{ route('brochures.view', $b->id) }}"
-                        style="width:100%;height:180px;border:1px solid #ddd;"
-                        class="rounded">
-                </iframe>
-                @endif
+    {{-- ================= TABLE ================= --}}
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" id="brochuresTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Preview</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Visibility</th>
+                    <th>Downloads</th>
+                    <th class="no-wrap">Actions</th>
+                </tr>
+            </thead>
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ $b->title }}</h5>
+            <tbody>
+                @foreach($brochures as $b)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
 
-                    <p class="text-muted small mb-2">
-                        {{ Str::limit($b->description, 120) }}
-                    </p>
+                        {{-- Preview --}}
+                        <td>
+                            {{-- Current File Preview (ADMIN ONLY) --}}
+<div class="mb-3">
+    <label>Current File</label>
+    <div class="border rounded p-3 bg-light">
 
-                    {{-- Status --}}
-                    <div class="mb-2">
-                        @if(!$b->is_active)
-                            <span class="badge bg-secondary">Disabled</span>
-                        @elseif($b->isCurrentlyVisible())
-                            <span class="badge bg-success">Visible</span>
-                        @else
-                            <span class="badge bg-info">Scheduled</span>
-                        @endif
+        @if($b->file_type === 'image')
+            <img src="{{ route('brochures.admin.view', $b->id) }}"
+                 style="height:50px;object-fit:cover;">
+        @else
+            <iframe src="{{ route('brochures.admin.view', $b->id) }}"
+                    style="width:100%;height:100px;border:1px solid #ddd;"
+                    class="rounded"></iframe>
+        @endif
 
-                        @if($b->start_at)
-                            <small class="text-muted ms-2">From {{ $b->start_at->format('d M') }}</small>
-                        @endif
-                    </div>
+    </div>
+</div>
 
-                    {{-- Action buttons --}}
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <a class="btn btn-sm btn-outline-primary"
-                               href="{{ route('brochures.edit', $b->id) }}">
-                               Edit
+                        </td>
+
+                        <td>{{ $b->title }}</td>
+
+                        <td class="text-muted">
+                            {{ Str::limit($b->description, 60) }}
+                        </td>
+
+                        {{-- Status --}}
+                        <td>
+                            @if(!$b->is_active)
+                                <span class="badge bg-secondary">Disabled</span>
+                            @elseif($b->isCurrentlyVisible())
+                                <span class="badge bg-success">Visible</span>
+                            @else
+                                <span class="badge bg-info">Scheduled</span>
+                            @endif
+                        </td>
+
+                        {{-- Visibility --}}
+                        <td>
+                            @if($b->start_at)
+                                Upto {{ $b->end_at->format('d M Y h:i:s A') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ $b->download_count }}
+                            </span>
+                        </td>
+
+                        {{-- Actions --}}
+                        <td class="no-wrap">
+                             
+                             
                             </a>
-
-                            <form action="{{ route('brochures.destroy', $b->id) }}" 
-                                  method="POST" class="d-inline"
+                             <a href="{{ route('brochures.edit', $b->id) }}"
+                               class="btn btn-sm btn-outline-primary"
+                               data-bs-toggle="tooltip"
+                                title="Edit">
+                                <i class="fa fa-edit"></i>
+                                 
+                            </a>
+                            <form action="{{ route('brochures.destroy', $b->id) }}"
+                                  method="POST"
+                                  class="d-inline"
                                   onsubmit="return confirm('Delete this brochure?');">
                                 @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="fa fa-trash"></i>
+                                </button>
                             </form>
-                        </div>
 
-                        <div>
-                            <a href="{{ route('brochures.secure.download', $b->id) }}" 
-                               class="btn btn-sm btn-success" target="_blank">
-                               Download
+                             <a href="{{ route('brochures.admin.download', $b->id) }}"
+                               class="btn btn-sm btn-outline-primary"
+                               data-bs-toggle="tooltip"
+                                title="Download">
+                                <i class="fa fa-download"></i>
+                                 
                             </a>
+
+                            
 
                             <button class="btn btn-sm btn-secondary"
                                     onclick="copyShare('{{ route('brochures.preview', $b->share_token) }}')">
-                                Share
+                                <i class="fa fa-share"></i>
                             </button>
-                        </div>
-                    </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
 
-                </div>
-
-                <div class="card-footer small text-muted">
-                    Downloads: {{ $b->download_count }}
-                </div>
-
-            </div>
-        </div>
-        @endforeach
+        </table>
     </div>
 
+    {{-- ================= PAGINATION ================= --}}
     <div class="mt-3">
         {{ $brochures->links() }}
     </div>
 
 </div>
+
 @endsection
 
 @push('scripts')
 <script>
+$(document).ready(function () {
+    $('#brochuresTable').DataTable({
+        paging: false,
+        info: false,
+        ordering: false,
+        searching: false
+    });
+});
+
 function copyShare(url){
     navigator.clipboard.writeText(url)
         .then(() => alert("Share link copied"))

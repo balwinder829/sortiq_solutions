@@ -60,9 +60,9 @@ table.dataTable td {
                     <th>Phone</th>
                     <th>Email</th>
                     <th>Technology</th>
-                    <th>Session Batches</th>
+                    <th>Total Assign Batches</th>
 
-                    <th>Remaining Today(All Session)</th> {{-- NEW COLUMN --}}
+                    <th>Today Pending Batches</th> {{-- NEW COLUMN --}}
 
                     <th>Actions</th>
                 </tr>

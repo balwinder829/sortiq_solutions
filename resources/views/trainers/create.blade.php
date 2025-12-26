@@ -72,7 +72,11 @@
                    class="form-control @error('phone') is-invalid @enderror"
                    value="{{ old('phone') }}"
                    placeholder="Phone" 
-                   required>
+                   required
+                    minlength="10"
+                    maxlength="10"
+                    pattern="[0-9]{10}"
+                    title="Enter a valid 10-digit mobile number">
             @error('phone')
                 <small class="text-danger">{{ $message }}</small>
             @enderror

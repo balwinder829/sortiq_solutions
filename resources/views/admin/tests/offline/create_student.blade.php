@@ -33,7 +33,12 @@
 
                 <div class="mb-2">
                     <label>Mobile</label>
-                    <input class="form-control" name="student_mobile">
+                    <input class="form-control" name="student_mobile" pattern="[0-9]{10}"
+                        title="Enter a valid 10-digit mobile number"
+                        maxlength="10"
+                       inputmode="numeric"
+                       oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                       placeholder="10 digit number">
                 </div>
 
                 <div class="mb-3">

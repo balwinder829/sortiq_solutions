@@ -46,24 +46,24 @@ class CompanyProfile extends Model
     /**
      * Determine if the profile is currently visible.
      */
-    public function isCurrentlyVisible(): bool
-    {
-        if (!$this->is_active) {
-            return false;
-        }
+    // public function isCurrentlyVisible(): bool
+    // {
+    //     if (!$this->is_active) {
+    //         return false;
+    //     }
 
-        $now = Carbon::now();
+    //     $now = Carbon::now();
 
-        if ($this->start_at && $now->lt($this->start_at)) {
-            return false;
-        }
+    //     if ($this->start_at && $now->lt($this->start_at)) {
+    //         return false;
+    //     }
 
-        if ($this->end_at && $now->gt($this->end_at)) {
-            return false;
-        }
+    //     if ($this->end_at && $now->gt($this->end_at)) {
+    //         return false;
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
     /**
      * Full file path stored in storage/app/secure-company-profiles
@@ -71,5 +71,33 @@ class CompanyProfile extends Model
     public function getFullFilePathAttribute()
     {
         return storage_path('app/secure-company-profiles/' . $this->file_name);
+    }
+
+
+     public function isCurrentlyVisible(): bool
+    {
+        if (! $this->is_active) return false;
+
+        $now = now();
+
+        if ($this->start_at && $now->lt($this->start_at)) return false;
+        if ($this->end_at && $now->gt($this->end_at)) return false;
+
+        return true;
+    }
+
+    public function scopePubliclyVisible($query)
+    {
+        $now = Carbon::now();
+
+        return $query->where('is_active', true)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('start_at')
+                  ->orWhere('start_at', '<=', $now);
+            })
+            ->where(function ($q) use ($now) {
+                $q->whereNull('end_at')
+                  ->orWhere('end_at', '>=', $now);
+            });
     }
 }

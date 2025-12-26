@@ -15,13 +15,17 @@ class AuthController extends Controller
         if (Auth::check()) {
             $user = Auth::user();
 
-            if ($user->role == 3) {
+            if ($user->role == 1) {
+                return redirect()->route('dashboard'); // admin
+            }else if ($user->role == 3) {
                 return redirect()->route('sales.dashboard');
             } elseif ($user->role == 2) {
                 return redirect()->route('batches.mybatches');
+            }else{
+                return redirect()->route('attendance.employee');
             }
 
-            return redirect()->route('dashboard'); // admin
+            
         }
 
         $sessions = StudentSession::orderBy('start_date', 'desc')->get();
@@ -131,6 +135,8 @@ class AuthController extends Controller
             return redirect()->route('dashboard')->with('success', 'Login successful');
         }else if($user->role == 4){
             return redirect()->route('dashboard')->with('success', 'Login successful');
+        }else{
+            return redirect()->route('attendance.employee');
         }
         
     }

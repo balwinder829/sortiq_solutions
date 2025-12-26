@@ -29,6 +29,19 @@
     </div>
 
     <div class="col-md-3">
+        <label>College</label>
+        <select name="college_id" class="form-control">
+            <option value="">-- All Colleges --</option>
+            @foreach($colleges as $college)
+                <option value="{{ $college->id }}"
+                    {{ request('college_id') == $college->id ? 'selected' : '' }}>
+                    {{ $college->FullName }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-3">
         <label>Filter</label>
         <select name="filter" class="form-control">
             <option value="">-- All --</option>
@@ -52,6 +65,7 @@
         <tr>
             <th>Cover</th>
             <th>Title</th>
+            <th>College</th>
             <th>Date</th>
             <th>Media</th>
             <th>Actions</th>
@@ -68,6 +82,9 @@
             </td>
 
             <td>{{ $event->title }}</td>
+            <td>
+            {{ $event->college?->FullName ?? '—' }}
+        </td>
             <td>{{ \Carbon\Carbon::parse($event->event_date)->format('d M Y') }}</td>
 
 

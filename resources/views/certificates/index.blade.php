@@ -228,15 +228,9 @@
                         type="checkbox"
                         class="record_checked"
                         value="{{ $student->id }}"
-                        {{
-                            (
-                                ($student->email_count_confirmation ?? 0) > 0 &&
-                                ($student->count_receipt_download ?? 0) > 0 &&
-                                ($student->pending_fees ?? 0) == 0
-                            )
-                            ? ''
-                            : 'disabled'
-                        }}
+                        data-email="{{ $student->email_count_confirmation ?? 0 }}"
+                        data-receipt="{{ $student->count_receipt_download ?? 0 }}"
+                        data-fees="{{ $student->pending_fees ?? 0 }}"
                         title="Certificate not eligible"
                     >
                 </td>
@@ -305,6 +299,7 @@
     {{-- Multi-action buttons --}}
     <div class="mt-3">
         <button id="issueSelected" class="btn btn-primary">Issue Certificate</button>
+        <button id="downloadissueSelected" class="btn btn-primary">Download Certificates</button>
     </div>
 
     {{ $students->links() }}
@@ -314,6 +309,11 @@
 <form id="bulkIssueForm" method="POST" action="{{ route('students.issueMultiple') }}" style="display:none;">
     @csrf
     <input type="hidden" name="ids" id="bulkIds">
+</form>
+
+<form id="bulkDownloadForm" method="POST" action="{{ route('students.downloadCertificateMultiple') }}" style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkDownloadIds">
 </form>
 @endsection
 
@@ -386,6 +386,47 @@ $(document).ready(function () {
     // });
 
     $('#issueSelected').click(function () {
+
+            let eligibleIds = [];
+            let skippedCount = 0;
+
+            $('.record_checked:checked').each(function () {
+
+                // let email = parseInt($(this).data('email'));
+                // let receipt = parseInt($(this).data('receipt'));
+                let fees = parseInt($(this).data('fees'));
+
+                // Eligibility condition
+                if (fees === 0) {
+                    eligibleIds.push($(this).val());
+                } else {
+                    skippedCount++;
+                }
+            });
+
+            if (eligibleIds.length === 0) {
+                alert('None of the selected students are eligible for certificate issue.');
+                return;
+            }
+
+            let msg = '';
+            if (skippedCount > 0) {
+                msg = skippedCount +
+                    ' selected student(s) are not eligible and will be skipped.\n\n';
+            }
+
+            msg += 'Send certificates to eligible students?';
+
+            if (!confirm(msg)) {
+                return;
+            }
+
+            $('#bulkIds').val(JSON.stringify(eligibleIds));
+            $('#bulkIssueForm').submit();
+        });
+
+
+    $('#issueSelected1').click(function () {
         var ids = getSelectedIds();
 
         if (ids.length === 0) {
@@ -400,6 +441,24 @@ $(document).ready(function () {
         // Put IDs as JSON into hidden input and submit the form
         $('#bulkIds').val(JSON.stringify(ids));
         $('#bulkIssueForm').submit(); // normal submit -> page reload
+    });
+
+     // Download Confirm Letter(s)
+    $('#downloadissueSelected').click(function () {
+        var ids = getSelectedIds();
+
+        if (ids.length === 0) {
+            alert('Select at least one student');
+            return;
+        }
+
+        if (!confirm('Download confirm letter(s) for selected student(s)?')) {
+            return;
+        }
+
+        // Put JSON string of IDs into hidden input and submit form
+        $('#bulkDownloadIds').val(JSON.stringify(ids));
+        $('#bulkDownloadForm').submit();
     });
 
 });

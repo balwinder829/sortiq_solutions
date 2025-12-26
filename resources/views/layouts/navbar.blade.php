@@ -99,7 +99,7 @@
                         <li class="{{ isParent(['students.index']) }}">
                             <a  href="{{ route('students.index') }}">
                                 <i class="fas fa-user-check"></i>
-                                <span class="nav-text">Students Confirmation</span>
+                                <span class="nav-text">Students Confirmations</span>
                             </a>
                             
                         </li>
@@ -108,7 +108,7 @@
                         <li class="{{ isParent(['certificates.index']) }}">
                             <a href="{{ route('certificates.index') }}">
                                 <i class="fas fa-certificate"></i>
-                                <span class="nav-text">Students Certification</span>
+                                <span class="nav-text">Students Certifications</span>
                             </a>
                              
                         </li>
@@ -117,7 +117,7 @@
                         <li class="{{ isParent(['close_student.index']) }}">
                             <a href="{{ route('close_student.index') }}">
                                 <i class="fas fa-user-check"></i>
-                                <span class="nav-text">Close Student</span>
+                                <span class="nav-text">Close Students</span>
                             </a>
                              
                         </li>
@@ -126,7 +126,7 @@
                         <li class="{{ isParent(['placements.index']) }}">
                             <a href="{{ route('placements.index') }}">
                                 <i class="fa-solid fa-photo-film"></i>
-                                <span class="nav-text">Placements</span>
+                                <span class="nav-text">Student Placements</span>
                             </a>
                         </li>
 
@@ -135,7 +135,7 @@
                         <li class="{{ isParent(['references.index']) }}">
                             <a href="{{ route('references.index') }}">
                                 <i class="fas fa-address-book"></i>
-                                <span class="nav-text">References</span>
+                                <span class="nav-text"> Student References</span>
                             </a>
                             
                         </li>
@@ -174,30 +174,37 @@
                     </ul>
                 </li>
                 {{-- Leads --}}
-                <li class="{{ isParent(['enquiries*','admin.enquiries.dashboard','salespersons*','admin.enquiries.performance']) }}">
+                <li class="{{ isParent(['enquiries*','admin.enquiries.dashboard','salespersons*','admin.enquiries.performance','registrations*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-database"></i>
                         <span class="nav-text">Sales</span>
                     </a>
-                    <ul class="{{ showSubmenu(['enquiries*','admin.enquiries.dashboard','salespersons','admin.enquiries.performance']) }}">
+                    <ul class="{{ showSubmenu(['enquiries*','admin.enquiries.dashboard','salespersons','admin.enquiries.performance','registrations*']) }}">
                         <li>
                             <a class="{{ isChildActive('enquiries*') }}"
                                 href="{{ route('enquiries.index') }}">
-                                Uploaded Data
+                               Manage  Sales Data
                             </a>
                         </li>
 
                         <li>
                             <a class="{{ isChildActive('salespersons*') }}"
                                 href="{{ route('salespersons.list') }}">
-                                Salespersons
+                                Sales Teams
                             </a>
                         </li>
 
                         <li>
                             <a class="{{ isChildActive('admin.calls') }}"
                                 href="{{ route('admin.calls') }}">
-                                Call Status
+                                Team Status
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('registrations*') }}"
+                                href="{{ route('registrations.index') }}">
+                                Registrations
                             </a>
                         </li>
 
@@ -223,19 +230,48 @@
                 </li>
 
                  {{-- Attendence --}}
-                <li class="{{ isParent(['attendance.employees']) }}">
+                <!-- <li class="{{ isParent(['attendance.employees']) }}">
                     <a href="{{ route('attendance.employees') }}">
                         <i class="fa-regular fa-file-lines"></i>
-                        <span class="nav-text">Attendence</span>
+                        <span class="nav-text">Employee Attendence </span>
                     </a>
+                </li> -->
+
+                {{-- Attendence --}}
+                <li class="{{ isParent(['attendance.employees','employees*','letters*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fa-regular fa-file-lines"></i>
+                        <span class="nav-text">Employees </span>
+                    </a>
+                    <ul class="{{ showSubmenu(['attendance.employees']) }}">
+                        <li>
+                            <a class="{{ isChildActive('attendance.employees') }}"
+                                href="{{ route('attendance.employees') }}">
+                                Employees Attendence 
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('employees') }}"
+                                href="{{ route('employees.index') }}">
+                                Employees Lists 
+                            </a>
+                        </li>
+                         <li>
+                            <a class="{{ isChildActive('letters*') }}"
+                                href="{{ route('letters.index') }}">
+                                Joining/Experience Letters
+                            </a>
+                        </li>
+                    </ul>
                 </li>
+
 
                  {{-- Users --}}
 
                  <li class="{{ isParent(['users.index']) }}">
                     <a href="{{ route('users.index') }}">
                          <i class="fas fa-users"></i>
-                        <span class="nav-text">Users</span>
+                        <span class="nav-text">Manage Users</span>
                     </a>
                 </li>
                 <!-- <li class="{{ isParent(['users.index']) }}">
@@ -268,7 +304,7 @@
                         <li>
                             <a class="{{ isChildActive('college.events.*') }}"
                                href="{{ route('college.events.index') }}">
-                                Memory College Events
+                                 College Memory Events
                             </a>
                         </li>
 
@@ -276,7 +312,7 @@
                         <li>
                             <a class="{{ isChildActive('student.events.*') }}"
                                href="{{ route('student.events.index') }}">
-                               Memory Student Events
+                               Student Memory  Events
                             </a>
                         </li>
 
@@ -284,28 +320,28 @@
                         <li>
                             <a class="{{ isChildActive('employee.events.*') }}"
                                href="{{ route('employee.events.index') }}">
-                               Memory Employee Events
+                              Employee  Memory  Events
                             </a>
                         </li>
 
                         <li>
                             <a class="{{ isChildActive('upcoming-events.*') }}"
                                href="{{ route('upcoming-events.index') }}">
-                               Events
+                              Upcoming Events
                             </a>
                         </li>
                          {{-- Brochures --}}
                 <li class="{{ isParent(['brochures.index']) }}">
                     <a href="{{ route('brochures.index') }}">
                         <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Brochures</span>
+                        <span class="nav-text">Manage Brochures</span>
                     </a>
                 </li>
                  {{-- Brochures --}}
                 <li class="{{ isParent(['company_profile.index']) }}">
                     <a href="{{ route('company_profile.index') }}">
                         <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Company Profile</span>
+                        <span class="nav-text">Company Profile Manage</span>
                     </a>
                 </li>
 
@@ -406,70 +442,123 @@
 
                
                
-                 {{-- Events --}}
-                <!-- <li class="{{ isParent(['college.events.*', 'student.events.*', 'employee.events.*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-calendar"></i>
-                        <span class="nav-text">Events</span>
-                    </a>
-
-                    <ul class="{{ showSubmenu(['college.events.*', 'student.events.*', 'employee.events.*']) }}">
-
-                        {{-- College Events --}}
-                        <li>
-                            <a class="{{ isChildActive('college.events.*') }}"
-                               href="{{ route('college.events.index') }}">
-                                College Events
-                            </a>
-                        </li>
-
-                        {{-- Student Events --}}
-                        <li>
-                            <a class="{{ isChildActive('student.events.*') }}"
-                               href="{{ route('student.events.index') }}">
-                                Student Events
-                            </a>
-                        </li>
-
-                        {{-- Employee Events --}}
-                        <li>
-                            <a class="{{ isChildActive('employee.events.*') }}"
-                               href="{{ route('employee.events.index') }}">
-                                Employee Events
-                            </a>
-                        </li>
-
-                    </ul>
-                </li> -->
+                 
 
                  {{-- Tests --}}
                 <li class="{{ isParent(['admin.tests.*','admin.offline-tests*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Student Exam Test</span>
+                        <span class="nav-text">Student Exams</span>
                     </a>
                     <ul class="{{ showSubmenu(['admin.tests*']) }}">
                         <li>
                             <a class="{{ isChildActive('test-categories.index') }}"
                                 href="{{ route('test-categories.index') }}">
-                                Test Category
+                                Exam Category
                             </a>
                         </li>
                         <li>
                             <a class="{{ isChildActive('admin.tests.index') }}"
                                 href="{{ route('admin.tests.index') }}">
-                                Online Tests
+                                Online Exams
                             </a>
                         </li>
 
                          <li>
                             <a class="{{ isChildActive('admin.offline-tests.index') }}"
                                 href="{{ route('admin.offline-tests.index') }}">
-                                Offline Tests
+                                Offline Exams
                             </a>
                         </li>
                     </ul>
                 </li>
+
+                {{-- Joined Students --}}
+                <li class="{{ isParent(['joined_students*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Joined Students</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['joined_students*']) }}">
+                        <li>
+                            <a class="{{ isChildActive('joined_students.adminUrl') }}"
+                                href="{{ route('joined_students.adminUrl') }}">
+                                Joined Students Link
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('admin.joined_students.index') }}"
+                                href="{{ route('joined_students.index') }}">
+                                Joined Students Lists
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+                 {{-- Leads --}}
+                <li class="{{ isParent(['recharges*','projects*','tutorials*','cvs','daily-interviews']) }}">
+    <a class="has-arrow" href="javascript:void(0)">
+        <i class="fas fa-tasks"></i>
+        <span class="nav-text">Manage Records</span>
+    </a>
+    <ul class="{{ showSubmenu(['recharges*','projects*','tutorials*','cvs','daily-interviews']) }}">
+
+        <li>
+            <a class="{{ isChildActive('recharges*') }}"
+               href="{{ route('recharges.index') }}">
+                <!-- <i class="fas fa-building me-2"></i> -->
+                Recharges
+            </a>
+        </li>
+
+        <li>
+            <a class="{{ isChildActive('projects*') }}"
+               href="{{ route('projects.index') }}">
+                <!-- <i class="fas fa-user-clock me-2"></i> -->
+                Projects
+            </a>
+        </li>
+
+        <li>
+            <a class="{{ isChildActive('tutorials*') }}"
+               href="{{ route('tutorials.index') }}">
+                <!-- <i class="fas fa-bed me-2"></i> -->
+                Tutorials
+            </a>
+        </li>
+        <li>
+            <a class="{{ isChildActive('cvs*') }}"
+               href="{{ route('cvs.index') }}">
+                <!-- <i class="fas fa-bed me-2"></i> -->
+                CV's
+            </a>
+        </li>
+        <li>
+            <a class="{{ isChildActive('daily-interviews*') }}"
+               href="{{ route('daily-interviews.index') }}">
+                <!-- <i class="fas fa-bed me-2"></i> -->
+                Daily Interviews
+            </a>
+        </li>
+
+    </ul>
+</li>
+
+                
+                        
+
+                        <li class="{{ isParent(['admin.blocked-numbers.index']) }}">
+                            <a href="{{ route('admin.blocked-numbers.index') }}">
+                                <i class="fas fa-certificate"></i>
+                                <span class="nav-text">Blocked Numbers</span>
+                            </a>
+                             
+                        </li>
+
+
+                        {{-- Certificates --}}
+                        
                 
 
                {{-- Logout --}}

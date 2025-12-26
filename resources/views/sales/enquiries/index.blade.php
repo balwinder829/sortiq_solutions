@@ -26,6 +26,21 @@
                 </select>
             </div>
 
+            {{-- COLLEGE FILTER --}}
+            <div class="col-md-3 mb-2">
+                <label class="fw-semibold">College</label>
+                <select name="college" class="form-control">
+                    <option value="">All</option>
+                    @foreach($colleges as $college)
+                        <option value="{{ $college->id }}"
+                            {{ request('college') == $college->id ? 'selected' : '' }}>
+                            {{ $college->college_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+
             {{-- LEAD STATUS --}}
             <div class="col-md-3 mb-2">
                 <label class="fw-semibold">Lead Status</label>
@@ -92,6 +107,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Contact</th>
+                        <th>College</th>
                         <th>Lead Status</th>
                         <th>Next Follow-up</th>
                         <th class="text-center">Action</th>
@@ -122,6 +138,10 @@
                                     💬 WhatsApp
                                 </a>
                             </div>
+                        </td>
+
+                        <td>
+                            {{ $e->collegeData->FullName ?? '—' }}
                         </td>
 
                         {{-- STATUS --}}

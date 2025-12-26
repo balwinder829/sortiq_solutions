@@ -43,7 +43,7 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
     //                      ->with('success', 'College created successfully.');
     // }
 
-    public function store(Request $request)
+public function store(Request $request)
 {
     $data = $request->validate([
         'college_name' => 'required|string|max:255',
@@ -54,8 +54,22 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
     $cleanName = College::clean($request->college_name);
 
     // Check duplicate using clean_name
-    if (College::where('clean_name', $cleanName)->withTrashed()->exists()) {
-        return back()->withErrors(['college_name' => 'College already exists.'])->withInput();
+    // if (College::where('clean_name', $cleanName)->withTrashed()->exists()) {
+    //     return back()->withErrors(['college_name' => 'College already exists.'])->withInput();
+    // }
+
+    $exists = College::withTrashed()
+        ->where('clean_name', $cleanName)
+        ->where('state_id', $data['state_id'])
+        ->where('district_id', $data['district_id'])
+        ->exists();
+
+    if ($exists) {
+        return back()
+            ->withErrors([
+                'college_name' => 'This college already exists in the selected state and district.'
+            ])
+            ->withInput();
     }
 
     College::create([
@@ -107,14 +121,30 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
     $cleanName = College::clean($request->college_name);
 
     // Check duplicates except current ID
-    $exists = College::where('clean_name', $cleanName)
-                     ->where('id', '!=', $id)
-                     ->withTrashed()
-                     ->exists();
+    // $exists = College::where('clean_name', $cleanName)
+    //                  ->where('id', '!=', $id)
+    //                  ->withTrashed()
+    //                  ->exists();
+
+    // if ($exists) {
+    //     return back()->withErrors(['college_name' => 'College already exists.'])->withInput();
+    // }
+
+     $exists = College::withTrashed()
+        ->where('clean_name', $cleanName)
+        ->where('state_id', $data['state_id'])
+        ->where('district_id', $data['district_id'])
+        ->where('id', '!=', $college->id)
+        ->exists();
 
     if ($exists) {
-        return back()->withErrors(['college_name' => 'College already exists.'])->withInput();
+        return back()
+            ->withErrors([
+                'college_name' => 'This college already exists in the selected state and district.'
+            ])
+            ->withInput();
     }
+
 
     // Reset slug to regenerate if college name changed
     $college->update([

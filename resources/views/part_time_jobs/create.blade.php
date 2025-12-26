@@ -72,7 +72,13 @@
     <input type="text"
            name="mobile"
            value="{{ old('mobile') }}"
-           class="form-control">
+           class="form-control"
+            pattern="[0-9]{10}"
+            title="Enter a valid 10-digit mobile number"
+            maxlength="10"
+           inputmode="numeric"
+           oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+           placeholder="10 digit number">
 </div>
 
 {{-- ADDRESS --}}

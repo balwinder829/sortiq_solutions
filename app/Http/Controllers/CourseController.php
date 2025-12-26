@@ -20,10 +20,21 @@ class CourseController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'course_name' => 'required|string|max:255',
         ]);
 
+         $exists = Course::withTrashed()
+            ->whereRaw('LOWER(course_name) = ?', [strtolower($data['course_name'])])
+            ->exists();
+
+        if ($exists) {
+            return back()
+                ->withErrors([
+                    'course_name' => 'Course already exists.'
+                ])
+                ->withInput();
+        }
         Course::create([
             'course_name' => $request->course_name,
         ]);
@@ -38,9 +49,23 @@ class CourseController extends Controller
 
     public function update(Request $request, Course $course)
     {
-        $request->validate([
+        $data = $request->validate([
             'course_name' => 'required|string|max:255',
         ]);
+
+
+        $exists = Course::withTrashed()
+            ->whereRaw('LOWER(course_name) = ?', [strtolower($data['course_name'])])
+            ->where('id', '!=', $course->id)
+            ->exists();
+
+        if ($exists) {
+            return back()
+                ->withErrors([
+                    'course_name' => 'Course already exists.'
+                ])
+                ->withInput();
+        }
 
         $course->update([
             'course_name' => $request->course_name,

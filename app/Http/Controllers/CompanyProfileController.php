@@ -145,7 +145,7 @@ class CompanyProfileController extends Controller
     /* -------------------------
        PREVIEW
     ------------------------- */
-    public function preview($token)
+    public function preview_old($token)
     {
         $profile = CompanyProfile::where('share_token', $token)
     ->where('is_active', 1)
@@ -188,13 +188,38 @@ class CompanyProfileController extends Controller
     /* -------------------------
        DOWNLOAD
     ------------------------- */
-    public function download(CompanyProfile $companyProfile)
+    public function download($token)
     {
+        $companyProfile = CompanyProfile::where('share_token', $token)
+            ->publiclyVisible()
+            ->firstOrFail();
+
         $path = storage_path('app/secure-company-profiles/'.$companyProfile->file_name);
         if (!file_exists($path)) abort(404);
 
+        $companyProfile->increment('download_count');
+
         return response()->download($path, $companyProfile->file_name, [
             'Content-Type' => $companyProfile->mime
+        ]);
+    }
+
+
+     public function preview($token)
+    {
+        // dd('hw');
+        $profile = CompanyProfile::where('share_token', $token)
+            ->publiclyVisible()
+            ->firstOrFail();
+
+        $path = storage_path('app/secure-company-profiles/' . $profile->file_name);
+        abort_if(!file_exists($path), 404);
+         // if (!$profile) {
+         //        return response()->view('errors.company_profile_blocked', [], 403);
+         //    }
+        $profile->increment('download_count');
+        return response()->file($path, [
+            'Content-Type' => $profile->mime
         ]);
     }
 
@@ -209,5 +234,29 @@ class CompanyProfileController extends Controller
         $companyProfile->delete();
 
         return redirect()->route('company_profile.index')->with('success', 'Deleted successfully.');
+    }
+
+    public function adminView(CompanyProfile $companyProfile)
+    {
+        $path = storage_path('app/secure-company-profiles/' . $companyProfile->file_name);
+
+        abort_if(!file_exists($path), 404);
+
+        return response()->file($path, [
+            'Content-Type' => $companyProfile->mime
+        ]);
+    }
+
+    public function adminDownload(CompanyProfile $companyProfile)
+    {
+        $path = storage_path('app/secure-company-profiles/' . $companyProfile->file_name);
+
+        abort_if(!file_exists($path), 404);
+
+        return response()->download(
+            $path,
+            $companyProfile->file_name,
+            ['Content-Type' => $companyProfile->mime]
+        );
     }
 }

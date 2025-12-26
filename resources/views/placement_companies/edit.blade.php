@@ -46,7 +46,13 @@
                         <input type="text"
                                name="phone"
                                value="{{ old('phone', $company->phone) }}"
-                               class="form-control @error('phone') is-invalid @enderror">
+                               class="form-control @error('phone') is-invalid @enderror"
+                                pattern="[0-9]{10}"
+                        title="Enter a valid 10-digit mobile number"
+                        maxlength="10"
+                       inputmode="numeric"
+                       oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                       placeholder="10 digit number">
                         @error('phone')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

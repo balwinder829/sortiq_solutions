@@ -96,6 +96,11 @@ class College extends Model
         return implode(', ', array_filter($parts));
     }
 
+    public function enquiries()
+    {
+        return $this->hasMany(Enquiry::class,'college');
+    }
+
 }
 
 

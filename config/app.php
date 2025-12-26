@@ -124,7 +124,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'admin_email' => 'mehlakrish07@gmail.com',
+    'admin_email' => 'sortiqsolutions@gmail.com',
     // 'admin_email' => 'hs875147@gmail.com',
     'admin_name' => 'Admin',
 ];

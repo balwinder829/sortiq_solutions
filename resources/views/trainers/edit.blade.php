@@ -44,7 +44,11 @@
                    name="phone" 
                    class="form-control @error('phone') is-invalid @enderror"
                    value="{{ old('phone', $trainer->phone ?? $trainer->user->phone ?? '') }}"
-                   required>
+                   required
+                    minlength="10"
+                    maxlength="10"
+                    pattern="[0-9]{10}"
+                    title="Enter a valid 10-digit mobile number">
             @error('phone')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
@@ -52,12 +56,14 @@
 
         {{-- Email (READ ONLY) --}}
         <div class="form-group">
-            <label>Email (Login Email — cannot be changed)</label>
+            <label>Email</label>
             <input type="email" 
-                   class="form-control bg-light"
-                   value="{{ $trainer->user->email ?? $trainer->email }}"
-                   disabled>
-            <input type="hidden" name="email" value="{{ $trainer->email }}">
+                    name="email"
+                   class="form-control"
+                   value="{{ $trainer->user->email ?? $trainer->email }}">
+            @error('email')
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
         </div>
 
         {{-- Technology --}}

@@ -57,6 +57,11 @@ class User extends Authenticatable
         return $this->hasMany(Attendance::class, 'employee_id');
     }
 
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
+
     public function isAdmin()
     {
         return $this->role === '1'; // or whatever column you use

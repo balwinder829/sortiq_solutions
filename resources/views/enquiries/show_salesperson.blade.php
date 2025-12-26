@@ -64,7 +64,7 @@
                             <option value="">All</option>
                             <option value="new" {{ request('status')=='new' ? 'selected' : '' }}>New</option>
                             <option value="followup" {{ request('status')=='followup' ? 'selected' : '' }}>Follow-up</option>
-                            <option value="joined" {{ request('status')=='joined' ? 'selected' : '' }}>Joined</option>
+                            <option value="registered" {{ request('status')=='registered' ? 'selected' : '' }}>Registered</option>
                             <option value="closed" {{ request('status')=='closed' ? 'selected' : '' }}>Closed</option>
                         </select>
                     </div>
@@ -102,7 +102,7 @@
                         <th>Lead ID</th>
                         <th>Name</th>
                         <th>Phone</th>
-                        <th>Status</th>
+                        <th>Lead Status</th>
                         <th>Assigned At</th>
                         <th>Created At</th>
                     </tr>
@@ -116,13 +116,13 @@
                             <td>{{ $lead->mobile }}</td>
 
                             <td>
-                                @if($lead->status == 'new')
+                                @if($lead->lead_status == 'new')
                                     <span class="badge bg-secondary">New</span>
-                                @elseif($lead->status == 'followup')
+                                @elseif($lead->lead_status == 'followup')
                                     <span class="badge bg-info text-dark">Follow-up</span>
-                                @elseif($lead->status == 'joined')
-                                    <span class="badge bg-success">Joined</span>
-                                @elseif($lead->status == 'closed')
+                                @elseif($lead->lead_status == 'registered')
+                                    <span class="badge bg-success">Registered</span>
+                                @elseif($lead->lead_status == 'closed')
                                     <span class="badge bg-danger">Closed</span>
                                 @endif
                             </td>

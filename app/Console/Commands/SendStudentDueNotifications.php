@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Student;
 use App\Mail\StudentDueSummaryMail;
+use App\Mail\StudentDueReminderMail;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
@@ -34,11 +35,34 @@ class SendStudentDueNotifications extends Command
 
 
         // $adminEmail = config('app.admin_email', 'admin@example.com');
+        // $adminEmail = "mehlakrish077@yopmail.com";
         $adminEmail = "mehlakrish07@gmail.com";
 
         Mail::to($adminEmail)->send(
             new StudentDueSummaryMail($dueToday, $overdue)
         );
+
+
+        // ✅ Send student emails (Due Today)
+        foreach ($dueToday as $student) {
+            if ($student->email_id) {
+                Mail::to($student->email_id)
+                    ->send(new StudentDueReminderMail($student, 'due_today'));
+            }
+
+             $this->info("Student mail SENT");
+        }
+
+        // ✅ Send student emails (Overdue)
+        foreach ($overdue as $student) {
+            if ($student->email_id) {
+                Mail::to($student->email_id)
+                    ->send(new StudentDueReminderMail($student, 'overdue'));
+            }
+
+             $this->info("Student mail SENT" );
+        }
+
 
         $this->info("Email sent to admin: $adminEmail");
         return 0;

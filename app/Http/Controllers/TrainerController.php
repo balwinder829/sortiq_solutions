@@ -9,6 +9,7 @@ use App\Models\Batch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Validation\Rule;
 
 class TrainerController extends Controller
 {   
@@ -98,10 +99,24 @@ class TrainerController extends Controller
             'trainer_name' => 'required|string|max:100',
             'gender'       => 'required|in:male,female',
             'phone'        => 'required|max:20|unique:users,phone',
-            'username'        => 'required|max:20|unique:users,username',
+            // 'username'        => 'required|max:20|unique:users,username',
+            'username'     => [
+                'required',
+                'string',
+                'max:30',
+                'regex:/^[a-zA-Z0-9._-]+$/', // ❌ no spaces allowed
+                'unique:users,username',
+            ],
             'password' => 'required|string|min:6',
             'email'        => 'required|email|unique:users,email',
             'technology'   => 'required',
+        ],
+        [
+            // 🔴 Custom messages
+            'username.regex'  => 'Username must not contain spaces. Only letters, numbers, dot (.), dash (-), and underscore (_) are allowed.',
+            'username.unique' => 'This username is already taken.',
+            'username.max'    => 'Username may not be greater than 30 characters.',
+            'username.required' => 'Please enter a username.',
         ]);
 
         // 🔵 STEP 1 — Create User Account
@@ -145,18 +160,28 @@ class TrainerController extends Controller
 
     public function update(Request $request, Trainer $trainer)
     {
+
         $validated = $request->validate([
             'trainer_name' => 'required|string|max:100',
             'gender'       => 'required|in:male,female',
-            'phone'        => 'required|string|max:20|unique:users,phone,' . $trainer->user_id,
-            // 'email'        => 'required|email|unique:users,email,' . $trainer->user_id,
+            'phone'        => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('users', 'phone')->ignore($trainer->user_id),
+            ],
+            'email'        => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->ignore($trainer->user_id),
+            ],
             'technology'   => 'required|max:100',
         ]);
 
         // 🔵 Update user table
         $trainer->user->update([
             'name'  => $validated['trainer_name'],
-            // 'email' => $validated['email'],
+            'email' => $validated['email'],
             'phone' => $validated['phone'],
         ]);
 

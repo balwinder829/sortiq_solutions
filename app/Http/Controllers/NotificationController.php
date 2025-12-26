@@ -98,7 +98,37 @@ class NotificationController extends Controller
         if ($key === 'upcoming.event') {
             return redirect()->route('upcoming-events.show', $data['event_id']
         );
+
+
+            // dd($data['template_key'] ?? 'no template_key');
+
+
+       
+
+
 }
+
+        if ($key === 'sales.leads.low.percent.admin') {
+
+            // 👨‍💼 ADMIN → Salesperson detail page
+            if (
+                auth()->user()->role == 1 &&
+                isset($data['meta']['sales_user_id'])
+            ) {
+                return redirect()->route(
+                    'salespersons.show',
+                    $data['meta']['sales_user_id']
+                );
+            }
+        }
+
+         if ($key === 'sales.leads.low.percent') {
+            // dd('here2');
+           
+            // 🧑‍💼 SALES USER → Own enquiries
+            return redirect()->route('sales.enquiries.index')
+                ->with('warning', 'Your leads are running low.');
+        }
 
         /*
         |--------------------------------------------------------------------------

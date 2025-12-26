@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\EventImage;
 use App\Models\EventVideo;
+use App\Models\College;
+
 
 class BaseEventController extends Controller
 {
@@ -26,7 +28,10 @@ class BaseEventController extends Controller
 
     public function index(Request $request)
     {
-        $query = Event::where('event_type', $this->eventType);
+        // $query = Event::where('event_type', $this->eventType);
+        $query = Event::where('event_type', $this->eventType)
+                  ->with(['college', 'images', 'videos']); // ✅ IMPORTANT
+
 
         if ($request->from_date) {
             $query->whereDate('event_date', '>=', $request->from_date);
@@ -48,16 +53,33 @@ class BaseEventController extends Controller
             $query->whereDate('event_date', today());
         }
 
+        if ($this->eventType === 'college' && $request->filled('college_id')) {
+            $query->where('college_id', $request->college_id);
+        }
         $events = $query->latest()->get();
 
         $routePrefix = $this->eventType;
 
+        $colleges = College::orderBy('college_name')->get();
+        
         return view("events.{$this->eventType}.index",
-                    compact('events','routePrefix'));
+                    compact('events','routePrefix','colleges'));
     }
 
-
     public function create()
+    {
+        $routePrefix = $this->eventType;
+
+        // ✅ Pass colleges ONLY for college events
+        $colleges = $this->eventType === 'college'
+            ? College::orderBy('college_name')->get()
+            : collect();
+
+        return view("events.{$this->eventType}.create",
+            compact('routePrefix', 'colleges')
+        );
+    }
+    public function create22dec()
     {
         $routePrefix = $this->eventType;
         return view("events.{$this->eventType}.create", compact('routePrefix'));
@@ -82,6 +104,13 @@ class BaseEventController extends Controller
         // Add event type
         $eventData = $request->only(['title','description','event_date']);
         $eventData['event_type'] = $this->eventType;
+        if ($this->eventType === 'college') {
+            $request->validate([
+                'college_id' => 'required|exists:colleges,id',
+            ]);
+
+            $eventData['college_id'] = $request->college_id;
+        }
 
         $event = Event::create($eventData);
 
@@ -151,7 +180,8 @@ class BaseEventController extends Controller
         // Prevent accessing other type's events
         if ($event->event_type !== $this->eventType) abort(404);
         $routePrefix = $this->eventType;
-        return view("events.{$this->eventType}.edit", compact('event', 'routePrefix'));
+        $colleges = College::orderBy('college_name')->get();
+        return view("events.{$this->eventType}.edit", compact('event', 'routePrefix','colleges'));
 
         // return view("events.{$this->eventType}.edit", compact('event'));
     }
@@ -163,15 +193,40 @@ class BaseEventController extends Controller
     {
         if ($event->event_type !== $this->eventType) abort(404);
 
-        $request->validate([
-            'title'        => 'required|string',
+        // $request->validate([
+        //     'title'        => 'required|string',
+        //     'description'  => 'nullable|string',
+        //     'event_date'   => 'nullable|date',
+        //     'media.*'      => 'nullable|mimes:jpg,jpeg,png,webp,gif,mp4,mov,avi,webm|max:51200',
+        //     'cover_image'  => 'nullable|string',
+        // ]);
+
+         /* -----------------------
+            VALIDATION
+        ------------------------*/
+        $rules = [
+            'title'        => 'required|string|max:255',
             'description'  => 'nullable|string',
             'event_date'   => 'nullable|date',
             'media.*'      => 'nullable|mimes:jpg,jpeg,png,webp,gif,mp4,mov,avi,webm|max:51200',
-            'cover_image'  => 'nullable|string',
-        ]);
+        ];
 
-        $event->update($request->only(['title','description','event_date']));
+        // ✅ College-only validation
+        if ($this->eventType === 'college') {
+            $rules['college_id'] = 'required|exists:colleges,id';
+        }
+
+        $request->validate($rules);
+
+         $data = $request->only(['title', 'description', 'event_date']);
+
+        // ✅ Save college_id (ID only)
+        if ($this->eventType === 'college') {
+            $data['college_id'] = $request->college_id;
+        }
+
+        $event->update($data);
+        // $event->update($request->only(['title','description','event_date']));
 
         $selectedCoverOriginal = $request->cover_image;
         $finalCoverPath = null;

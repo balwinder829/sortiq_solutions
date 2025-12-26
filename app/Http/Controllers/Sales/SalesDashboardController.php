@@ -46,6 +46,7 @@ class SalesDashboardController extends Controller
         $todayFollowups = EnquiryFollowup::where('user_id', $userId)
             ->whereDate('next_followup_date', $today)
             ->with('enquiry')
+            ->orderByDesc('updated_at') // 🔥 LATEST STATUS FIRST
             ->get();
 
         // Missed follow-ups (yesterday)
@@ -58,6 +59,31 @@ class SalesDashboardController extends Controller
         ->whereDate('assigned_at', $today)
         ->count();
 
+        $todayRegistered = Enquiry::where('assigned_to', $userId)
+            ->whereNotNull('registered_at')
+            ->whereDate('registered_at', $today)
+            ->count();
+
+        $notPickedStatuses = [
+            'Not Answered',
+            'Ringing',
+            'Switched Off',
+            'Busy',
+            'Wrong Number'
+        ];
+
+        $notPickedCount = EnquiryFollowup::where('user_id', $userId)
+            ->whereIn('call_status', $notPickedStatuses)
+            ->whereDate('updated_at', $today)
+            ->count();
+
+        $collegeWiseAssigned = Enquiry::where('assigned_to', $userId)
+            ->whereNotNull('college')
+            ->with('collegeData')
+            ->selectRaw('college, COUNT(*) as total')
+            ->groupBy('college')
+            ->orderByDesc('total')
+            ->get();
 
         return view('sales.dashboard', compact(
             'totalAssigned',
@@ -65,7 +91,10 @@ class SalesDashboardController extends Controller
             'upcomingFollowups',
             'statusCount',
             'todaysAssigned',
-            'missedFollowups'
+            'missedFollowups',
+            'todayRegistered',   // 🔥 added
+            'notPickedCount',
+            'collegeWiseAssigned'    
         ));
     }
 }

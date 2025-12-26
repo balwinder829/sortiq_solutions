@@ -48,7 +48,12 @@
                         <input type="text"
                                name="mobile"
                                class="form-control @error('mobile') is-invalid @enderror"
-                               value="{{ old('mobile', $enquiry->mobile) }}">
+                               value="{{ old('mobile', $enquiry->mobile) }}"
+                               required
+                                minlength="10"
+                                maxlength="10"
+                                pattern="[0-9]{10}"
+                                title="Enter a valid 10-digit mobile number">
                         @error('mobile')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
