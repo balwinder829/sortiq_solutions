@@ -13,7 +13,7 @@
 
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
 	
-	<div class="head-main" style="padding-top: 130px;">
+	<div class="head-main" style="padding-top: 110px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
@@ -66,11 +66,13 @@
 			</table>
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
-					<td width="75%" align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
+					<td colspan="2" align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
 						<strong>S.No:</strong> {{ ucwords($student->sno) }}
 					</td>
-					<td width="25%" align="right" style="font-size: 14px; line-height: 24px; text-align:right; font-family: 'Inter', sans-serif;">
-						<strong>Date:</strong>{{ \Carbon\Carbon::now()->format('d-m-Y') }}
+				</tr>
+				<tr>
+					<td colspan="2" align="right" style="font-size: 14px; line-height: 24px; text-align:right; font-family: 'Inter', sans-serif;">
+						<strong>Date: </strong>{{ \Carbon\Carbon::now()->format('d-m-Y') }}
 					</td>
 				</tr>
 			</table>
@@ -78,14 +80,14 @@
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						This is to certify that <strong>Mr./Ms</strong> <strong>{{ ucwords($student->student_name) }}</strong> From <strong>{{ $collegename }}</strong>
-						Who has undertaken an internship program of {{ $courseName }} under technical department from {{ $sessionStart }}
-						to {{ $sessionEnd }} in {{ $durationName }} from the company <strong>"Sortiq Solutions Pvt. Ltd."</strong>
+						Who has undertaken an internship program of <strong>{{ $courseName }}</strong> under technical department from <strong>{{ $sessionStart }}</strong>
+						to <strong>{{ $sessionEnd }}</strong> in <strong>{{ $durationName }}</strong> from the company <strong>"Sortiq Solutions Pvt. Ltd."</strong>
 					
 					</td>
 				</tr>
 				<tr>
-					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						During this period, he/she demonstrated a high level of professionalism, enthusiasm, and a strong commitment to learning. Throughout the internship, he/she has shown remarkable growth and contributed significantly to the assignment or task he/she worked on. He/she has gained valuable hands-on experience in the area of their interest.
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
+						During this period, he/she demonstrated a high level of professionalism, enthusiasm, and a strong commitment to learning. Throughout the internship, he/she has shown remarkable growth and contributed significantly to the assignment or task he/she worked on. He/she has gained valuable hands-on experience in the area of their interest and expertise.
 					</td>
 				</tr>
 				<tr>
@@ -112,7 +114,7 @@
 							<h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
 						</div>
 					</td>
-					<td width="30%" align="right">
+					<td width="30%" align="right" style="padding-right: 30px;">
 						<div class="hghlt-right">
 							<img style="max-width: 120px;" src="{{ public_path('images/certificates_images/certified.png' ) }}" width="250"/>
 						</div>

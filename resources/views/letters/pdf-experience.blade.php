@@ -15,7 +15,7 @@ body {
 <body>
 
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
-	<div class="head-main" style="padding-top: 130px;">
+	<div class="head-main" style="padding-top: 110px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
@@ -40,7 +40,7 @@ body {
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
 					<td colspan="2" style="text-align: center;">
-						<h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 50px; font-weight: 700; color: #2c2e35; margin: 0 0 30px; text-transform: uppercase;"><strong>Experience Letter</strong></h2>
+						<h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Experience Letter</strong></h2>
 					</td>
 				</tr>
 			</table>
@@ -54,23 +54,23 @@ body {
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="text-align: center;">
-						<h3 style="font-family: 'Inter', sans-serif; text-align: center; font-size: 24px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>TO WHOMSOEVER IT MAY CONCERN</h2>
+						<h3 style="font-family: 'Inter', sans-serif; text-align: center; font-size: 22px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>TO WHOMSOEVER IT MAY CONCERN</h2>
 					</td>
 				</tr>
 			</table>
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						This is to certify that <strong>Mr./Ms {{ $letter->emp_name }}</strong> was working with "Sortiq Solutions Pvt. Ltd." from <strong>{{ \Carbon\Carbon::parse($letter->joining_date)->format('d M Y') }}</strong> to <strong>{{ \Carbon\Carbon::parse($letter->relieving_date)->format('d M Y') }}</strong> His/her last served designation was <strong>{{ $letter->position }}</strong> with the salary <strong>{{ is_numeric($letter->salary) ? number_format($letter->salary, 2) : 'N/A' }}</strong> per month.
+						This is to certify that <strong>Mr./Ms {{ $letter->emp_name }}</strong> was working with <strong>"Sortiq Solutions Pvt. Ltd."</strong> from <strong>{{ \Carbon\Carbon::parse($letter->joining_date)->format('d M Y') }}</strong> to <strong>{{ \Carbon\Carbon::parse($letter->relieving_date)->format('d M Y') }}</strong> His/her last served designation was <strong>{{ $letter->position }}</strong> with the salary <strong>{{ is_numeric($letter->salary) ? number_format($letter->salary, 2) : 'N/A' }}</strong> per month.
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						Throughout his/her tenure, he/she demonstrated a high level of professionalism, dedication, and skill in carrying out their responsibilities. He/she contributed positively to the team and handled their tasks with great competence and efficiency.
+						Throughout his/her tenure, he/she demonstrated a high level of professionalism, dedication, and skill in carrying out their responsibilities. He/she contributed positively to the team and handled their tasks with great competence and efficiency consistently throughout.
 					</td>
 				</tr>
 				<tr>
-					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
 						His/her attention to detail and proactive approach to tasks set them apart as a valuable team member. His/her positive attitude, integrity, and willingness to go above and beyond contributed greatly to our organizational success
 					</td>
 				</tr>

@@ -11,7 +11,7 @@
     </head>
     <body>
         <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff">
-            <div class="rc-head-main" style="padding-top: 60px">
+            <div class="rc-head-main" style="padding-top: 50px">
                 <div class="inner-container" style="padding-left: 20px; padding-right: 20px">
                     <div class="rc-head" style="margin-top: 0px; display: inline-block; width: 100%">
                         <table width="100%" cellpadding="0" cellspacing="0">
@@ -21,13 +21,13 @@
                                         style="
                                             font-family: &quot;Katibeh&quot;, serif;
                                             text-align: center;
-                                            font-size: 60px;
+                                            font-size: 50px;
                                             font-weight: 700;
                                             color: #2c2e35;
-                                            margin: 0 0 30px;
+                                            margin: 0 0 20px;
                                         "
                                     >
-                                        <strong>SORTIQ SOLUTIONS PVT.LTD.</strong>
+                                        <strong>SORTIQ SOLUTIONS PVT. LTD.</strong>
                                     </h2>
                                 </td>
                             </tr>
@@ -35,41 +35,41 @@
                                 <td
                                     style="
                                         text-align: center;
-                                        font-size: 24px;
-                                        line-height: 36px;
-                                        padding-top: 20px;
+                                        font-size: 22px;
+                                        line-height: 34px;
+                                        padding-top: 10px;
                                         font-family: &quot;Inter&quot;, sans-serif;
                                     "
                                 >
-                                    E-51, Ground Floor<br />
+                                    E-51, 2nd Floor<br />
                                     Industrial Area, Phase 8 <br />
                                     SAS Nagar Mohali, Punjab - 160072
                                 </td>
                             </tr>
                         </table>
                     </div>
-                    <div class="rc-body" style="margin-top: 90px; display: inline-block; width: 100%">
+                    <div class="rc-body" style="margin-top: 40px; display: inline-block; width: 100%">
                         <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td
                                     style="
                                         text-align: left;
-                                        font-size: 24px;
-                                        line-height: 36px;
-                                        padding-bottom: 20px;
+                                        font-size: 22px;
+                                        line-height: 34px;
+                                        padding-bottom: 10px;
                                         font-family: &quot;Inter&quot;, sans-serif;
                                     "
                                 >
-                                    <strong>Receipt No.</strong>
+                                    <strong>Receipt No.</strong> 152
                                 </td>
                             </tr>
                             <tr>
                                 <td
                                     style="
                                         text-align: left;
-                                        font-size: 24px;
-                                        line-height: 36px;
-                                        padding-bottom: 20px;
+                                        font-size: 22px;
+                                        line-height: 34px;
+                                        padding-bottom: 10px;
                                         font-family: &quot;Inter&quot;, sans-serif;
                                     "
                                 >
@@ -77,84 +77,30 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td
+                                <td colspan="2"
                                     style="
                                         text-align: left;
-                                        font-size: 24px;
-                                        line-height: 36px;
-                                        padding-bottom: 20px;
+                                        font-size: 22px;
+                                        line-height: 34px;
+                                        padding-bottom: 10px;
                                         font-family: &quot;Inter&quot;, sans-serif;
                                     "
                                 >
-                                    Received with thanks from
-                                    <strong>Mr/Ms/Messers {{ $student->student_name }}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td
-                                    style="
-                                        text-align: left;
-                                        font-size: 24px;
-                                        line-height: 36px;
-                                        padding-bottom: 20px;
-                                        font-family: &quot;Inter&quot;, sans-serif;
-                                    "
-                                >
-                                    Rs. <strong>{{ $amount }}</strong> (Rupees <strong>{{ $amountInWords }}</strong>)
-                                </td>
-                            </tr>
-                            <tr>
-                                <td
-                                    style="
-                                        text-align: left;
-                                        font-size: 24px;
-                                        line-height: 36px;
-                                        padding-bottom: 20px;
-                                        font-family: &quot;Inter&quot;, sans-serif;
-                                    "
-                                >
-                                    vide Cash/Cheque/Do No. <strong>{{ $transaction_no ?? '________' }}</strong> Date:
-                                    <strong>{{ now()->format('d M Y') }}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td
-                                    style="
-                                        text-align: left;
-                                        font-size: 24px;
-                                        line-height: 36px;
-                                        padding-bottom: 20px;
-                                        font-family: &quot;Inter&quot;, sans-serif;
-                                    "
-                                >
-                                    Course <strong>{{ $student->courseData->course_name ?? '________' }}</strong>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td
-                                    style="
-                                        text-align: left;
-                                        font-size: 24px;
-                                        line-height: 36px;
-                                        padding-bottom: 20px;
-                                        font-family: &quot;Inter&quot;, sans-serif;
-                                    "
-                                >
-                                    Duration <strong>{{ $student->durationData->name ?? '________' }}</strong>
+                                    Received with thanks from <strong>Mr/Ms/Messers <u>{{ $student->student_name }}</u></strong> Rs. <strong><u>{{ $amount }}</u></strong> (Rupees <strong><u>{{ $amountInWords }}</u></strong>) vide Cash/Cheque/Do No. <strong><u>{{ $transaction_no ?? '________' }}</u></strong> Dated: <strong><u>{{ now()->format('d M Y') }}</u></strong> Course <strong><u>{{ $student->courseData->course_name ?? '________' }}</u></strong> Duration <strong><u>{{ $student->durationData->name ?? '________' }}</u></strong>.
                                 </td>
                             </tr>
                         </table>
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 140px">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 30px">
                             <tr>
                                 <td style="text-align: left">
 									<div style="display:inline-block; width:100%;">
-										<h4 style="font-size: 30px; line-height: 42px">(Authorised Signatory)</h4>
+										<h4 style="font-size: 24px; line-height: 36px">(Authorised Signatory)</h4>
 										<br>
 									</div>
-									<img src="{{ public_path('images/certificates_images/recipt-signature.png') }}" style="width:180px;"/>
+									<img src="{{ public_path('images/certificates_images/recipt-signature.png') }}" style="width:160px;"/>
 									<div style="display:inline-block; width:100%;">
 										<br>
-										<h4 style="font-size: 30px; line-height: 42px">Note: Fees is Non-Refundable</h4>
+										<h4 style="font-size: 24px; line-height: 36px">Note: Fees is Non-Refundable</h4>
 									</div>
                                 </td>
                             </tr>

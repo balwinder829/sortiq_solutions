@@ -18,8 +18,8 @@ body {
 	<div class="head-shape">
 		<img style="width: 100%; display: block;" src="images/head-shape.png"/>
 	</div>
-	<div class="head-main" style="padding-top: 50px;">
-		<div class="inner-container" style="padding-left: 20px; padding-right: 20px;">
+	<div class="head-main" style="padding-top: 40px;">
+		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
 					<td width="68%" align="left">
@@ -27,8 +27,8 @@ body {
 							<img style="width: 100%; max-width: 200px;" src="images/logo-sortiq.png" width="200"/>
 						</div>
 					</td>
-					<td width="32%" align="right">
-						<div class="h-detials" style="max-width: 220px; width: 100%;">
+					<td width="32%" align="left">
+						<div class="h-detials" style="max-width: 210px; width: 100%;">
 							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="images/cl.png" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">+91 96465 22110</span></p>
 							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="images/email.png" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">info@sortiqsolutions.com</span></p>
 							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%; font-family: 'Inter', sans-serif; text-align:left;"><img src="images/globe.png" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">www.sortiqsolutions.com</span></p>
@@ -38,12 +38,12 @@ body {
 			</table>
 		</div>
 	</div>
-	<div class="certi-body" style=" background:url('../images/bg-shape.png')  no-repeat center; background-size:860px; padding-top: 60px;">
-		<div class="inner-container" style="padding-left: 20px; padding-right: 20px;">
+	<div class="certi-body" style=" background:url('../images/bg-shape.jpg')  no-repeat center; background-size:860px; padding-top: 60px;">
+		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
 					<td colspan="2" style="text-align: center;">
-						<h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 50px; font-weight: 700; color: #2c2e35; margin: 0 0 30px; text-transform: uppercase;"><strong>Appointment Letter</strong></h2>
+						<h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Appointment Letter</strong></h2>
 					</td>
 				</tr>
 			</table>
@@ -118,7 +118,7 @@ body {
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						<strong>Leave:</strong><br> 
+						<br> <br><strong>Leave:</strong><br> 
 						→ You can take a maximum of 12 Casual leaves in a financial year.<br>
 						→ You can take a maximum of 12 Sick leaves in a financial year.<br>
 						→ You're eligible for taking holidays as per the respective festival's calendar of the company or the
@@ -182,7 +182,7 @@ body {
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						<strong>Code of Conduct:</strong> You should Conduct the Company's business with honesty and integrity and in a professional manner that protects the company's good public image and reputation. You have to become familiar with and comply with legal requirements and Company policy and procedures.Also, avoid any activities that could involve or lead to involvement in any unlawful practice or any harm to the Company's reputation or image. In the company, we appreciate, respect the rights, culture and dignity of all the individuals and adhere to the principles of equality and non-discrimination while dealing with any team member of the company.
+						<br> <br> <strong>Code of Conduct:</strong> You should Conduct the Company's business with honesty and integrity and in a professional manner that protects the company's good public image and reputation. You have to become familiar with and comply with legal requirements and Company policy and procedures.Also, avoid any activities that could involve or lead to involvement in any unlawful practice or any harm to the Company's reputation or image. In the company, we appreciate, respect the rights, culture and dignity of all the individuals and adhere to the principles of equality and non-discrimination while dealing with any team member of the company.
 					</td>
 				</tr>
 				<tr>
@@ -219,7 +219,7 @@ body {
 			</table>
 		</div>
 	</div>
-	<div class="footer-shape" style="margin-top: 60px;">
+	<div class="footer-shape" style="margin-top: 407px;position: fixed; bottom: 0px;">
 		<img style="width: 100%; display: block;" src="images/footer-shape-1.png"/>
 	</div>
 </div>
