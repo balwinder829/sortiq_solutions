@@ -13,7 +13,7 @@
 
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
 	
-	<div class="head-main" style="padding-top: 150px;">
+	<div class="head-main" style="padding-top: 130px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
@@ -103,9 +103,12 @@
 				<tr>
 					<td width="70%">
 						<div style="display:inline-block; width:100%;">
-							<h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br><br><br><br>
+							<h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br>
+							<img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/>
+							
 						</div>
 						<div style="display:inline-block; width:100%;">
+							<br>
 							<h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
 						</div>
 					</td>
