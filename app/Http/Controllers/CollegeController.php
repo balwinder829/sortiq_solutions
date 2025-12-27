@@ -47,6 +47,7 @@ public function store(Request $request)
 {
     $data = $request->validate([
         'college_name' => 'required|string|max:255',
+        'college_display_name' => 'required|string|max:255',
         'state_id' => 'required|exists:states,id',
         'district_id' => 'required|exists:districts,id',
     ]);
@@ -74,6 +75,7 @@ public function store(Request $request)
 
     College::create([
         'college_name' => $request->college_name,
+        'college_display_name' => $request->college_display_name,
         'clean_name'   => $cleanName,
         'slug'         => null, // model will generate slug
         'state_id'  => $request->state_id,
@@ -112,6 +114,7 @@ public function store(Request $request)
 {
      $data = $request->validate([
         'college_name' => 'required|string|max:255',
+        'college_display_name' => 'required|string|max:255',
         'state_id' => 'required|exists:states,id',
         'district_id' => 'required|exists:districts,id',
     ]);
@@ -149,6 +152,7 @@ public function store(Request $request)
     // Reset slug to regenerate if college name changed
     $college->update([
         'college_name' => $request->college_name,
+        'college_display_name' => $request->college_display_name,
         'clean_name'   => $cleanName,
         'slug'         => null,
         'state_id'  => $request->state_id,

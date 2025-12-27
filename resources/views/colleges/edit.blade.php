@@ -13,6 +13,11 @@
         </div>
 
         <div class="mb-3">
+            <label>College Display Name</label>
+            <input type="text" name="college_display_name" class="form-control" value="{{ old('college_display_name', $college->college_display_name) }}" required>
+        </div>
+
+        <div class="mb-3">
             <label>State</label>
             <select name="state_id" id="state" class="form-control" required>
                 <option value="">-- Select State --</option>

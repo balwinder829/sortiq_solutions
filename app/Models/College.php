@@ -20,6 +20,7 @@ class College extends Model
         'slug',
         'state_id',
         'district_id',
+        'college_display_name',
     ];
 
     /**
