@@ -9,12 +9,12 @@
 
 <div class="container">
 
-    {{-- FILTERS ROW --}}
-    <div class="row mb-3">
-
-        <!-- State Filter -->
+    <div class="row mb-2">
+        <div class="col-md-2">
+            <h1 class="page_heading">Colleges</h1>
+        </div>
         <div class="col-md-4">
-            <label><strong>Filter by State</strong></label>
+            <!-- <label><strong>Filter by State</strong></label> -->
             <select id="filter-state" class="form-control">
                 <option value="">All States</option>
                 @foreach($states as $state)
@@ -22,20 +22,19 @@
                 @endforeach
             </select>
         </div>
-
-        <!-- District Filter -->
         <div class="col-md-4">
-            <label><strong>Filter by District</strong></label>
+            <!-- <label><strong>Filter by District</strong></label> -->
             <select id="filter-district" class="form-control">
                 <option value="">All Districts</option>
             </select>
         </div>
-
+        <div class="col-md-2">
+            <div class="d-flex justify-content-end">
+                <a href="{{ route('colleges.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add College</a>
+            </div>
+        </div>
     </div>
-
-    <h1>Colleges</h1>
-    <a href="{{ route('colleges.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add College</a>
-
+    
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
