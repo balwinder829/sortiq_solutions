@@ -36,6 +36,9 @@ class EmployeeController extends Controller
             'email'         => 'required|email|unique:users',
             'phone'         => 'required|unique:users',
             'password'      => 'required|min:6',
+             'dob' => 'nullable|date|before:today',
+            'blood_group'  => 'nullable|string|max:5',
+            'address'      => 'nullable|string|max:255',
         ]);
 
         DB::transaction(function () use ($data) {
@@ -55,6 +58,9 @@ class EmployeeController extends Controller
                 'emp_name'     => $data['emp_name'],
                 'position'     => $data['position'],
                 'joining_date' => $data['joining_date'],
+                'dob'          => $data['dob'] ?? null,
+                'blood_group'  => $data['blood_group'] ?? null,
+                'address'      => $data['address'] ?? null,
             ]);
         });
 
@@ -81,6 +87,9 @@ class EmployeeController extends Controller
         'email'    => 'required|email|unique:users,email,' . $employee->user_id,
         'phone'    => 'required|digits:10|unique:users,phone,' . $employee->user_id,
         'role'     => 'required|exists:roles,id',
+        'dob'          => 'nullable|date|before:today',
+        'blood_group'  => 'nullable|string|max:5',
+        'address'      => 'nullable|string|max:255',
     ]);
 
     // 🔐 Prevent admin / trainer role assignment
@@ -100,6 +109,9 @@ class EmployeeController extends Controller
             'position'     => $data['position'],
             'joining_date' => $data['joining_date'],
             'status'       => $data['status'],
+            'dob'          => $data['dob'],
+            'blood_group'  => $data['blood_group'],
+            'address'      => $data['address'],
         ]);
 
         // ✅ Update users table (INCLUDING STATUS)

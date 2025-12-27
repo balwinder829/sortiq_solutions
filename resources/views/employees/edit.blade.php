@@ -113,6 +113,38 @@
                 @enderror
             </div>
 
+            {{-- Date of Birth --}}
+            <div class="form-group col-md-6">
+                <label>Date of Birth</label>
+                <input type="date" name="dob"
+                       class="form-control"
+                        max="{{ date('Y-m-d') }}"
+                       value="{{ old('dob', $employee->dob) }}">
+            </div>
+
+            {{-- Blood Group --}}
+            <div class="form-group col-md-6">
+                <label>Blood Group</label>
+                <select name="blood_group" class="form-control">
+                    <option value="">Select</option>
+                    @foreach(['A+','A-','B+','B-','O+','O-','AB+','AB-'] as $bg)
+                        <option value="{{ $bg }}"
+                            {{ old('blood_group', $employee->blood_group) == $bg ? 'selected' : '' }}>
+                            {{ $bg }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Address --}}
+            <div class="form-group col-md-12">
+                <label>Address</label>
+                <textarea name="address" class="form-control" rows="3">
+                    {{ old('address', $employee->address) }}
+                </textarea>
+            </div>
+
+
 
             {{-- Status --}}
           <div class="form-group col-md-6">
@@ -127,6 +159,8 @@
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>
+
+
 
         </div>
 
