@@ -8,8 +8,19 @@
 </style>
 
 <div class="container">
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Batches</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                   <a href="{{ route('batches.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add Batch</a>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ route('batches.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add Batch</a>
+    
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">

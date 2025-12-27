@@ -11,12 +11,17 @@
 
 <div class="container">
 
-    {{-- ADD BUTTON --}}
-    <a href="{{ route('placements.create') }}"
-       class="btn mb-3"
-       style="background-color:#343957;color:white;">
-        Add Placement
-    </a>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Student's Placements</h1>
+        </div>
+         
+        <div class="col-md-6">
+            <div class="d-flex justify-content-end">
+                 <a href="{{ route('placements.create') }}" class="btn mb-3" style="background-color:#6b51df;color:#fff;"> Add Placement</a>
+            </div>
+        </div>
+    </div>   
 
     {{-- SUCCESS MESSAGE --}}
     @if(session('success'))

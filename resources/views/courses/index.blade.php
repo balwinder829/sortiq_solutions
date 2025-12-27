@@ -7,7 +7,17 @@
 }
  </style>
 <div class="container">
-    <a href="{{ route('courses.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add Course</a>
+    <div class="row mb-2">
+        <div class="col-md-2">
+            <h1 class="page_heading">Courses</h1>
+        </div>
+         
+        <div class="col-md-10">
+            <div class="d-flex justify-content-end">
+                <a href="{{ route('courses.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add Course</a>
+            </div>
+        </div>
+    </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

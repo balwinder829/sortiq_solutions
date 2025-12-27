@@ -4,11 +4,16 @@
 <div class="container">
 
     {{-- ================= HEADER ================= --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold">👥 Sales Team Overview</h3>
-        <a href="{{ url()->previous() }}" class="btn btn-secondary btn-sm">
-            ← Back
-        </a>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Sales Team Overview</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                   <a href="{{ route('enquiries.index') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">        Back </a>
+            </div>
+        </div>
     </div>
 
     {{-- ================= FILTERS ================= --}}

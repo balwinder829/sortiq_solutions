@@ -958,7 +958,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
         Route::resource('close_student', CloseStudenController::class)->parameters(['close_student' => 'student']);
         Route::resource('test-categories', TestCategoryController::class);
-         Route::get('/employees', [AttendanceController::class, 'employeeList'])
+         Route::get('/employees_attendece', [AttendanceController::class, 'employeeList'])
             ->name('attendance.employees');
 
         // Route::get('/employees/{id}', [AttendanceController::class, 'employeeDetail'])

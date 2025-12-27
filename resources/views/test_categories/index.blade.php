@@ -2,12 +2,23 @@
 
 @section('content')
 <div class="container">
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Test Categories</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                <a href="{{ route('test-categories.create') }}" 
+                   class="btn mb-3"
+                   style="background-color:#6b51df;color:white;">
+                   Add Category
+                </a>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ route('test-categories.create') }}" 
-       class="btn mb-3"
-       style="background-color:#6b51df;color:white;">
-       Add Category
-    </a>
+    
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">

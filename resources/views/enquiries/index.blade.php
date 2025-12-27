@@ -11,11 +11,19 @@
 <div class="container">
 
     {{-- Add Enquiry Button --}}
-    <a href="{{ route('enquiries.create') }}"
-       class="btn mb-3"
-       style="background-color: #6b51df; color: #fff;">
-        Add Data
-    </a>
+    
+
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Manage Data</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                   <a href="{{ route('enquiries.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">        Add Data </a>
+            </div>
+        </div>
+    </div>
 
     {{-- Flash Messages --}}
     @if(session('success'))

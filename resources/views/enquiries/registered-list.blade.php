@@ -28,7 +28,26 @@
 <div class="container">
 
     {{-- HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="row mb-2">
+        <div class="col-md-4">
+            <h1 class="page_heading">Registrations</h1>
+        </div>
+        <div class="col-md-8">
+                <div class="d-flex justify-content-end gap-2">
+                    
+                    <a href="{{ route('registrations.export.all') }}"
+               class="btn mb-3" style="background-color: #6b51df; color: #fff;">
+                <i class="fa fa-download"></i> Export All
+            </a>
+
+            <a href="{{ route('registrations.export.pending') }}"
+               class="btn mb-3" style="background-color: #6b51df; color: #fff;">
+                <i class="fa fa-download"></i> Export Pending
+            </a>
+            </div>
+        </div>
+    </div>
+    <!-- <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">Registrations</h4>
 
         <div>
@@ -42,7 +61,7 @@
                 <i class="fa fa-download"></i> Export Pending
             </a>
         </div>
-    </div>
+    </div> -->
 
     {{-- FLASH --}}
     @if(session('success'))

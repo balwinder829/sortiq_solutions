@@ -28,11 +28,15 @@ table.dataTable td {
 
 <div class="container">
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Trainers</h3>
-
-        <div class="d-flex gap-2">
-            <a href="{{ route('trainers.create') }}" class="btn btn-primary mb-3">Add Trainer</a>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Trainers</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                    <a href="{{ route('trainers.create') }}" style="background-color: #6b51df; color: #fff;" class="btn btn-primary mb-3">Add Trainer</a>
+            </div>
         </div>
     </div>
 

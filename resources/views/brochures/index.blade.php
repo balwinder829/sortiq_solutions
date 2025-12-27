@@ -30,16 +30,22 @@
 
 <div class="container">
 
-    {{-- ================= HEADER ================= --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Brochures</h4>
-
-        <a href="{{ route('brochures.create') }}"
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Brochures</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                  <a href="{{ route('brochures.create') }}"
            class="btn btn-primary"
-           style="background-color:#343957;color:#fff;">
+           style="background-color:#6b51df;color:#fff;">
             <i class="bx bx-plus"></i> Add Brochure
         </a>
+            </div>
+        </div>
     </div>
+   
 
     {{-- ================= FILTERS ================= --}}
     <div class="mb-3">

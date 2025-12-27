@@ -22,7 +22,7 @@
             @enderror
         </div>
 
-        <button class="btn btn-danger">Block Number</button>
+        <button class="btn btn-primary">Block Number</button>
         <a href="{{ route('admin.blocked-numbers.index') }}"
            class="btn btn-secondary">Cancel</a>
     </form>

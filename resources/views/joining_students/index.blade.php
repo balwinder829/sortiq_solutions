@@ -29,11 +29,15 @@
 </style>
 
 <div class="container">
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Joined Students</h1>
+        </div>
+         
+    </div>
 
     {{-- ================= HEADER ================= --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Joined Students</h4>
-    </div>
+     
 
     {{-- ================= FLASH MESSAGE ================= --}}
     @if(session('success'))

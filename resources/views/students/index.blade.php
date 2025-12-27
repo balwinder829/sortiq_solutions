@@ -21,10 +21,13 @@
 
 
     </div> -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 st-head">
-    <h3>Students</h3>
+    <!-- <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 st-head"> -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <h1 class="page_heading">Students</h1>
+        </div>
 
-    <div class="d-flex gap-2">
+    <div class=" col-md-10 d-flex justify-content-end gap-2">
         <a href="{{ route('students.create') }}" class="btn" 
            style="background-color: #6b51df; color: #fff;">+ Add Student</a>
 

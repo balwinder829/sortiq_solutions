@@ -3,11 +3,22 @@
 @section('content')
 <div class="container">
 
-    <h2>Create Company Profile</h2>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Create Company Profile</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                  <a href="{{ route('company_profile.index') }}" class="btn mb-3" style="background-color:#6b51df;color:#fff;">
+                        Back
+                    </a>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ route('company_profile.index') }}" class="btn btn-dark mb-3">
-        <i class="bx bx-arrow-back"></i> Back
-    </a>
+
+     
 
     @if ($errors->any())
     <div class="alert alert-danger">

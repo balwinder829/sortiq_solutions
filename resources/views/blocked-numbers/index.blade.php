@@ -2,17 +2,27 @@
 
 @section('content')
 <div class="container">
-
-    <h2>Blocked Numbers</h2>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Blocked Numbers</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                <a href="{{ route('admin.blocked-numbers.create') }}"
+       class="btn btn-primary mb-3">
+        Block New Number
+    </a>
+            </div>
+        </div>
+    </div>
+     
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <a href="{{ route('admin.blocked-numbers.create') }}"
-       class="btn btn-primary mb-3">
-        Block New Number
-    </a>
+   
 
     <table class="table table-bordered">
         <thead>

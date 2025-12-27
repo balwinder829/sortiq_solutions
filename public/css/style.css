@@ -19690,7 +19690,7 @@ button.swal2-confirm.swal2-styled.swal2-default-outline {
 .flex_between {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: start;
 }
 
 .page_heading {

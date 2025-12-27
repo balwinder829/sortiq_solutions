@@ -10,11 +10,23 @@
 
 <div class="container">
 
-    <a href="{{ route('event-expenses.create') }}"
-       class="btn mb-3"
-       style="background:#6b51df;color:#fff;">
-        Add Event Cost
-    </a>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Event Cost</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                <a href="{{ route('event-expenses.create') }}"
+                   class="btn mb-3"
+                   style="background:#6b51df;color:#fff;">
+                    Add Event Cost
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">

@@ -9,12 +9,23 @@
 </style>
 
 <div class="container">
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Pantry Expenses</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                <a href="{{ route('pantry-expenses.create') }}"
+                   class="btn mb-3"
+                   style="background:#6b51df;color:#fff;">
+                    Add Pantry Expense
+                </a>
+            </div>
+        </div>
+    </div>
 
-    <a href="{{ route('pantry-expenses.create') }}"
-       class="btn mb-3"
-       style="background:#6b51df;color:#fff;">
-        Add Pantry Expense
-    </a>
+    
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">

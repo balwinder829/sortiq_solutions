@@ -17,8 +17,21 @@
 </style>
 
 <div class="container">
+<div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Offline Tests</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                <a href="{{ route('admin.offline-tests.create') }}" class="btn btn-primary mb-3">
+                    Add Test
+                </a>
 
-<h3 class="mb-3">Tests</h3>
+            </div>
+        </div>
+    </div>
+
 
 <div class="mb-3 d-flex flex-wrap gap-2">
 
@@ -65,9 +78,6 @@
 </div>
 @endif
 
-<a href="{{ route('admin.offline-tests.create') }}" class="btn btn-primary mb-3">
-    Add Test
-</a>
 
 <form method="GET" class="p-3 rounded mb-3" style="background:#f1f3f8">
     <div class="row">

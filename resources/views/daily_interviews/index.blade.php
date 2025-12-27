@@ -7,7 +7,22 @@
 }
 </style>
 <div class="container">
-    <h4>Daily Interview Management</h4>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Daily Interview Management</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                <a href="{{ route('daily-interviews.create') }}"
+                   class="btn mb-3"
+                   style="background-color:#6b51df;color:#fff;">
+                     Schedule Interview
+                </a>
+            </div>
+        </div>
+    </div>
+    
 
     {{-- Filter Form (UPDATED) --}}
     <div class="card mb-3 p-3">
@@ -86,11 +101,7 @@
     </div>
     {{-- End Filter Form --}}
     
-    <a href="{{ route('daily-interviews.create') }}"
-       class="btn mb-3"
-       style="background-color:#6b51df;color:#fff;">
-         Schedule Interview
-    </a>
+    
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

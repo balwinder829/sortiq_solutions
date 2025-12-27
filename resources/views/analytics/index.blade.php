@@ -6,10 +6,13 @@
 
 <div class="container mt-4">
 
-    <div class="d-flex justify-content-between mb-3">
-        <h3>Sales Analytics Dashboard</h3>
+    <div class="row mb-2">
+        <div class="col-md-10">
+            <h1 class="page_heading">Sales Analytics Dashboard</h1>
+        </div>
+         
     </div>
-
+     
     {{-- Top Performing College --}}
     <div class="card mb-4 shadow-sm">
         <div class="card-body text-center">

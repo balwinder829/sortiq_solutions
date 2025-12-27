@@ -10,7 +10,7 @@
  </style>
 <div class="container mt-4">
     <div class="d-flex justify-content-between mb-3">
-        <h3>Account Closed/Certificates Sent</h3>
+        <h1 class="page_heading">Account Closed/Certificates Sent</h1>
     </div>
 
     @if(session('success'))

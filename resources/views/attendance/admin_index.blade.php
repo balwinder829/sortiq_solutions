@@ -10,10 +10,13 @@
 
 <div class="container mt-4">
 
-    <div class="d-flex justify-content-between mb-3">
-        <h3>Employee Attendance</h3>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Employee Attendance</h1>
+        </div>
+         
     </div>
-
+   
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -123,7 +126,7 @@ $(document).ready(function() {
     $('#attendanceTable').DataTable({
         "pageLength": 10,
         "lengthMenu": [5, 10, 25, 50],
-        "scrollX": true
+        // "scrollX": true
     });
 });
 </script>

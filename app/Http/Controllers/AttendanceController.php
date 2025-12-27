@@ -98,7 +98,47 @@ class AttendanceController extends Controller
     // -----------------------------
     // ADMIN PANEL
     // -----------------------------
-    public function employeeList()
+    public function employeeList(Request $request)
+{
+    $employees = User::where('role', '!=', 1)
+
+        // 🔹 filter by name
+        ->when($request->name, function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->name . '%');
+        })
+
+        // 🔹 filter by attendance login/logout
+        ->when($request->start_date || $request->end_date, function ($q) use ($request) {
+            $q->whereHas('attendances', function ($qa) use ($request) {
+
+                if ($request->start_date) {
+                    $qa->whereDate('login_time', '>=', $request->start_date);
+                }
+
+                if ($request->end_date) {
+                    $qa->whereDate('logout_time', '<=', $request->end_date);
+                }
+            });
+        })
+
+        // 🔹 load filtered attendances
+        ->with(['attendances' => function ($qa) use ($request) {
+
+            if ($request->start_date) {
+                $qa->whereDate('login_time', '>=', $request->start_date);
+            }
+
+            if ($request->end_date) {
+                $qa->whereDate('logout_time', '<=', $request->end_date);
+            }
+        }])
+
+        ->get();
+
+    return view('attendance.admin_index', compact('employees'));
+}
+
+    public function employeeList_old()
     {
         $employees = User::whereIn('role', [2, 3])
                      ->with('attendances')   // load attendance too

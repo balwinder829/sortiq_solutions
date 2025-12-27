@@ -3,11 +3,20 @@
 @section('content')
 <div class="container">
 
-    <h2>Create Brochure</h2>
-
-    <a href="{{ route('brochures.index') }}" class="btn btn-dark mb-3">
-        <i class="bx bx-arrow-back"></i> Back
-    </a>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Create Brochure</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                 <a href="{{ route('brochures.index') }}" class="btn btmb-3" style="background-color:#6b51df;color:#fff;">
+                    Back
+                </a>
+            </div>
+        </div>
+    </div>
+    
 
     @if ($errors->any())
         <div class="alert alert-danger">

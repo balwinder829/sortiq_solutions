@@ -2,18 +2,24 @@
 
 @section('content')
 <div class="container">
-    <div class="d-flex justify-content-between mb-3">
-        <h4>Upcoming Events</h4>
-        <div>
-            <a href="{{ route('upcoming-events.calendar') }}" class="btn btn-secondary">
-                Calendar View
-            </a>
-            <a href="{{ route('upcoming-events.create') }}" class="btn btn-primary">
-                + Add Event
-            </a>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="page_heading">Upcoming Events</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end gap-2">
+                    
+                    <a href="{{ route('upcoming-events.calendar') }}" class="btn btn-secondary">
+                        Calendar View
+                    </a>
+                    <a href="{{ route('upcoming-events.create') }}" class="btn btn-primary">
+                        Add Event
+                    </a>
+            </div>
         </div>
     </div>
-
+    
     <table class="table table-bordered">
         <thead>
             <tr>

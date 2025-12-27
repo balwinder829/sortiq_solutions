@@ -10,12 +10,23 @@
 
 <div class="container">
 
-    {{-- ADD BUTTON --}}
-    <a href="{{ route('part-time-jobs.create') }}"
-       class="btn mb-3"
-       style="background:#6b51df;color:#fff;">
-        Add Part-Time Job
-    </a>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Part-Time Jobs</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                <a href="{{ route('part-time-jobs.create') }}"
+                   class="btn mb-3"
+                   style="background:#6b51df;color:#fff;">
+                    Add Part-Time Job
+                </a>
+            </div>
+        </div>
+    </div>
+
+
 
     {{-- SUCCESS MESSAGE --}}
     @if(session('success'))

@@ -7,8 +7,17 @@
 }
  </style>
 <div class="container">
-    <h2>References</h2>
-    <a href="{{ route('references.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">+ Add Reference</a>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">References</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    <a href="{{ route('references.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">+ Add Reference</a>
+            </div>
+        </div>
+    </div>
+
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

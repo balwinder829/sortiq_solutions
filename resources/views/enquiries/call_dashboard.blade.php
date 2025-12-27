@@ -35,12 +35,14 @@
 </style>
 
 
-<div class="container-fluid px-4">
+<div class="container">
 
-    {{-- ================= HEADER ================= --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0">📞 Call Activity Dashboard</h3>
+    <div class="row mb-4 mt-4">
+        <div class="col-md-10">
+            <h1 class="page_heading">Call Activity Dashboard</h1>
+        </div>
     </div>
+     
 
     {{-- ================= KPI CARDS ================= --}}
     <div class="row g-3 mb-4">

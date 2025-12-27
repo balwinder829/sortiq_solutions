@@ -8,11 +8,18 @@
  </style>
 <div class="container">
 
-<h2 class="mb-3">Employee Events</h2>
-
-<a href="{{ route('employee.events.create') }}" class="btn mb-3" style="background-color: #343957; color: white;">
-    <i class="fa fa-plus"></i> Add Employee Event
-</a>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="page_heading">Employee Events</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    <a href="{{ route('employee.events.create') }}" class="btn mb-3" style="background-color: #6b51df; color: white;">
+                        Add Employee Event
+                    </a>
+            </div>
+        </div>
+    </div>
 
 <form method="GET" class="row mb-3">
 
@@ -39,7 +46,7 @@
     </div>
 
     <div class="col-md-3 d-flex align-items-end gap-2">
-        <button class="btn btn-primary mt-3" style="background-color: #343957; color: white;">Apply Filter</button>
+        <button class="btn btn-primary mt-3" style="background-color: #6b51df; color: white;">Apply Filter</button>
         <a class="btn btn-secondary mt-3" href="{{ route('employee.events.index') }}">Reset</a>
     </div>
 

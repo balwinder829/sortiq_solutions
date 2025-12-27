@@ -27,7 +27,7 @@
     @endif
 </div>
     <div class="d-flex justify-content-between mb-3">
-        <h3>Certificates</h3>
+        <h1 class="page_heading">Certificates</h1>
     </div>
 
 

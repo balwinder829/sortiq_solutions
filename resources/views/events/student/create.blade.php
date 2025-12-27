@@ -3,7 +3,16 @@
 @section('content')
 <div class="container">
 
-<h3>Create {{ ucfirst($routePrefix) }} Event</h3>
+<div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="page_heading">Create {{ ucfirst($routePrefix) }} Event</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    <a href="{{ route($routePrefix.'.events.index') }}" class="btn mb-3" style="background-color: #6b51df; color: white;">Back</a>
+            </div>
+        </div>
+    </div>
 
 {{-- GLOBAL ERRORS --}}
 @if ($errors->any())
@@ -16,7 +25,7 @@
     </div>
 @endif
 
-<a href="{{ route($routePrefix.'.events.index') }}" class="btn mb-3" style="background-color: #343957; color: white;">Back</a>
+
 
 <form method="POST"
       action="{{ route($routePrefix.'.events.store') }}"

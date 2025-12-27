@@ -2,47 +2,56 @@
 
 @section('content')
 <div class="container">
-    <h4>Letters</h4>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="page_heading">Letters</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                    <a href="{{ route('letters.create') }}" class="btn" style="background-color:#6b51df;color:#fff;"> Add Letter</a>
+            </div>
+        </div>
+    </div>
+   
+   <div class="row mb-3 align-items-center">
 
-    {{-- Top Actions & Filters --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <a href="{{ route('letters.create') }}"
-           class="btn"
-           style="background-color:#6b51df;color:#fff;">
-            Add Letter
-        </a>
+    <div class="col-md-8">
+        <form method="GET" action="{{ route('letters.index') }}" class="row g-2">
 
-        {{-- FILTER FORM --}}
-        <form method="GET"
-              action="{{ route('letters.index') }}"
-              class="d-flex gap-2 align-items-center">
+            <!-- Dropdown (6 columns) -->
+            <div class="col-md-6">
+                <select name="letter_type" class="form-control">
+                    <option value="">All Letter Types</option>
+                    <option value="offer" {{ ($selectedType ?? '') === 'offer' ? 'selected' : '' }}>
+                        Offer Letter
+                    </option>
+                    <option value="experience" {{ ($selectedType ?? '') === 'experience' ? 'selected' : '' }}>
+                        Experience Letter
+                    </option>
+                    <option value="appointment" {{ ($selectedType ?? '') === 'appointment' ? 'selected' : '' }}>
+                        Appointment Letter
+                    </option>
+                </select>
+            </div>
 
-            <select name="letter_type" class="form-control">
-                <option value="">All Letter Types</option>
-                <option value="offer"
-                    {{ ($selectedType ?? '') === 'offer' ? 'selected' : '' }}>
-                    Offer Letter
-                </option>
-                <option value="experience"
-                    {{ ($selectedType ?? '') === 'experience' ? 'selected' : '' }}>
-                    Experience Letter
-                </option>
-                <option value="appointment"
-                    {{ ($selectedType ?? '') === 'appointment' ? 'selected' : '' }}>
-                    Appointment Letter
-                </option>
-            </select>
+            <!-- Buttons (remaining 6 columns) -->
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    Search
+                </button>
 
-            <button type="submit" class="btn btn-primary">
-                Search
-            </button>
+                <a href="{{ route('letters.index') }}" class="btn btn-secondary">
+                    Reset
+                </a>
+            </div>
 
-            <a href="{{ route('letters.index') }}"
-               class="btn btn-secondary">
-                Reset
-            </a>
         </form>
     </div>
+
+</div>
+
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

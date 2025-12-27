@@ -2,13 +2,18 @@
 
 @section('content')
 <div class="container">
-    <h4>Employees</h4>
-
-    <a href="{{ route('employees.create') }}"
-       class="btn mb-3"
-       style="background-color:#6b51df;color:#fff;">
-        Add Employee
-    </a>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Employees</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                   <a href="{{ route('employees.create') }}" class="btn mb-3" style="background-color:#6b51df;color:#fff;">Add Employee </a>
+            </div>
+        </div>
+    </div>
+   
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

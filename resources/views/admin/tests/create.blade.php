@@ -3,7 +3,18 @@
 @section('content')
 <div class="container">
 
-<h3>Create Test</h3>
+
+<div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Create Test</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                <a href="{{ route('admin.tests.index') }}" class="btn  btn-primary mb-3">Back</a>
+            </div>
+        </div>
+    </div>
 
 
 @if(session('success'))
@@ -25,7 +36,7 @@
 @endif
 
 
-<a href="{{ route('admin.tests.index') }}" class="btn btn-dark mb-3">Back</a>
+
 
 <form method="POST" action="{{ route('admin.tests.store') }}">
 @csrf

@@ -3,15 +3,23 @@
 @section('content')
 <div class="container">
 
-    {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Company Profiles</h4>
-        <a href="{{ route('company_profile.create') }}"
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <h1 class="page_heading">Company Profiles</h1>
+        </div>
+        <div class="col-md-6">
+                <div class="d-flex justify-content-end">
+                    
+                   <a href="{{ route('company_profile.create') }}"
            class="btn"
-           style="background-color:#343957;color:#fff;">
+           style="background-color:#6b51df;color:#fff;">
             <i class="bx bx-plus"></i> Add Company Profile
         </a>
+            </div>
+        </div>
     </div>
+
+  
 
     {{-- Filters --}}
     <div class="mb-3">
