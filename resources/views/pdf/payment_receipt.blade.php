@@ -60,7 +60,7 @@
                                         font-family: &quot;Inter&quot;, sans-serif;
                                     "
                                 >
-                                    <strong>Receipt No.</strong> 152
+                                    <strong>Receipt No.</strong> {{ $student->sno }}
                                 </td>
                             </tr>
                             <tr>

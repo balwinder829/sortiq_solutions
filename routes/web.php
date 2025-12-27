@@ -480,18 +480,6 @@ Route::get(
 
         Route::get('tests/{test}/selected-students', [TestController::class, 'selectedStudents'])->name('tests.selected.students');
 
-
-        //offline routes
-
-        //  Route::get('offline-tests/{test}/students', [OfflineTestStudentController::class, 'index'])->name('offline.students.index');
-
-        // Route::post('offline-tests/{test}/students/upload', [OfflineTestStudentController::class, 'upload'])->name('offline.students.upload');
-
-        // Route::post('offline-students/finalize', [OfflineTestStudentController::class, 'bulkFinalize'])->name('offline.students.finalize');
-
-        // Route::post('offline-tests/{test}/move-enquiries', [OfflineTestStudentController::class, 'move.enquiries'])->name('offline.students.move.enquiries');
-
-
     });
 
 
