@@ -258,7 +258,7 @@ $(document).on('click', '.view-students', function() {
                             <td>${i+1}</td>
                             <td>${s.student_name}</td>
                             <td>${s.email_id}</td>
-                            <td>${s.college_data ? s.college_data.college_name : '-'}</td>
+                            <td>${s.college_data ? s.college_data.full_name : '-'}</td>
                             <td>${s.status ?? '-'}</td>
                         </tr>
                     `;

@@ -12,6 +12,7 @@ class College extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'colleges';
+    protected $appends = ['full_name'];
 
     protected $fillable = [
         'college_name',   // original value shown everywhere
