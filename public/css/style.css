@@ -8057,7 +8057,7 @@ a {
   left: auto; }
 
 .nav-header {
-  height: 5rem;
+  height: 56px;
   width: 17.1875rem;
   display: inline-block;
   text-align: left;
@@ -10316,10 +10316,10 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
 
 .quixnav {
   width: 17.1875rem;
-  padding-bottom: 112px;
+  padding-bottom: 0px;
   height: 100%;
   position: absolute;
-  top: 5rem;
+  top: 3rem;
   padding-top: 0;
   z-index: 2;
   background-color: #343957;
