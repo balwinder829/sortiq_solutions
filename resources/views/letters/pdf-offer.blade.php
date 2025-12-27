@@ -23,14 +23,34 @@
     </style>
 </head>
 <body>
-<div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff; padding-top: 130px">
+<div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
+	<div class="head-main" style="padding-top: 110px;">
+		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
+			<table width="100%" cellpadding="0" cellspacing="0">
+				<tr>
+					<td width="68%" align="left">
+						<div class="h-logo">
+							<img style="width: 100%; max-width: 200px;" src="{{ public_path('images/certificates_images/logo-sortiq.png' ) }}" width="200"/>
+						</div>
+					</td>
+					<td width="32%" align="left">
+						<div class="h-detials" style="max-width: 210px; width: 100%;">
+							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/cl.png') }}" style="width:15px; margin-top:2px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px; display: inline-block;width: 180px;">+91 96465 22110</span></p>
+							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/email.png') }}" style="width:15px; margin-top:2px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px; display: inline-block; width: 180px;">info@sortiqsolutions.com</span></p>
+							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%; font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/globe.png') }}" style="width:15px; margin-top:2px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px; display: inline-block; width: 180px;">www.sortiqsolutions.com</span></p>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
 	
 	<div class="certi-body" style=" background:url('{{ public_path('images/certificates_images/bg-shape.jpg') }}')  no-repeat center; background-size:860px; padding-top: 60px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
 					<td colspan="2" style="text-align: center;">
-						<h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>OFFER LETTER</strong></h2>
+						<h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Offer Letter</strong></h2>
 					</td>
 				</tr>
 			</table>

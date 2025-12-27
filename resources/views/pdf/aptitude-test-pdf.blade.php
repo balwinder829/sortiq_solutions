@@ -27,8 +27,8 @@ body {
 							<img style="width: 100%; max-width: 200px;" src="{{ public_path('images/certificates_images/logo-sortiq.png') }}" width="200"/>
 						</div>
 					</td>
-					<td width="32%" align="right">
-						<div class="h-detials" style="max-width: 220px; width: 100%;">
+					<td width="32%" align="left">
+						<div class="h-detials" style="max-width: 210px; width: 100%;">
 							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/cl.png') }}" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">+91 96465 22110</span></p>
 							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/email.png') }}" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">info@sortiqsolutions.com</span></p>
 							<p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%; font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/globe.png') }}" style="width:15px; margin-top:0px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px;">www.sortiqsolutions.com</span></p>
@@ -50,41 +50,45 @@ body {
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Name</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
+						<strong>Name</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
 					</td>
 					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>College</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
-					</td>
-				</tr>
-				<tr>
-					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Course</strong> <span>_ _ _ _ _ _ _ _ _</span>
-					</td>
-					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Semester</strong> <span>_ _ _ _ _ _ _ _ _</span>
-					</td>
-					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Branch</strong> <span>_ _ _ _ _ _ _ _ _</span>
+						<strong>College</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
 					</td>
 				</tr>
+			</table>
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
 				<tr>
 					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Email</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ </span>
+						<strong>Course</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
 					</td>
 					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Contact no </strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
+						<strong>Semester</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
+					</td>
+					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
+						<strong>Branch</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
+					</td>
+				</tr>
+			</table>
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+				<tr>
+					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
+						<strong>Email</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
+					</td>
+					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
+						<strong>Contact no </strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
 					</td>
 				</tr>
 			</table>
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="text-align: center;">
-						<h4 style="font-family: 'Inter', sans-serif; text-align: center; font-size: 20px; font-weight: 700; color: red; margin: 0 0 10px;"><strong>Note:</strong> test will be only 1:00 hr</h2>
+						<h4 style="font-family: 'Inter', sans-serif; text-align: center; font-size: 16px; font-weight: 700; color: red; margin: 0 0 10px;"><strong>Note:</strong> test will be only 1:00 hr</h2>
 					</td>
 				</tr>
 			</table>
 			 @foreach($questions as $qIndex => $question)
-			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
 				<tr>
 					<td colspan="4" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
 						<strong>{{ $qIndex + 1 }}. {{ $question->question }}
