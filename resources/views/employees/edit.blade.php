@@ -139,9 +139,7 @@
             {{-- Address --}}
             <div class="form-group col-md-12">
                 <label>Address</label>
-                <textarea name="address" class="form-control" rows="3">
-                    {{ old('address', $employee->address) }}
-                </textarea>
+                <textarea name="address" class="form-control" rows="3">{{ old('address', $employee->address) }}</textarea>
             </div>
 
 
