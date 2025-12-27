@@ -67,7 +67,7 @@
                 @foreach($colleges as $college)
                     <option value="{{ $college->id }}"
                         {{ request('college_name') == $college->id ? 'selected' : '' }}>
-                        {{ $college->college_name }}
+                        {{ $college->FullName }}
                     </option>
                 @endforeach
             </select>
@@ -201,7 +201,7 @@
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
                 <td>{{ $student->sessionData->session_name ?? '-' }}</td>
-                <td>{{ $student->collegeData->college_name ?? '-' }}</td>
+                <td>{{ $student->collegeData->FullName ?? '-' }}</td>
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
                 <td>{{ $student->total_fees }}</td>

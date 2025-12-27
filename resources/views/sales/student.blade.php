@@ -53,7 +53,7 @@
                 @foreach($colleges as $college)
                     <option value="{{ $college->college_name }}"
                         {{ request('college_name') == $college->college_name ? 'selected' : '' }}>
-                        {{ $college->college_name }}
+                        {{ $college->FullName }}
                     </option>
                 @endforeach
             </select>
@@ -160,7 +160,7 @@
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
                 <td>{{ $student->session }}</td>
-                <td>{{ $student->college_name }}</td>
+                <td>{{ $student->FullName }}</td>
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
                 <td><span class="badge bg-{{ $student->status == 'Active' ? 'success' : 'danger' }}">{{ $student->status }}</span></td>

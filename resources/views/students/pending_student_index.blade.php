@@ -89,7 +89,7 @@
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
                 <td>{{ $student->sessionData->session_name ?? '-' }}</td>
-                <td>{{ $student->collegeData->college_name ?? '-' }}</td>
+                <td>{{ $student->collegeData->FullName ?? '-' }}</td>
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
                 <td><span class="badge bg-{{ $student->status == 'Active' ? 'success' : 'danger' }}">{{ $student->status }}</span></td>

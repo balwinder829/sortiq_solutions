@@ -85,15 +85,21 @@ class College extends Model
         return $this->belongsTo(District::class);
     }
 
+    // public function getFullNameAttribute()
+    // {
+    //     $parts = [
+    //         $this->college_name ?? '',
+    //         $this->district->name ?? '',
+    //         $this->state->name ?? '',
+    //     ];
+
+    //     return implode(', ', array_filter($parts));
+    // }
+
+
     public function getFullNameAttribute()
     {
-        $parts = [
-            $this->college_name ?? '',
-            $this->district->name ?? '',
-            $this->state->name ?? '',
-        ];
-
-        return implode(', ', array_filter($parts));
+        return $this->college_display_name;
     }
 
     public function enquiries()

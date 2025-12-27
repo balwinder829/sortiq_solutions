@@ -85,7 +85,7 @@ Route::post('/join', [JoiningStudentController::class, 'store'])->name('joining_
 
 
 Route::middleware(['auth', 'permission'])->group(function () {
-    Route::resource('students', StudentController::class);
+    
     Route::get('/admin/joining-students',
         [JoiningStudentController::class, 'index']
     )->name('joined_students.index');
@@ -130,6 +130,14 @@ Route::middleware(['auth', 'permission'])->group(function () {
     Route::resource('cvs', CvController::class);
     Route::resource('daily-interviews', DailyInterviewController::class);
 
+    Route::get('/students/import', [StudentController::class, 'importForm'])
+        ->name('students.importForm');
+
+    Route::post('/students/import', [StudentController::class, 'import'])
+        ->name('students.import');
+
+    Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete'])
+     ->name('students.bulk.delete');
 
 });
 
@@ -563,6 +571,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
     Route::post('/registrations/bulk-convert',
     [EnquiryController::class, 'bulkConvert'])
     ->name('registrations.bulk.convert');
+    Route::resource('students', StudentController::class);
 
 });
 
@@ -589,14 +598,6 @@ Route::middleware(['auth', 'role:1,2,3'])->group(function () {
     Route::get('/sales/students', [StudentController::class,'salesIndex'])
         ->name('sales.students.index');
 
-    Route::get('/students/import', [StudentController::class, 'importForm'])
-        ->name('students.importForm');
-
-    Route::post('/students/import', [StudentController::class, 'import'])
-        ->name('students.import');
-
-    Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete'])
-     ->name('students.bulk.delete');
 
 
     // Route::resource('students', StudentController::class);

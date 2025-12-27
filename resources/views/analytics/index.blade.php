@@ -16,7 +16,7 @@
             <h4 class="mb-2">Top Performing College</h4>
 
             @if($topCollege)
-                <h5 class="fw-bold">{{ $topCollege->collegeData->college_name }}</h5>
+                <h5 class="fw-bold">{{ $topCollege->collegeData->FullName }}</h5>
                 <p class="text-muted">{{ $topCollege->total_students }} Students</p>
             @else
                 <p>No Data Available</p>
@@ -89,7 +89,7 @@ new Chart(document.getElementById('collegeCountChart'), {
     type: 'bar',
     data: {
         labels: {!! json_encode(
-    $collegeCounts->map(fn($c) => $c->collegeData->college_name ?? 'Unknown')->toArray()) !!},
+    $collegeCounts->map(fn($c) => $c->collegeData->FullName ?? 'Unknown')->toArray()) !!},
         datasets: [{
             label: 'Students',
             backgroundColor: '#4e73df',
@@ -104,7 +104,7 @@ new Chart(document.getElementById('collegeRevenueChart'), {
     type: 'bar',
     data: {
         labels: {!! json_encode(
-    $collegeCounts->map(fn($c) => $c->collegeData->college_name ?? 'Unknown')->toArray()) !!},
+    $collegeCounts->map(fn($c) => $c->collegeData->FullName ?? 'Unknown')->toArray()) !!},
         datasets: [{
             label: 'Revenue (₹)',
             backgroundColor: '#1cc88a',

@@ -84,7 +84,7 @@
                                         @foreach($colleges as $college)
                                             <option value="{{ $college->id }}" 
                                                 {{ old('college_name', $student->college_name) == $college->id ? 'selected' : '' }}>
-                                                {{ $college->college_name }}
+                                                {{ $college->FullName }}
                                             </option>
                                         @endforeach
                                     </select>

@@ -70,7 +70,7 @@
             <option value="">All Colleges</option>
             @foreach($colleges as $clg)
                 <option value="{{ $clg->college_name }}" {{ request('college')==$clg->college_name?'selected':'' }}>
-                    {{ $clg->college_name }}
+                    {{ $clg->FullName }}
                 </option>
             @endforeach
         </select>
@@ -98,7 +98,7 @@
             <tr>
                 <td>{{ $row->enquiry_name }}</td>
                 <td>{{ $row->mobile }}</td>
-                <td>{{ $row->college_name }}</td>
+                <td>{{ $row->FullName }}</td>
                 <td>
     <a href="{{ url('admin/salespersons/' . $row->salesperson_id) }}">
         {{ $row->salesperson }}

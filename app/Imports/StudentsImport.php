@@ -70,23 +70,54 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVal
 
         // ---- COLLEGE LOOKUP (Flexible Matching) ----
 
+        // $collegeId = null;
+        // $college = null;
+        // if ($row['college_name'] !== '') {
+        //     $college = College::firstOrCreate(
+        //         ['college_name' => $data['college_name']]
+        //     );
+        // }
+
+
         $collegeId = null;
 
         if (!empty($row['college_name'])) {
 
-            // Normalize Excel value
             $excelCollege = strtolower(trim($row['college_name']));
-
-            // Remove commas and extra spaces
             $excelCollege = str_replace(',', '', $excelCollege);
             $excelCollege = preg_replace('/\s+/', ' ', $excelCollege);
 
-            // Flexible matching in DB
-            $collegeId = \App\Models\College::whereRaw("
+            $college = College::whereRaw("
                 LOWER(REPLACE(college_name, ',', '')) LIKE ?
-            ", ["%{$excelCollege}%"])
-            ->value('id');
+            ", ["%{$excelCollege}%"])->first();
+
+            // OPTIONAL: auto-create if not found
+            if (!$college) {
+                $college = College::create([
+                    'college_name' => trim($row['college_name'])
+                ]);
+            }
+
+            $collegeId = $college->id;
         }
+
+
+        // $collegeId = $college?->id
+        // if (!empty($row['college_name'])) {
+
+        //     // Normalize Excel value
+        //     $excelCollege = strtolower(trim($row['college_name']));
+
+        //     // Remove commas and extra spaces
+        //     $excelCollege = str_replace(',', '', $excelCollege);
+        //     $excelCollege = preg_replace('/\s+/', ' ', $excelCollege);
+
+        //     // Flexible matching in DB
+        //     $collegeId = \App\Models\College::whereRaw("
+        //         LOWER(REPLACE(college_name, ',', '')) LIKE ?
+        //     ", ["%{$excelCollege}%"])
+        //     ->value('id');
+        // }
 
 
         // Session

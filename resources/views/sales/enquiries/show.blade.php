@@ -40,7 +40,7 @@
 
                 <div class="col-md-4 mb-2">
                     <strong>College:</strong><br>
-                    {{ $enquiry->collegeData->college_name ?? '-' }}
+                    {{ $enquiry->collegeData->FullName ?? '-' }}
                 </div>
 
                 <div class="col-md-4 mb-2">

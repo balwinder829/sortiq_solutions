@@ -38,7 +38,7 @@
                 <div class="col-md-6 mb-3">
                     <h5 class="fw-bold">Academic Details</h5>
                     <ul class="list-group">
-                        <li class="list-group-item"><strong>College:</strong> {{ $student->collegeData->college_name }}</li>
+                        <li class="list-group-item"><strong>College:</strong> {{ $student->collegeData->FullName }}</li>
                         <li class="list-group-item"><strong>Course / Technology:</strong> {{ $student->technology ?? '-' }}</li>
                         <li class="list-group-item"><strong>Batch:</strong> {{ $student->batch_id ?? '-' }}</li>
                         <li class="list-group-item"><strong>Status:</strong> {{ $student->status ?? '-' }}</li>

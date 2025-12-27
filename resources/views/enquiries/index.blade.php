@@ -254,7 +254,7 @@
                         <td>{{ $enquiry->name }}</td>
                         <td>{{ $enquiry->mobile }}</td>
                         <td>{{ $enquiry->email }}</td>
-                        <td>{{ $enquiry->collegeData->college_name ?? '-' }}</td>
+                        <td>{{ $enquiry->collegeData->FullName ?? '-' }}</td>
                         <td>{{ $enquiry->study }}</td>
                         <td>{{ $enquiry->semester }}</td>
                         <td>{{ $enquiry->assignedTo->name ?? '-' }}</td>
