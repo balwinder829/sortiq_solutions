@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>General Aptitude Test</title>
+<title>{{ ucwords($test->title) }}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Katibeh&display=swap" rel="stylesheet">
 <style>
-body {
-    margin: 0;
-    padding: 0;
-}
+	body {
+		margin: 0;
+		padding: 0;
+	}
 </style>
 </head>
 <body>
-
-<div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
+<div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff; padding-top: -80px; padding-bottom: 50px;">
 	<div class="head-shape">
 		<img style="width: 100%; display: block;" src="images/head-shape-test.png"/>
 	</div>
-	<div class="head-main" style="padding-top: 50px;">
+	<div class="head-main" style="padding-top: 20px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
@@ -106,26 +105,7 @@ body {
 				</tr>
 			</table>
 			 @endforeach
-		 
-
-			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
-				<tr>
-					<td width="70%">
-						<div style="display:inline-block; width:100%;">
-							<h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd. </h4><br>
-						</div>
-					</td>
-					<td width="30%" align="right">
-						<div style="display:inline-block; width:100%;">
-							<h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Agreed and Accepted</h4>
-						</div>
-					</td>
-				</tr>
-			</table>
 		</div>
-	</div>
-	<div class="footer-shape" style="margin-top: 40px;">
-		<img style="width: 100%; display: block;" src="images/footer-shape-1-test.png"/>
 	</div>
 </div>
 

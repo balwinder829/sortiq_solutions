@@ -554,26 +554,27 @@ public function store(Request $request)
             'orientation' => 'P',
             'margin_left' => 0,
             'margin_right' => 0,
-            'margin_top' => 0,
-            'margin_bottom' => 0,
+            'margin_top' => 20,
+            'margin_bottom' => 20,
             'tempDir' => storage_path('app/mpdf'), // IMPORTANT
         ]);
 
-         $html = View::make('pdf.aptitude-test-pdf', compact('questions','test'))->render();
-         // $mpdf->SetHTMLHeader($this->getPDFHeader());
-            // $mpdf->SetHTMLFooter($this->getPDFFooter());
-            $mpdf->WriteHTML($html);
+        $html = View::make('pdf.aptitude-test-pdf', compact('questions','test'))->render();
+        // $mpdf->SetHTMLHeaderByName('firstHeader');
+        $mpdf->SetHTMLFooter('');
+
+        // Write ALL content in one go
+        $mpdf->WriteHTML($html);
+
+        // Footer only on last page
+        $mpdf->SetHTMLFooter($this->getStudentTestPDFFooter());
+        $mpdf->WriteHTML('');
 
          return response()->streamDownload(
             fn () => $mpdf->Output('', 'D'),
             $test->title . '-question-paper.pdf'
         );
-        // $pdf = Pdf::loadView(
-        //     'pdf.aptitude-test-pdf',
-        //     compact('test', 'questions')
-        // )->setPaper('a4');
-
-        // return $pdf->download($test->title . '-question-paper.pdf');
+    
     }
 
     /* FUTURE METHODS (placeholders) */
