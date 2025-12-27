@@ -33,7 +33,7 @@
 
 <!-- <div id="main-wrapper"> -->
 @include('layouts.header')
-@include('common.logo')
+<!-- @include('common.logo') -->
 @include('layouts.navbar')
 
 <div class="content-body">

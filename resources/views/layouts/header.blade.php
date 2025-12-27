@@ -80,7 +80,7 @@
     <div class="header-content">
         <nav class="navbar navbar-expand">
             <div class="collapse navbar-collapse justify-content-between">
-
+                @include('common.logo') 
                 {{-- Left side (search, etc.) --}}
                 <div class="header-left">
                     <div class="search_bar dropdown" style="display: none;">

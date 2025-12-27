@@ -8223,18 +8223,20 @@ a {
     display: block; }
 
 .header {
-  height: 5rem;
+  height: 3.5rem;
   z-index: 1;
-  position: relative;
+  position: sticky;
   padding: 0rem;
   background-color: #fff;
   z-index: 3;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  padding-left: 17.1875rem;
-  transition: all .2s ease; }
+  /* padding-left: 17.1875rem; */
+  transition: all .2s ease; 
+  top: 0;
+}
   .header .header-content {
     height: 100%;
-    padding-left: 5.3125rem;
+    /* padding-left: 5.3125rem; */
     padding-right: 1.875rem;
     align-items: center;
     display: flex; }
