@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Course;
 
 class Batch extends Model
 {
@@ -56,5 +57,19 @@ class Batch extends Model
     {
         return $this->hasMany(Student::class, 'batch_assign');
     }
+
+    // 🔵 Accessor for multiple technologies
+    public function getCoursesAttribute()
+    {
+        $ids = $this->class_assign ? explode(',', $this->class_assign) : [];
+
+        if (empty($ids)) {
+            return collect();
+        }
+
+        return Course::whereIn('id', $ids)->get();
+    }
+
+
 
 }

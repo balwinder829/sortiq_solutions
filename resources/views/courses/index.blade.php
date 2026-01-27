@@ -9,12 +9,12 @@
 <div class="container">
     <div class="row mb-2">
         <div class="col-md-2">
-            <h1 class="page_heading">Courses</h1>
+            <h1 class="page_heading">Technologies</h1>
         </div>
          
         <div class="col-md-10">
             <div class="d-flex justify-content-end">
-                <a href="{{ route('courses.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add Course</a>
+                <a href="{{ route('courses.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add Technology</a>
             </div>
         </div>
     </div>
@@ -27,7 +27,7 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Course Name</th>
+                <th>Technology Name</th>
                 <!-- <th>Created At</th> -->
                 <th>Actions</th>
             </tr>
@@ -62,8 +62,8 @@
 <script>
     $(document).ready(function () {
         $('#course_table').DataTable({
-            "pageLength": 50,
-            "lengthMenu": [5, 10, 25, 50, 100],
+            "pageLength": 10,
+            "lengthMenu": [10, 15, 20, 25, 50, 100],
              // "scrollX": true // <-- Add this
         });
     });

@@ -21,8 +21,14 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use App\Imports\StudentsImport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\View;
 use ZipArchive;
 use Mpdf\Mpdf;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use App\Exports\StudentListExport;
+use Illuminate\Support\Str;
+
 
 class StudentController extends Controller
 {
@@ -101,7 +107,9 @@ class StudentController extends Controller
             
             $query->where('certificate_status', 0);
             //dd($request->all());
-            $students = $query->paginate(10);
+            $students = $query->orderBy('id', 'desc')->get();
+
+            // $students = $query->paginate(10);
 
         $sessions = StudentSession::all();
         $colleges = College::all();
@@ -137,68 +145,170 @@ class StudentController extends Controller
 
     // Show create form
     public function create()
-    {
+    {   
+        $activeSessionId = session('admin_session_id');
+        $activeSession = StudentSession::find($activeSessionId);
         $sessions = StudentSession::all();
-        $colleges = College::all();
-        $courses = Course::all();
-        $batches = Batch::all();
-        $department = Department::all();
-        $references = Reference::all();
-        $users = User::all();
+        // $colleges = College::all();
+        // $courses = Course::all();
+        // $batches = Batch::all();
+        // $department = Department::all();
+        // $references = Reference::all();
+        $colleges    = College::orderBy('college_display_name', 'asc')->get();
+        $courses     = Course::orderBy('course_name', 'asc')->get();
+        $batches     = Batch::orderBy('batch_name', 'asc')->get();        
+        $references  = Reference::orderBy('name', 'asc')->get();
+
+        // $users = User::all();
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
+        $lastStudent = Student::orderBy('id', 'desc')->first();
+        $nextSno = $lastStudent ? $lastStudent->sno + 1 : 1;
 
-        return view('students.create', compact('sessions','colleges','courses','batches','department','references','users','course_duration','student_status'));
+        return view('students.create', compact('sessions','activeSession','colleges','courses','batches','references','course_duration','student_status','nextSno'));
     }
 
     // Store student
     public function store(Request $request)
     {
-
         $validate= $request->validate([
             'student_name'   => 'required|string|max:255',
             'f_name'         => 'required|string|max:255',
-            'sno'            => 'required|string|max:255',
-            'email_id'       => 'required|email|unique:students_detail,email_id',
+            'sno'            => 'nullable|string|max:255',
+
+            // 🔽 removed DB unique, handled manually below
+            'email_id'       => 'required|email',
             'contact'        => 'nullable|string|max:15',
+
             'gender'         => 'required|string',
             'college_name'   => 'required|string',
-            'session'        => 'required|string',
-            'status'         => 'required',
-            'technology'     => 'required|string',
+            'status'         => 'nullable',
+            'technology'     => 'nullable|string',
             'total_fees'     => 'required|numeric',
             'reg_fees'       => 'required|numeric',
-            'pending_fees'   => 'nullable|numeric',
-            'next_due_date' => 'nullable|date',
-            // 'department'     => 'required|string',
-            'join_date'      => 'required|date',
-            'duration'       => 'required',
-            'batch_assign'   => 'required|string',
+            'paid_fees'       => 'required|numeric',
+            'next_due_date'  => 'nullable|date',
+            'join_date'      => 'nullable|date',
+            // 'duration'       => 'required',
+            'batch_assign'   => 'nullable|string',
             'reference'      => 'string',
-            'reg_due_amount' => 'required|integer',
-            'start_date'     => 'nullable|date',
+            'start_date'     => 'required|date',
             'end_date'       => 'nullable|date',
-            'part_time_offer'  => 'required|boolean',
-            'placement_offer'  => 'required|boolean',
-            'pg_offer'         => 'required|boolean',
-
+            'part_time_offer'  => 'nullable|boolean',
+            'placement_offer'  => 'nullable|boolean',
+            'pg_offer'         => 'nullable|boolean',
         ]);
+
+        if (($validate['reg_fees'] + $validate['paid_fees']) > $validate['total_fees']) {
+            return back()
+                ->withErrors([
+                    'paid_fees' => 'Registration fees + Paid fees cannot be greater than Total fees.',
+                ])
+                ->withInput();
+        }
+        $activeSessionId = session('admin_session_id');
+
+        /* =======================================================
+           🔴 ONLY NEW LOGIC ADDED — EVERYTHING ELSE SAME
+           ======================================================= */
+
+        /** ❌ SESSION-WISE EMAIL DUPLICATE CHECK */
+        // $emailExists = Student::withTrashed()
+        //     ->where('email_id', $validate['email_id'])
+        //     ->where('session', $activeSessionId)
+        //     ->exists();
+
+        // if ($emailExists) {
+        //     return back()
+        //         ->withErrors(['email_id' => 'This email already exists in this session'])
+        //         ->withInput();
+        // }
+
+         
+        // if (!empty($validate['contact'])) {
+        //     $contactExists = Student::withTrashed()
+        //         ->where('contact', $validate['contact'])
+        //         ->where('session', $activeSessionId)
+        //         ->exists();
+
+        //     if ($contactExists) {
+        //         return back()
+        //             ->withErrors(['contact' => 'This contact already exists in this session'])
+        //             ->withInput();
+        //     }
+        // }
+        // use Illuminate\Support\Str;
+
+        $validate['student_name'] = Str::of($validate['student_name'])->trim()->lower();
+        $validate['f_name']       = Str::of($validate['f_name'])->trim()->lower();
+
+        if (!empty($validate['contact'])) {
+            $contactExists = Student::withTrashed()
+                ->where('student_name', $validate['student_name'])
+                ->where('contact', $validate['contact'])
+                ->where('session', $activeSessionId)
+                ->exists();
+
+            if ($contactExists) {
+                return back()
+                    ->withErrors([
+                        'contact' => 'This student name with this contact already exists in this session'
+                    ])
+                    ->withInput();
+            }
+        }
+
+
+
+
+        /** 🔢 GLOBAL RECEIPT / STUDENT RECORD NUMBER */
+        // $lastSno = Student::whereRaw("sno REGEXP '^[0-9]+$'")
+        //     ->max(DB::raw('CAST(sno AS UNSIGNED)'));
+
+        // $validate['sno'] = $lastSno ? $lastSno + 1 : 1;
+
+        $lastSno = Student::orderBy('id', 'desc')->value('sno');
+
+        $newSno = is_numeric($lastSno) ? ((int)$lastSno + 1) : 1;
+
+        $validate['sno'] = $newSno;
+
+
+        /* =================== EXISTING CODE =================== */
+        $validate['student_name'] = Str::lower($validate['student_name']);
+        $validate['f_name']       = Str::lower($validate['f_name']);
+        $validate['pending_fees'] = "0.00";
+        $validate['paid_fees'] = $validate['paid_fees'] ?? 0;
+
+        $validate['pending_fees'] = max(
+            $validate['total_fees'] - $validate['reg_fees'] - $validate['paid_fees'],
+            0
+        );
+
+        $validate['session'] = $activeSessionId;
 
         Student::create($validate);
 
-        return redirect()->route('students.index')
-                         ->with('success','Student added successfully');
+        $activeSession = StudentSession::find($activeSessionId);
+
+        $sessionName = $activeSession
+            ? ucwords($activeSession->session_name)
+            : 'Unknown Session';
+
+        return redirect()
+            ->route('students.index')
+            ->with('success', "Student added successfully for session: {$sessionName}");
     }
 
     // Show edit form
     public function edit(Student $student)
     {
         $sessions = StudentSession::all();
-        $colleges = College::all();
-        $courses = Course::all();
-        $batches = Batch::all();
-        // $department = Department::all();
-        $references = Reference::all();
+        $colleges    = College::orderBy('college_display_name', 'asc')->get();
+        $courses     = Course::orderBy('course_name', 'asc')->get();
+        $batches     = Batch::orderBy('batch_name', 'asc')->get();        
+        $references  = Reference::orderBy('name', 'asc')->get();
+
         $users = User::all();
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
@@ -214,22 +324,23 @@ class StudentController extends Controller
             'student_name'   => 'required|string|max:255',
             'f_name'         => 'required|string|max:255',
             'sno'            => 'required|string|max:255',
-            'email_id'       => 'required|email|unique:students_detail,email_id,'.$student->id,
-            'contact'        => 'nullable|string|max:15',
+            // 'email_id'       => 'required|email|unique:students_detail,email_id,'.$student->id,
+            'email_id'       => 'nullable',
+            'contact'        => 'required|string|max:15',
             'gender'         => 'required|string',
             'college_name'   => 'required|string',   // not college_id
-            'session'        => 'required|string',   // not session_id
+            // 'session'        => 'required|string',   // not session_id
             'technology'     => 'required|string',   // not technology_id
             'batch_assign'   => 'required|string',   // not batch_id
-            'reference'      => 'string',   // not reference_user
+            'reference'      => 'nullable|string',   // not reference_user
             'status'         => 'required|string',
             'total_fees'     => 'required|numeric',
             'reg_fees'       => 'required|numeric',
-            'pending_fees'   => 'nullable|numeric',
+            'paid_fees'       => 'nullable|numeric',
+            // 'pending_fees'   => 'nullable|numeric',
             'next_due_date' => 'nullable|date',
             // 'department'     => 'required|string',
             'join_date'      => 'required|date',
-            'reg_due_amount' => 'required|string',
             'start_date'     => 'nullable|date',
             'end_date'       => 'nullable|date',
             'part_time_offer'  => 'required|boolean',
@@ -237,6 +348,46 @@ class StudentController extends Controller
             'pg_offer'         => 'required|boolean',
         ]);
         // dd('Passed validation', $validates);
+
+        if (($validates['reg_fees'] + $validates['paid_fees']) > $validates['total_fees']) {
+            return back()
+                ->withErrors([
+                    'paid_fees' => 'Registration fees + Paid fees cannot be greater than Total fees.',
+                ])
+                ->withInput();
+        }
+        // Force lowercase before saving
+        
+
+        $validates['student_name'] = Str::of($validates['student_name'])->trim()->lower();
+        $validates['f_name']       = Str::of($validates['f_name'])->trim()->lower();
+
+        $activeSessionId = session('admin_session_id');
+        if (!empty($validates['contact'])) {
+            $contactExists = Student::withTrashed()
+                ->where('student_name', $validates['student_name'])
+                ->where('contact', $validates['contact'])
+                ->where('session', $activeSessionId)
+                ->where('id', '!=', $student->id) // 👈 ignore current record
+                ->exists();
+
+            if ($contactExists) {
+                return back()
+                    ->withErrors([
+                        'contact' => 'This student name with this contact already exists in this session'
+                    ])
+                    ->withInput();
+            }
+        }
+
+
+        $validates['paid_fees'] = $validates['paid_fees'] ?? 0;
+        $validates['reg_fees'] = $validates['reg_fees'] ?? 0;
+
+        $validates['pending_fees'] = max(
+            $validates['total_fees'] - $validates['reg_fees'] - $validates['paid_fees'],
+            0
+        );
 
         $student->update($validates);
 
@@ -287,8 +438,174 @@ class StudentController extends Controller
     {
         return view('students.import');
     }
+public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:csv,txt,xlsx,xls',
+    ]);
 
-    public function import(Request $request)
+    $file = $request->file('file');
+
+    \DB::beginTransaction();
+
+    try {
+
+        $importer = new \App\Imports\StudentsImport();
+        \Maatwebsite\Excel\Facades\Excel::import($importer, $file);
+
+        // Validation failures
+        $failures = $importer->failures();
+
+        if ($failures->isNotEmpty()) {
+
+            \DB::rollBack();
+
+            $messages = [];
+
+            foreach ($failures as $failure) {
+                $messages[] =
+                    "Row {$failure->row()} – {$failure->attribute()} – " .
+                    implode(', ', $failure->errors());
+            }
+
+            return back()->withErrors($messages);
+        }
+
+        \DB::commit();
+
+        // Final counts
+        $total    = $importer->totalRows;
+        $inserted = $importer->insertedRows;
+        $skipped  = $importer->skippedRows;
+
+        $message = "From {$total} rows: {$inserted} inserted successfully, {$skipped} skipped.";
+
+        // Warnings
+        $warnings = $importer->duplicateContacts;
+
+        if (!empty($warnings)) {
+            return back()
+                ->with('success', $message)
+                ->withErrors($warnings);
+        }
+
+        return back()->with('success', $message);
+
+    } catch (\Throwable $e) {
+
+        \DB::rollBack();
+
+        return back()->withErrors([
+            'Import failed: Something went wrong while importing the file.'
+        ]);
+    }
+}
+
+    public function importw(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:csv,txt,xlsx,xls',
+    ]);
+
+    $file = $request->file('file');
+
+    /** STEP 1: Check file not empty + read headers */
+    $data = \Maatwebsite\Excel\Facades\Excel::toArray([], $file);
+
+    if (empty($data) || empty($data[0]) || empty($data[0][0])) {
+        return back()->withErrors(['Uploaded file is empty or unreadable.']);
+    }
+
+    // Read headers (first row)
+    $headers = array_map('strtolower', $data[0][0]);
+
+    // REQUIRED HEADERS (order NOT required)
+    $requiredHeaders = [
+        'student_name',
+        'f_name',
+        'email_id',
+        'contact',
+        'college_name',
+        'status',
+        'technology',
+        'total_fees',
+        'reg_fees',
+        'start_date',
+    ];
+
+    // Check missing headers
+    $missing = array_diff($requiredHeaders, $headers);
+
+    if (!empty($missing)) {
+        return back()->withErrors([
+            "Missing required column(s): " . implode(', ', $missing)
+        ]);
+    }
+
+    /** STEP 2: FULL VALIDATION + IMPORT (ALL OR NOTHING) */
+    \DB::beginTransaction();
+
+    try {
+
+        $importer = new \App\Imports\StudentsImport();
+
+        \Maatwebsite\Excel\Facades\Excel::import($importer, $file);
+
+        // 🔴 VALIDATION FAILURES (wrong phone, empty name, bad fees, bad date, etc.)
+        $failures = $importer->failures();
+
+        if ($failures->isNotEmpty()) {
+
+            \DB::rollBack();
+
+            $messages = [];
+
+            foreach ($failures as $failure) {
+                $messages[] =
+                    "Row {$failure->row()} – {$failure->attribute()} – " .
+                    implode(', ', $failure->errors());
+            }
+
+            return back()->withErrors($messages);
+        }
+
+        // 🟡 DUPLICATE / BLOCKED WARNINGS (rows skipped)
+        $warnings = [];
+
+        if (!empty($importer->duplicateContacts)) {
+            foreach ($importer->duplicateContacts as $msg) {
+                $warnings[] = $msg;
+            }
+        }
+
+        if (!empty($importer->duplicateEMail)) {
+            foreach ($importer->duplicateEMail as $msg) {
+                $warnings[] = $msg;
+            }
+        }
+
+        // ✅ Everything OK → commit
+        \DB::commit();
+
+        if (!empty($warnings)) {
+            return back()
+                ->with('success', 'Students Imported Successfully (some rows skipped).')
+                ->withErrors($warnings);   // show warnings
+        }
+
+        return back()->with('success', 'Students Imported Successfully!');
+
+    } catch (\Throwable $e) {
+
+        \DB::rollBack();
+
+        return back()->withErrors([
+            'Import failed: ' . $e->getMessage()
+        ]);
+    }
+}
+
+    public function import20jan(Request $request)
     {
         $request->validate([
             // 'file' => 'required|file|mimes:xlsx,xls,csv',
@@ -311,24 +628,23 @@ class StudentController extends Controller
         $requiredHeaders = [
             'student_name',
             'f_name',
-            'sno',
+            // 'sno',
             'email_id',
             'contact',
-            'gender',
+            // 'gender',
             'college_name',
-            'session',
+            // 'session',
             'status',
             'technology',
             'total_fees',
             'reg_fees',
-            'pending_fees',
-            'next_due_date',
-            'join_date',
-            'duration',
-            'batch_assign',
-            'reg_due_amount',
+            // 'pending_fees',
+            // 'next_due_date',
+            // 'join_date',
+            // 'duration',
+            // 'batch_assign',
             'start_date',
-            'end_date',
+            // 'end_date',
         ];
 
         /** 1️⃣ Missing headers? */
@@ -414,6 +730,7 @@ class StudentController extends Controller
 
     public function confirmStudent(Request $request, $id)
     {
+        // return redirect()->back()->with('success', 'Cannot send email.');
         // $student = Student::findOrFail($id);
         // $student = Student::with('sessionData')->find($id);
         $isInternship = $request->boolean('is_internship');
@@ -430,32 +747,35 @@ class StudentController extends Controller
         }
 
         // 2. Generate PDF dynamically
-        $filePath = $this->generateConfirmationPdf($student,$isInternship);
-        $receiptPath = $this->generatePaymentReceiptPdf($student);
+        // $filePath = $this->generateConfirmationPdf($student,$isInternship);
+        // $receiptPath = $this->generatePaymentReceiptPdf($student);
 
         // 3. Send email with attachment
-        Mail::to($student->email_id)
-            ->send(new StudentConfirmationMail($student, $filePath,$receiptPath));
+        // Mail::to($student->email_id)
+        //     ->send(new StudentConfirmationMail($student, $filePath,$receiptPath));
 
         // 4. Increment student's certificate email count
-        $student->increment('email_count_confirmation');
-        $student->increment('count_receipt_download');
+        // $student->increment('email_count_confirmation');
+        // $student->increment('count_receipt_download');
 
         // 5. Increment global email count
-        $emailCount = EmailCount::firstOrCreate(
-            ['email' => $student->email_id],
-            ['count' => 0]
-        );
-        $emailCount->increment('count');
+        // $emailCount = EmailCount::firstOrCreate(
+        //     ['email' => $student->email_id],
+        //     ['count' => 0]
+        // );
+        // $emailCount->increment('count');
 
         $student->certificate_status = 0; // confirmed
         $student->save();
 
-        return redirect()->back()->with('success', 'Student confirm and email sent.');
+        return redirect()->back()->with('success', 'Student sent to certification section.');
+        // return redirect()->back()->with('success', 'Student confirm and email sent.');
     }
 
     public function confirmMultiple(Request $request)
     {
+
+        // return back()->with('success', 'Cannot send to selected students.');
         // Expecting JSON string or array in $request->ids
         $idsPayload = $request->input('ids');
         $isInternship = $request->boolean('is_internship');
@@ -494,23 +814,25 @@ class StudentController extends Controller
             if (!$student) continue; // defensive
 
                // 2. Generate PDF dynamically
-            $filePath = $this->generateConfirmationPdf($student, $isInternship);
-            $receiptPath = $this->generatePaymentReceiptPdf($student);
+            // $filePath = $this->generateConfirmationPdf($student, $isInternship);
+            // $receiptPath = $this->generatePaymentReceiptPdf($student);
 
             // 3. Send email with attachment
-            Mail::to($student->email_id)
-                ->send(new StudentConfirmationMail($student, $filePath, $receiptPath));
+            //skip email to student
+            // Mail::to($student->email_id)
+            //     ->send(new StudentConfirmationMail($student, $filePath, $receiptPath));
 
             // Increment counters
-            $student->increment('email_count_confirmation');
-            $student->increment('count_receipt_download');
+            // $student->increment('email_count_confirmation');
+            // $student->increment('count_receipt_download');
             $student->certificate_status = 0; // confirmed
             $student->save();
 
-            EmailCount::firstOrCreate(['email' => $student->email_id], ['count' => 0])->increment('count');
+            // EmailCount::firstOrCreate(['email' => $student->email_id], ['count' => 0])->increment('count');
         }
 
-        return back()->with('success', 'Confimation send to selected students.');
+        return back()->with('success', 'Selected student send to confirmation section.');
+        // return back()->with('success', 'Confimation send to selected students.');
     }
 
     public function downloadconfirmMultiple(Request $request)
@@ -535,7 +857,7 @@ class StudentController extends Controller
         $pdfPaths = [];
         foreach ($students as $student) {
             $pdfPath = $this->generateConfirmationPdf($student, $isInternship);
-
+            $student->increment('download_count_confirmation');
             if (file_exists($pdfPath)) {
                 $pdfPaths[] = $pdfPath;
             }
@@ -711,27 +1033,34 @@ class StudentController extends Controller
                 return back()->with('error', "Student (ID: {$studentId}) not found.");
             }
             // NEW CHECK: Has the student paid anything?
-            $totalPaid = $student->total_fees - $student->pending_fees;
-             if ($totalPaid <= 0) {
+            // $totalPaid = $student->total_fees - $student->pending_fees;
+            if ($student->pending_fees > 0) {
                 return back()->with(
                     'error',
-                    "Cannot Shift {$student->student_name}. No payment submitted yet."
+                    "Cannot Shift {$student->student_name}. Showing pending fee in record."
                 );
             }
 
-            if($student->count_receipt_download == 0){
-                return back()->with(
-                    'error',
-                    "Cannot Shift {$student->student_name}. No payment slip downloaded yet."
-                );
-            }
+            // if ($totalPaid <= 0) {
+            //     return back()->with(
+            //         'error',
+            //         "Cannot Shift {$student->student_name}. No payment submitted yet."
+            //     );
+            // }
 
-            if($student->email_count_confirmation == 0){
-                return back()->with(
-                    'error',
-                    "Cannot Shift {$student->student_name}. No Confirmation Letter downloaded yet."
-                );
-            }
+            // if($student->count_receipt_download == 0){
+            //     return back()->with(
+            //         'error',
+            //         "Cannot Shift {$student->student_name}. No payment slip downloaded yet."
+            //     );
+            // }
+
+            // if($student->email_count_confirmation == 0){
+            //     return back()->with(
+            //         'error',
+            //         "Cannot Shift {$student->student_name}. No Confirmation Letter downloaded yet."
+            //     );
+            // }
         }
 
         // If we reach here, all students are OK — process each
@@ -761,18 +1090,18 @@ class StudentController extends Controller
         $filePath = $this->generatePdf($student);
 
         // 3. Send email with attachment
-        Mail::to($student->email_id)
-            ->send(new CertificateIssuedMail($student, $filePath));
+        // Mail::to($student->email_id)
+        //     ->send(new CertificateIssuedMail($student, $filePath));
 
         // 4. Increment student's certificate email count
-        $student->increment('email_count_certificate');
+        // $student->increment('email_count_certificate');
 
         // 5. Increment global email count
-        $emailCount = EmailCount::firstOrCreate(
-            ['email' => $student->email_id],
-            ['count' => 0]
-        );
-        $emailCount->increment('count');
+        // $emailCount = EmailCount::firstOrCreate(
+        //     ['email' => $student->email_id],
+        //     ['count' => 0]
+        // );
+        // $emailCount->increment('count');
 
         $student->certificate_status = 2; // certificate send
         $student->certificate_send_date = now();
@@ -819,10 +1148,10 @@ class StudentController extends Controller
             $filePath = $this->generatePdf($student);
             //die();
             // Send email
-            Mail::to($student->email_id)->send(new CertificateIssuedMail($student, $filePath));
+            // Mail::to($student->email_id)->send(new CertificateIssuedMail($student, $filePath));
 
             // Increment counters
-            $student->increment('email_count_certificate');
+            // $student->increment('email_count_certificate');
             $student->certificate_status = 2; // certificate send
             $student->certificate_send_date = now();
             // Only set close_date if it is currently NULL
@@ -848,7 +1177,15 @@ class StudentController extends Controller
         }
 
         // Create PDF file name
-        $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
+        // $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
+        $studentName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->student_name));
+        $fatherName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->f_name));
+        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+
+        $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
+
+        $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_confirmation_letter.pdf";
+
         $filePath = $folderPath . '/' . $fileName;
 
         $regenerate = true;
@@ -881,7 +1218,13 @@ class StudentController extends Controller
             $mpdf->SetHTMLHeader($this->getPDFHeader());
             $mpdf->SetHTMLFooter($this->getPDFFooter());
 
-            $html = view('pdf.confirmation_detail', compact('student','isInternship'))->render();
+            if($isInternship){
+                $view = "pdf.internship_detail";
+            }else{
+                $view = "pdf.confirmation_detail";
+            }
+
+            $html = view($view, compact('student','isInternship'))->render();
         
             $mpdf->WriteHTML($html);
             $mpdf->Output($filePath, 'F');
@@ -972,7 +1315,14 @@ private function generatePdf($student)
         }
 
         // Create PDF file name
-        $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
+        // $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
+        $studentName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->student_name));
+        $fatherName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->f_name));
+        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+
+        $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
+
+        $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_certificate.pdf";
         $filePath = $folderPath . '/' . $fileName;
 
         $regenerate = true;
@@ -1075,7 +1425,8 @@ private function generatePdf($student)
         $receiptNumber = strtoupper(uniqid("RCT"));
 
         // Payment amount (you can change this)
-        $amount = $student->reg_fees;
+        // $amount = $student->reg_fees;
+        $amount = $student->reg_fees + ($student->paid_fees ?? 0);
 
         // Convert amount to words
         $amountInWords = ucwords(
@@ -1083,8 +1434,17 @@ private function generatePdf($student)
         );
 
         // PDF Name
-        $safeName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $student->student_name);
-        $fileName = $student->id . '_' . $safeName . '_receipt.pdf';
+        // $safeName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $student->student_name);
+        // $fileName = $student->id . '_' . $safeName . '_receipt.pdf';
+        
+        $studentName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->student_name));
+        $fatherName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->f_name));
+        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+
+        $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
+
+        $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_receipt.pdf";
+
         $filePath = $folderPath . '/' . $fileName;
 
         // Render PDF with ALL dynamic values
@@ -1391,6 +1751,98 @@ private function generatePdf($student)
         
 
         return view('students.pending_student_index', compact('students','sessions','colleges','courses','batches','references','departments','users','student_status','pendingStudents'));
+    }
+
+    private function generateIdCard($student): string
+    {
+        $mpdf = new Mpdf([
+            'format' => [54, 85.6],
+            // 'format' => [85.6, 54],
+            'margin_left' => 0,
+            'margin_right' => 0,
+            'margin_top' => 0,
+            'margin_bottom' => 0,
+        ]);
+
+         // Footer HTML
+        
+
+        $html = View::make('students.id-card-pdf', compact('student'))->render();
+        $mpdf->WriteHTML($html);
+
+        return $mpdf->Output('', 'S');
+    }
+
+    public function downloadIdStudentCard(Student $student)
+    {
+        $pdf = $this->generateIdCard($student);
+        $name = strtoupper(str_replace(' ', '_', $student->student_name));
+
+        // return response(
+        //     $this->generateIdCard($student),
+        //     200,
+        //     [
+        //         'Content-Type' => 'application/pdf',
+        //         'Content-Disposition' => 'inline; filename="id-card.pdf"',
+        //     ]
+        // );
+        return response($pdf)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="ID_CARD_'.$name.'.pdf"');
+    }
+
+    public function verifyStudents()
+    {
+        $students = Student::latest()->get();
+        return view('verify_students.index', compact('students'));
+    }
+
+    public function verifyStudentsLink()
+    {
+        return view('verify_students.link_index');
+    }
+
+    public function exportExcel(Request $request)
+    {
+        return Excel::download(
+            new StudentListExport($request),
+            'students_filtered.xlsx'
+        );
+    }
+
+    public function copyStudents(Request $request)
+    {
+        $request->validate([
+            'student_ids' => 'required',
+            'session' => 'required|exists:student_sessions,id',
+        ]);
+
+        $ids = json_decode($request->student_ids, true);
+
+        $students = Student::whereIn('id', $ids)->get();
+
+        foreach ($students as $student) {
+
+            // OPTIONAL safety: prevent same student + same session duplicate
+            $exists = Student::where('contact', $student->contact)
+                ->where('session', $request->session)
+                ->exists();
+
+            if ($exists) {
+                continue;
+            }
+
+            // 🔴 PURE COPY
+            $newStudent = $student->replicate();
+
+            // 🔴 ONLY CHANGE SESSION
+            $newStudent->session = $request->session;
+
+            // 🔴 NOTHING ELSE TOUCHED
+            $newStudent->save();
+        }
+
+        return redirect()->back()->with('success', 'Students copied successfully.');
     }
 
 }

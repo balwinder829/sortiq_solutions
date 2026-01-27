@@ -31,20 +31,22 @@
             </div>
          </div>
          @php
-         $title = $student->gender === 'female' ? 'Miss' : 'Mr';
-         $relation = $student->gender === 'female' ? 'D/O' : 'S/O';
+         $title = strtolower($student->gender ?? '') === 'female' ? 'Miss' : 'Mr';
+         $relation = strtolower($student->gender ?? '') === 'female' ? 'D/O' : 'S/O';
          use Carbon\Carbon;
          // Safe session values
          $sessionStart = optional($student->sessionData)->start_date 
-         ? Carbon::parse($student->sessionData->start_date)->format('F Y') 
-         : '';
+          ? Carbon::parse($student->start_date)->format('d F Y') 
+          : '';
+
          $sessionEnd = optional($student->sessionData)->end_date
-         ? Carbon::parse($student->sessionData->end_date)->format('F Y')
-         : '';
+          ? Carbon::parse($student->end_date)->format('d F Y')
+          : '';
          // Safe college
          $collegename = optional($student->collegeData)->college_name ?? '';
          // Safe duration
          $durationName = optional($student->durationData)->name ?? ''; 
+         $sessionName = optional($student->sessionData)->session_display_name ?? ''; 
          @endphp	
          <div class="certi-body" style=" background:url('{{ public_path('images/certificates_images/bg-shape.jpg') }}')  no-repeat center; background-size:860px; padding-top: 60px;">
             <div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
@@ -60,13 +62,13 @@
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						To <br>						Training & Placement Officer <br>						{{ $collegename }}					</td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Subject: <strong>Confirmation of {{ ucwords($durationName) }} Industrial {{ $isInternship ? 'Internship' : 'Training' }}</strong>					</td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Subject: <strong>Confirmation of {{ ucwords($sessionName) }} Industrial {{ $isInternship ? 'Internship' : 'Training' }}</strong>					</td>
                   </tr>
                   <tr>
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Dear Sir/Madam,					</td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">						We are pleased to confirm that {{ $title }} <strong>{{ ucwords($student->student_name) }},</strong> {{ $relation }} <strong>{{ ucwords($student->f_name) }}</strong> and a student of your esteemed institution, has been formally enrolled in our <strong>{{ $durationName }}</strong> industrial training for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>.					</td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">						We are pleased to confirm that {{ $title }} <strong>{{ ucwords($student->student_name) }},</strong> {{ $relation }} <strong>{{ ucwords($student->f_name) }}</strong> and a student of your esteemed institution, has been formally enrolled in our <strong>{{ ucwords($sessionName) }}</strong> industrial training for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>.					</td>
                   </tr>
                   <tr>
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">The candidate's performance will be closely evaluated by the management throughout the duration of the internship period regularly.</td>

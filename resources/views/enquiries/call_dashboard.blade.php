@@ -96,9 +96,9 @@
 
                 {{-- Salesperson --}}
                 <div class="col-md-3">
-                    <label class="form-label fw-semibold">Salesperson</label>
+                    <label class="form-label fw-semibold">Sales Person</label>
                     <select name="salesperson_id" class="form-control">
-                        <option value="">All Salespersons</option>
+                        <option value="">All Sales Persons</option>
                         @foreach($sales as $s)
                             <option value="{{ $s->id }}"
                                 {{ request('salesperson_id')==$s->id?'selected':'' }}>
@@ -179,7 +179,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>Date & Time</th>
-                        <th>Salesperson</th>
+                        <th>Sales Person</th>
                         <th>Lead</th>
                         <th>Mobile</th>
                         <th>Call Status</th>

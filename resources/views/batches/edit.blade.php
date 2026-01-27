@@ -65,22 +65,46 @@
                         @enderror
                     </div>
 
-                    {{-- Technology --}}
-                    <div class="form-group col-md-6">
-                        <label>Technology</label>
-                        <select name="class_assign" 
-                                class="form-control @error('class_assign') is-invalid @enderror" required>
-                            @foreach($courses as $course)
-                                <option value="{{ $course->id }}"
-                                    {{ old('class_assign', $batch->class_assign) == $course->id ? 'selected' : '' }}>
-                                    {{ $course->course_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('class_assign')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
-                    </div>
+                    {{-- Technology (MULTIPLE) --}}
+<div class="form-group col-md-6">
+    <label>Technology</label>
+
+    @php
+        // Priority: old input after validation fail > DB value
+        if (old('class_assign')) {
+            $selectedTech = old('class_assign');   // already array
+        } else {
+            $selectedTech = $batch->class_assign ? explode(',', $batch->class_assign) : [];
+        }
+    @endphp
+
+    <select name="class_assign[]" 
+            class="form-control @if($errors->has('class_assign') || $errors->has('class_assign.*')) is-invalid @endif"
+            multiple
+            required>
+
+        @foreach($courses as $course)
+            <option value="{{ $course->id }}"
+                {{ in_array($course->id, $selectedTech) ? 'selected' : '' }}>
+                {{ $course->course_name }}
+            </option>
+        @endforeach
+
+    </select>
+
+    {{-- Main error --}}
+    @error('class_assign')
+        <small class="text-danger d-block">{{ $message }}</small>
+    @enderror
+
+    {{-- Per-item errors --}}
+    @foreach ($errors->get('class_assign.*') as $messages)
+        @foreach ($messages as $message)
+            <small class="text-danger d-block">{{ $message }}</small>
+        @endforeach
+    @endforeach
+</div>
+
 
                     {{-- Trainer --}}
                     <div class="form-group col-md-6">

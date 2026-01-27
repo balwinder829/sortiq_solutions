@@ -80,8 +80,11 @@
                     {{-- Technology --}}
                     <div class="form-group col-md-6">
                         <label>Technology</label>
-                        <select name="class_assign" 
-                                class="form-control @error('class_assign') is-invalid @enderror" required>
+                       <select name="class_assign[]" 
+                        class="form-control @error('class_assign') is-invalid @enderror"
+                        multiple
+                        required>
+
                             <option value="" disabled selected>Choose Technology</option>
                             @foreach($courses as $course)
                                 <option value="{{ $course->id }}"

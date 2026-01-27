@@ -14,6 +14,7 @@ class Employee extends Model
         'emp_code',
         'emp_name',
         'position',
+        'alternative_phone',
         'joining_date',
         'dob',
         'blood_group',
@@ -22,6 +23,9 @@ class Employee extends Model
         'employment_type',
         'shift',
         'status',
+        'photo',
+        'probation_period',
+        'emp_pswd',
     ];
 
     public function user()
@@ -34,5 +38,22 @@ class Employee extends Model
     {
         return $this->user->attendances();
     }
+
+    public function salaryStructure()
+    {
+        return $this->hasOne(SalaryStructure::class)
+            ->where('status', 'active');
+    }
+
+    public function salarySlips()
+    {
+        return $this->hasMany(SalarySlip::class);
+    }
+
+    public function letters()
+    {
+        return $this->hasMany(Letter::class);
+    }
+
 
 }

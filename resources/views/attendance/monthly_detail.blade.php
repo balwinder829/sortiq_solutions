@@ -5,18 +5,24 @@
 @section('content')
 
 <div class="container mt-4">
+    <div class="row mb-2">
+    <div class="col-md-6">
+        <h1 class="page_heading">Attendance Detail – {{ $employee->name }}</h1>
+    </div>
 
-    <h3>Attendance Detail – {{ $employee->name }}</h3>
+    <div class="col-md-6">
+        <form method="GET" class="row g-2 mb-3 justify-content-end">
+            <div class="col-md-4">
+                <input type="month" name="month" class="form-control" value="{{ $month }}">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-    {{-- MONTH SELECTOR --}}
-    <form method="GET" class="row g-2 mb-3">
-        <div class="col-md-3">
-            <input type="month" name="month" class="form-control" value="{{ $month }}">
-        </div>
-        <div class="col-md-2">
-            <button class="btn btn-primary w-100">Search</button>
-        </div>
-    </form>
+
 
     @php
         $start = \Carbon\Carbon::parse($month . '-01');
@@ -49,24 +55,29 @@
     @endphp
 
     <div class="card p-3 shadow-sm">
+        <div class="row mb-2 align-items-center">
+            <div class="row mb-2 align-items-center">
+                <div class="col-md-6">
+                    <h1 class="page_heading mb-0">
+                        Attendance for {{ \Carbon\Carbon::parse($month)->format('F Y') }}
+                    </h1>
+                </div>
 
-        <h5 class="mb-3">
-            Attendance for {{ \Carbon\Carbon::parse($month)->format('F Y') }}
-        </h5>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-end gap-2">
+                        <div class="border border-success rounded px-3 py-2 text-center">
+                            <div class="text-success small fw-semibold">Present</div>
+                            <div class="fw-bold">{{ $presentCount }}</div>
+                        </div>
 
-        {{-- SUMMARY --}}
-        <div class="row mb-3">
-            <div class="col-md-3">
-                <div class="alert alert-success mb-0">
-                    <strong>Present:</strong> {{ $presentCount }}
+                        <div class="border border-secondary rounded px-3 py-2 text-center">
+                            <div class="text-secondary small fw-semibold">Absent / Leave</div>
+                            <div class="fw-bold">{{ $absentCount }}</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="alert alert-danger mb-0">
-                    <strong>Absent / Leave:</strong> {{ $absentCount }}
-                </div>
-            </div>
-        </div>
+
 
         <div class="table-responsive">
             <table id="attendanceDetailTable" class="table table-bordered table-striped">

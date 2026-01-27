@@ -9,6 +9,9 @@
             rel="stylesheet"
         />
     </head>
+    @php
+        $sessionName = optional($student->sessionData)->session_display_name ?? ''; 
+    @endphp
     <body>
         <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff">
             <div class="rc-head-main" style="padding-top: 50px">
@@ -86,7 +89,7 @@
                                         font-family: &quot;Inter&quot;, sans-serif;
                                     "
                                 >
-                                    Received with thanks from <strong>Mr/Ms/Messers <u>{{ $student->student_name }}</u></strong> Rs. <strong><u>{{ $amount }}</u></strong> (Rupees <strong><u>{{ $amountInWords }}</u></strong>) vide Cash/Cheque/Do No. <strong><u>{{ $transaction_no ?? '________' }}</u></strong> Dated: <strong><u>{{ now()->format('d M Y') }}</u></strong> Course <strong><u>{{ $student->courseData->course_name ?? '________' }}</u></strong> Duration <strong><u>{{ $student->durationData->name ?? '________' }}</u></strong>.
+                                    Received with thanks from <strong>Mr/Ms/Messers <u>{{ $student->student_name }}</u></strong> Rs. <strong><u>{{ $amount }}</u></strong> (Rupees <strong><u>{{ $amountInWords }}</u></strong>) vide Cash/Cheque/Do No. <strong><u>{{ $transaction_no ?? '________' }}</u></strong> Dated: <strong><u>{{ now()->format('d M Y') }}</u></strong> Course <strong><u>{{ $student->courseData->course_name ?? '________' }}</u></strong> Duration <strong><u>{{ ucwords($sessionName) ?? '________' }}</u></strong>.
                                 </td>
                             </tr>
                         </table>

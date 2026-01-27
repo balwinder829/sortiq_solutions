@@ -68,6 +68,9 @@
                             <strong>Phone Number:</strong> {{ $cv->phone_number ?? 'N/A' }}
                         </li>
                         <li class="list-group-item">
+                            <strong>Email:</strong> {{ $cv->email ?? 'N/A' }}
+                        </li>
+                        <li class="list-group-item">
                             <strong>Location:</strong> {{ $cv->location ?? 'N/A' }}
                         </li>
                     </ul>

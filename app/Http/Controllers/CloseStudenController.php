@@ -22,6 +22,7 @@ use Carbon\Carbon;
 use App\Imports\StudentsImport;
 use Maatwebsite\Excel\Facades\Excel;
 use ZipArchive;
+use Illuminate\Support\Str;
 
 class CloseStudenController extends Controller
 {
@@ -78,7 +79,7 @@ public function index(Request $request)
     $query->where('send_to_close', 1);
     $query->whereIn('certificate_status', [1, 2]);
 
-    $students    = $query->latest()->paginate(10);
+    $students    = $query->latest()->get();
     $sessions    = StudentSession::all();
     $colleges    = \App\Models\College::all();
     $courses     = \App\Models\Course::all();
@@ -123,22 +124,21 @@ public function index(Request $request)
             'student_name'   => 'required|string|max:255',
             'f_name'         => 'required|string|max:255',
             'sno'            => 'required|string|max:255',
-            'email_id'       => 'required|email|unique:students_detail,email_id,'.$student->id,
-            'contact'        => 'nullable|string|max:15',
+            'email_id'       => 'nullable|email',
+            'contact'        => 'required|string|max:15',
             'gender'         => 'required|string',
             'college_name'   => 'required|string',   // not college_id
             'session'        => 'required|string',   // not session_id
             'technology'     => 'required|string',   // not technology_id
-            'batch_assign'   => 'required|string',   // not batch_id
+            // 'batch_assign'   => 'required|string',   // not batch_id
             'reference'      => 'string',   // not reference_user
-            'status'         => 'required|string',
+            'status'         => 'nullable|string',
             'total_fees'     => 'required|numeric',
             'reg_fees'       => 'required|numeric',
-            'pending_fees'   => 'nullable|numeric',
+            // 'paid_fees'       => 'required|numeric',
             'next_due_date' => 'nullable|date',
             // 'department'     => 'required|string',
             'join_date'      => 'required|date',
-            'reg_due_amount' => 'required|string',
             'start_date'     => 'nullable|date',
             'end_date'       => 'nullable|date',
             'part_time_offer'  => 'required|boolean',
@@ -154,6 +154,40 @@ public function index(Request $request)
         } else {
             $validates['certificate_status'] = 2;
         }
+
+        $validates['student_name'] = Str::of($validates['student_name'])->trim()->lower();
+        $validates['f_name']       = Str::of($validates['f_name'])->trim()->lower();
+
+        $activeSessionId = session('admin_session_id');
+        if (!empty($validates['contact'])) {
+            $contactExists = Student::withTrashed()
+                ->where('student_name', $validates['student_name'])
+                ->where('contact', $validates['contact'])
+                ->where('session', $activeSessionId)
+                ->where('id', '!=', $student->id) // 👈 ignore current record
+                ->exists();
+
+            if ($contactExists) {
+                return back()
+                    ->withErrors([
+                        'contact' => 'This student name with this contact already exists in this session'
+                    ])
+                    ->withInput();
+            }
+        }
+
+        // Force lowercase before saving
+        // $validates['student_name'] = Str::lower($validates['student_name']);
+        // $validates['f_name']       = Str::lower($validates['f_name']);
+
+        $validates['paid_fees'] = $validates['paid_fees'] ?? 0;
+        $validates['reg_fees'] = $validates['reg_fees'] ?? 0;
+
+        $validates['pending_fees'] = max(
+            $validates['total_fees'] - $validates['reg_fees'] - $validates['paid_fees'],
+            0
+        );
+
         $student->update($validates);
         return redirect()->route('close_student.index')
                          ->with('success', 'Student data updated successfully');

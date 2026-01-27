@@ -12,6 +12,8 @@ class Pg extends Model
     protected $fillable = [
         'name',
         'address',
+        'contact',
+        'email',
         'rent_estimate',
         'pg_type',
         'description',

@@ -2,7 +2,12 @@
 
 @section('content')
 <div class="container">
-    <h1>Add College</h1>
+    <div class="row mb-2">
+        <div class="col-md-8">
+            <h1 class="page_heading">Add College/ Place</h1>
+        </div>  
+    </div>
+    
 
     @if($errors->any())
         <div class="alert alert-danger"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
@@ -12,12 +17,12 @@
         @csrf
 
         <div class="mb-3">
-            <label><strong>College Name</strong></label>
+            <label><strong>Name</strong></label>
             <input type="text" name="college_name" class="form-control" value="{{ old('college_name') }}" required>
         </div>
 
         <div class="mb-3">
-            <label><strong>College Display Name</strong></label>
+            <label><strong>Display Name</strong></label>
             <input type="text" name="college_display_name" class="form-control" value="{{ old('college_display_name') }}" required>
         </div>
 

@@ -14,14 +14,7 @@
  {{-- UNIVERSAL POPUP CONTAINER --}}
  
 <div class="container mt-4">
-    <!-- <div class="d-flex justify-content-between mb-3">
-        <h3>Students</h3>
-       <a href="{{ route('students.create') }}" class="btn" style="background-color: #6b51df; color: #fff;">+ Add Student</a>
-       <a href="{{ route('students.importForm') }}" class="btn btn-info">Import Students</a>
-
-
-    </div> -->
-    <!-- <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 st-head"> -->
+   
     <div class="row mb-4">
         <div class="col-md-2">
             <h1 class="page_heading">Students</h1>
@@ -41,19 +34,19 @@
 <form method="GET" action="{{ route('students.index') }}" class="mb-4">
     <div class="row g-2">
         {{-- Student Name --}}
-        <div class="col-md-2 col-6">
+        <!-- <div class="col-md-2 col-6">
             <input type="text" name="student_name" class="form-control"
                    placeholder="Student Name" value="{{ request('student_name') }}">
-        </div>
+        </div> -->
 
          
          {{-- S no. --}}
-        <div class="col-md-2 col-6">
+        <!-- <div class="col-md-2 col-6">
             <input type="text" name="sno" class="form-control"
                    placeholder="S. No" value="{{ request('sno') }}">
-        </div>
+        </div> -->
         {{-- Session --}}
-        <div class="col-md-2 col-6">
+        <!-- <div class="col-md-2 col-6">
             <select name="session" class="form-control session" id="ddl_session">
                 <option value="">--Session Name--</option>
                 @foreach($sessions as $session)
@@ -63,7 +56,7 @@
                     </option>
                 @endforeach
             </select>
-        </div>
+        </div> -->
 
         {{-- College --}}
         <div class="col-md-2 col-6">
@@ -159,7 +152,18 @@
                 @endforeach
             </select>
         </div> -->
-        <div class="col-md-2">
+        <div class="col-md-1 col-12">
+            <input type="number"
+           name="limit"
+           class="form-control"
+           placeholder="limit (e.g. 100)"
+           min="1"
+           step="1"
+           value="{{ request('limit') }}"
+           oninput="this.value = this.value.replace(/\D/g, '')">
+       </div>
+
+        <div class="col-md-3">
             <div class="form-check d-flex align-items-center">
                 <input type="checkbox" class="form-check-input me-2" name="pending_fees" id="pending_fees" value="1" 
                 {{ request('pending_fees') == 1 ? 'checked' : '' }}>
@@ -171,6 +175,11 @@
 	<div class="mt-2 tble-bts">
 		<button type="submit" class="btn" style="background-color: #6b51df; color: #fff;">Search</button>
 		<a href="{{ route('students.index') }}" class="btn btn-secondary">Reset</a>
+        <a href="{{ route('students.export.excel', request()->query()) }}"
+           class="btn btn-primary">
+             </i> Download Excel
+        </a>
+        <button  type="button" id="copySelected" class="btn btn-success">Copy to Session</button>
 	</div>
 </form>
 
@@ -207,9 +216,9 @@
                 <th class="text-center">Total Fees</th>
                 <th class="text-center">Reg Fees</th>
                 <th class="text-center">Pending Fees</th>
-                <th class="text-center" width="100px">Next Due Date</th>
+                <th class="text-center" width="100px">Pending Fees Due Date</th>
                 <!-- <th class="text-center">Department</th> -->
-                <th class="text-center" width="100px">Date of Joining</th>
+                <th class="text-center" width="100px">Registered date</th>
                 <th class="text-center">Duration</th>
                 <th class="text-center" width="100px">Start Date</th>
                 <th class="text-center" width="100px">End Date</th>
@@ -238,7 +247,7 @@
     @endif
 >
                 <td><input type="checkbox" class="record_checked" value="{{ $student->id }}" data-email="{{ $student->email_count_confirmation }}"
-       data-receipt="{{ $student->count_receipt_download }}"></td>
+       data-receipt="{{ $student->count_receipt_download }}" data-pending_fees="{{ $student->pending_fees }}"></td>
                 <td>{{ $student->sno }}</td>
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
@@ -259,7 +268,8 @@
                 <!-- <td>{{ $student->department }}</td> -->
                 <td>{{ \Carbon\Carbon::parse($student->join_date)->format('d M Y') }}</td>
                 
-                <td>{{ $student->durationData->name ?? '-' }}</td>
+                <!-- <td>{{ $student->durationData->name ?? '-' }}</td> -->
+                <td>{{ $student->sessionData->session_display_name ?? '-' }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->start_date)->format('d M Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->end_date)->format('d M Y') }}</td>
                 <td class="text-center">
@@ -284,9 +294,15 @@
                 <td>{{ $student->count_receipt_download ?? 0 }}</td>
         <td class="text-center">
     <div class="mb-2">
+        <a href="{{ route('students.idcard', $student) }}"
+           class="btn btn-sm"
+           data-bs-toggle="tooltip"
+           title="Download ID Card">
+           <i class="fas fa-id-card"></i>
+        </a>
         {{-- Issue --}}
 
-        <form action="{{ route('students.confirmStudent', $student->id) }}" method="POST" style="display:inline-block;"  class="confirm-single-form" >
+        <!-- <form action="{{ route('students.confirmStudent', $student->id) }}" method="POST" style="display:inline-block;"  class="confirm-single-form" >
             @csrf
             <input type="hidden" name="is_internship" class="isInternshipHiddenSingle">
             <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate"
@@ -294,7 +310,7 @@
                 <i class="fa-solid fa-file-lines"></i>
             </button>
         </form>
-
+ -->
 
 
         {{-- Edit --}}
@@ -583,11 +599,13 @@
 
 <div class="mt-3 tble-bts">
 
-    <button id="issueSelected" class="btn btn-primary">Confirm Student</button>
+    <!-- <button id="issueSelected" class="btn btn-primary">Confirm Student</button> -->
     <button id="downloadissueSelected" class="btn btn-primary">Download Confirm Letter</button>
     <button id="downloadReceipts" class="btn btn-warning">Download Receipts</button>
     <button id="moveSelected" class="btn btn-warning">Shift To Certificates</button>
     <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
+    <button id="copySelected" class="btn btn-success">Copy to Session</button>
+
 </div>
 
 </div>
@@ -622,6 +640,50 @@
     <input type="hidden" name="ids" id="bulkmove">
 </form>
 
+<!-- Copy Students Modal -->
+<div class="modal fade" id="copyStudentsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="copyStudentsForm" method="POST" action="{{ route('students.copy') }}">
+        @csrf
+
+        <input type="hidden" name="student_ids" id="copyStudentIds">
+
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Copy Students to Session</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="mb-3">
+                <label class="form-label">
+                    Session <span class="text-danger">*</span>
+                </label>
+                <select name="session" class="form-control" required>
+                    <option value="">-- Select Session --</option>
+                    @foreach($sessions as $session)
+                        <option value="{{ $session->id }}">
+                            {{ $session->session_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">
+                Copy
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+            </button>
+          </div>
+        </div>
+    </form>
+  </div>
+</div>
+
+
 @endsection
 
 @push('scripts')
@@ -642,7 +704,7 @@ $(document).ready(function () {
     
     var table = $('#studentsTable').DataTable({
         "pageLength": 10,
-        "lengthMenu": [5, 10, 25, 50, 100],
+        "lengthMenu": [10,15,20, 25, 50, 100],
         "scrollX": true,
         "rowCallback": function(row, data) {
 
@@ -665,24 +727,7 @@ $(document).ready(function () {
 
     });
 
-    // Check/uncheck all
-    // $('#checkAll').click(function(){
-    //     $('.record_checked').prop('checked', this.checked);
-    // });
-
-    // $('#checkAll').on('click', function () {
-    //     $('.record_checked:not(:disabled)').prop('checked', this.checked);
-    // });
-    // $('#checkAll').on('change', function () {
-    //     const checked = this.checked;
-
-    //     $('.record_checked').each(function () {
-    //         if (this.disabled === false) {
-    //             this.checked = checked;
-    //         }
-    //     });
-    // });
-
+    
     $('#checkAll').on('change', function () {
         const checked = this.checked;
 
@@ -757,81 +802,80 @@ $(document).ready(function () {
     //     $('#bulkmove').val(JSON.stringify(ids));
     //     $('#bulkMoveStudent').submit(); // normal submit -> page reload
     // });
-
     $('#moveSelected').click(function () {
 
-    let eligibleIds = [];
-    let ineligibleIds = [];
+        let eligibleIds = [];
+        let ineligibleIds = [];
 
-    $('.record_checked:checked').each(function () {
-        let emailCount = parseInt($(this).data('email'));
-        let receiptCount = parseInt($(this).data('receipt'));
+        $('.record_checked:checked').each(function () {
+            let pending_fees = parseInt($(this).data('pending_fees')) || 0;
 
-        if (emailCount > 0 && receiptCount > 0) {
-            eligibleIds.push($(this).val());
-        } else {
-            ineligibleIds.push($(this).val());
-        }
-    });
+            if (pending_fees === 0) {
+                eligibleIds.push($(this).val());
+            } else {
+                ineligibleIds.push($(this).val());
+            }
+        });
 
-    if (eligibleIds.length === 0) {
-        alert('None of the selected students are eligible for certificates.');
-        return;
-    }
-
-    let message = '';
-    if (ineligibleIds.length > 0) {
-        message = ineligibleIds.length +
-            ' selected student(s) are not eligible and will be skipped.\n\n';
-    }
-
-    message += 'Send eligible students to certificate section?';
-
-    if (!confirm(message)) {
-        return;
-    }
-
-    $('#bulkmove').val(JSON.stringify(eligibleIds));
-    $('#bulkMoveStudent').submit();
-});
-
-    $('#moveSelected1').click(function () {
-    let ids = [];
-    let invalidFound = false;
-
-    $('.record_checked:checked').each(function () {
-        let emailCount = parseInt($(this).data('email'));
-        let receiptCount = parseInt($(this).data('receipt'));
-
-        if (emailCount > 0 && receiptCount > 0) {
-            ids.push($(this).val());
-        } else {
-            invalidFound = true;
-        }
-    });
-
-    if (ids.length === 0) {
-        alert('Selected students are not eligible for certificates.');
-        return;
-    }
-
-    if (invalidFound) {
-        if (!confirm('Some selected students are not eligible and will be skipped. Continue?')) {
+        if (eligibleIds.length === 0) {
+            alert('None of the selected students are eligible for certificates.');
             return;
         }
-    }
 
-    if (!confirm('Send students to certificate section?')) {
-        return;
-    }
+        let message = '';
+        if (ineligibleIds.length > 0) {
+            message = ineligibleIds.length +
+                ' selected student(s) have pending fees and will be skipped.\n\n';
+        }
 
-    $('#bulkmove').val(JSON.stringify(ids));
-    $('#bulkMoveStudent').submit();
-});
+        message += 'Send eligible students to certificate section?';
 
+        if (!confirm(message)) {
+            return;
+        }
 
+        $('#bulkmove').val(JSON.stringify(eligibleIds));
+        $('#bulkMoveStudent').submit();
+    });
 
-    
+    $('#moveSelected_old_wrking').click(function () {
+
+        let eligibleIds = [];
+        let ineligibleIds = [];
+
+        $('.record_checked:checked').each(function () {
+            let emailCount = parseInt($(this).data('email'));
+            let receiptCount = parseInt($(this).data('receipt'));
+            let pending_fees = parseInt($(this).data('pending_fees'));
+            console.log(pending_fees)
+            if (emailCount > 0 && receiptCount > 0) {
+                eligibleIds.push($(this).val());
+            } else {
+                ineligibleIds.push($(this).val());
+            }
+        });
+
+        if (eligibleIds.length === 0) {
+            alert('None of the selected students are eligible for certificates.');
+            return;
+        }
+
+        let message = '';
+        if (ineligibleIds.length > 0) {
+            message = ineligibleIds.length +
+                ' selected student(s) are not eligible and will be skipped.\n\n';
+        }
+
+        message += 'Send eligible students to certificate section?';
+
+        if (!confirm(message)) {
+            return;
+        }
+
+        $('#bulkmove').val(JSON.stringify(eligibleIds));
+        $('#bulkMoveStudent').submit();
+    });
+
 
     // Download Confirm Letter(s)
     $('#downloadissueSelected').click(function () {
@@ -899,6 +943,22 @@ $(document).ready(function () {
                 $('#bulkDeleteForm').submit();
             }
         });
+
+        $('#copySelected').on('click', function () {
+
+            let ids = getSelectedIds();
+
+            // ❌ No student selected
+            if (ids.length === 0) {
+                alert('Please select at least one student first');
+                return false;
+            }
+
+            // ✅ Student(s) selected
+            $('#copyStudentIds').val(JSON.stringify(ids));
+            $('#copyStudentsModal').modal('show');
+        });
+
 });
 </script>
 @endpush

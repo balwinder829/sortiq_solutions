@@ -4,7 +4,7 @@
 <div class="container">
     <div class="card">
         <div class="card-header">
-            <h4>Edit Course</h4>
+            <h4>Edit Technology</h4>
         </div>
         <div class="card-body">
             <!-- Display Validation Errors -->
@@ -23,7 +23,7 @@
                 @method('PUT') <!-- Important for PUT request -->
 
                 <div class="form-group">
-                    <label for="course_name">Course Name</label>
+                    <label for="course_name">Technology Name</label>
                     <input 
                         type="text" 
                         name="course_name" 
@@ -34,7 +34,7 @@
                     >
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-2">Update Course</button>
+                <button type="submit" class="btn btn-primary mt-2">Update</button>
                 <a href="{{ route('courses.index') }}" class="btn btn-secondary mt-2">Cancel</a>
             </form>
         </div>

@@ -9,12 +9,12 @@
 
 <div class="container">
 
-    <div class="row mb-2">
-        <div class="col-md-2">
-            <h1 class="page_heading">Colleges</h1>
-        </div>
+    <!-- <div class="row mb-2">
         <div class="col-md-4">
-            <!-- <label><strong>Filter by State</strong></label> -->
+            <h1 class="page_heading">Colleges/Places</h1>
+        </div>
+        <div class="col-md-2">
+            
             <select id="filter-state" class="form-control">
                 <option value="">All States</option>
                 @foreach($states as $state)
@@ -22,18 +22,75 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-4">
-            <!-- <label><strong>Filter by District</strong></label> -->
+        <div class="col-md-2">
+            
             <select id="filter-district" class="form-control">
                 <option value="">All Districts</option>
             </select>
         </div>
         <div class="col-md-2">
             <div class="d-flex justify-content-end">
-                <a href="{{ route('colleges.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add College</a>
+                <a href="{{ route('colleges.export.excel') }}"
+                   class="btn mb-3" style="background-color: #6b51df; color: #fff;">
+                     Download Excel
+                </a>
             </div>
         </div>
+        <div class="col-md-2">
+            <div class="d-flex justify-content-end">
+                <a href="{{ route('colleges.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add College/Place</a>
+            </div>
+        </div>
+    </div> -->
+
+    <div class="row mb-2 align-items-center">
+    <div class="col-md-4">
+        <h1 class="page_heading">Colleges / Places</h1>
     </div>
+
+    <div class="col-md-2">
+        <select id="filter-state" class="form-control">
+            <option value="">All States</option>
+            @foreach($states as $state)
+                <option value="{{ $state->name }}">{{ $state->name }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select id="filter-district" class="form-control">
+            <option value="">All Districts</option>
+        </select>
+    </div>
+
+    {{-- ACTION BUTTONS --}}
+    <div class="col-md-4">
+        <div class="d-flex justify-content-end gap-2">
+
+            {{-- IMPORT COLLEGES --}}
+            <a href="{{ route('colleges.import.view') }}"
+               class="btn mb-3"
+               style="background-color:#6b51df; color:#fff;">
+                Import
+            </a>
+
+            {{-- DOWNLOAD EXCEL --}}
+            <a href="{{ route('colleges.export.excel') }}"
+               class="btn mb-3"
+               style="background-color:#6b51df; color:#fff;">
+                Download
+            </a>
+
+            {{-- ADD COLLEGE --}}
+            <a href="{{ route('colleges.create') }}"
+               class="btn mb-3"
+               style="background-color:#6b51df; color:#fff;">
+                Add
+            </a>
+        </div>
+    </div>
+</div>
+
     
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -43,7 +100,7 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>College Name</th>
+                <th>College Name/Place</th>
                 <th>State</th>
                 <th>District</th>
                 <th style="width:120px;">Actions</th>

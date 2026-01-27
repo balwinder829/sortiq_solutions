@@ -15,12 +15,17 @@
             <h1 class="page_heading">Part-Time Jobs</h1>
         </div>
         <div class="col-md-6">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end gap-2">
                     
                 <a href="{{ route('part-time-jobs.create') }}"
                    class="btn mb-3"
                    style="background:#6b51df;color:#fff;">
                     Add Part-Time Job
+                </a>
+                 <a href="{{ route('part-time-jobs.import') }}"
+                   class="btn mb-3"
+                   style="background:#6b51df;color:#fff;">
+                    Import Part-Time Jobs
                 </a>
             </div>
         </div>

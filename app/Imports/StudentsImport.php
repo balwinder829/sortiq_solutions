@@ -3,132 +3,512 @@
 namespace App\Imports;
 
 use App\Models\Student;
-use App\Models\College;
 use App\Models\Course;
-use App\Models\Batch;
 use App\Models\StudentSession;
+use App\Models\BlockedNumber;
+use App\Services\CollegeResolver;
+use DateTimeInterface;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
-use Maatwebsite\Excel\Concerns\Importable;
+use Maatwebsite\Excel\Concerns\SkipsOnError;
+use Throwable;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 
-class StudentsImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithValidation
+
+class TextValueBinder extends DefaultValueBinder
 {
-    use Importable;
-
-    public function model(array $row)
+    public function bindValue(Cell $cell, $value)
     {
-        $duplicateEMail = [];
-        // Skip duplicate emails
-        if (Student::where('email_id', $row['email_id'])->exists()) {
-            $this->duplicateEMail[] = "Duplicate email skipped: {$row['email_id']}";
+        // Force everything as text
+        $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
+        return true;
+    }
+}
+
+class StudentsImport extends TextValueBinder implements
+    ToModel,
+    WithHeadingRow,
+    SkipsEmptyRows,
+    WithValidation,
+    SkipsOnFailure,
+    SkipsOnError,
+    WithCustomValueBinder
+{
+    use SkipsFailures;
+
+    // 🔢 Counters
+    public $totalRows    = 0;
+    public $insertedRows = 0;
+    public $skippedRows  = 0;
+
+    // Warnings
+    public $duplicateContacts = [];
+
+    /* ================= SKIP EMPTY ROWS ================= */
+    public function isEmptyRow(array $row): bool
+    {
+        $filtered = collect($row)->filter(function ($value) {
+            return !is_null($value) && trim($value) !== '';
+        });
+
+        return $filtered->isEmpty();
+    }
+
+    /* ================= VALIDATION RULES ================= */
+    public function rules(): array
+    {
+        return [
+
+            '*.student_name' => 'required|string',
+            '*.f_name'       => 'required|string',
+
+            '*.contact' => [
+                'required',
+                'regex:/^[0-9]+$/',
+                'digits:10'
+            ],
+
+            // '*.email_id' => 'nullable|email',
+
+            // Fees required
+            // '*.session_id' => 'required|numeric',
+            '*.total_fees' => 'required|numeric',
+            '*.reg_fees'   => 'required|numeric',
+            '*.paid_fees'  => 'nullable|numeric',
+            // '*.duration'  => 'required|numeric',
+            '*.college_name' => function ($attribute, $value, $fail) {
+                if (!$value) {
+                    $fail('College name is required.');
+                    return;
+                }
+
+                if(count(explode(',', $value)) < 3){
+                    $fail('Invalid college name format. Use: College Name, District, State.');
+                }
+            },
+
+            // Session must exist
+            // '*.session' => function ($attribute, $value, $fail) {
+            //     if (!$value) {
+            //         $fail('Session name is required.');
+            //         return;
+            //     }
+
+            //     if (!StudentSession::where('session_name', trim($value))->exists()) {
+            //         $fail("Enter correct session name. '{$value}' does not exist.");
+            //     }
+            // },
+
+            '*.session_id' => [
+                'required',
+                'numeric',
+                function ($attribute, $value, $fail) {
+                    if (!StudentSession::where('id', $value)->exists()) {
+                        $fail("Session ID {$value} does not exist.");
+                    }
+                },
+            ],
+
+ 
+
+            // '*.start_date' => function ($attribute, $value, $fail) {
+            //     if (!empty($value) && !is_numeric($value)) {
+            //         try {
+            //             Carbon::createFromFormat('d/m/Y', $value);
+            //         } catch (\Exception $e) {
+            //             $fail('Date must be in DD/MM/YYYY format.');
+            //         }
+            //     }
+            // },
+            // '*.register_date' => function ($attribute, $value, $fail) {
+            //     if (!empty($value) && !is_numeric($value)) {
+            //         try {
+            //             Carbon::createFromFormat('d/m/Y', $value);
+            //         } catch (\Exception $e) {
+            //             $fail('Date must be in DD/MM/YYYY format.');
+            //         }
+            //     }
+            // },
+
+            // '*.pending_fee_due_date' => function ($attribute, $value, $fail) {
+            //     if (!empty($value) && !is_numeric($value)) {
+            //         try {
+            //             Carbon::createFromFormat('d/m/Y', $value);
+            //         } catch (\Exception $e) {
+            //             $fail('Date must be in DD/MM/YYYY format.');
+            //         }
+            //     }
+            // },
+
+//             '*.start_date' => function ($attribute, $value, $fail) {
+//     if (!empty($value)) {
+//         try {
+//             Carbon::createFromFormat('d/m/Y', trim($value));
+//         } catch (\Exception $e) {
+//             $fail('Date must be in DD/MM/YYYY format.');
+//         }
+//     }
+// },
+
+// '*.register_date' => function ($attribute, $value, $fail) {
+//     if (!empty($value)) {
+//         try {
+//             Carbon::createFromFormat('d/m/Y', trim($value));
+//         } catch (\Exception $e) {
+//             $fail('Date must be in DD/MM/YYYY format.');
+//         }
+//     }
+// },
+
+// '*.pending_fee_due_date' => function ($attribute, $value, $fail) {
+//     if (!empty($value)) {
+//         try {
+//             Carbon::createFromFormat('d/m/Y', trim($value));
+//         } catch (\Exception $e) {
+//             $fail('Date must be in DD/MM/YYYY format.');
+//         }
+//     }
+// },
+
+    '*.start_date' => function ($attribute, $value, $fail) {
+    if (empty($value)) return;
+
+    // Excel numeric date allowed
+    if (is_numeric($value)) return;
+
+    try {
+        Carbon::createFromFormat('d/m/Y', trim($value), null, true);
+    } catch (\Exception $e) {
+        $fail('Date must be in DD/MM/YYYY format.');
+    }
+},
+
+'*.register_date' => function ($attribute, $value, $fail) {
+    if (empty($value)) return;
+
+    if (is_numeric($value)) return;
+
+    try {
+        Carbon::createFromFormat('d/m/Y', trim($value), null, true);
+    } catch (\Exception $e) {
+        $fail('Date must be in DD/MM/YYYY format.');
+    }
+},
+
+'*.pending_fee_due_date' => function ($attribute, $value, $fail) {
+    if (empty($value)) return;
+
+    if (is_numeric($value)) return;
+
+    try {
+        Carbon::createFromFormat('d/m/Y', trim($value), null, true);
+    } catch (\Exception $e) {
+        $fail('Date must be in DD/MM/YYYY format.');
+    }
+},
+
+
+
+
+ 
+        ];
+    }
+
+    /* ================= FRIENDLY MESSAGES ================= */
+    public function customValidationMessages()
+    {
+        return [
+            '*.student_name.required' => 'Student name is required.',
+            '*.f_name.required'       => 'Father name is required.',
+            '*.contact.required'      => 'Contact number is required.',
+            '*.contact.regex'         => 'Contact number must contain only digits.',
+            '*.total_fees.required'   => 'Total fees is required.',
+            '*.reg_fees.required'     => 'Registration fees is required.',
+        ];
+    }
+
+    /* ================= DATE CHECK ================= */
+
+    private function parseDate($value): ?Carbon
+{
+    if ($value === null || trim((string)$value) === '') {
+        return null;
+    }
+
+    // Excel serial number (46143 etc.)
+    if (is_numeric($value)) {
+        return Carbon::instance(
+            ExcelDate::excelToDateTimeObject($value)
+        );
+    }
+
+    $value = trim($value);
+
+    // STRICT DD/MM/YYYY (no guessing)
+    return Carbon::createFromFormat(
+        'd/m/Y',
+        $value,
+        null,
+        true
+    );
+}
+ private function parseDaqwte($value): ?Carbon
+{
+    if ($value === null || trim($value) === '') {
+        return null;
+    }
+
+    $value = trim((string) $value);
+
+    // Reject Excel serial numbers (even as string)
+    if (ctype_digit($value)) {
+        throw new \Exception(
+            'Invalid date. Use DD/MM/YYYY format (text).'
+        );
+    }
+
+    try {
+        return Carbon::createFromFormat('d/m/Y', $value);
+    } catch (\Exception $e) {
+        throw new \Exception(
+            "Invalid date '{$value}'. Use DD/MM/YYYY."
+        );
+    }
+}
+
+    private function parse12Date($value): ?Carbon
+    {
+        if ($value === null || trim($value) === '') {
             return null;
         }
-        $duplicateContacts = [];
 
-        // Skip duplicate contact numbers
-        // if (!empty($row['contact']) && Student::where('contact', $row['contact'])->exists()) {
+        $value = trim($value);
+
+        // ❌ Reject Excel numeric dates (safety)
+        if (is_numeric($value)) {
+            throw new \Exception(
+                'Invalid date format. Please enter date as DD/MM/YYYY (Text), not Excel date.'
+            );
+        }
+
+        try {
+            return Carbon::createFromFormat('d/m/Y', $value);
+        } catch (\Exception $e) {
+            throw new \Exception(
+                "Invalid date '{$value}'. Use DD/MM/YYYY format."
+            );
+        }
+    }
+
+    private function parseDateq($value): ?Carbon
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        // Excel date serial (PRIMARY case)
+        if (is_numeric($value)) {
+            return Carbon::instance(
+                ExcelDate::excelToDateTimeObject($value)
+            );
+        }
+
+        // Optional fallback (CSV / manual input)
+        try {
+            return Carbon::createFromFormat('d/m/Y', trim($value));
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+
+    /* ================= MAIN INSERT ================= */
+    public function model(array $row)
+    {
+        $this->totalRows++;
+
+        // Skip empty row
+        $nonEmpty = collect($row)->filter(fn($v) => !is_null($v) && trim($v) !== '');
+        if ($nonEmpty->isEmpty()) {
+            $this->skippedRows++;
+            return null;
+        }
+
+        $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
+
+        /* -------- BLOCKED NUMBER -------- */
+        if (!empty($row['contact']) && BlockedNumber::where('number', $row['contact'])->exists()) {
+            $this->skippedRows++;
+            $this->duplicateContacts[] = "Blocked contact skipped: {$row['contact']}";
+            return null;
+        }
+
+
+        /* -------- SESSION -------- */
+        // $sessionId = StudentSession::where('session_name', trim($row['session']))->value('id');
+
+        $session = StudentSession::find($row['session_id']);
+        $sessionId = $session->id;
+
+        /* -------- DUPLICATE CONTACT -------- */
+        // if (!empty($row['contact']) && Student::where('contact', $row['contact'])->where('session', $sessionId)->exists()) {
+        //     $this->skippedRows++;
+        //     $this->duplicateContacts[] = "Duplicate contact skipped: {$row['contact']}";
         //     return null;
         // }
 
-        // Duplicate contact check
-        if (!empty($row['contact']) && Student::where('contact', $row['contact'])->exists()) {
-
-            // Add message to duplicate list
-            $this->duplicateContacts[] = "Duplicate contact skipped: {$row['contact']}";
-
-            // Skip row (do not insert)
+        if (
+            !empty($row['contact']) &&
+            Student::where('student_name', trim(strtolower($row['student_name'])))
+                ->where('contact', $row['contact'])
+                ->where('session', $sessionId)
+                ->exists()
+        ) {
+            $this->skippedRows++;
+            $this->duplicateContacts[] =
+                "Duplicate skipped: {$row['student_name']} | {$row['contact']} | Session {$sessionId}";
             return null;
         }
 
 
-        /** -----------------------------
-         * MAP TEXT TO IDS (FK MAPPINGS)
-         * ----------------------------- */
+        /* -------- COURSE -------- */
+        // $courseName = (!empty($row['technology']) && $row['technology'] !== '-')
+        //     ? $row['technology']
+        //     : 'Not Selected';
 
-        // Technology (Course)
-        $technologyId = null;
-        if (!empty($row['technology'])) {
-            $technologyId = Course::where('course_name', $row['technology'])->value('id');
-        }
+        // $course = Course::firstOrCreate(['course_name' => $courseName]);
 
-        // Batch
-        $batchId = null;
-        if (!empty($row['batch_assign'])) {
-            $batchId = Batch::where('batch_name', $row['batch_assign'])->value('id');
-        }
+        $defaultCourse = Course::where('course_name', 'Not Selected')->first();
 
-        // College
-        // $collegeId = null;
-        // if (!empty($row['college_name'])) {
-        //     $collegeId = College::where('college_name', $row['college_name'])->value('id');
-        // }
+        $course = $defaultCourse;
 
-        // ---- COLLEGE LOOKUP (Flexible Matching) ----
+        if (!empty($row['technology']) && $row['technology'] !== '-') {
+            $found = Course::where('course_name', trim($row['technology']))->first();
 
-        // $collegeId = null;
-        // $college = null;
-        // if ($row['college_name'] !== '') {
-        //     $college = College::firstOrCreate(
-        //         ['college_name' => $data['college_name']]
-        //     );
-        // }
-
-
-        $collegeId = null;
-
-        if (!empty($row['college_name'])) {
-
-            $excelCollege = strtolower(trim($row['college_name']));
-            $excelCollege = str_replace(',', '', $excelCollege);
-            $excelCollege = preg_replace('/\s+/', ' ', $excelCollege);
-
-            $college = College::whereRaw("
-                LOWER(REPLACE(college_name, ',', '')) LIKE ?
-            ", ["%{$excelCollege}%"])->first();
-
-            // OPTIONAL: auto-create if not found
-            if (!$college) {
-                $college = College::create([
-                    'college_name' => trim($row['college_name'])
-                ]);
+            if ($found) {
+                $course = $found;
             }
+        }
 
+
+        /* -------- COLLEGE -------- */
+        $collegeId = null;
+        if (!empty($row['college_name'])) {
+            $college = app(CollegeResolver::class)->resolve($row['college_name']);
             $collegeId = $college->id;
         }
 
+        
+        /* -------- FEES -------- */
+        $totalFees = (float) $row['total_fees'];
+        $regFees   = (float) $row['reg_fees'];
+        $paidFees  = is_numeric($row['paid_fees'] ?? null) ? (float)$row['paid_fees'] : 0;
+        $pendingFees = max($totalFees - $regFees - $paidFees, 0);
 
-        // $collegeId = $college?->id
-        // if (!empty($row['college_name'])) {
+        /* -------- START DATE (FIXED, NO TERNARY) -------- */
+        $startDate = null;
 
-        //     // Normalize Excel value
-        //     $excelCollege = strtolower(trim($row['college_name']));
+        $startDate       = $this->parseDate($row['start_date'] ?? null);
+        $registerDate    = $this->parseDate($row['register_date'] ?? null);
+        $next_due_date   = $this->parseDate($row['pending_fee_due_date'] ?? null);
+        // if (!empty($row['start_date'])) {
 
-        //     // Remove commas and extra spaces
-        //     $excelCollege = str_replace(',', '', $excelCollege);
-        //     $excelCollege = preg_replace('/\s+/', ' ', $excelCollege);
-
-        //     // Flexible matching in DB
-        //     $collegeId = \App\Models\College::whereRaw("
-        //         LOWER(REPLACE(college_name, ',', '')) LIKE ?
-        //     ", ["%{$excelCollege}%"])
-        //     ->value('id');
+        //     if (is_numeric($row['start_date'])) {
+        //         $startDate = Carbon::instance(
+        //             ExcelDate::excelToDateTimeObject($row['start_date'])
+        //         );
+        //     } else {
+        //         try {
+        //             $startDate = Carbon::createFromFormat('d/m/Y', $row['start_date']);
+        //         } catch (\Exception $e) {
+        //             $startDate = Carbon::parse($row['start_date']);
+        //         }
+        //     }
         // }
 
+        // $endDate = null;
 
-        // Session
-        $sessionId = null;
-        if (!empty($row['session'])) {
-            $sessionId = StudentSession::where('session_name', $row['session'])->value('id');
+        // if ($startDate && $session && $session->start_date && $session->end_date) {
+
+        //     // Days student joined late
+        //     $missedDays = max(
+        //         $startDate->diffInDays($session->start_date, false),
+        //         0
+        //     );
+
+        //     // Student end date = session end + missed days
+        //     $endDate = $session->end_date->copy()->addDays($missedDays);
+
+        //     // Skip Sunday
+        //     if ($endDate->isSunday()) {
+        //         $endDate->addDay();
+        //     }
+        // }
+        $endDate = null;
+
+        if ($startDate && $session && $session->start_date && $session->end_date) {
+
+            // Student joined late by these many days
+            $missedDays = max(
+                $session->start_date->diffInDays($startDate, false),
+                0
+            );
+
+            // Extend end date by missed days
+            $endDate = $session->end_date->copy()->addDays($missedDays);
+
+            // If end date falls on Sunday, move to Monday
+            if ($endDate->isSunday()) {
+                $endDate->addDay();
+            }
         }
 
-        /** -------------------
-         * STATUS NORMALIZATION
-         * ------------------- */
+
+
+        /* -------- REGISTER DATE (FIXED, NO TERNARY) -------- */
+        // $registerDate = null;
+        // if (!empty($row['register_date'])) {
+
+        //     if (is_numeric($row['register_date'])) {
+        //         $registerDate = Carbon::instance(
+        //             ExcelDate::excelToDateTimeObject($row['register_date'])
+        //         );
+        //     } else {
+        //         try {
+        //             $registerDate = Carbon::createFromFormat('d/m/Y', $row['register_date']);
+        //         } catch (\Exception $e) {
+        //             $registerDate = Carbon::parse($row['register_date']);
+        //         }
+        //     }
+        // }
+
+        $allowedDays = [179, 119, 59, 29, 41, 27, 20, 269,364];
+        $durationDays = 179;
+        if (!empty($row['duration']) && is_numeric($row['duration'])) {
+            $duration = (int) $row['duration'];
+
+            if (in_array($duration, $allowedDays, true)) {
+                $durationDays = $duration;
+            }
+        }
+
+        // $endDate = ($startDate && $durationDays)
+        //     ? $startDate->copy()->addDays($durationDays)
+        //     : null;
+
+        // if ($endDate && $endDate->isSunday()) {
+        //     $endDate->addDay();
+        // }
 
         $status = strtolower(trim($row['status'] ?? ''));
         $allowedStatuses = [
@@ -138,118 +518,132 @@ class StudentsImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVal
             'shift_patiala',
         ];
         if (!in_array($status, $allowedStatuses)) {
-            $status = null; // OR throw error in validation
+            $status = 'joined'; // OR throw error in validation
         }
 
+        // New column added here
+
+        // $next_due_date = null;
+        // if (!empty($row['pending_fee_due_date'])) {
+
+        //     if (is_numeric($row['pending_fee_due_date'])) {
+        //         $next_due_date = Carbon::instance(
+        //             ExcelDate::excelToDateTimeObject($row['pending_fee_due_date'])
+        //         );
+        //     } else {
+        //         try {
+        //             $next_due_date = Carbon::createFromFormat('d/m/Y', $row['pending_fee_due_date']);
+        //         } catch (\Exception $e) {
+        //             $next_due_date = Carbon::parse($row['pending_fee_due_date']);
+        //         }
+        //     }
+        // }
+
+        $allowedRef = array(
+            '1' => 'website',
+            '2' => 'college',
+            '3' => 'social media',
+            '4' => 'student reference',
+            '5' => 'personal reference',
+            '6' => 'Ads',
+        );
+
+        $reference = 2;
+
+        if (!empty($row['reference'])) {
+            $input = strtolower(trim($row['reference']));
+
+            // normalize allowed values to lowercase
+            $normalized = array_map('strtolower', $allowedRef);
+
+            $key = array_search($input, $normalized, true);
+
+            if ($key !== false) {
+                $reference = $key; // matched key
+            }
+        }
+
+        $part_time_offer = 0;
+
+        if (!empty($row['reference'])) {
+            $value = strtolower(trim($row['reference']));
+
+            if (in_array($value, ['yes', 'y', '1', 'true'], true)) {
+                $part_time_offer = 1;
+            }
+        }
+
+        $part_time_offer = 0;
+
+        if (!empty($row['part_time_job'])) {
+            $value = strtolower(trim($row['part_time_job']));
+
+            if (in_array($value, ['yes', 'y', '1', 'true'], true)) {
+                $part_time_offer = 1;
+            }
+        }
+
+        $placement_offer = 0;
+
+        if (
+            (!empty($row['placement_offer']) &&
+                in_array(strtolower(trim($row['placement_offer'])), ['yes', 'y', '1', 'true'], true)
+            )
+            || $totalFees > 15000
+        ) {
+            $placement_offer = 1;
+        }
+
+
+        $pg_offer = 0;
+
+        if (!empty($row['pg_offer'])) {
+            $value = strtolower(trim($row['pg_offer']));
+
+            if (in_array($value, ['yes', 'y', '1', 'true'], true)) {
+                $pg_offer = 1;
+            }
+        }
+
+        /* -------- SERIAL -------- */
+        $lastSno = Student::orderBy('id', 'desc')->value('sno');
+        $newSno  = is_numeric($lastSno) ? ((int)$lastSno + 1) : 1;
+
+        $this->insertedRows++;
+
         return new Student([
-            'student_name'   => $row['student_name'] ?? null,
-            'f_name'         => $row['f_name'] ?? null,
-            'sno'            => $row['sno'] ?? null,
-            'email_id'       => $row['email_id'] ?? null,
-            'contact'        => $row['contact'] ?? null,
-            'gender'         => $row['gender'] ?? null,
+            'student_name' => strtolower(trim($row['student_name'])),
+            'f_name'       => strtolower(trim($row['f_name'])),
+            'sno'          => $newSno,
+            'email_id'     => $row['email_id'] ?? null,
+            'contact'      => $row['contact'],
+            'gender'         => $row['gender'] ?? 'Male',
 
-            // Store IDs instead of text
-            'college_name'   => $collegeId,
-            'session'        => $sessionId,
-            'technology'     => $technologyId,
-            'batch_assign'   => $batchId,
+            'college_name' => $collegeId,
+            'session'      => $sessionId,
+            'technology'   => $course->id,
+
+            'total_fees'   => $totalFees,
+            'reg_fees'     => $regFees,
+            'paid_fees'    => $paidFees,
+            'pending_fees' => $pendingFees,
+
             'status'         => $status,
+            'duration'       => $durationDays,
 
-            'total_fees'     => $row['total_fees'] ?? null,
-            'reg_fees'       => $row['reg_fees'] ?? null,
-            'pending_fees'   => $row['pending_fees'] ?? null,
-            'next_due_date'  => !empty($row['next_due_date']) ? Carbon::parse($row['next_due_date'])->format('Y-m-d') : null,
-            'join_date'      => !empty($row['join_date']) ? Carbon::parse($row['join_date'])->format('Y-m-d') : null,
-            'duration'       => $row['duration'] ?? null,
-            'reg_due_amount' => $row['reg_due_amount'] ?? null,
-            'start_date'     => !empty($row['start_date']) ? Carbon::parse($row['start_date'])->format('Y-m-d') : null,
-            'end_date'       => !empty($row['end_date']) ? Carbon::parse($row['end_date'])->format('Y-m-d') : null,
+            'join_date'    => $registerDate?->format('Y-m-d'),
+            'start_date'   => $startDate?->format('Y-m-d'),
+            'end_date'   => $endDate?->format('Y-m-d'),
+            'next_due_date'   => $next_due_date?->format('Y-m-d'),
+            'reference' => $reference,
+            'part_time_offer' => $part_time_offer,
+            'placement_offer' => $placement_offer,
+            'pg_offer' => $pg_offer,
         ]);
     }
 
-    /** -------------------------------------
-     * VALIDATION RULES FOR MAPPED FIELDS
-     * ------------------------------------- */
-
-    public function rules(): array
+    public function onError(Throwable $e)
     {
-        return [
-            '*.student_name' => 'required',
-            '*.contact'      => 'required',
-            '*.email_id'     => 'nullable|email',
-            '*.sno'          => 'nullable|max:255',
-
-            // Technology validation
-            '*.technology' => function ($attribute, $value, $fail) {
-                if ($value && !Course::where('course_name', $value)->exists()) {
-                    $fail("Invalid technology: '{$value}'.");
-                }
-            },
-
-            // Batch validation
-            '*.batch_assign' => function ($attribute, $value, $fail) {
-                if ($value && !Batch::where('batch_name', $value)->exists()) {
-                    $fail("Invalid batch: '{$value}'.");
-                }
-            },
-
-            // // College validation
-            // '*.college_name' => function ($attribute, $value, $fail) {
-            //     if ($value && !College::where('college_name', $value)->exists()) {
-            //         $fail("Invalid college: '{$value}'.");
-            //     }
-            // },
-
-            '*.college_name' => function ($attribute, $value, $fail) {
-
-                if (!$value) return;
-
-                // Normalize Excel value
-                $excelCollege = strtolower(trim($value));
-                $excelCollege = str_replace(',', '', $excelCollege);
-                $excelCollege = preg_replace('/\s+/', ' ', $excelCollege);
-
-                // Try flexible match in DB
-                $exists = \App\Models\College::whereRaw("
-                    LOWER(REPLACE(college_name, ',', '')) LIKE ?
-                ", ["%{$excelCollege}%"])->exists();
-
-                if (!$exists) {
-                    $fail("Invalid college name: '{$value}'");
-                }
-            },
-
-
-            // Session validation
-            '*.session' => function ($attribute, $value, $fail) {
-                if ($value && !StudentSession::where('session_name', $value)->exists()) {
-                    $fail("Invalid session: '{$value}'.");
-                }
-            },
-
-            // Status validation
-            '*.status' => function ($attribute, $value, $fail) {
-                $allowed = ['joined','dropout','certificate_only','shift_patiala'];
-                if ($value && !in_array(strtolower(trim($value)), $allowed)) {
-                    $fail("Invalid status: '{$value}'. Allowed: ".implode(', ', $allowed));
-                }
-            },
-
-            '*.duration' => function ($attribute, $value, $fail) {
-
-            if (!$value) return;
-
-            $allowed = [
-                '20','13','29','44','59',
-                '89','119','179','269','364'
-            ];
-
-            if (!in_array(trim($value), $allowed)) {
-                $fail("Invalid duration: '{$value}'. Allowed: ".implode(', ', $allowed));
-            }
-        },
-
-        ];
+        // Hide system errors from user
     }
 }

@@ -25,6 +25,7 @@ class Cv extends Model
         'current_job_status',
         'hiring_status',
         'phone_number',
+        'email',
         'location',
         'last_updated_at', 
         'file_name', 

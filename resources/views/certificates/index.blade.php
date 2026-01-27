@@ -37,10 +37,10 @@
 <form method="GET" action="{{ route('certificates.index') }}" class="mb-4">
     <div class="row g-2">
         {{-- Student Name --}}
-        <div class="col-md-2">
+        <!-- <div class="col-md-2">
             <input type="text" name="student_name" class="form-control"
                    placeholder="Student Name" value="{{ request('student_name') }}">
-        </div>
+        </div> -->
 
         {{-- Father Name --}}
        <!--  <div class="col-md-2">
@@ -58,13 +58,13 @@
         </div> -->
 
         {{-- S no. --}}
-        <div class="col-md-2">
+        <!-- <div class="col-md-2">
             <input type="text" name="sno" class="form-control"
                    placeholder="S. No" value="{{ request('sno') }}">
-        </div>
+        </div> -->
 
         {{-- Session --}}
-        <div class="col-md-2">
+        <!-- <div class="col-md-2">
             <select name="session" class="form-control session" id="ddl_session">
                 <option value="">--Session Name--</option>
                 @foreach($sessions as $session)
@@ -75,7 +75,7 @@
                 @endforeach
             </select>
         </div>
-
+ -->
         {{-- College --}}
         <div class="col-md-2">
             <select name="college_name" class="form-control collegeName" id="txtcollege">
@@ -207,7 +207,7 @@
                 <th class="text-center">Reg Fees</th>
                 <th class="text-center">Pending Fees</th>
                 
-                <th class="text-center" width="100px">Date of Joining</th>
+                <th class="text-center" width="100px">Registered Date</th>
                 <th class="text-center">Duration</th>
                 <th class="text-center" width="100px">Start Date</th>
                 <th class="text-center" width="100px">End Date</th>
@@ -250,7 +250,8 @@
                 
                 <td>{{ \Carbon\Carbon::parse($student->join_date)->format('d M Y') }}</td>
                 
-                <td>{{ $student->durationData->name ?? '-' }}</td>
+                <!-- <td>{{ $student->durationData->name ?? '-' }}</td> -->
+                <td>{{ $student->sessionData->session_display_name ?? '-' }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->start_date)->format('d M Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->end_date)->format('d M Y') }}</td>
                 <td class="text-center">
@@ -275,12 +276,12 @@
                 <td class="text-center">
                     <div class="mb-2">
                         {{-- Issue --}}
-                        <form action="{{ route('students.issueCertificate', $student->id) }}" method="POST" style="display:inline-block;">
+                       <!--  <form action="{{ route('students.issueCertificate', $student->id) }}" method="POST" style="display:inline-block;">
                             @csrf
                             <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" onclick="return confirm('Send certificate to {{ $student->email_id }}?')">
                                 <i class="fa-solid fa-file-lines"></i>
                             </button>
-                        </form>
+                        </form> -->
 
                         {{-- Edit --}}
                         <a href="{{ route('certificates.edit',$student->id) }}" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Student">
@@ -298,11 +299,11 @@
 
     {{-- Multi-action buttons --}}
     <div class="mt-3">
-        <button id="issueSelected" class="btn btn-primary">Issue Certificate</button>
+        <!-- <button id="issueSelected" class="btn btn-primary">Issue Certificate</button> -->
         <button id="downloadissueSelected" class="btn btn-primary">Download Certificates</button>
     </div>
 
-    {{ $students->links() }}
+     
 </div>
 
 {{-- Hidden form for bulk issuing (submits like single-row form) --}}

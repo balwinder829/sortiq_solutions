@@ -17,6 +17,7 @@ class PartTimeJob extends Model
         'shift',
         'location',
         'mobile',
+        'email',
         'status'
     ];
 }

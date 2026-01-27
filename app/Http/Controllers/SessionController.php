@@ -5,16 +5,86 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\StudentSession;
 use App\Models\Course;
+use App\Models\Student;
+
 
 class SessionController extends Controller
+{   
+//    public function index()
+// {
+//     $sessions = StudentSession::with(['batches.students'])
+//         ->withCount('batches')
+//         ->latest()
+//         ->get();
+
+//     foreach ($sessions as $session) {
+
+//         $onlineCount  = 0;
+//         $offlineCount = 0;
+
+//         foreach ($session->batches as $batch) {
+
+//             if ($batch->batch_mode === 'online') {
+//                 $onlineCount += $batch->students->count();
+//             }
+
+//             if ($batch->batch_mode === 'offline') {
+//                 $offlineCount += $batch->students->count();
+//             }
+//         }
+
+//         // attach dynamic values
+//         $session->online_students  = $onlineCount;
+//         $session->offline_students = $offlineCount;
+//     }
+//     // dd($sessions);
+//     return view('sessions.index', compact('sessions'));
+// }
+public function index()
 {
-    public function index()
-    {
-        // $sessions = StudentSession::latest()->paginate(10);
-        $sessions = StudentSession::withCount('batches')->latest()->get();
-        return view('sessions.index', compact('sessions'));
+    $sessions = StudentSession::with(['batches.students'])
+        // ->withCount('batches')
+        ->latest()
+        ->get();
+
+    return view('sessions.index', compact('sessions'));
+}
+
+    public function i12312ndex()
+{
+    $sessions = StudentSession::with(['batches.students'])
+        ->withCount('batches')
+        ->latest()
+        ->get();
+
+    foreach ($sessions as $session) {
+
+        $onlineCount  = 0;
+        $offlineCount = 0;
+
+        foreach ($session->batches as $batch) {
+
+            if ($batch->batch_mode === 'online') {
+                $onlineCount += $batch->students->count();
+            }
+
+            if ($batch->batch_mode === 'offline') {
+                $offlineCount += $batch->students->count();
+            }
+        }
+
+        // 🔥 PROPERLY ATTACH ATTRIBUTES
+        $session->setAttribute('online_students', $onlineCount);
+        $session->setAttribute('offline_students', $offlineCount);
     }
 
+    return view('sessions.index', compact('sessions'));
+}
+
+
+
+
+     
     public function create()
     {
         $courses = Course::all();
@@ -41,6 +111,7 @@ public function store(Request $request)
 
     $validated = $request->validate([
         'session_name'  => 'required|string|max:255',
+        'session_display_name'  => 'required|string|max:255',
         'session_start' => 'required|date',
         'session_end'   => 'required|date|after_or_equal:session_start',
         // 'session_month' => 'required|string|max:255',
@@ -51,6 +122,7 @@ public function store(Request $request)
 
     StudentSession::create([
         'session_name'   => $validated['session_name'],
+        'session_display_name'   => $validated['session_display_name'],
         'start_date'     => $validated['session_start'],
         'end_date'       => $validated['session_end'],
         // 'session_month'  => $validated['session_month'], // NEW
@@ -88,6 +160,7 @@ public function update(Request $request, StudentSession $session)
 
     $validated = $request->validate([
         'session_name'  => 'required|string|max:255',
+        'session_display_name'  => 'required|string|max:255',
         'session_start' => 'required|date',
         'session_end'   => 'required|date|after_or_equal:session_start',
         // 'session_month' => 'required|string|max:255',
@@ -98,6 +171,7 @@ public function update(Request $request, StudentSession $session)
 
     $session->update([
         'session_name'   => $validated['session_name'],
+        'session_display_name'   => $validated['session_display_name'],
         'start_date'     => $validated['session_start'],
         'end_date'       => $validated['session_end'],
         // 'session_month'  => $validated['session_month'], // NEW
@@ -114,6 +188,14 @@ public function update(Request $request, StudentSession $session)
 
     public function destroy(StudentSession $session)
     {
+         // Check if any student is assigned to this session
+        $hasStudents = Student::where('session', $session->id)->exists();
+        // dd($hasStudents);
+        if ($hasStudents) {
+            return redirect()->route('sessions.index')
+                ->with('error', 'You cannot delete this session because students are assigned to it.');
+        }
+
         $session->delete();
 
         return redirect()->route('sessions.index')
@@ -124,7 +206,7 @@ public function update(Request $request, StudentSession $session)
     {
         $session = StudentSession::with([
             'batches.courseData',
-            'batches.trainerData'
+            'batches.trainerData.user'
         ])->findOrFail($id);
         // dd($session->batches);
         return response()->json($session->batches);

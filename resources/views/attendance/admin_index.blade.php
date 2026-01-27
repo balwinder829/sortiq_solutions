@@ -16,6 +16,7 @@
         </div>
          
     </div>
+    
    
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -103,9 +104,10 @@
 </td>
 
                         <td class="text-center">
-                            <a href="{{ route('attendance.employeeDetail', $emp->id) }}"
-                               class="btn btn-sm btn-primary">
-                                View Detail
+                           
+                             <a href="{{ route('attendance.employeeDetail', $emp->id) }}" class="btn btn-sm"
+                               data-bs-toggle="tooltip" title="View Detail">
+                               <i class="fa fa-eye"></i>
                             </a>
                         </td>
 

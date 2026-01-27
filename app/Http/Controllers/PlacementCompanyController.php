@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\PlacementCompany;
 use Illuminate\Http\Request;
 
+use App\Imports\PlacementCompanyImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\View;
 class PlacementCompanyController extends Controller
 {
     public function index()
@@ -71,5 +74,72 @@ class PlacementCompanyController extends Controller
 
         return redirect()->route('placement-companies.index')
             ->with('success', 'Company deleted successfully');
+    }
+
+     public function importForm()
+    {
+        return view('placement_companies.import');
+    }
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+
+        \DB::beginTransaction();
+
+        try {
+
+            $importer = new \App\Imports\PlacementCompanyImport();
+            \Maatwebsite\Excel\Facades\Excel::import($importer, $file);
+
+            // Validation failures
+            $failures = $importer->failures();
+
+            if ($failures->isNotEmpty()) {
+
+                \DB::rollBack();
+
+                $messages = [];
+
+                foreach ($failures as $failure) {
+                    $messages[] =
+                        "Row {$failure->row()} – {$failure->attribute()} – " .
+                        implode(', ', $failure->errors());
+                }
+
+                return back()->withErrors($messages);
+            }
+
+            \DB::commit();
+
+            // Final counts
+            $total    = $importer->totalRows;
+            $inserted = $importer->insertedRows;
+            $skipped  = $importer->skippedRows;
+
+            $message = "From {$total} rows: {$inserted} inserted successfully, {$skipped} skipped.";
+
+            // Warnings
+            $warnings = $importer->duplicateContacts;
+
+            if (!empty($warnings)) {
+                return back()
+                    ->with('success', $message)
+                    ->withErrors($warnings);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Throwable $e) {
+            // dd($e);
+            \DB::rollBack();
+
+            return back()->withErrors([
+                'Import failed: Something went wrong while importing the file.'
+            ]);
+        }
     }
 }

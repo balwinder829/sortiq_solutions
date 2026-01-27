@@ -14,7 +14,106 @@ use Illuminate\Validation\Rule;
 class TrainerController extends Controller
 {   
 
-    public function index()
+    public function index(Request $request)
+{
+    $currentSession = session('admin_session_id');
+    $today = now()->toDateString();
+    $currentTime = now()->format('H:i:s');
+
+    // 🔵 Get all courses for filter dropdown
+    $courses = \App\Models\Course::orderBy('course_name')->get();
+
+
+    $trainersQuery = Trainer::whereHas('user', function ($q) {
+            $q->whereNull('deleted_at');
+        })
+        ->with(['user'])
+        ->withCount([
+
+            // TOTAL batches
+            'batches as session_batches_count' => function($q) use ($currentSession) {
+                $q->where('session_name', $currentSession);
+            },
+
+            // ONLINE batches
+            'batches as online_batches_count' => function($q) use ($currentSession) {
+                $q->where('session_name', $currentSession)
+                  ->where('batch_mode', 'online');
+            },
+
+            // OFFLINE batches
+            'batches as offline_batches_count' => function($q) use ($currentSession) {
+                $q->where('session_name', $currentSession)
+                  ->where('batch_mode', 'offline');
+            },
+
+            // TODAY remaining
+            'batches as today_remaining_batches_count' => function($q) use ($today, $currentTime) {
+                $q->whereDate('start_time', $today)
+                  ->where('end_time', '>', $currentTime);
+            },
+
+        ]);
+
+    // 🔴 APPLY TECHNOLOGY FILTER (Course)
+    if ($request->filled('course')) {
+        $courseId = $request->course;
+
+        // FIND trainers where this course id exists in comma separated technology
+        $trainersQuery->whereRaw("FIND_IN_SET(?, technology)", [$courseId]);
+    }
+
+    $trainers = $trainersQuery->latest()->get();
+
+    return view('trainers.index', compact('trainers', 'courses'));
+}
+
+    public function index2()
+{
+
+
+
+    $currentSession = session('admin_session_id');
+    $today = now()->toDateString();
+    $currentTime = now()->format('H:i:s');
+
+    $trainers = Trainer::whereHas('user', function ($q) {
+        $q->whereNull('deleted_at');
+    })
+    ->with(['user', 'courseData'])
+    ->withCount([
+
+        // 🔵 TOTAL batches in current session
+        'batches as session_batches_count' => function($q) use ($currentSession) {
+            $q->where('session_name', $currentSession);
+        },
+
+        // 🔵 ONLINE batches in current session
+        'batches as online_batches_count' => function($q) use ($currentSession) {
+            $q->where('session_name', $currentSession)
+              ->where('batch_mode', 'online');
+        },
+
+        // 🔵 OFFLINE batches in current session
+        'batches as offline_batches_count' => function($q) use ($currentSession) {
+            $q->where('session_name', $currentSession)
+              ->where('batch_mode', 'offline');
+        },
+
+        // 🔵 TODAY remaining batches (your existing logic, unchanged)
+        'batches as today_remaining_batches_count' => function($q) use ($currentSession, $today, $currentTime) {
+            $q->whereDate('start_time', $today)
+              ->where('end_time', '>', $currentTime);
+        },
+
+    ])
+    ->latest()
+    ->get();
+
+
+    return view('trainers.index', compact('trainers'));
+}
+ public function index20jan()
 {
 
 
@@ -109,7 +208,9 @@ class TrainerController extends Controller
             ],
             'password' => 'required|string|min:6',
             'email'        => 'required|email|unique:users,email',
-            'technology'   => 'required',
+            'technology'   => 'required|array',
+            'technology.*' => 'exists:student_courses,id',
+
         ],
         [
             // 🔴 Custom messages
@@ -134,7 +235,8 @@ class TrainerController extends Controller
         Trainer::create([
             'user_id'    => $user->id,
             'gender'     => $validated['gender'],
-            'technology' => $validated['technology'],
+            // 'technology' => $validated['technology'],
+            'technology' => implode(',', $validated['technology']),
         ]);
 
         return redirect()->route('trainers.index')
@@ -159,6 +261,47 @@ class TrainerController extends Controller
     }
 
     public function update(Request $request, Trainer $trainer)
+    {
+        $validated = $request->validate([
+            'trainer_name' => 'required|string|max:100',
+            'gender'       => 'required|in:male,female',
+
+            'phone' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('users', 'phone')->ignore($trainer->user_id),
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->ignore($trainer->user_id),
+            ],
+
+            // 🔵 MULTIPLE TECHNOLOGY VALIDATION
+            'technology'   => 'required|array',
+            'technology.*' => 'exists:student_courses,id',
+        ]);
+
+        // 🔵 Update user table
+        $trainer->user->update([
+            'name'  => $validated['trainer_name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+        ]);
+
+        // 🔵 Update trainer profile (SAVE MULTIPLE TECHNOLOGIES)
+        $trainer->update([
+            'gender'     => $validated['gender'],
+            'technology' => implode(',', $validated['technology']), // 🔥 SAVE AS "1,3,5"
+        ]);
+
+        return redirect()->route('trainers.index')
+            ->with('success', 'Trainer updated successfully!');
+    }
+
+    public function update2(Request $request, Trainer $trainer)
     {
 
         $validated = $request->validate([

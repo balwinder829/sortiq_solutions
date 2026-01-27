@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h4>Edit CV Record for: {{ $cv->employee_name }}</h4>
+    <h4>Edit CV</h4>
 
     <form method="POST" action="{{ route('cvs.update', $cv) }}">
         @csrf
@@ -38,6 +38,20 @@
                     pattern="[0-9]{10}"
                     title="Enter a valid 10-digit mobile number">
                 @error('phone_number')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Email --}}
+            <div class="form-group col-md-6 mb-3">
+                <label for="email">Email</label>
+                <input type="text"
+                       name="email"
+                       id="email"
+                       class="form-control @error('email') is-invalid @enderror"
+                       value="{{ old('email', $cv->email) }}"
+                        required>
+                @error('email')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
@@ -181,7 +195,7 @@
 
         </div>
 
-        <button type="submit" class="btn btn-primary mt-3">Update CV Record</button>
+        <button type="submit" class="btn btn-primary mt-3">Update</button>
         <a href="{{ route('cvs.index') }}" class="btn btn-secondary mt-3">Back</a>
     </form>
 </div>

@@ -18,12 +18,17 @@
             <h1 class="page_heading">Placement Companies</h1>
         </div>
         <div class="col-md-6">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end gap-2">
                     
                   <a href="{{ route('placement-companies.create') }}"
        class="btn mb-3"
        style="background:#6b51df;color:#fff;">
         Add Company
+    </a>
+    <a href="{{ route('placement-companies.import') }}"
+       class="btn mb-3"
+       style="background:#6b51df;color:#fff;">
+        Import Companies
     </a>
             </div>
         </div>

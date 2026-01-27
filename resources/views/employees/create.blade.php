@@ -4,23 +4,26 @@
 <div class="container">
     <h4>Add Employee</h4>
 
-    <form method="POST" action="{{ route('employees.store') }}">
+    <form method="POST" action="{{ route('employees.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="row">
 
-            {{-- Employee Code --}}
+           {{-- Employee Code --}}
             <div class="form-group col-md-6">
                 <label>Employee Code</label>
                 <input type="text"
                        name="emp_code"
                        class="form-control @error('emp_code') is-invalid @enderror"
-                       value="{{ old('emp_code') }}"
-                       required>
+                       value="{{ old('emp_code', 'SS-') }}"
+                       required
+                       oninput="formatEmployeeCode(this)"
+                       onkeydown="lockPrefix(event, this)">
                 @error('emp_code')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
+
 
             {{-- Employee Name --}}
             <div class="form-group col-md-6">
@@ -48,6 +51,19 @@
                 @enderror
             </div>
 
+             {{-- Employement type --}}
+            <div class="form-group col-md-6">
+                <label>Employee Type</label>
+                <select name="employment_type" class="form-control" required>
+                    <option value="">Select</option>
+                    @foreach(['intern','fresher','junior','senior'] as $bg)
+                        <option value="{{ $bg }}" {{ old('employment_type') == $bg ? 'selected' : '' }}>
+                            {{ ucwords($bg) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             {{-- Joining Date --}}
             <div class="form-group col-md-6">
                 <label>Joining Date</label>
@@ -61,7 +77,21 @@
                 @enderror
             </div>
 
-             <div class="form-group col-md-6">
+            {{-- Probation Period --}}
+            <div class="form-group col-md-6">
+                <label>Probation Period (In Months)</label>
+                <input type="number"
+                       name="probation_period"
+                       class="form-control @error('probation_period') is-invalid @enderror"
+                       value="{{ old('probation_period') }}"
+                       required>
+                @error('probation_period')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Role --}}
+            <div class="form-group col-md-6">
                 <label>Role</label>
                 <select name="role"
                         class="form-control @error('role') is-invalid @enderror"
@@ -78,7 +108,6 @@
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
-
 
             {{-- Username --}}
             <div class="form-group col-md-6">
@@ -114,11 +143,28 @@
                        class="form-control @error('phone') is-invalid @enderror"
                        value="{{ old('phone') }}"
                        required
-                    minlength="10"
-                    maxlength="10"
-                    pattern="[0-9]{10}"
-                    title="Enter a valid 10-digit mobile number">
+                       minlength="10"
+                       maxlength="10"
+                       pattern="[0-9]{10}"
+                       title="Enter a valid 10-digit mobile number">
                 @error('phone')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Phone --}}
+            <div class="form-group col-md-6">
+                <label>Alternative Phone</label>
+                <input type="text"
+                       name="alternative_phone"
+                       class="form-control @error('alternative_phone') is-invalid @enderror"
+                       value="{{ old('alternative_phone') }}"
+                       required
+                       minlength="10"
+                       maxlength="10"
+                       pattern="[0-9]{10}"
+                       title="Enter a valid 10-digit mobile number">
+                @error('alternative_phone')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
@@ -138,10 +184,11 @@
             {{-- Date of Birth --}}
             <div class="form-group col-md-6">
                 <label>Date of Birth</label>
-                <input type="date" name="dob"
+                <input type="date"
+                       name="dob"
                        class="form-control"
-                        max="{{ date('Y-m-d') }}"
-                       value="{{ old('dob') }}">
+                       max="{{ date('Y-m-d') }}"
+                       value="{{ old('dob') }}" required>
             </div>
 
             {{-- Blood Group --}}
@@ -160,9 +207,41 @@
             {{-- Address --}}
             <div class="form-group col-md-12">
                 <label>Address</label>
-                <textarea name="address" class="form-control" rows="3">{{ old('address') }}</textarea>
+                <textarea name="address" required class="form-control" rows="3">{{ old('address') }}</textarea>
             </div>
 
+            {{-- PHOTO UPLOAD (NEW – ID CARD) --}}
+            <div class="form-group col-md-6">
+                <label>Employee Photo (ID Card)</label>
+
+                <div id="drop-area"
+                     style="border:2px dashed #6b51df;
+                            padding:20px;
+                            text-align:center;
+                            cursor:pointer;
+                            border-radius:6px;">
+
+                    <p style="margin:0;">Drag & drop image here<br>or click to upload</p>
+                    <input type="file"
+                           name="photo"
+                           id="photoInput"
+                           accept="image/*"
+                           style="display:none;">
+                </div>
+
+                <div id="preview" style="margin-top:10px; display:none;">
+                    <img id="previewImg"
+                         src=""
+                         style="max-width:120px;
+                                border:1px solid #ddd;
+                                padding:4px;
+                                border-radius:4px;">
+                </div>
+
+                @error('photo')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
 
         </div>
 
@@ -171,3 +250,60 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+const dropArea = document.getElementById('drop-area');
+const fileInput = document.getElementById('photoInput');
+const preview = document.getElementById('preview');
+const previewImg = document.getElementById('previewImg');
+
+dropArea.addEventListener('click', () => fileInput.click());
+
+dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.style.background = '#f5f5ff';
+});
+
+dropArea.addEventListener('dragleave', () => {
+    dropArea.style.background = '';
+});
+
+dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.style.background = '';
+    fileInput.files = e.dataTransfer.files;
+    showPreview(fileInput.files[0]);
+});
+
+fileInput.addEventListener('change', () => {
+    showPreview(fileInput.files[0]);
+});
+
+function showPreview(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        previewImg.src = reader.result;
+        preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+function formatEmployeeCode(input) {
+    let value = input.value.toUpperCase();
+
+    // Remove anything before or instead of SS-
+    if (!value.startsWith('SS-')) {
+        value = value.replace(/^SS-*/i, '');
+        value = 'SS-' + value;
+    }
+
+    // Allow only numbers after SS-
+    value = value.replace(/[^0-9]/g, '');
+
+    input.value = 'SS-' + value;
+}
+
+</script>
+@endpush

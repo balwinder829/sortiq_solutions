@@ -1,19 +1,23 @@
 @extends('layouts.app')
 @section('content')
 <div class="container">
-    <h1>Edit College</h1>
+    <div class="row mb-2">
+        <div class="col-md-8">
+            <h1 class="page_heading">Edit College/Place</h1>
+        </div>  
+    </div>
 
     <form action="{{ route('colleges.update', $college) }}" method="POST">
         @csrf
         @method('PUT')
 
         <div class="mb-3">
-            <label>College Name</label>
+            <label>Name</label>
             <input type="text" name="college_name" class="form-control" value="{{ old('college_name', $college->college_name) }}" required>
         </div>
 
         <div class="mb-3">
-            <label>College Display Name</label>
+            <label>Display Name</label>
             <input type="text" name="college_display_name" class="form-control" value="{{ old('college_display_name', $college->college_display_name) }}" required>
         </div>
 

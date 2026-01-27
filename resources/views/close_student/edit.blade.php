@@ -32,14 +32,14 @@
                                 <div class="form-group col-md-6">
                                     <label>Student Name</label>
                                     <input type="text" name="student_name" maxlength="55" required class="form-control" 
-                                        value="{{ old('student_name', $student->student_name) }}">
+                                        value="{{ old('student_name', $student->student_name) }}"  oninput="capitalizeWords(this)">
                                 </div>
 
                                 <!-- Father Name -->
                                 <div class="form-group col-md-6">
                                     <label>Father Name</label>
                                     <input type="text" name="f_name" maxlength="55" required class="form-control" 
-                                        value="{{ old('f_name', $student->f_name) }}">
+                                        value="{{ old('f_name', $student->f_name) }}"  oninput="capitalizeWords(this)">
                                 </div>
                                 <div class="form-group col-md-6">
                                     <label>Serial No.</label>
@@ -131,26 +131,30 @@
                                 <!-- Fees -->
                                 <div class="form-group col-md-6">
                                     <label>Total Fees</label>
-                                    <input type="number" name="total_fees" class="form-control" 
-                                        value="{{ old('total_fees', $student->total_fees) }}">
+                                    <input type="number" name="total_fees" class="form-control" id="total_fees"
+                                        value="{{ old('total_fees', $student->total_fees) }}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')" readonly>
                                 </div>
 
                                 <div class="form-group col-md-6">
                                     <label>Registration Fees</label>
-                                    <input type="number" name="reg_fees" class="form-control" 
-                                        value="{{ old('reg_fees', $student->reg_fees) }}">
+                                    <input type="number" name="reg_fees" class="form-control"   id="reg_fees"
+                                        value="{{ old('reg_fees', $student->reg_fees) }}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')" readonly>
+                                </div>
+
+                                 <div class="form-group col-md-6">
+                                    <label>Paid Fees</label>
+                                    <input type="text" name="paid_fees" required class="form-control" id="paid_fees" 
+                                           value="{{ old('paid_fees', $student->paid_fees) }}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')" readonly>
+                                    @error('paid_fees') <small class="text-danger">{{ $message }}</small> @enderror
+                                    <small id="fee_warning" class="text-danger d-none">
+                                        Registration fees + Paid fees cannot be greater than Total fees.
+                                    </small>
                                 </div>
 
                                 <div class="form-group col-md-6">
-                                    <label>Pending Fees</label>
-                                    <input type="number" name="pending_fees" class="form-control" 
-                                        value="{{ old('pending_fees', $student->pending_fees) }}">
-                                </div>
-
-                                <div class="form-group col-md-6">
-                                    <label>Reg Due Amount</label>
-                                    <input type="number" name="reg_due_amount" class="form-control" 
-                                        value="{{ old('reg_due_amount', $student->reg_due_amount) }}">
+                                    <label>Total Pending Fees</label>
+                                    <input type="number" name="pending_fees" class="form-control" id="pending_fees" 
+                                        value="{{ old('pending_fees', $student->pending_fees) }}" readonly>
                                 </div>
 
                                 <div class="form-group col-md-6">
@@ -185,18 +189,7 @@
                                 </div>
 
                                 <!-- Batch -->
-                                <div class="form-group col-md-6">
-                                    <label>Batch</label>
-                                    <select name="batch_assign" required class="form-control">
-                                        <option value="" disabled>--Choose--</option>
-                                        @foreach($batches as $batch)
-                                            <option value="{{ $batch->id }}" 
-                                                {{ old('batch_assign', $student->batch_assign) == $batch->id ? 'selected' : '' }}>
-                                                {{ $batch->batch_name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                                
 
                                  
     <div class="form-group col-md-6">
@@ -254,4 +247,45 @@
         </div>
     </div>
 </div>
+
+<script>
+    function calculatePendingFees() {
+        let totalFees = parseFloat(document.getElementById('total_fees').value) || 0;
+        let regFees   = parseFloat(document.getElementById('reg_fees').value) || 0;
+        let paidFees   = parseFloat(document.getElementById('paid_fees').value) || 0;
+
+        let warningEl = document.getElementById('fee_warning');
+
+        // Check validation
+        if ((regFees + paidFees) > totalFees) {
+            warningEl.classList.remove('d-none');
+
+            // Optional: auto-fix by resetting last input
+            document.getElementById('paid_fees').value = '';
+            paidFees = 0;
+        } else {
+            warningEl.classList.add('d-none');
+        }
+        let pending = totalFees - regFees - paidFees;
+
+        // Prevent negative value
+        if (pending < 0) pending = 0;
+
+        document.getElementById('pending_fees').value = pending.toFixed(2);
+    }
+
+    document.getElementById('total_fees').addEventListener('input', calculatePendingFees);
+    document.getElementById('reg_fees').addEventListener('input', calculatePendingFees);
+    document.getElementById('paid_fees').addEventListener('input', calculatePendingFees);
+
+    function capitalizeWords(input) {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+
+        let value = input.value.toLowerCase();
+        input.value = value.replace(/\b\w/g, char => char.toUpperCase());
+
+        input.setSelectionRange(start, end);
+    }
+</script>
 @endsection

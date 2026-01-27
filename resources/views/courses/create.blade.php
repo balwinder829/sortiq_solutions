@@ -3,12 +3,12 @@
 @section('content')
 <div class="container">
     <div class="card">
-        <div class="card-header"><h4>Add Course</h4></div>
+        <div class="card-header"><h4>Add Technology</h4></div>
         <div class="card-body">
             <form action="{{ route('courses.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label>Course Name</label>
+                    <label>Technology Name</label>
                     <input type="text" name="course_name" class="form-control" value="{{ old('course_name') }}" required>
                     @error('course_name')
                         <small class="text-danger">{{ $message }}</small>

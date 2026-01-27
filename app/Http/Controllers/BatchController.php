@@ -66,11 +66,9 @@ class BatchController extends Controller
     {
         // $sessions = StudentSession::all(); // get all session_start values
         $sessionsData = StudentSession::where('status', 'active')->get();
-        //$technologies = ::select('technology')->distinct()->get();
-        // $trainers = Trainer::get();
-        // $trainers = Trainer::with('user')->get();
+         
         $trainers = Trainer::with('activeUser')->whereHas('activeUser')->get();
-        // dd($trainers);
+        
         $courses = Course::get();
         $course_duration = Duration::all();
         return view('batches.create', compact('sessionsData', 'trainers', 'courses','course_duration'));
@@ -84,7 +82,10 @@ class BatchController extends Controller
             'start_time'   => 'required',
             'end_time'     => 'required|after:start_time',
             'batch_assign' => 'required|max:255',
-            'class_assign' => 'required|max:255',
+            // 'class_assign' => 'required|max:255',
+            'class_assign'   => 'required|array',
+            'class_assign.*' => 'exists:student_courses,id',
+
             'duration'     => 'required|max:255',
             'batch_mode'     => 'required|max:255',
             'status'       => 'required|in:active,inactive,completed,cancelled',
@@ -97,7 +98,8 @@ class BatchController extends Controller
             'end_time'     => $request->end_time,
             'department'   => $request->department,
             'batch_assign' => $request->batch_assign,
-            'class_assign' => $request->class_assign,
+            // 'class_assign' => $request->class_assign,
+            'class_assign' => implode(',', $request->class_assign), // 🔥 MULTI TECH SAVED
             'batch_mode' => $request->batch_mode,
             'duration'     => $request->duration,
             'status'     => $request->status,
@@ -144,8 +146,70 @@ class BatchController extends Controller
         return view('batches.show', compact('batch'));
     }
 
-
     public function update(Request $request, Batch $batch)
+{
+    $request->validate([
+        'batch_name'   => 'required|string|max:255',
+        'session_name' => 'required|string',
+        'start_time'   => 'required',
+        'end_time'     => 'required|after:start_time',
+        'batch_assign' => 'required|max:255',
+
+        // 🔵 MULTIPLE TECHNOLOGY VALIDATION
+        'class_assign'   => 'required|array',
+        'class_assign.*' => 'exists:student_courses,id',
+
+        'batch_mode'  => 'required|max:255',
+        'duration'    => 'required|string|max:255',
+        'status'      => 'required|in:active,inactive,completed,cancelled',
+    ],
+    [
+        // Optional clean messages
+        'class_assign.required'   => 'Please select at least one technology.',
+        'class_assign.*.exists'   => 'One of the selected technologies is invalid.',
+    ]);
+
+    // OLD trainer_id from trainer table
+    $oldTrainerId = $batch->batch_assign;
+
+    // 🔵 UPDATE BATCH (SAVE MULTIPLE TECHNOLOGIES)
+    $batch->update([
+        'batch_name'   => $request->batch_name,
+        'session_name' => $request->session_name,
+        'start_time'   => $request->start_time,
+        'end_time'     => $request->end_time,
+        'department'   => $request->department,
+        'batch_assign' => $request->batch_assign,
+
+        // 🔥 MULTI TECH STORED AS "1,3,5"
+        'class_assign' => implode(',', $request->class_assign),
+
+        'batch_mode'   => $request->batch_mode,
+        'duration'     => $request->duration,
+        'status'       => $request->status,
+    ]);
+
+    // ======================================
+    // SEND NOTIFICATION ONLY IF TRAINER CHANGED
+    // ======================================
+    if ($oldTrainerId != $request->batch_assign) {
+
+        $trainer = Trainer::with('activeUser')->find($request->batch_assign);
+
+        if ($trainer && $trainer->activeUser) {
+            $trainerUser = $trainer->activeUser;
+
+            $trainerUser->notify(
+                new \App\Notifications\TrainerBatchAssignedNotification($batch)
+            );
+        }
+    }
+
+    return redirect()->route('batches.index')
+        ->with('success', 'Batch updated successfully.');
+}
+
+    public function oldupdate(Request $request, Batch $batch)
     {
         $request->validate([
             'batch_name'   => 'required|string|max:255',

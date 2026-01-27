@@ -8,6 +8,7 @@
  </style>
 <div class="container">
 
+
     <div class="row mb-2">
         <div class="col-md-6">
             <h1 class="page_heading">Sessions</h1>
@@ -24,6 +25,9 @@
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
     <div class="table-responsive">
 
                 <table id="sessions-table" class="table table-bordered table-striped">
@@ -32,18 +36,37 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
+                <th>Session ID</th>
+                <th>Session Display Name</th>
                 <th>Start</th>
                 <th>End</th>
                 <th>Status</th>
                 <th>Total Batches</th>
+                <th>Total Students</th>
+                <th>Online Students</th>
+                <th>Offline Students</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
+            
+
             @foreach($sessions as $session)
             <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{$session->session_name}}</td>
+                <td style="
+                  white-space: nowrap;
+                  max-width: 200px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                ">{{$session->session_name}}</td>
+                <td>{{$session->id}}</td>
+                <td style="
+                  white-space: nowrap;
+                  max-width: 200px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                ">{{$session->session_display_name}}</td>
                 <td>{{ \Carbon\Carbon::parse($session->session_start)->format('d M Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($session->session_end)->format('d M Y') }}</td>
                  
@@ -53,12 +76,32 @@
     <span class="badge rounded-pill bg-primary view-batches"
           style="cursor:pointer; font-size:14px;"
           data-id="{{ $session->id }}">
-        {{ $session->batches_count ?? 0 }}
+        {{ $session->batches->count() }}
+
+    </span>
+</td>
+<td>
+    <span class="badge bg-success">
+        {{ $session->total_students }}
     </span>
 </td>
 
-                <td class="text-center">
-                    <div class="mb-2">
+ {{-- ONLINE --}}
+    <td>
+        <span class="badge bg-primary">
+            {{ $session->online_students ?? 0 }}
+        </span>
+    </td>
+
+    {{-- OFFLINE --}}
+    <td>
+        <span class="badge bg-secondary">
+            {{ $session->offline_students ?? 0 }}
+        </span>
+    </td>
+
+                <td class="text-center" style="width: 100px;">
+                    <div class="mb-2"  style="width: 100px;">
                         <a href="{{ route('sessions.edit', $session->id) }}" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i class="fa fa-edit"></i></a>
                         <form action="{{ route('sessions.destroy', $session->id) }}" method="POST" style="display:inline-block;">
                             @csrf @method('DELETE')
@@ -159,7 +202,7 @@ $(document).on('click', '.view-batches', function() {
                             <td>${i + 1}</td>
                             <td>${batch.batch_name}</td>
                             <td>${batch.course_data ? batch.course_data.course_name : '-'}</td>
-                            <td>${batch.trainer_data ? batch.trainer_data.trainer_name : '-'}</td>
+                            <td>${batch.trainer_data && batch.trainer_data.user ? batch.trainer_data.user.name : '-'}</td>
                             <td>${formatTime12Hour(batch.start_time)}</td>
                             <td>${formatTime12Hour(batch.end_time)}</td>
                         </tr>`;

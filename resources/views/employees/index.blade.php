@@ -54,6 +54,24 @@
                 </td>
 
                 <td>
+                    <a href="{{ route('employees.idcard', $emp) }}"
+                       class="btn btn-sm"
+                       data-bs-toggle="tooltip"
+                       title="Download ID Card">
+                       <i class="fas fa-id-card"></i>
+                    </a>
+                    <form method="POST" action="{{ route('employees.idcard.email', $emp) }}" style="display:inline;">
+                    @csrf
+                    <button class="btn btn-sm" title="Email ID Card">
+                    <i class="fas fa-envelope"></i>
+                    </button>
+                    </form>
+                     <a href="{{ route('salary-structure.create', $emp->id) }}"
+                       class="btn btn-sm"
+                       data-bs-toggle="tooltip"
+                       title="Update Salary Amount">
+                       <i class="fas fa-money-bill-wave"></i>
+                    </a>
                     <!-- Edit -->
                     <a href="{{ route('employees.edit', $emp) }}"
                        class="btn btn-sm"

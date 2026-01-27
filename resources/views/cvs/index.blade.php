@@ -17,7 +17,7 @@
                 <a href="{{ route('cvs.create') }}"
                    class="btn mb-3"
                    style="background-color:#6b51df;color:#fff;">
-                     Add CV Record
+                     Add CV
                 </a>
             </div>
         </div>
@@ -72,6 +72,7 @@
             <tr>
                 <th>Employee Name</th>
                 <th>Mobile</th>
+                <th>Email</th>
                 <th>Technology</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -82,6 +83,7 @@
             @foreach($cvs as $cv)
             <tr>
                 <td>{{ $cv->employee_name }}</td>
+                <td>{{ $cv->email }}</td>
                 <td>{{ $cv->phone_number }}</td>
                 <td>{{ $cv->technology }}</td>
                 <td>
@@ -117,12 +119,17 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm"
-                                onclick="return confirm('Delete CV Record?')"
+                                onclick="return confirm('Delete CV?')"
                                 data-bs-toggle="tooltip"
                                 title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>
+                    <button class="btn btn-sm btn-outline-dark"
+                            onclick="copyShare('{{ $cv->gdrive_link }}')">
+                        <i class="fa fa-share"></i>
+                    </button>
+
                 </td>
             </tr>
             @endforeach
@@ -139,6 +146,11 @@
      otherwise, just keep jQuery and Bootstrap for the tooltips/styling --}}
  
 <script>
+    function copyShare(url){
+    navigator.clipboard.writeText(url)
+        .then(() => alert("CV link copied"))
+        .catch(() => prompt("Copy this link:", url));
+}
 $(document).ready(function() {
     $('#cvsTable').DataTable({
         pageLength: 10,

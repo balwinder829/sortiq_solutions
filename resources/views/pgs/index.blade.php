@@ -15,12 +15,17 @@
             <h1 class="page_heading">PGs</h1>
         </div>
         <div class="col-md-6">
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end gap-2">
                     
                 <a href="{{ route('pgs.create') }}"
                    class="btn mb-3"
                    style="background:#6b51df;color:#fff;">
                     Add PG
+                </a>
+                 <a href="{{ route('pgs.import') }}"
+                   class="btn mb-3"
+                   style="background:#6b51df;color:#fff;">
+                    Import PGs
                 </a>
             </div>
         </div>

@@ -28,17 +28,59 @@ table.dataTable td {
 
 <div class="container">
 
-    <div class="row mb-2">
-        <div class="col-md-6">
-            <h1 class="page_heading">Trainers</h1>
-        </div>
-        <div class="col-md-6">
-                <div class="d-flex justify-content-end">
-                    
-                    <a href="{{ route('trainers.create') }}" style="background-color: #6b51df; color: #fff;" class="btn btn-primary mb-3">Add Trainer</a>
+<div class="row mb-2 align-items-end">
+
+    {{-- LEFT: PAGE TITLE --}}
+    <div class="col-md-2">
+        <h1 class="page_heading">Mentors</h1>
+    </div>
+
+    {{-- MIDDLE: FILTER FORM --}}
+    <div class="col-md-8">
+        <form method="GET" action="{{ route('trainers.index') }}" class="row g-2 align-items-end">
+
+            {{-- COURSE FILTER --}}
+            <div class="col-md-6">
+                <!-- <label class="fw-bold">Course (Technology)</label> -->
+                <select name="course" class="form-control">
+                    <option value="">-- All Courses --</option>
+
+                    @foreach($courses as $course)
+                        <option value="{{ $course->id }}"
+                            {{ request('course') == $course->id ? 'selected' : '' }}>
+                            {{ $course->course_name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
+
+            {{-- BUTTONS WITH SMALL GAP --}}
+            <div class="col-md-6 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    Search
+                </button>
+
+                <a href="{{ route('trainers.index') }}" class="btn btn-secondary">
+                    Reset
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+    {{-- RIGHT: ADD MENTOR BUTTON --}}
+    <div class="col-md-2">
+        <div class="d-flex justify-content-end">
+            <a href="{{ route('trainers.create') }}"
+               style="background-color: #6b51df; color: #fff;"
+               class="btn btn-primary mb-3">
+                Add Mentor
+            </a>
         </div>
     </div>
+
+</div>
+
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
@@ -54,7 +96,7 @@ table.dataTable td {
         </div>
     @endif
 
-    <div class="table-responsive" style="max-height:500px; overflow-y:auto;">
+    <div class="table-responsive">
         <table id="trainers-table" class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -64,7 +106,9 @@ table.dataTable td {
                     <th>Phone</th>
                     <th>Email</th>
                     <th>Technology</th>
-                    <th>Total Assign Batches</th>
+                    <th>Total Batches</th>
+                    <th>Online</th>
+                    <th>Offline</th>
 
                     <th>Today Pending Batches</th> {{-- NEW COLUMN --}}
 
@@ -81,18 +125,47 @@ table.dataTable td {
                         <td>{{ ucfirst($trainer->gender ?? '-') }}</td>
                         <td>{{ $trainer->user->phone ?? 'N/A' }}</td>
                         <td>{{ $trainer->user->email ?? 'N/A' }}</td>
-                        <td>{{ $trainer->courseData->course_name ?? '-' }}</td>
+                        <td>
+                            @php
+                                $techIds = $trainer->technology ? explode(',', $trainer->technology) : [];
+                                $techNames = \App\Models\Course::whereIn('id', $techIds)->pluck('course_name');
+                            @endphp
 
+                            @foreach($techNames as $name)
+                                <span class="badge bg-primary">{{ $name }}</span>
+                            @endforeach
+                        </td>
+
+                        {{-- ================= TOTAL SESSION BATCHES ================= --}}
                         {{-- ================= TOTAL SESSION BATCHES ================= --}}
                         <td class="text-center">
                             <div class="batch-circle batch-link"
                                  data-id="{{ $trainer->id }}"
                                  data-name="{{ $trainer->user->name ?? 'N/A' }}"
-                                 data-type="all"   {{-- DEFAULT --}}
+                                 data-type="all"
                                  title="View All Batches">
                                 {{ $trainer->session_batches_count }}
                             </div>
                         </td>
+
+                        {{-- ================= ONLINE BATCHES ================= --}}
+                        <td class="text-center">
+                            <div class="batch-circle"
+                                 style="background:#198754"  {{-- green --}}
+                                 title="Online Batches">
+                                {{ $trainer->online_batches_count }}
+                            </div>
+                        </td>
+
+                        {{-- ================= OFFLINE BATCHES ================= --}}
+                        <td class="text-center">
+                            <div class="batch-circle"
+                                 style="background:#fd7e14"  {{-- orange --}}
+                                 title="Offline Batches">
+                                {{ $trainer->offline_batches_count }}
+                            </div>
+                        </td>
+
 
                         {{-- ================= REMAINING TODAY BATCHES ================= --}}
                         <td class="text-center">

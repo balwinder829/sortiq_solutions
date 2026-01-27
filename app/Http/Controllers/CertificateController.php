@@ -22,6 +22,7 @@ use Carbon\Carbon;
 use App\Imports\StudentsImport;
 use Maatwebsite\Excel\Facades\Excel;
 use ZipArchive;
+use Illuminate\Support\Str;
 
 class CertificateController extends Controller
 {
@@ -121,7 +122,7 @@ public function index(Request $request)
     // });
 
 
-    $students    = $query->latest()->paginate(10);
+    $students    = $query->latest()->get();
     $sessions    = StudentSession::all();
     $colleges    = \App\Models\College::all();
     $courses     = \App\Models\Course::all();
@@ -159,11 +160,11 @@ public function index(Request $request)
     public function edit(Student $student)
     {
         $sessions = StudentSession::all();
-        $colleges = College::all();
-        $courses = Course::all();
-        $batches = Batch::all();
-        // $department = Department::all();
-        $references = Reference::all();
+        $colleges    = College::orderBy('college_display_name', 'asc')->get();
+        $courses     = Course::orderBy('course_name', 'asc')->get();
+        $batches     = Batch::orderBy('batch_name', 'asc')->get();        
+        $references  = Reference::orderBy('name', 'asc')->get();
+
         $users = User::all();
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
@@ -180,22 +181,20 @@ public function index(Request $request)
             'student_name'   => 'required|string|max:255',
             'f_name'         => 'required|string|max:255',
             'sno'            => 'required|string|max:255',
-            'email_id'       => 'required|email|unique:students_detail,email_id,'.$student->id,
-            'contact'        => 'nullable|string|max:15',
+            'email_id'       => 'nullable|email',
+            'contact'        => 'required|string|max:15',
             'gender'         => 'required|string',
             'college_name'   => 'required|string',   // not college_id
-            'session'        => 'required|string',   // not session_id
             'technology'     => 'required|string',   // not technology_id
-            'batch_assign'   => 'required|string',   // not batch_id
+            // 'batch_assign'   => 'required|string',   // not batch_id
             'reference'      => 'string',   // not reference_user
             'status'         => 'required|string',
             'total_fees'     => 'required|numeric',
             'reg_fees'       => 'required|numeric',
-            'pending_fees'   => 'nullable|numeric',
+            'paid_fees'       => 'nullable|numeric',
             'next_due_date' => 'nullable|date',
             // 'department'     => 'required|string',
             'join_date'      => 'required|date',
-            'reg_due_amount' => 'required|string',
             'start_date'     => 'nullable|date',
             'end_date'       => 'nullable|date',
             'part_time_offer'  => 'required|boolean',
@@ -209,30 +208,75 @@ public function index(Request $request)
      * 🔴 BUSINESS RULE CHECK
      * Only when send_to_close = 1
      */
-    if ($validates['send_to_close'] == 1) {
-
-        if (
-            ($student->email_count_confirmation ?? 0) <= 0 ||
-            ($student->email_count_certificate ?? 0) <= 0 ||
-            ($student->count_receipt_download ?? 0) <= 0 ||
-            ($student->pending_fees ?? 0) > 0
-        ) {
+         if (($validates['reg_fees'] + $validates['paid_fees']) > $validates['total_fees']) {
             return back()
-                ->withInput()
-                ->with('error', 'Student cannot be sent to close. Please ensure:
-                    • Confirmation email sent
-                    • Certificate email sent
-                    • Receipt downloaded
-                    • No pending fees');
+                ->withErrors([
+                    'paid_fees' => 'Registration fees + Paid fees cannot be greater than Total fees.',
+                ])
+                ->withInput();
+        }
+        
+        $validates['student_name'] = Str::of($validates['student_name'])->trim()->lower();
+        $validates['f_name']       = Str::of($validates['f_name'])->trim()->lower();
+
+        $activeSessionId = session('admin_session_id');
+        if (!empty($validates['contact'])) {
+            $contactExists = Student::withTrashed()
+                ->where('student_name', $validates['student_name'])
+                ->where('contact', $validates['contact'])
+                ->where('session', $activeSessionId)
+                ->where('id', '!=', $student->id) // 👈 ignore current record
+                ->exists();
+
+            if ($contactExists) {
+                return back()
+                    ->withErrors([
+                        'contact' => 'This student name with this contact already exists in this session'
+                    ])
+                    ->withInput();
+            }
         }
 
-        // All checks passed
-        $validates['certificate_status'] = 3;
+        
 
-    } else {
-        $validates['certificate_status'] = 2;
-    }
 
+        // old working
+
+        // if ($validates['send_to_close'] == 1) {
+
+        //     if (
+        //         ($student->email_count_confirmation ?? 0) <= 0 ||
+        //         ($student->email_count_certificate ?? 0) <= 0 ||
+        //         ($student->count_receipt_download ?? 0) <= 0 ||
+        //         ($student->pending_fees ?? 0) > 0
+        //     ) {
+        //         return back()
+        //             ->withInput()
+        //             ->with('error', 'Student cannot be sent to close. Please ensure:
+        //                 • Confirmation email sent
+        //                 • Certificate email sent
+        //                 • Receipt downloaded
+        //                 • No pending fees');
+        //     }
+
+        //     // All checks passed
+        //     $validates['certificate_status'] = 3;
+
+        // } else {
+        //     $validates['certificate_status'] = 2;
+        // }
+
+        // Force lowercase before saving
+        // $validates['student_name'] = Str::lower($validates['student_name']);
+        // $validates['f_name']       = Str::lower($validates['f_name']);
+
+        $validates['paid_fees'] = $validates['paid_fees'] ?? 0;
+        $validates['reg_fees'] = $validates['reg_fees'] ?? 0;
+
+        $validates['pending_fees'] = max(
+            $validates['total_fees'] - $validates['reg_fees'] - $validates['paid_fees'],
+            0
+        );
 
         // if ($validates['send_to_close'] == 1) {
         //     $validates['certificate_status'] = 3;
@@ -240,6 +284,24 @@ public function index(Request $request)
         //     $validates['certificate_status'] = 2;
         // }
         $student->update($validates);
+
+        if ($validates['send_to_close'] == 1) {
+
+            if (
+                ($student->pending_fees ?? 0) > 0
+            ) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Student cannot be sent to close. Please ensure:
+                        • No pending fees');
+            }
+
+            // All checks passed
+            $validates['certificate_status'] = 3;
+
+        } else {
+            $validates['certificate_status'] = 2;
+        }
 
         return redirect()->route('certificates.index')
                         ->with('success','Student updated successfully');

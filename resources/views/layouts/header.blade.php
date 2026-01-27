@@ -100,43 +100,34 @@
 
                     {{-- 🔥 SESSION SWITCHER (ROLE = 1 ONLY) --}}
                     @if(Auth::check() && Auth::user()->role == 1)
-                        @if(isset($sessions) && count($sessions) > 0)
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
-                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                       @if(isset($sessions) && count($sessions) > 0)
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
+       role="button" data-bs-toggle="dropdown">
+        <i class="mdi mdi-calendar me-1"></i>
+        {{ $currentSession
+            ? ucwords($currentSession->session_name).' ('.\Carbon\Carbon::parse($currentSession->start_date)->format('M Y').')'
+            : 'Select Session' }}
+    </a>
 
-                                    <i class="mdi mdi-calendar me-1"></i>
+    <ul class="dropdown-menu dropdown-menu-end">
+        @foreach($sessions as $session)
+            <li>
+                <form action="{{ route('admin.changeSession') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="session_id" value="{{ $session->id }}">
+                    <button type="submit"
+                            class="dropdown-item {{ session('admin_session_id') == $session->id ? 'active' : '' }}">
+                        {{ ucwords($session->session_name) }}
+                        ({{ \Carbon\Carbon::parse($session->start_date)->format('M Y') }})
+                    </button>
+                </form>
+            </li>
+        @endforeach
+    </ul>
+</li>
+@endif
 
-                                   @if($currentSession)
-                                        <span>
-                                            {{ ucwords($currentSession->session_name) }}
-                                            ({{ \Carbon\Carbon::parse($currentSession->start_date)->format('M Y') }})
-                                        </span>
-                                    @else
-                                        <span>Select Session</span>
-                                    @endif
-                                </a>
-
-                                <ul class="dropdown-menu dropdown-menu-end p-2">
-                                    <li class="dropdown-item text-muted small">Change Session</li>
-
-                                    <li>
-                                       <form action="{{ route('admin.changeSession') }}" method="POST">
-                                            @csrf
-                                            <select name="session_id" class="form-select mt-1" onchange="this.form.submit()">
-                                                @foreach($sessions as $session)
-                                                    <option value="{{ $session->id }}"
-                                                        {{ session('admin_session_id') == $session->id ? 'selected' : '' }}>
-                                                        {{ ucwords($session->session_name) }}
-                                                        ({{ \Carbon\Carbon::parse($session->start_date)->format('M Y') }})
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                        @endif
                     @endif
 
                     {{-- USER MENU --}}

@@ -21,10 +21,10 @@
 <form method="GET" action="{{ route('close_student.index') }}" class="mb-4">
     <div class="row g-2">
         {{-- Student Name --}}
-        <div class="col-md-2">
+        <!-- <div class="col-md-2">
             <input type="text" name="student_name" class="form-control"
                    placeholder="Student Name" value="{{ request('student_name') }}">
-        </div>
+        </div> -->
 
         {{-- Father Name --}}
        <!--  <div class="col-md-2">
@@ -42,13 +42,13 @@
         </div> -->
 
         {{-- S no. --}}
-        <div class="col-md-2">
+       <!--  <div class="col-md-2">
             <input type="text" name="sno" class="form-control"
                    placeholder="S. No" value="{{ request('sno') }}">
         </div>
-
+ -->
         {{-- Session --}}
-        <div class="col-md-2">
+       <!--  <div class="col-md-2">
             <select name="session" class="form-control session" id="ddl_session">
                 <option value="">--Session Name--</option>
                 @foreach($sessions as $session)
@@ -58,7 +58,7 @@
                     </option>
                 @endforeach
             </select>
-        </div>
+        </div> -->
 
         {{-- College --}}
         <div class="col-md-2">
@@ -210,7 +210,7 @@
                 
                 <td>{{ \Carbon\Carbon::parse($student->join_date)->format('d M Y') }}</td>
                 
-                <td>{{ $student->durationData->name ?? '-' }}</td>
+                <td>{{ $student->sessionData->session_display_name ?? '-' }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->start_date)->format('d M Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->end_date)->format('d M Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->certificate_send_date)->format('d M Y') }}</td>
@@ -262,7 +262,7 @@
         <button id="issueSelected" class="btn btn-primary">Issue Certificate</button>
     </div> -->
 
-    {{ $students->links() }}
+    
 </div>
 
 {{-- Hidden form for bulk issuing (submits like single-row form) --}}

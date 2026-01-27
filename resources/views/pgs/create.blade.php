@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
 <div class="container">
 <div class="card">
 <div class="card-header">
@@ -8,6 +9,8 @@
 </div>
 
 <div class="card-body">
+     
+
 <form method="POST" action="{{ route('pgs.store') }}">
 @csrf
 
@@ -26,6 +29,24 @@
 </div>
 
 <div class="form-group col-md-6">
+    <label>Contact No</label>
+    <input type="text"
+           name="contact"
+           value="{{ old('contact') }}"
+           class="form-control @error('contact') is-invalid @enderror"
+           inputmode="numeric"
+           minlength="10"
+           pattern="[0-9]{10}"
+           title="Enter a valid 10-digit mobile number"
+           onpaste="handlePaste(event)"
+           oninput="sanitizeContact(this)">
+    @error('contact')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+
+<div class="form-group col-md-6">
     <label>Rent Estimate</label>
     <input type="text"
            name="rent_estimate"
@@ -40,6 +61,7 @@
         <option value="">Select</option>
         <option value="boys" {{ old('pg_type')=='boys' ? 'selected' : '' }}>Boys</option>
         <option value="girls" {{ old('pg_type')=='girls' ? 'selected' : '' }}>Girls</option>
+        <option value="both" {{ old('pg_type')=='both' ? 'selected' : '' }}>Boys & Girls</option>
     </select>
     @error('pg_type')
         <div class="invalid-feedback">{{ $message }}</div>
@@ -95,3 +117,15 @@
 </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+function handlePaste(e) {
+    e.preventDefault();
+    let pasted = (e.clipboardData || window.clipboardData).getData('text');
+    e.target.value = pasted.replace(/\D/g, '').slice(0, 10);
+}
+function sanitizeContact(el) {
+    el.value = el.value.replace(/\D/g, '').slice(0, 10);
+}
+</script>
+@endpush

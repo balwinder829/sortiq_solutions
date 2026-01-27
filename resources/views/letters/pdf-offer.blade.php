@@ -24,7 +24,10 @@
 </head>
 <body>
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
-	<div class="head-main" style="padding-top: 110px;">
+	<div class="head-shape">
+		<img style="width: 100%; display: block;" src="images/head-shape.png"/>
+	</div>
+	<div class="head-main" style="padding-top: 20px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
 			<table width="100%" cellpadding="0" cellspacing="0">
 				<tr>
@@ -56,42 +59,154 @@
 			</table>
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
-					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
 						Date: <strong>{{ \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') }}</strong>
 					</td>
 				</tr>
 				<tr>
-					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						Dear <strong>{{ $letter->emp_name }}</strong>,
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+						Subject: <strong>Offer Letter</strong>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+						Dear <strong>{{ ucwords($letter->employee->emp_name) }}</strong>,
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						We are pleased to inform you that you have been selected for the position of <strong>{{ $letter->position }}</strong> with our organization.
+						With reference to your application and subsequent interview, we are delighted to extend an offer to you to join Sortiq Solutions Pvt. Ltd. as position of <strong>{{ ucwords($letter->employee->position) }}</strong> effective from <strong>{{ \Carbon\Carbon::parse($letter->employee->joining_date)->format('d M Y') }}.</strong> Your salary package will be Rs. <strong>{{ optional($letter->employee->salaryStructure)->total_salary
+						    ? number_format($letter->employee->salaryStructure->total_salary, 2)
+						    : 'N/A'
+						}}</strong>/- per month (With applicable taxes).
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						Your appointment will be effective from <strong>{{ \Carbon\Carbon::parse($letter->joining_date)->format('d M Y') }}</strong>. You will be required to report to the HR Department on the above-mentioned date.
+						After carefully considering your skills, experience, and the passion you demonstrated during the interview process, we are confident that you will be an invaluable addition to our team. 
 					</td>
 				</tr>
 				<tr>
-					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						The terms and conditions of your employment, including compensation and other benefits, will be governed by the company policies in force from time to time.
+				    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px; font-family:'Inter', sans-serif;">
+				        <b>You are requested to share the following documents (Scanned / Hard Copy) for your joining:</b>
+
+				        <ol style="margin-top:10px; padding-left:20px;">
+				            <li>One Passport size Photograph.</li>
+				            <li>Copy of all the Educational Certificates.</li>
+				            <li>Copy of PAN card and Aadhaar card.</li>
+				            <li>Copy of Experience &amp; Relieving letter from the last employer.</li>
+				            <li>Copy of Last 3 Months Salary Slips from the last employer.</li>
+				        </ol>
+				    </td>
+				</tr>
+
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+						<b>Terms & Conditions</b>
 					</td>
 				</tr>
+
+
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						Kindly confirm your acceptance of this offer by reporting on the joining date as mentioned above.
+						Your appointment will be subject to the Company’s rules, regulations, policies, and procedures as amended from time to time. You will be required to comply with all internal policies, including confidentiality, information security, and code of conduct applicable to your role.
 					</td>
 				</tr>
+
+
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">	
+						During the course of your employment, you may have access to confidential and proprietary information of the Company and its clients. You shall not, during or after your employment, disclose such information to any third party without prior written consent of the Company.
+					</td>
+				</tr>
+
+				
+				<tr>	
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">	
+						Your employment shall be subject to satisfactory verification of documents and background credentials submitted by you. Any discrepancy found at any stage may result in termination of employment without prior notice.
+					</td>
+				</tr>
+				
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						We welcome you to the organization and look forward to a successful association.
+						You will be expected to perform your duties with honesty, integrity, and diligence and to devote your full working time and attention to the business of the Company.
 					</td>
 				</tr>
 			</table>
+				<pagebreak />
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+
+
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+						This offer of employment does not constitute a contract for a fixed term and may be terminated by either party in accordance with the Company’s employment policies.
+					</td>
+				</tr>
+
+
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+						All terms and conditions of employment shall be governed by and construed in accordance with the laws of India.
+						after document list add this  adjust in tpow pages
+					</td>
+				</tr>
+
+
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+						<b>Kindly sign a copy of this letter in acceptance of this offer. Offer made as above will stand withdrawn consequent upon your failure to communicate with us by the date given.</b>
+					</td>
+				</tr>
+				</table>
+				
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+				<tr>
+					<td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               padding-top:10px;
+                               font-family:'Inter', sans-serif;">
+						We congratulate you and wish you a great career with us. We look forward to embarking on this next chapter together!
+					</td>
+				</tr>
+				<tr><td height="10"></td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;"><strong>Warm Regards</strong>,</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Priyanka</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Manager – Human Resources</td></tr>
+				<!-- <tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+						Warm Regards,
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+						<b>Sortiq Solutions Pvt. Ltd.</b>
+
+					</td>
+				</tr> -->
+			</table>
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <tr>
+                    <td width="100%">
+                        <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br>
+                            <img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/>
+                            
+                        </div>
+                        <div style="display:inline-block; width:100%;">
+                            <br>
+                            <h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
+                        </div>
+                    </td>
+                    <td width="30%" align="right">
+                        <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Agreed and Accepted</h4>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+			<!-- <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
 				<tr>
 					<td colspan="2" style="font-size: 16px; line-height: 28px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						Yours sincerely,<br>
@@ -100,7 +215,7 @@
 						Authorized Signatory
 					</td>
 				</tr>
-			</table>
+			</table> -->
 		</div>
 	</div>
 </div>

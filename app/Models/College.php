@@ -41,41 +41,41 @@ class College extends Model
     /**
      * Boot: clean names + generate slug before saving.
      */
-    protected static function boot()
-    {
-        parent::boot();
+    // protected static function boot()
+    // {
+    //     parent::boot();
 
-        static::saving(function ($college) {
+    //     static::saving(function ($college) {
 
-            // Clean only extra spaces (keep commas)
-            $college->college_name = self::clean($college->college_name);
+    //         // Clean only extra spaces (keep commas)
+    //         $college->college_name = self::clean($college->college_name);
 
-            // Clean_name = cleaned version (same as college_name)
-            $college->clean_name = $college->college_name;
+    //         // Clean_name = cleaned version (same as college_name)
+    //         $college->clean_name = $college->college_name;
 
-            // Create slug only once or if slug was reset to null
-            if (empty($college->slug)) {
-                $college->slug = self::uniqueSlug($college->clean_name);
-            }
-        });
-    }
+    //         // Create slug only once or if slug was reset to null
+    //         if (empty($college->slug)) {
+    //             $college->slug = self::uniqueSlug($college->clean_name);
+    //         }
+    //     });
+    // }
 
     /**
      * Create unique slug based on cleaned name.
      */
-    public static function uniqueSlug($name)
-    {
-        $slug = Str::slug($name);
-        $original = $slug;
-        $count = 1;
+    // public static function uniqueSlug($name)
+    // {
+    //     $slug = Str::slug($name);
+    //     $original = $slug;
+    //     $count = 1;
 
-        while (self::where('slug', $slug)->withTrashed()->exists()) {
-            $slug = $original . '-' . $count;
-            $count++;
-        }
+    //     while (self::where('slug', $slug)->withTrashed()->exists()) {
+    //         $slug = $original . '-' . $count;
+    //         $count++;
+    //     }
 
-        return $slug;
-    }
+    //     return $slug;
+    // }
 
     public function state()
     {
@@ -107,6 +107,17 @@ class College extends Model
     public function enquiries()
     {
         return $this->hasMany(Enquiry::class,'college');
+    }
+
+    // public function hod()
+    // {
+    //     return $this->hasOne(Hod::class)
+    //         ->where('position', 'HOD');
+    // }
+
+    public function hod()
+    {
+        return $this->hasOne(Hod::class);
     }
 
 }

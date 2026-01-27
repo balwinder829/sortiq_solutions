@@ -2,14 +2,14 @@
 
 @section('content')
 <div class="container">
-    <h3>Add Trainer</h3>
+    <h3>Add Mentor</h3>
 
     <form method="POST" action="{{ route('trainers.store') }}">
         @csrf
 
         {{-- Trainer Name --}}
         <div class="form-group">
-            <label>Fulll Name</label>
+            <label>Full Name</label>
             <input type="text" 
                    name="trainer_name" 
                    class="form-control @error('trainer_name') is-invalid @enderror"
@@ -23,7 +23,7 @@
 
         {{-- User Name --}}
         <div class="form-group">
-            <label>Name</label>
+            <label>User Name</label>
             <input type="text" 
                    name="username" 
                    class="form-control @error('username') is-invalid @enderror"
@@ -99,10 +99,11 @@
         {{-- Technology --}}
         <div class="form-group">
             <label>Technology</label>
-            <select name="technology" 
-                    class="form-control technology @error('technology') is-invalid @enderror" 
-                    id="txttechnology"
-                    required>
+            <select name="technology[]" 
+                class="form-control technology" 
+                id="txttechnology"
+                multiple
+                required>
                 <option value="" disabled {{ old('technology') ? '' : 'selected' }}>Choose one</option>
 
                 @foreach($courses as $course)

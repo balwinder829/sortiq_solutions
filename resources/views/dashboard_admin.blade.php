@@ -6,22 +6,23 @@
 @endphp
 <div class="container mt-4">
  {{-- UNIVERSAL POPUP CONTAINER --}}
+ {{-- TODAY EVENT POPUP --}}
+    @if($role === 1 && $todayEvents->count() > 0 && !$todayNotification->dismissed)
 <div id="popup-container"
-     class="position-fixed top-0 end-0 p-3"
+     class="position-fixed top-10 end-0 p-3"
      style="z-index: 2000; width: 360px;">
 
     
 
-    {{-- TODAY EVENT POPUP --}}
-    @if($role === 1 && $todayEvents->count() > 0 && !$todayNotification->dismissed)
+    
         <div id="event-today-popup"
              class="mb-3 animate__animated animate__fadeInRight">
             @include('dashboard.popup.today_event')
         </div>
-    @endif
+    
 
 </div>
-
+@endif
 
     {{-- Top summary boxes --}}
 <div class="row g-3 mb-4">
@@ -195,7 +196,7 @@
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">Total Fee Confirmed Student</h6>
+                    <h6 class="text-muted">Total Confirmed Student Amount</h6>
                     
                     <h3 class="fw-bold">{{ $feeconfirmSum ?? 0 }}</h3>
                 </div>
@@ -210,7 +211,7 @@
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">Total Fee Certificated Student</h6>
+                    <h6 class="text-muted">Total Certificate Student Amount</h6>
                     <h3 class="fw-bold">{{ $feecertificateSum ?? 0 }}</h3>
                 </div>
             </div>
@@ -237,7 +238,7 @@
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">Highest Student</h6>
+                    <h6 class="text-muted">Highest Students In College</h6>
                     <h3 class="fw-bold">{{ $topCollege->total }}- {{ $topCollege->college_name_text }}</h3>
                 </div>
             </div>

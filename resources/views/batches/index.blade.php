@@ -143,7 +143,12 @@
                     <td>{{ $batch->sessionData->session_name ?? '-' }}</td>
                     <td>{{ \Carbon\Carbon::parse($batch->start_time)->format('h:i A') }}</td>
                     <td>{{ \Carbon\Carbon::parse($batch->end_time)->format('h:i A') }}</td>
-                    <td>{{ $batch->courseData->course_name ?? '-' }}</td>
+                    <td>
+                        @foreach($batch->courses as $course)
+                            <span class="badge bg-primary">{{ $course->course_name }}</span>
+                        @endforeach
+                    </td>
+
                     <td>{{ $batch->trainerData?->user?->name ?? '-' }}</td>
                     <td>{{ $batch->batch_mode ?? '-' }}</td>
                     <td>{{ ucwords($batch->status) ?? '-' }}</td>
@@ -244,14 +249,22 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 </script>
 
 <script>
+let studentsTableDT = null;
+
 $(document).on('click', '.view-students', function() {
     let batchId = $(this).data('id');
 
-    if ($.fn.DataTable.isDataTable('#studentsTable')) {
-        $('#studentsTable').DataTable().clear().destroy();
+    // Destroy old datatable safely
+    if (studentsTableDT) {
+        studentsTableDT.destroy();
+        studentsTableDT = null;
     }
 
-    $('#studentList').html('<tr><td colspan="5" class="text-center">Loading...</td></tr>');
+    // Clear table body completely
+    $('#studentList').empty();
+
+    // Show modal first (important)
+    $('#studentsModal').modal('show');
 
     $.ajax({
         url: '/batches/' + batchId + '/students',
@@ -260,34 +273,55 @@ $(document).on('click', '.view-students', function() {
 
             let html = '';
 
-            if(students.length === 0) {
-                html = '<tr><td colspan="5" class="text-center text-danger">No Students Found</td></tr>';
-            } else {
-                $.each(students, function(i, s) {
-                    html += `
-                        <tr>
-                            <td>${i+1}</td>
-                            <td>${s.student_name}</td>
-                            <td>${s.email_id}</td>
-                            <td>${s.college_data ? s.college_data.full_name : '-'}</td>
-                            <td>${s.status ?? '-'}</td>
-                        </tr>
-                    `;
-                });
+            if (students.length === 0) {
+
+                // 🔥 IMPORTANT: EXACTLY 1 TD WITH COLSPAN = 5
+                html = `
+                    <tr>
+                        <td colspan="5" class="text-center text-danger">
+                            No Students Found
+                        </td>
+                    </tr>
+                `;
+
+                $('#studentList').html(html);
+
+                // ❌ DO NOT INITIALIZE DATATABLE WHEN EMPTY
+                return;
             }
+
+            // Build rows with EXACTLY 5 <td>
+            $.each(students, function(i, s) {
+                html += `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td>${s.student_name ?? '-'}</td>
+                        <td>${s.email_id ?? '-'}</td>
+                        <td>${s.college_data ? s.college_data.full_name : '-'}</td>
+                        <td>${s.status ?? '-'}</td>
+                    </tr>
+                `;
+            });
 
             $('#studentList').html(html);
 
-            $('#studentsTable').DataTable({
-                pageLength: 10,
-                lengthMenu: [10, 25, 50, 100],
-                scrollX: true
-            });
+            // 🔥 INIT DATATABLE AFTER SMALL DELAY (modal fully visible)
+            setTimeout(function () {
 
-            $('#studentsModal').modal('show');
+                studentsTableDT = $('#studentsTable').DataTable({
+                    pageLength: 10,
+                    lengthMenu: [10, 25, 50, 100],
+                    autoWidth: false,
+                    responsive: true,
+                    destroy: true
+                });
+
+            }, 150);
         }
     });
 });
 </script>
+
+
 
 @endpush

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Pg;
 use Illuminate\Http\Request;
+use App\Imports\PgImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\View;
 
 class PgController extends Controller
 {
@@ -11,9 +14,13 @@ class PgController extends Controller
 	{
 	    $pgs = Pg::query();
 
-	    if ($request->pg_type) {
-	        $pgs->where('pg_type', $request->pg_type);
-	    }
+	    // if ($request->pg_type) {
+	    //     $pgs->where('pg_type', $request->pg_type);
+	    // }
+
+        if ($request->pg_type) {
+            $pgs->whereIn('pg_type', [$request->pg_type, 'both']);
+        }
 
 	    if ($request->food_type) {
 	        $pgs->where('food_type', $request->food_type);
@@ -42,7 +49,8 @@ class PgController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'pg_type' => 'required|in:boys,girls',
+            'pg_type' => 'required|in:boys,girls,both',
+             'contact' => 'required|digits:10',
             'food_type' => 'required|in:food,without_food',
             'status' => 'required|in:active,inactive',
         ]);
@@ -72,7 +80,8 @@ class PgController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'pg_type' => 'required|in:boys,girls',
+            'pg_type' => 'required|in:boys,girls,both',
+             'contact' => 'required|digits:10',
             'food_type' => 'required|in:food,without_food',
             'status' => 'required|in:active,inactive',
         ]);
@@ -89,5 +98,72 @@ class PgController extends Controller
 
         return redirect()->route('pgs.index')
             ->with('success', 'PG deleted successfully');
+    }
+
+      public function importForm()
+    {
+        return view('pgs.import');
+    }
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+
+        \DB::beginTransaction();
+
+        try {
+
+            $importer = new \App\Imports\PgImport();
+            \Maatwebsite\Excel\Facades\Excel::import($importer, $file);
+
+            // Validation failures
+            $failures = $importer->failures();
+
+            if ($failures->isNotEmpty()) {
+
+                \DB::rollBack();
+
+                $messages = [];
+
+                foreach ($failures as $failure) {
+                    $messages[] =
+                        "Row {$failure->row()} – {$failure->attribute()} – " .
+                        implode(', ', $failure->errors());
+                }
+
+                return back()->withErrors($messages);
+            }
+
+            \DB::commit();
+
+            // Final counts
+            $total    = $importer->totalRows;
+            $inserted = $importer->insertedRows;
+            $skipped  = $importer->skippedRows;
+
+            $message = "From {$total} rows: {$inserted} inserted successfully, {$skipped} skipped.";
+
+            // Warnings
+            $warnings = $importer->duplicateContacts;
+
+            if (!empty($warnings)) {
+                return back()
+                    ->with('success', $message)
+                    ->withErrors($warnings);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Throwable $e) {
+            // dd($e);
+            \DB::rollBack();
+
+            return back()->withErrors([
+                'Import failed: Something went wrong while importing the file.'
+            ]);
+        }
     }
 }

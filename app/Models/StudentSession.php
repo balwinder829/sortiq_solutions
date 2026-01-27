@@ -9,9 +9,14 @@ class StudentSession extends Model
 {   
     use SoftDeletes;
     protected $table = 'student_sessions';
+    // protected $appends = ['online_students', 'offline_students'];
+    protected $appends = ['online_students', 'offline_students', 'total_students'];
+
+
 
     protected $fillable = [
         'session_name',
+        'session_display_name',
         'start_date',
         'end_date',
         'status',
@@ -72,6 +77,44 @@ class StudentSession extends Model
 
         return "{$this->session_name} ({$start})";
     }
+
+    public function getOnlineStudentsAttribute()
+    {
+        $count = 0;
+
+        foreach ($this->batches as $batch) {
+            if ($batch->batch_mode === 'online') {
+                $count += $batch->students->count();
+            }
+        }
+
+        return $count;
+    }
+
+    public function getOfflineStudentsAttribute()
+    {
+        $count = 0;
+
+        foreach ($this->batches as $batch) {
+            if ($batch->batch_mode === 'offline') {
+                $count += $batch->students->count();
+            }
+        }
+
+        return $count;
+    }
+    public function getTotalStudentsAttribute()
+    {
+        $count = 0;
+
+        foreach ($this->batches as $batch) {
+            $count += $batch->students->count();
+        }
+
+        return $count;
+    }
+
+
 
 
 

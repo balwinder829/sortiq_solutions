@@ -12,6 +12,7 @@ use App\Models\Permission;
 use App\Models\RolePermission;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -133,6 +134,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
 {
+
+     if (app()->environment('production')) {
+        URL::forceScheme('https');
+    }
     /*
     |--------------------------------------------------------------------------
     | GLOBAL VIEW COMPOSER (EXISTING)

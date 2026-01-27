@@ -85,12 +85,68 @@ class EnquiriesImport implements ToCollection
             }
 
             /* ================= COLLEGE LOOKUP ================= */
-            $college = null;
-            if ($data['college'] !== '') {
-                $college = College::firstOrCreate(
-                    ['college_name' => $data['college']]
-                );
-            }
+            // $college = null;
+            // if ($data['college'] !== '') {
+            //     $college = College::firstOrCreate(
+            //         ['college_name' => $data['college']]
+            //     );
+            // }
+
+            /* ================= COLLEGE LOOKUP (DISPLAY NAME SAFE) ================= */
+
+$collegeId = null;
+
+if (!empty($data['college'])) {
+
+    // Normalize Excel value
+    $excelCollege = strtolower(trim($data['college']));
+    $excelCollege = str_replace([',', '.', '(', ')'], '', $excelCollege);
+    $excelCollege = preg_replace('/\s+/', ' ', $excelCollege);
+
+    $college = College::where(function ($q) use ($excelCollege) {
+
+        $q->whereRaw("
+            LOWER(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(
+                            REPLACE(college_display_name, ',', ''),
+                        '.', ''),
+                    '(', ''),
+                ')', '')
+            ) LIKE ?
+        ", ["%{$excelCollege}%"])
+
+        ->orWhereRaw("
+            LOWER(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(
+                            REPLACE(clean_name, ',', ''),
+                        '.', ''),
+                    '(', ''),
+                ')', '')
+            ) LIKE ?
+        ", ["%{$excelCollege}%"])
+
+        ->orWhereRaw("
+            LOWER(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(
+                            REPLACE(college_name, ',', ''),
+                        '.', ''),
+                    '(', ''),
+                ')', '')
+            ) LIKE ?
+        ", ["%{$excelCollege}%"]);
+
+    })->first();
+
+    if ($college) {
+        $collegeId = $college->id;
+    }
+}
 
             /* ================= CREATE ENQUIRY ================= */
             Enquiry::create([

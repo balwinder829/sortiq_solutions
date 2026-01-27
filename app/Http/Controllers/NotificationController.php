@@ -47,6 +47,13 @@ class NotificationController extends Controller
                 ->with('warning', 'You missed follow-ups yesterday.');
         }
 
+        if ($key === 'admin.interviews.today') {
+            return redirect()
+                ->route('daily-interviews.index', ['date_filter' => 'today'])
+                ->with('info', 'Here are today’s scheduled interviews.');
+        }
+
+
 
         /*
         |--------------------------------------------------------------------------

@@ -50,40 +50,47 @@ body {
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Date</strong> {{ \Carbon\Carbon::now()->format('d M Y') }}
+						<strong>Date: </strong>  {{ \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') }}
 					</td>
 				</tr>
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Mr./Ms</strong> {{ ucwords($letter->emp_name) }}
+						<strong>Mr./Ms: </strong> {{ ucwords($letter->employee->emp_name) }}
 					</td>
 				</tr>
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Address:</strong> Plot No F-7, Industrial Area, Phase 8 Mohali, Chandigarh, 160055	
+						<strong>Emp Code: </strong> {{ ucwords($letter->employee->emp_code) }}
 					</td>
 				</tr>
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Subject</strong> Appointment for the Position of {{ $letter->position }}
+						<strong>Address: </strong> {{ ucwords($letter->employee->address ?? '') }}
 					</td>
 				</tr>
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Dear</strong> {{ ucwords($letter->emp_name) }}
+						<strong>Subject: </strong> Appointment for the Position of {{ ucwords($letter->employee->position) }}
+					</td>
+				</tr>
+				<tr>
+					<td align="left" style="font-size: 14px; line-height: 24px; padding-bottom:10px; text-align:left; font-family: 'Inter', sans-serif;">
+						<strong>Dear</strong> {{ ucwords($letter->employee->emp_name) }},
 					</td>
 				</tr>
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-						Subsequent to your application and your interview with us, we are pleased to appoint you for the position of <strong>{{ $letter->position }}</strong> w.e.f date <strong>{{ \Carbon\Carbon::parse($letter->joining_date)->format('d M Y') }}</strong> based on the following conditions:
+						Subsequent to your application and your interview with us, we are pleased to appoint you for the position of <strong>{{ ucwords($letter->employee->position) }}</strong> w.e.f date <strong>{{ \Carbon\Carbon::parse($letter->employee->joining_date)->format('d M Y') }}</strong> based on the following conditions:
 					</td>
 				</tr>
 			</table>
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						<strong>Employment Terms:</strong> You are bonding with the company for a minimum period of {{ ucwords($letter->bond_period) }} year and the
-							offered Salary Rs. {{ is_numeric($letter->salary) ? number_format($letter->salary, 2) : 'N/A' }}/- per month subjected to statutory deduction & TDS (If Applicable). You will
+						<strong>Employment Terms:</strong> The
+							offered Salary Rs. <strong>{{ optional($letter->employee->salaryStructure)->total_salary
+						    ? number_format($letter->employee->salaryStructure->total_salary, 2)
+						    : 'N/A' }}</strong>/- per month subjected to statutory deduction & TDS (If Applicable). You will
 							be entitled to further review of your compensation as per the company practice. This will be linked to
 							your performance and will be at the sole discretion of the management. Your salary and other
 							benefits, if any, shall be subject to the deduction of all taxes, contributions etc.
@@ -91,7 +98,7 @@ body {
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						<strong>Probation Period:</strong>{{ ucwords($letter->probation_period) }} Months will be The Probation Period in which if the
+						<strong>Probation Period:</strong> {{ ucwords($letter->employee->probation_period ?? '3') }} Months will be The Probation Period in which if the
 						company feels your performance is not satisfactory, the company can terminate the bond without
 						giving any notice.
 					</td>
@@ -119,10 +126,12 @@ body {
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						<br> <br><strong>Leave:</strong><br> 
-						→ You can take a maximum of 12 Casual leaves in a financial year.<br>
-						→ You can take a maximum of 12 Sick leaves in a financial year.<br>
-						→ You're eligible for taking holidays as per the respective festival's calendar of the company or the
-						 National gazetted.
+						→ One leave can be taken after the probation period.<br>
+						→ One short leave can be taken after the probation period.<br>
+						→ No leave is allowed during the probation period.<br>
+						→ The probation period is three (3) months.<br>
+						→ If confirmed, the employee will receive a confirmation email after probation period.<br>
+						→ The probation period may be extended if performance is not good.
 
 					</td>
 				</tr>
@@ -130,6 +139,7 @@ body {
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						<strong>Holidays:</strong> <br>
 						→ Unapproved leaves will lead to deduction in salary.<br>
+						→ Leave taken without prior notice will result in double deduction.<br>
 						→ Unauthorized absence or absence without permission from duty for a continuous period of 7 days
 						would make you lose your lien on employment. In such case your employment shall automatically
 						come to an end without any notice of 
@@ -175,6 +185,9 @@ body {
 						<strong>Termination of Service:</strong> That you cannot leave the company during the bonding agreed period. If you wish to terminate the appointment after the bonding period you will have to give a prior one month notice to the company. If you wish to terminate the contract within the bonding period, you have to give up one month's salary, part of which will be adjusted from the security. Any negligence in the performance of your duties, intentional non-performance of the responsibilities, disobediences, disorderly behavior, dishonesty, indiscipline or any other conduct considered by us deterrent to our interest of or violation of any terms of the letter. Your abuse of alcohol or drug (legal or illegal) that, in the firm's reasonable judgment, materially impairs your ability to perform your duties. If you commit breach of any of the terms of this letter of appointment. Firm has the full right not to award you with an Experience Certificate on violating any of the company policies (termination from either side).
 					</td>
 				</tr>
+				</table>
+				<pagebreak />
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:7px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						<strong>Standing Orders:</strong> Standing Orders, rules & regulations and service conditions as in vogue from time to time shall be binding on you.
@@ -182,7 +195,7 @@ body {
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						<br> <br> <strong>Code of Conduct:</strong> You should Conduct the Company's business with honesty and integrity and in a professional manner that protects the company's good public image and reputation. You have to become familiar with and comply with legal requirements and Company policy and procedures.Also, avoid any activities that could involve or lead to involvement in any unlawful practice or any harm to the Company's reputation or image. In the company, we appreciate, respect the rights, culture and dignity of all the individuals and adhere to the principles of equality and non-discrimination while dealing with any team member of the company.
+						 <strong>Code of Conduct:</strong> You should Conduct the Company's business with honesty and integrity and in a professional manner that protects the company's good public image and reputation. You have to become familiar with and comply with legal requirements and Company policy and procedures.Also, avoid any activities that could involve or lead to involvement in any unlawful practice or any harm to the Company's reputation or image. In the company, we appreciate, respect the rights, culture and dignity of all the individuals and adhere to the principles of equality and non-discrimination while dealing with any team member of the company.
 					</td>
 				</tr>
 				<tr>
@@ -202,8 +215,34 @@ body {
 						<strong>We congratulate you on your appointment and wish you a great career with us.</strong>
 					</td>
 				</tr>
+
+				<!-- SIGN OFF -->
+                <tr><td height="25"></td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;"><strong>Warm Regards</strong>,</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Priyanka</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Manager – Human Resources</td></tr>
 			</table>
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <tr>
+                    <td width="100%">
+                        <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br>
+                            <img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/>
+                            
+                        </div>
+                        <div style="display:inline-block; width:100%;">
+                            <br>
+                            <h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
+                        </div>
+                    </td>
+                    <td width="30%" align="right">
+                        <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Agreed and Accepted</h4>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+			<!-- <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
 				<tr>
 					<td width="70%">
 						<div style="display:inline-block; width:100%;">
@@ -216,12 +255,12 @@ body {
 						</div>
 					</td>
 				</tr>
-			</table>
+			</table> -->
 		</div>
 	</div>
-	<div class="footer-shape" style="margin-top: 407px;position: fixed; bottom: 0px;">
+	<!-- <div class="footer-shape" style="margin-top: 407px;position: fixed; bottom: 0px;">
 		<img style="width: 100%; display: block;" src="images/footer-shape-1.png"/>
-	</div>
+	</div> -->
 </div>
 
 </body>

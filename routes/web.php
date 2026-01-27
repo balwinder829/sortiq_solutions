@@ -69,6 +69,27 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TutorialController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\DailyInterviewController;
+use App\Http\Controllers\SalaryStructureController;
+use App\Http\Controllers\SalarySlipController;
+use App\Http\Controllers\StudentAdditionalLetterController;
+use App\Http\Controllers\AcceptedLetterController;
+use App\Http\Controllers\CompanyPptController;
+use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\FrontendPageController;
+use App\Http\Controllers\InternshipRegistrationController;
+use App\Http\Controllers\VisitingCardController;
+use App\Http\Controllers\ServicesRegistrationController;
+use App\Http\Controllers\HodController;
+use App\Http\Controllers\InterviewQuestionController;
+use App\Http\Controllers\TechnologyController;
+use App\Http\Controllers\InterviewController;
+use App\Http\Controllers\InterviewRoundController;
+use App\Http\Controllers\StudentEvaluationController;
+use App\Http\Controllers\ScannerController;
+use App\Http\Controllers\ScannerShareController;
+use App\Http\Controllers\MouController;
+use App\Http\Controllers\FeeStatusController;
+
 
 use App\Models\Test;
 use App\Models\StudentTest;
@@ -82,7 +103,134 @@ use App\Models\StudentTest;
 // Frontend
 Route::get('/join', [JoiningStudentController::class, 'create'])->name('joining_student.front');
 Route::post('/join', [JoiningStudentController::class, 'store'])->name('joining_student.store');
+// Route::get('/share/scanners/{token}', [ScannerShareController::class, 'show'])
+    // ->name('scanners.share');
+Route::get('/scanners', [ScannerShareController::class, 'index'])
+    ->name('frontend.scanners.index');
 
+Route::get('/scanners/view/{token}', [ScannerShareController::class, 'show'])
+    ->name('scanners.share');
+// Route::get('/page/{slug}', [FrontendPageController::class, 'show'])->name('page.show');
+
+// Route::get('/ads-landing-page', [FrontendPageController::class, 'show_ads'])->name('page.show_ads');
+Route::middleware(['auth', 'permission'])->group(function () {
+    Route::prefix('admin')->group(function () {
+        Route::resource('pages', AdminPageController::class);
+        Route::post('pages/{page}/toggle', [AdminPageController::class, 'toggle'])
+            ->name('pages.toggle');
+
+        Route::get(
+            'internship-registrations/export',
+            [InternshipRegistrationController::class, 'export']
+        )->name('internship-registrations.export');
+                
+        Route::resource(
+            'internship-registrations',
+            InternshipRegistrationController::class
+        )->except(['create', 'edit', 'update']);
+
+        // Status update (approve / reject)
+        Route::patch(
+            'internship-registrations/{internship_registration}/status',
+            [InternshipRegistrationController::class, 'updateStatus']
+        )->name('internship-registrations.status');
+
+        Route::resource('visiting-cards', VisitingCardController::class);
+
+        Route::get('services-registrations/export', [ServicesRegistrationController::class, 'export'])
+            ->name('services-registrations.export');
+
+        Route::resource('services-registrations', ServicesRegistrationController::class)
+            ->only(['index', 'create', 'store', 'show', 'destroy']);
+
+        Route::resource('hods', HodController::class);
+
+        Route::get('interview-questions/listing', 
+            [InterviewQuestionController::class, 'practice']
+        )->name('interview-questions.practice');
+
+        Route::resource('interview-questions', InterviewQuestionController::class);
+        Route::resource('technologies', TechnologyController::class);
+        Route::resource('scanners', ScannerController::class);
+        Route::resource('student-evaluations', StudentEvaluationController::class);
+        // Route::get(
+        //     'student-evaluations/{student_evaluation}/download',
+        //     [StudentEvaluationController::class, 'downloadPdf']
+        // )->name('student-evaluations.download');
+
+        Route::get(
+            'student-evaluations/{student_evaluation}/download-full',
+            [StudentEvaluationController::class, 'downloadFull']
+        )->name('student-evaluations.download.full');
+
+        Route::get(
+            'student-evaluations/{student_evaluation}/download-empty',
+            [StudentEvaluationController::class, 'downloadEmpty']
+        )->name('student-evaluations.download.empty');
+
+        Route::resource('mous', MouController::class);
+        Route::post('mous/{mou}/send-email', [MouController::class, 'sendEmail'])->name('mous.sendEmail');
+        Route::post('mous/{mou}/upload-signed', [MouController::class, 'uploadSigned'])->name('mous.uploadSigned');
+
+        Route::get('mous/{mou}/download', [MouController::class, 'download'])->name('mous.download');
+
+        Route::post('/students/copy', [StudentController::class, 'copyStudents'])->name('students.copy');
+
+
+
+
+        // Route::post(
+        //     'interviews/{interview}/rounds',
+        //     [InterviewController::class, 'storeRound']
+        // )->name('interviews.rounds.store');
+
+        // Route::get('interviews/{interview}/rounds/create',
+        //     [InterviewController::class, 'createRound'])
+        //     ->name('interviews.rounds.create');
+
+        // Route::post('interviews/{interview}/rounds',
+        //     [InterviewController::class, 'storeRound'])
+        //     ->name('interviews.rounds.store');
+
+
+        Route::resource('interviews', InterviewController::class);
+
+        // ROUNDS
+        Route::get(
+            'interviews/rounds/{round}/edit',
+            [InterviewRoundController::class, 'edit']
+        )->name('interviews.rounds.edit');
+
+        Route::put(
+            'interviews/rounds/{round}',
+            [InterviewRoundController::class, 'update']
+        )->name('interviews.rounds.update');
+
+        Route::get(
+            'interviews/{interview}/rounds/create',
+            [InterviewController::class, 'createRound']
+        )->name('interviews.rounds.create');
+
+        Route::post(
+            'interviews/{interview}/rounds',
+            [InterviewController::class, 'storeRound']
+        )->name('interviews.rounds.store');
+
+        Route::get('/fee-status', [FeeStatusController::class, 'index'])->name('fee.status');   
+        Route::get('/fee-status/export', [FeeStatusController::class, 'export'])->name('fee.status.export');
+
+        Route::get('/colleges/import', [CollegeController::class, 'showImport'])
+            ->name('colleges.import.view');
+
+        Route::post('/colleges/import', [CollegeController::class, 'importColleges'])
+            ->name('colleges.import');
+
+        // Route::resource('interviews', InterviewController::class);
+
+        
+
+    });
+});
 
 Route::middleware(['auth', 'permission'])->group(function () {
     
@@ -121,10 +269,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
         [LetterController::class,'sendEmail']
     )->name('letters.email');
 
-    Route::resource('recharges', RechargeController::class);
-    // quick status update
-    Route::post('recharges/{recharge}/set-status', [RechargeController::class, 'setStatus'])->name('recharges.setStatus');
-
+   
     Route::resource('projects', ProjectController::class);
     Route::resource('tutorials', TutorialController::class);
     Route::resource('cvs', CvController::class);
@@ -138,6 +283,120 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
     Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete'])
      ->name('students.bulk.delete');
+
+    //  Route::get('salary-structure/{employee}/create', [SalaryStructureController::class, 'create']);
+    // Route::post('salary-structure/{employee}', [SalaryStructureController::class, 'store']);
+
+    // Route::post('salary-slips/generate', [SalarySlipController::class, 'generate']);
+    // Route::get('salary-slips/{salarySlip}/download', [SalarySlipController::class, 'download']);
+    //  Route::resource('salary-structures', SalaryStructureController::class)
+    //     ->only(['create', 'store']);
+
+    // /* ============ SALARY SLIPS ============ */
+    // Route::resource('salary-slips', SalarySlipController::class)
+    //     ->only(['index']);
+
+    // // extra actions
+    // Route::get(
+    //     'salary-slips-generate',
+    //     [SalarySlipController::class, 'generateForm']
+    // )->name('salary-slips.generate.form');
+
+    // Route::post(
+    //     'salary-slips-generate',
+    //     [SalarySlipController::class, 'generate']
+    // )->name('salary-slips.generate');
+
+    // Route::get(
+    //     'salary-slips/{salarySlip}/download',
+    //     [SalarySlipController::class, 'download']
+    // )->name('salary-slips.download');
+
+    // Route::post('salary-slips/{salarySlip}/email', [SalarySlipController::class, 'sendEmail'])
+    //     ->name('salary-slips.email');
+
+          /* ===== Salary Structure ===== */
+    Route::get(
+        '/salary-structure/{employee}/create',
+        [SalaryStructureController::class, 'create']
+    )->name('salary-structure.create');
+
+    Route::post(
+        '/salary-structure/{employee}',
+        [SalaryStructureController::class, 'store']
+    )->name('salary-structure.store');
+
+    /* ===== Salary Slips ===== */
+    Route::get(
+        '/salary-slips',
+        [SalarySlipController::class, 'index']
+    )->name('salary-slips.index');
+
+    Route::get(
+        '/salary-slips/generate',
+        [SalarySlipController::class, 'generateForm']
+    )->name('salary-slips.generate.form');
+
+    Route::post(
+        '/salary-slips/generate',
+        [SalarySlipController::class, 'generate']
+    )->name('salary-slips.generate');
+
+    Route::get(
+        '/salary-slips/{salarySlip}/download',
+        [SalarySlipController::class, 'download']
+    )->name('salary-slips.download');
+
+
+        Route::post(
+    '/salary-slips/download-bulk',
+        [SalarySlipController::class, 'downloadBulk']
+    )->name('salary-slips.download.bulk');
+
+    // Bulk email
+    Route::post(
+        '/salary-slips/email-bulk',
+        [SalarySlipController::class, 'emailBulk']
+    )->name('salary-slips.email.bulk');
+
+    // Single email
+    Route::post(
+        '/salary-slips/{salarySlip}/email',
+        [SalarySlipController::class, 'sendEmail']
+    )->name('salary-slips.email.single');
+        Route::resource(
+            'student-additional-letters',
+            StudentAdditionalLetterController::class
+    );
+
+    Route::get(
+        'student-additional-letters/{StudentAdditionalLetter}/pdf',
+        [StudentAdditionalLetterController::class, 'download']
+    )->name('student-additional-letters.pdf');
+
+    Route::post(
+        'student-additional-letters/{StudentAdditionalLetter}/email',
+        [StudentAdditionalLetterController::class, 'sendEmail']
+    )->name('student-additional-letters.email');
+
+        // Resource routes (CRUD)
+    Route::resource('company-ppt', CompanyPptController::class)
+        ->names('company_ppt');
+
+    // Public preview via share token
+    Route::get(
+        'company-ppt/preview/{token}',
+        [CompanyPptController::class, 'preview']
+    )->name('company_ppt.preview');
+
+    // Admin download
+    Route::get(
+        'company-ppt/{companyPpt}/admin-download',
+        [CompanyPptController::class, 'adminDownload']
+    )->name('company_ppt.admin.download');
+
+    
+
 
 });
 
@@ -195,6 +454,10 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
     Route::resource('event-expenses', EventExpenseController::class);
     Route::resource('travel-expenses', TravelExpenseController::class);
     Route::resource('office-assets', OfficeAssetController::class);
+     Route::resource('recharges', RechargeController::class);
+    // quick status update
+    Route::post('recharges/{recharge}/set-status', [RechargeController::class, 'setStatus'])->name('recharges.setStatus');
+
 
 
 
@@ -288,10 +551,34 @@ Route::middleware(['auth', 'permission'])->group(function () {
     Route::get('/admin/pending-students', [StudentController::class, 'pendingStudents'])
         ->name('admin.pendingstudents.list');
 
+    Route::get('students/{student}/id-card', [StudentController::class, 'downloadIdStudentCard'])->name('students.idcard');
+
+    // routes/web.php
+    Route::get('/verify-students', [StudentController::class, 'verifyStudents'])->name('verify-students.index');
+    Route::get('/verify-students-index', [StudentController::class, 'verifyStudentsLink'])->name('verify-students-index.index');
+
 
     // Route::resource('office-expenses', OfficeExpenseController::class);
+    Route::get('/placement-companies/import', [PlacementCompanyController::class, 'importForm'])
+            ->name('placement-companies.import.view');
+
+    Route::post('/placement-companies/import', [PlacementCompanyController::class, 'import'])
+            ->name('placement-companies.import');
     Route::resource('placement-companies', PlacementCompanyController::class);
+
+    Route::get('/part-time-jobs/import', [PartTimeJobController::class, 'importForm'])
+            ->name('part-time-jobs.import.view');
+
+    Route::post('/part-time-jobs/import', [PartTimeJobController::class, 'import'])
+            ->name('part-time-jobs.import');
+
     Route::resource('part-time-jobs', PartTimeJobController::class);
+
+    Route::get('/pgs/import', [PgController::class, 'importForm'])
+            ->name('pgs.import.view');
+
+    Route::post('/pgs/import', [PgController::class, 'import'])
+            ->name('pgs.import');
     Route::resource('pgs', PgController::class);
 
     Route::resource('upcoming-events', UpcomingEventController::class)
@@ -315,6 +602,12 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
+
+    Route::resource('accepted-letters', AcceptedLetterController::class);
+    Route::get(
+        'accepted-letters/{accepted_letter}/download',
+        [AcceptedLetterController::class, 'download']
+    )->name('accepted-letters.download');
 });
 
 
@@ -386,6 +679,8 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
     Route::resource('sessions', SessionController::class);
     Route::resource('courses', CourseController::class);
+    Route::get('colleges/export/excel', [CollegeController::class, 'exportExcel'])
+    ->name('colleges.export.excel');
     Route::resource('colleges', CollegeController::class);
     // Endpoint to fetch districts by state (AJAX)
     Route::get('districts/by-state/{state}', [DistrictController::class, 'getByState']);
@@ -524,9 +819,17 @@ Route::get(
 
     });
 
-    Route::resource('employees', EmployeeController::class);
     Route::post('/change-password', [ChangePasswordController::class, 'update'])
         ->name('change.password');
+
+    Route::get('employees/{employee}/id-card',
+    [EmployeeController::class, 'downloadIdCard'])->name('employees.idcard');
+
+    Route::post('employees/{employee}/id-card-email',
+    [EmployeeController::class, 'emailIdCard'])->name('employees.idcard.email');
+    
+    Route::resource('employees', EmployeeController::class);
+
 
 });
 
@@ -571,6 +874,9 @@ Route::middleware(['auth', 'permission'])->group(function () {
     Route::post('/registrations/bulk-convert',
     [EnquiryController::class, 'bulkConvert'])
     ->name('registrations.bulk.convert');
+    Route::get('students/export/excel', [StudentController::class, 'exportExcel'])
+    ->name('students.export.excel');
+
     Route::resource('students', StudentController::class);
 
 });
@@ -1046,6 +1352,9 @@ Route::middleware(['auth', 'role:1,3'])->group(function () {
     });
 
 });
+
+Route::get('/{slug}', [FrontendPageController::class, 'show'])
+    ->name('page.dynamic');
 
 
 

@@ -57,6 +57,7 @@ class CvController extends Controller
             'current_job_status' => 'nullable|string|max:150',
             'hiring_status' => ['required', Rule::in(['Looking', 'Not Looking', 'Open to Offers'])],
             'phone_number' => 'nullable|string|max:30',
+            'email' => 'required|string|max:255',
             'location' => 'nullable|string|max:100',
             'last_updated_at' => 'nullable|date',
             'file_name' => 'required|string|max:255',

@@ -26,7 +26,7 @@ trait PdfLayoutTrait
     protected function getStudentTestPDFFooter()
     {
         return '<div class="footer-shape" style="padding-bottom: -40px">
-                    <img src="'.public_path('images/footer-shape-1-test.png').'"/>
+                    <img src="'.public_path('images/confirmation_images/footer-shape-1.png').'"/>
                 </div>';
     }
 }

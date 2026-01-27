@@ -50,6 +50,14 @@ class RoleMiddleware
                 \Log::error("Upcoming Event Notification Error: " . $e->getMessage());
             }
 
+            try {
+                app(\App\Services\AdminTodayInterviewNotificationService::class)
+                    ->sendTodaySummary();
+            } catch (\Exception $e) {
+                \Log::error("Today Interview Notification Error: " . $e->getMessage());
+            }
+
+
         }
 
         return $next($request);

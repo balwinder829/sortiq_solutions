@@ -27,6 +27,23 @@
 </div>
 
 <div class="form-group col-md-6">
+    <label>Contact No</label>
+    <input type="text"
+           name="contact"
+           value="{{ old('contact', $pg->contact) }}"
+           class="form-control"
+           inputmode="numeric"
+           minlength="10"
+           pattern="[0-9]{10}"
+           title="Enter a valid 10-digit mobile number"
+           onpaste="handlePaste(event)"
+           oninput="sanitizeContact(this)">
+            @error('contact')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+
+<div class="form-group col-md-6">
     <label>Rent Estimate</label>
     <input type="text"
            name="rent_estimate"
@@ -40,6 +57,7 @@
             class="form-control @error('pg_type') is-invalid @enderror">
         <option value="boys" {{ old('pg_type', $pg->pg_type)=='boys' ? 'selected' : '' }}>Boys</option>
         <option value="girls" {{ old('pg_type', $pg->pg_type)=='girls' ? 'selected' : '' }}>Girls</option>
+        <option value="both" {{ old('pg_type', $pg->pg_type)=='both' ? 'selected' : '' }}>Boys & Girls</option>
     </select>
     @error('pg_type')
         <div class="invalid-feedback">{{ $message }}</div>

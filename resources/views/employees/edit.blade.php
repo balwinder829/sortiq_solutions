@@ -4,7 +4,9 @@
 <div class="container">
     <h4>Edit Employee</h4>
 
-    <form method="POST" action="{{ route('employees.update', $employee) }}">
+    <form method="POST"
+          action="{{ route('employees.update', $employee) }}"
+          enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -42,6 +44,20 @@
                 @enderror
             </div>
 
+             {{-- Employement type --}}
+            <div class="form-group col-md-6">
+               <label>Employee Type</label>
+                <select name="employment_type" class="form-control" required>
+                    <option value="">Select</option>
+                    @foreach(['intern','fresher','junior','senior'] as $bg)
+                        <option value="{{ $bg }}"
+                            {{ old('employment_type', $employee->employment_type) == $bg ? 'selected' : '' }}>
+                            {{ ucwords($bg) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             {{-- Joining Date --}}
             <div class="form-group col-md-6">
                 <label>Joining Date</label>
@@ -55,6 +71,20 @@
                 @enderror
             </div>
 
+            {{-- Probation Period (In Months) --}}
+            <div class="form-group col-md-6">
+                <label>Probation Period (In Months)</label>
+                <input type="text"
+                       name="probation_period"
+                       class="form-control @error('probation_period') is-invalid @enderror"
+                       value="{{ old('probation_period', $employee->probation_period) }}"
+                       required>
+                @error('probation_period')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Role --}}
             <div class="form-group col-md-6">
                 <label>Role</label>
                 <select name="role"
@@ -85,6 +115,7 @@
                 @enderror
             </div>
 
+            {{-- Email --}}
             <div class="form-group col-md-6">
                 <label>Email</label>
                 <input type="email"
@@ -96,29 +127,78 @@
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
+            {{-- Password --}}
+                <div class="form-group col-md-6">
+                    <label>Password</label>
+                    <input type="password"
+                           name="password"
+                           class="form-control @error('password') is-invalid @enderror"
+                           placeholder="Leave blank to keep current password">
+                    @error('password')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
 
+
+            {{-- Password --}}
+            <div class="form-group col-md-6">
+                <label>Existing Password</label>
+
+                <div class="input-group">
+                    <input type="password"
+                           id="emp_pswd"
+                           name="emp_pswd"
+                           class="form-control @error('emp_pswd') is-invalid @enderror"
+                           value="{{ old('emp_pswd', $employee->emp_pswd) }}"
+                           readonly>
+
+                    <span class="input-group-text" style="cursor:pointer"
+                          onclick="toggleProbation()">
+                        👁
+                    </span>
+                </div>
+            </div>
+
+
+            {{-- Phone --}}
             <div class="form-group col-md-6">
                 <label>Phone</label>
                 <input type="text"
                        name="phone"
                        class="form-control @error('phone') is-invalid @enderror"
                        value="{{ old('phone', $employee->user->phone) }}"
-                      required
-                    minlength="10"
-                    maxlength="10"
-                    pattern="[0-9]{10}"
-                    title="Enter a valid 10-digit mobile number">
+                       required
+                       minlength="10"
+                       maxlength="10"
+                       pattern="[0-9]{10}">
                 @error('phone')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
 
-            {{-- Date of Birth --}}
+             {{-- Phone --}}
+            <div class="form-group col-md-6">
+                <label>Alternative Phone</label>
+                <input type="text"
+                       name="alternative_phone"
+                       class="form-control @error('alternative_phone') is-invalid @enderror"
+                       value="{{ old('alternative_phone', $employee->alternative_phone) }}"
+                       required
+                       minlength="10"
+                       maxlength="10"
+                       pattern="[0-9]{10}">
+                @error('alternative_phone')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- DOB --}}
             <div class="form-group col-md-6">
                 <label>Date of Birth</label>
-                <input type="date" name="dob"
+                <input type="date"
+                       name="dob"
                        class="form-control"
-                        max="{{ date('Y-m-d') }}"
+                       max="{{ date('Y-m-d') }}"
                        value="{{ old('dob', $employee->dob) }}">
             </div>
 
@@ -142,23 +222,53 @@
                 <textarea name="address" class="form-control" rows="3">{{ old('address', $employee->address) }}</textarea>
             </div>
 
+            {{-- PHOTO UPLOAD (ID CARD) --}}
+            <div class="form-group col-md-6">
+                <label>Employee Photo (ID Card)</label>
 
+                <div id="drop-area"
+                     style="border:2px dashed #6b51df;
+                            padding:20px;
+                            text-align:center;
+                            cursor:pointer;
+                            border-radius:6px;">
+
+                    <p style="margin:0;">Drag & drop image here<br>or click to upload</p>
+                    <input type="file"
+                           name="photo"
+                           id="photoInput"
+                           accept="image/*"
+                           style="display:none;">
+                </div>
+
+                <div id="preview" style="margin-top:10px;">
+                    @if($employee->photo)
+                        <img id="previewImg"
+                             src="{{ asset('images/employee_images/'.$employee->photo) }}"
+                             style="max-width:120px;
+                                    border:1px solid #ddd;
+                                    padding:4px;
+                                    border-radius:4px;">
+                    @else
+                        <img id="previewImg" style="display:none; max-width:120px;">
+                    @endif
+                    
+                </div>
+
+                @error('photo')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
 
             {{-- Status --}}
-          <div class="form-group col-md-6">
+            <div class="form-group col-md-6">
                 <label>Status</label>
                 <select name="status" class="form-control" required>
                     <option value="">Select Status</option>
                     <option value="active"   {{ $employee->status == 'active' ? 'selected' : '' }}>Active</option>
                     <option value="inactive" {{ $employee->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
                 </select>
-
-                @error('status')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
             </div>
-
-
 
         </div>
 
@@ -167,3 +277,50 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+const dropArea = document.getElementById('drop-area');
+const fileInput = document.getElementById('photoInput');
+const previewImg = document.getElementById('previewImg');
+
+dropArea.addEventListener('click', () => fileInput.click());
+
+dropArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropArea.style.background = '#f5f5ff';
+});
+
+dropArea.addEventListener('dragleave', () => {
+    dropArea.style.background = '';
+});
+
+dropArea.addEventListener('drop', e => {
+    e.preventDefault();
+    dropArea.style.background = '';
+    fileInput.files = e.dataTransfer.files;
+    showPreview(fileInput.files[0]);
+});
+
+fileInput.addEventListener('change', () => {
+    showPreview(fileInput.files[0]);
+});
+
+function showPreview(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        previewImg.src = reader.result;
+        previewImg.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+
+ 
+function toggleProbation() {
+    const input = document.getElementById('emp_pswd');
+    input.type = input.type === 'password' ? 'text' : 'password';
+} 
+
+</script>
+@endpush
