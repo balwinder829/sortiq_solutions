@@ -9,6 +9,7 @@ class StudentEvaluation extends Model
     protected $fillable = [
         'student_id',
         'trainer_id',
+        'email',
         'attendance_percentage',
         'behavior',
         'technical',

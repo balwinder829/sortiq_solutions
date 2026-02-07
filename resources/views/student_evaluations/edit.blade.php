@@ -54,7 +54,7 @@
                     @foreach($trainers as $trainer)
                         <option value="{{ $trainer->id }}"
                             {{ old('trainer_id', $student_evaluation->trainer_id) == $trainer->id ? 'selected' : '' }}>
-                            {{ $trainer->user->name }}
+                            {{ $trainer->name }}
                         </option>
                     @endforeach
                 </select>
@@ -72,6 +72,18 @@
                        value="{{ old('attendance_percentage', $student_evaluation->attendance_percentage) }}"
                        required>
                 @error('attendance_percentage')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+             {{-- Email --}}
+            <div class="form-group col-md-6">
+                <label>Email</label>
+                <input type="email"
+                       name="email"
+                       class="form-control @error('email') is-invalid @enderror"
+                       value="{{ old('email', $student_evaluation->email) }}"
+                       >
+                @error('email')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>

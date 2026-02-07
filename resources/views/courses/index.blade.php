@@ -5,6 +5,29 @@
      table.dataTable td {
     text-transform: capitalize;
 }
+/* Highlight clickable student count */
+.student-count {
+    color: #0d6efd;              /* Bootstrap primary blue */
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: all 0.2s ease-in-out;
+}
+
+.student-count:hover {
+    color: #084298;              /* Darker blue on hover */
+    text-decoration: none;
+    transform: scale(1.05);
+}
+
+/* Optional badge look */
+.student-count.badge-style {
+    background-color: #e7f1ff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    text-decoration: none;
+}
+
  </style>
 <div class="container">
     <div class="row mb-2">
@@ -28,6 +51,7 @@
             <tr>
                 <th>ID</th>
                 <th>Technology Name</th>
+                <th>Students</th>
                 <!-- <th>Created At</th> -->
                 <th>Actions</th>
             </tr>
@@ -37,6 +61,27 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $course->course_name }}</td>
+                    {{-- Student Count --}}
+                    <!-- <td class="text-center">
+                        <span class="student-count view-students badge-style"
+                              data-course-id="{{ $course->id }}"
+                              data-course-name="{{ $course->course_name }}">
+                            {{ $course->students_count }}
+                        </span>
+                    </td> -->
+                    <td>
+                        <a href="{{ route('common_filtered_student', [
+                            'technology' => $course->id
+                        ]) }}"
+                           class="text-decoration-none">
+                            <span class="badge bg-success">
+                                {{ $course->students_count }}
+                            </span>
+                        </a>
+                    </td>
+
+
+
                     <!-- <td>{{ optional($course->created_at)->format('Y-m-d') }}</td> -->
                     <td class="text-center">
                         <div class="mb-2">
@@ -57,6 +102,54 @@
 </div>
   
 </div>
+
+{{-- ================= STUDENTS MODAL ================= --}}
+<div class="modal fade" id="studentsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Students – <span id="modalCourseName"></span>
+                </h5>
+
+                <a href="#" id="downloadExcel"
+                   class="btn btn-sm btn-success ms-3">
+                    <i class="fa fa-file-excel"></i> Download Excel
+                </a>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Student Name</th>
+                                <th>SNO</th>
+                                <th>Session ID</th>
+                                <th>Session Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    Click student count to load data
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @endsection
 @push('scripts')
 <script>
@@ -74,4 +167,57 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl)
 })
 </script>
+<script>
+$(document).ready(function () {
+
+     
+
+    $(document).on('click', '.view-students', function () {
+
+        let courseId   = $(this).data('course-id');
+        let courseName = $(this).data('course-name');
+
+        $('#modalCourseName').text(courseName);
+        $('#studentsTableBody').html(
+            '<tr><td colspan="5" class="text-center">Loading...</td></tr>'
+        );
+
+        $('#downloadExcel').attr(
+            'href',
+            `/courses/${courseId}/students/export-excel`
+        );
+
+        $.ajax({
+            url: `/courses/${courseId}/students`,
+            type: 'GET',
+            success: function (students) {
+
+                let rows = '';
+
+                if (students.length === 0) {
+                    rows = `<tr>
+                                <td colspan="5" class="text-center">
+                                    No students found
+                                </td>
+                            </tr>`;
+                } else {
+                    students.forEach((student, index) => {
+                        rows += `<tr>
+                            <td>${index + 1}</td>
+                            <td>${student.student_name}</td>
+                            <td>${student.sno ?? '-'}</td>
+                            <td>${student.session_id ?? '-'}</td>
+                            <td>${student.session_name ?? '-'}</td>
+                        </tr>`;
+                    });
+                }
+
+                $('#studentsTableBody').html(rows);
+                $('#studentsModal').modal('show');
+            }
+        });
+    });
+});
+</script>
+
 @endpush

@@ -115,6 +115,12 @@
                             <i class="fas fa-envelope"></i>
                         </button>
                     </form>
+
+                    <form action="{{ route('student-additional-letters.destroy', $letter) }}" method="POST" style="display:inline-block;">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" onclick="return confirm('Do you want to delete this?')">
+                                    <i class="fa fa-trash"></i>
+                    </form>
                 </td>
             </tr>
             @endforeach

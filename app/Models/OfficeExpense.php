@@ -14,6 +14,7 @@ class OfficeExpense extends Model
         'title',
         'amount',
         'description',
+        'total_units',
         'image',
     ];
 }

@@ -15,10 +15,10 @@ class EnquiryOtpCheck
         }
 
         // If OTP not sent yet → send OTP once
-        if (!session()->has('enquiry_otp_code')) {
-            app(\App\Http\Controllers\EnquiryOtpController::class)
-                ->sendOtp($request);
-        }
+        // if (!session()->has('enquiry_otp_code')) {
+        //     app(\App\Http\Controllers\EnquiryOtpController::class)
+        //         ->sendOtp($request);
+        // }
 
         // Show OTP popup and STOP further execution
         return response()->view('layouts.app', [

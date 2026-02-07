@@ -22,7 +22,13 @@
 
                 <div class="col-md-4">
                     <strong>Technology:</strong>
-                    <div>{{ $batch->courseData->course_name ?? '-' }}</div>
+                    <div> 
+                         
+                        @foreach($batch->courses as $course)
+                            <span class="badge bg-primary">{{ $course->course_name }}</span>
+                        @endforeach
+                     
+                    </div>
                 </div>
 
                 <div class="col-md-4">
@@ -51,7 +57,7 @@
             <div class="row">
                 <div class="col-md-4">
                     <strong>Trainer:</strong>
-                    <div>{{ $batch->trainerData->user->name ?? '-' }}</div>
+                    <div>{{ ucwords($batch->trainerData->name ?? '-') }}</div>
                 </div>
 
                 <div class="col-md-4">

@@ -13,6 +13,37 @@ use Illuminate\Validation\Rule;
 
 class TrainerController extends Controller
 {   
+    protected string $permissionPrefix = 'mentors';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
 
     public function index(Request $request)
 {
@@ -24,11 +55,7 @@ class TrainerController extends Controller
     $courses = \App\Models\Course::orderBy('course_name')->get();
 
 
-    $trainersQuery = Trainer::whereHas('user', function ($q) {
-            $q->whereNull('deleted_at');
-        })
-        ->with(['user'])
-        ->withCount([
+    $trainersQuery = Trainer:: withCount([
 
             // TOTAL batches
             'batches as session_batches_count' => function($q) use ($currentSession) {
@@ -193,6 +220,36 @@ class TrainerController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'name'       => 'required|string|max:100',
+            'gender'     => 'required|in:male,female',
+            'phone'      => 'required|max:20|unique:trainers,phone',
+            'username'   => 'required|string|max:30|regex:/^[a-zA-Z0-9._-]+$/|unique:trainers,username',
+            'password'   => 'required|string|min:6',
+            'email'      => 'nullable|email|unique:trainers,email',
+            'technology' => 'required|array',
+            'technology.*' => 'exists:student_courses,id',
+            'status' => 'required',
+        ]);
+
+        Trainer::create([
+            'name'       => $validated['name'],
+            'username'   => $validated['username'],
+            'password'   => $validated['password'], // auto-hashed
+            'trainer_pswd'   => $validated['password'], // auto-hashed
+            'email'      => $validated['email'] ?? null,
+            'phone'      => $validated['phone'],
+            'gender'     => $validated['gender'],
+            'technology' => implode(',', $validated['technology']),
+            'status'     => $validated['status'],
+        ]);
+
+        return redirect()->route('trainers.index')
+            ->with('success', 'Trainer added successfully!');
+    }
+
+    public function store27jan(Request $request)
+    {
         // dd($request->post());
         $validated = $request->validate([
             'trainer_name' => 'required|string|max:100',
@@ -245,10 +302,11 @@ class TrainerController extends Controller
 
     public function edit(Trainer $trainer)
     {   
+        // dd($trainer);
         // if user's account is deleted, block access
-        if ($trainer->user && $trainer->user->trashed()) {
-            abort(403, 'This trainer is deactivated.');
-        }
+        // if ($trainer->status !== 'active') {
+        //     abort(403, 'Trainer is inactive.');
+        // }
         $sessions = StudentSession::all();
         $colleges = \App\Models\College::all();
         $courses  = \App\Models\Course::all();
@@ -261,6 +319,50 @@ class TrainerController extends Controller
     }
 
     public function update(Request $request, Trainer $trainer)
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:100',
+            'gender'   => 'required|in:male,female',
+            'phone'    => 'required|max:20|unique:trainers,phone,' . $trainer->id,
+            'email'    => 'nullable|email|unique:trainers,email,' . $trainer->id,
+            'technology'   => 'required|array',
+            'technology.*' => 'exists:student_courses,id',
+            'status' => 'required',
+            'password' => 'nullable'
+        ]);
+
+         // Basic update data
+        $data = [
+            'name'       => $validated['name'],
+            'gender'     => $validated['gender'],
+            'phone'      => $validated['phone'],
+            'email'      => $validated['email'],
+            'status'      => $validated['status'],
+            'technology' => implode(',', $validated['technology']),
+        ];
+
+         // ✅ Update password ONLY if filled
+        if ($request->filled('password')) {
+            $data['password'] = $validated['password'];
+            $data['trainer_pswd'] = $validated['password'];
+            
+        }
+
+        $trainer->update($data);
+
+        // $trainer->update([
+        //     'name'       => $validated['name'],
+        //     'gender'     => $validated['gender'],
+        //     'phone'      => $validated['phone'],
+        //     'email'      => $validated['email'] ?? null,
+        //     'technology' => implode(',', $validated['technology']),
+        // ]);
+
+        return redirect()->route('trainers.index')
+            ->with('success', 'Trainer updated successfully!');
+    }
+
+    public function update27jan(Request $request, Trainer $trainer)
     {
         $validated = $request->validate([
             'trainer_name' => 'required|string|max:100',
@@ -348,8 +450,24 @@ class TrainerController extends Controller
     //         ->with('success', 'Trainer deleted successfully!');
     // }
 
-
     public function destroy(Trainer $trainer)
+    {
+        $currentSession = session('admin_session_id');
+
+        $hasBatches = Batch::where('batch_assign', $trainer->id)->exists();
+
+        if ($hasBatches) {
+            return back()->with('error', 'Cannot delete trainer with assigned batches.');
+        }
+
+        $trainer->update(['status' => 'inactive']);
+        $trainer->delete(); // soft delete
+
+        return redirect()->route('trainers.index')
+            ->with('success', 'Trainer deleted successfully!');
+    }
+
+    public function destroy27jan(Trainer $trainer)
     {
         $currentSession = session('admin_session_id');
 

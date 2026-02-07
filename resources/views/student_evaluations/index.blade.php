@@ -19,6 +19,10 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
     <table id="evaluationTable" class="table table-bordered table-striped">
         <thead>
             <tr>
@@ -33,8 +37,8 @@
         <tbody>
             @foreach($evaluations as $ev)
             <tr>
-                <td>{{ $ev->student->student_name }}</td>
-                <td>{{ $ev->trainer->user->name }}</td>
+                <td>{{ ucwords($ev->student->student_name) }}</td>
+                <td>{{ ucwords($ev->trainer->name) }}</td>
                 <td>{{ $ev->attendance_percentage }}%</td>
                 <td>{{ $ev->created_at->format('d M Y') }}</td>
                 <td>
@@ -50,6 +54,18 @@
            title="Download Empty">
            <i class="fas fa-file-alt"></i>
         </a>
+
+         {{-- SINGLE EMAIL --}}
+           <form method="POST"
+                  action="{{ route('student-evaluations.email', $ev) }}"
+                  style="display:inline;">
+                @csrf
+                <button type="submit"
+                        class="btn btn-sm"
+                        title="Email">
+                    <i class="fas fa-envelope"></i>
+                </button>
+            </form>
 
 
     <a href="{{ route('student-evaluations.edit',$ev) }}"

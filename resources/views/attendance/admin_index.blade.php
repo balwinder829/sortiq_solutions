@@ -68,52 +68,87 @@
             </thead>
 
             <tbody>
-                @foreach($employees as $emp)
 
-                    @php
-                        $record = $emp->attendances->where('login_time', '>=', now()->startOfDay())->first();
-                    @endphp
+{{-- ================= EMPLOYEES ================= --}}
+@foreach($employees as $emp)
 
-                    <tr>
-                        <td>{{ $emp->id }}</td>
-                        <td>{{ $emp->name }}</td>
-                        <td>{{ $emp->email }}</td>
+    @php
+        $record = $emp->attendances
+            ->where('login_time', '>=', now()->startOfDay())
+            ->first();
+    @endphp
 
-                        <td>
-                                {{ $record ? $record->login_time->format('h:i A') : '—' }}
-                            </td>
+    <tr>
+        <td>{{ $emp->id }}</td>
+        <td>{{ $emp->name }} <span class="badge bg-secondary">Employee</span></td>
+        <td>{{ $emp->email }}</td>
 
-                            <td>
-                                {{ $record && $record->logout_time ? $record->logout_time->format('h:i A') : '—' }}
-                            </td>
+        <td>{{ $record ? $record->login_time->format('h:i A') : '—' }}</td>
+        <td>{{ $record && $record->logout_time ? $record->logout_time->format('h:i A') : '—' }}</td>
 
-                       <td>
-    @if($record && $record->logout_time)
+        <td>
+            @if($record && $record->logout_time)
+                @php
+                    $mins = $record->login_time->diffInMinutes($record->logout_time);
+                @endphp
+                {{ floor($mins/60) }} hrs {{ $mins % 60 }} mins
+            @else
+                —
+            @endif
+        </td>
 
-        @php
-            $totalMinutes = $record->login_time->diffInMinutes($record->logout_time); 
-            $hours = floor($totalMinutes / 60);
-            $minutes = $totalMinutes % 60;
-        @endphp
+        <td class="text-center">
+            <a href="{{ route('attendance.employeeDetail', $emp->id) }}"
+               class="btn btn-sm" title="View Detail">
+                <i class="fa fa-eye"></i>
+            </a>
+        </td>
+    </tr>
 
-        {{ $hours }} hrs {{ $minutes }} mins
+@endforeach
 
-    @else
-        —
-    @endif
-</td>
 
-                        <td class="text-center">
-                           
-                             <a href="{{ route('attendance.employeeDetail', $emp->id) }}" class="btn btn-sm"
-                               data-bs-toggle="tooltip" title="View Detail">
-                               <i class="fa fa-eye"></i>
-                            </a>
-                        </td>
+{{-- ================= TRAINERS ================= --}}
+@foreach($trainers as $trainer)
 
-                    </tr>
-                @endforeach
-            </tbody>
+    @php
+        $record = $trainer->attendances
+            ->where('login_time', '>=', now()->startOfDay())
+            ->first();
+    @endphp
+
+    <tr>
+        <td>{{ $trainer->id }}</td>
+        <td>{{ $trainer->name }} <span class="badge bg-primary">Trainer</span></td>
+        <td>{{ $trainer->email ?? '—' }}</td>
+
+        <td>{{ $record ? $record->login_time->format('h:i A') : '—' }}</td>
+        <td>{{ $record && $record->logout_time ? $record->logout_time->format('h:i A') : '—' }}</td>
+
+        <td>
+            @if($record && $record->logout_time)
+                @php
+                    $mins = $record->login_time->diffInMinutes($record->logout_time);
+                @endphp
+                {{ floor($mins/60) }} hrs {{ $mins % 60 }} mins
+            @else
+                —
+            @endif
+        </td>
+
+        <td class="text-center">
+           <a href="{{ route('attendance.trainerDetail', $trainer->id) }}"
+               class="btn btn-sm" title="View Trainer Attendance">
+                <i class="fa fa-eye"></i>
+            </a>
+
+        </td>
+    </tr>
+
+@endforeach
+
+</tbody>
+
 
         </table>
     </div>

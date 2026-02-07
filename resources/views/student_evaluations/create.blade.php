@@ -35,7 +35,7 @@
                     @foreach($trainers as $trainer)
                         <option value="{{ $trainer->id }}"
                             {{ old('trainer_id') == $trainer->id ? 'selected' : '' }}>
-                            {{ $trainer->user->name }}
+                            {{ ucwords($trainer->name) }}
                         </option>
                     @endforeach
                 </select>
@@ -49,6 +49,21 @@
                        class="form-control"
                        value="{{ old('attendance_percentage') }}"
                        required>
+                 @error('email')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+             {{-- Email --}}
+            <div class="form-group col-md-6">
+                <label>Email</label>
+                <input type="email"
+                       name="email"
+                       class="form-control"
+                       value="{{ old('email') }}">
+                     @error('email')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
 
             @php $ratings=['good'=>'Good','avg'=>'Avg','bad'=>'Bad']; @endphp

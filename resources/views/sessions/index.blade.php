@@ -80,11 +80,28 @@
 
     </span>
 </td>
-<td>
+<!-- <td>
     <span class="badge bg-success">
         {{ $session->total_students }}
     </span>
+</td> -->
+<td>
+    @if($session->id == $activeSessionId)
+        <a href="{{ route('common_filtered_student', [
+            'session' => $session->id
+        ]) }}"
+       class="text-decoration-none">
+        <span class="badge bg-success">
+            {{ $session->total_students }}
+        </span>
+    </a>
+    @else
+        <span class="badge bg-success">
+            {{ $session->total_students }}
+        </span>
+    @endif
 </td>
+
 
  {{-- ONLINE --}}
     <td>
@@ -202,7 +219,7 @@ $(document).on('click', '.view-batches', function() {
                             <td>${i + 1}</td>
                             <td>${batch.batch_name}</td>
                             <td>${batch.course_data ? batch.course_data.course_name : '-'}</td>
-                            <td>${batch.trainer_data && batch.trainer_data.user ? batch.trainer_data.user.name : '-'}</td>
+                            <td>${batch.trainer_data ? batch.trainer_data.name : '-'}</td>
                             <td>${formatTime12Hour(batch.start_time)}</td>
                             <td>${formatTime12Hour(batch.end_time)}</td>
                         </tr>`;

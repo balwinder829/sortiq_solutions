@@ -120,6 +120,10 @@ class College extends Model
         return $this->hasOne(Hod::class);
     }
 
+    public function students()
+    {
+        return $this->hasMany(Student::class, 'college_name', 'id');
+    }
 }
 
 

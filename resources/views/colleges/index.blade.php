@@ -5,6 +5,24 @@
      table.dataTable td {
         text-transform: capitalize;
      }
+     .student-count {
+        color: #0d6efd;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: underline;
+        transition: all 0.2s ease-in-out;
+    }
+    .student-count:hover {
+        color: #084298;
+        transform: scale(1.05);
+    }
+    .student-count.badge-style {
+        background-color: #e7f1ff;
+        padding: 4px 10px;
+        border-radius: 12px;
+        text-decoration: none;
+    }
+
 </style>
 
 <div class="container">
@@ -103,6 +121,8 @@
                 <th>College Name/Place</th>
                 <th>State</th>
                 <th>District</th>
+                <th>Students</th>
+
                 <th style="width:120px;">Actions</th>
             </tr>
         </thead>
@@ -113,6 +133,26 @@
                 <td>{{ $college->college_name }}</td>
                 <td>{{ $college->state->name ?? '-' }}</td>
                 <td>{{ $college->district->name ?? '-' }}</td>
+                <!-- <td class="text-center">
+                    <span class="student-count view-college-students badge-style"
+                          data-college-id="{{ $college->id }}"
+                          data-college-name="{{ $college->college_name }}">
+                        {{ $college->students_count }}
+                    </span>
+                </td> -->
+
+                <td>
+                    <a href="{{ route('common_filtered_student', [
+                        'college_name' => $college->id,
+                    ]) }}"
+                       class="text-decoration-none">
+                        <span class="badge bg-success">
+                            {{ $college->students_count }}
+                        </span>
+                    </a>
+                </td>
+
+
                 <td class="text-center">
                     <div class="mb-2">
                         <a href="{{ route('colleges.edit', $college->id) }}" class="btn btn-sm"
@@ -136,6 +176,52 @@
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="collegeStudentsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Students – <span id="modalCollegeName"></span>
+                </h5>
+
+                <a href="#" id="downloadCollegeExcel"
+                   class="btn btn-sm btn-success ms-3">
+                    <i class="fa fa-file-excel"></i> Download Excel
+                </a>
+
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Student Name</th>
+                                <th>SNO</th>
+                                <th>Session ID</th>
+                                <th>Session Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="collegeStudentsTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    Click student count to load data
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @endsection
 
 
@@ -210,6 +296,54 @@ var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggl
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
 });
+
+
+$(document).on('click', '.view-college-students', function () {
+
+    let collegeId   = $(this).data('college-id');
+    let collegeName = $(this).data('college-name');
+
+    $('#modalCollegeName').text(collegeName);
+    $('#collegeStudentsTableBody').html(
+        '<tr><td colspan="5" class="text-center">Loading...</td></tr>'
+    );
+
+    $('#downloadCollegeExcel').attr(
+        'href',
+        `/colleges/${collegeId}/students/export-excel`
+    );
+
+    $.ajax({
+        url: `/colleges/${collegeId}/students`,
+        type: 'GET',
+        success: function (students) {
+
+            let rows = '';
+
+            if (students.length === 0) {
+                rows = `<tr>
+                            <td colspan="5" class="text-center">
+                                No students found
+                            </td>
+                        </tr>`;
+            } else {
+                students.forEach((s, i) => {
+                    rows += `<tr>
+                        <td>${i + 1}</td>
+                        <td>${s.student_name}</td>
+                        <td>${s.sno ?? '-'}</td>
+                        <td>${s.session_id ?? '-'}</td>
+                        <td>${s.session_name ?? '-'}</td>
+                    </tr>`;
+                });
+            }
+
+            $('#collegeStudentsTableBody').html(rows);
+            $('#collegeStudentsModal').modal('show');
+        }
+    });
+});
+
 </script>
 
 @endpush

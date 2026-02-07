@@ -163,6 +163,60 @@
             </select>
         </div> -->
 
+         <div class="col-md-3 col-6">
+            <select name="fee_filter" class="form-control">
+                <option value="">-- Fee Related Filter --</option>
+
+                {{-- Fee Status --}}
+                <option value="completed"
+                    {{ request('fee_filter')=='completed' ? 'selected' : '' }}>
+                    Completed Fees (No Pending)
+                </option>
+
+                <option value="pending"
+                    {{ request('fee_filter')=='pending' ? 'selected' : '' }}>
+                    Pending Fees Only
+                </option>
+
+                {{-- Sorting --}}
+                <option value="pending_high"
+                    {{ request('fee_filter')=='pending_high' ? 'selected' : '' }}>
+                    Pending Fees: High → Low
+                </option>
+
+                <option value="pending_low"
+                    {{ request('fee_filter')=='pending_low' ? 'selected' : '' }}>
+                    Pending Fees: Low → High
+                </option>
+
+                <option value="fees_high"
+                    {{ request('fee_filter')=='fees_high' ? 'selected' : '' }}>
+                    Total Fees: High → Low
+                </option>
+
+                <option value="fees_low"
+                    {{ request('fee_filter')=='fees_low' ? 'selected' : '' }}>
+                    Total Fees: Low → High
+                </option>
+            </select>
+        </div>
+
+         <div class="col-md-2 col-12">
+            <select name="gender" class="form-control">
+                <option value="">--Gender--</option>
+
+                <option value="male"
+                    {{ request('gender') == 'male' ? 'selected' : '' }}>
+                    Male
+                </option>
+
+                <option value="female"
+                    {{ request('gender') == 'female' ? 'selected' : '' }}>
+                    Female
+                </option>
+            </select>
+        </div>
+
         {{-- Buttons --}}
         <div class="col-md-1 d-grid">
             <button type="submit" class="btn btn-primary">Search</button>
@@ -301,6 +355,7 @@
     <div class="mt-3">
         <!-- <button id="issueSelected" class="btn btn-primary">Issue Certificate</button> -->
         <button id="downloadissueSelected" class="btn btn-primary">Download Certificates</button>
+        <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
     </div>
 
      
@@ -316,14 +371,33 @@
     @csrf
     <input type="hidden" name="ids" id="bulkDownloadIds">
 </form>
+
+<form id="bulkDeleteForm" method="POST" action="{{ route('students.bulk.delete') }}">
+    @csrf
+    <input type="hidden" name="ids" id="deleteIds" value="">
+
+</form>
 @endsection
 
 @push('scripts')
 <script>
 $(document).ready(function () {
     // Initialize DataTable
+
+    var savedPage = sessionStorage.getItem('students_certificate_page');
+
+    var pageLength = 10;
+    $.fn.dataTable.ext.pager.numbers_length = 12;
+    $('form[action*="students"]').on('submit', function () {
+        sessionStorage.removeItem('students_certificate_page');
+    });
+    $('a[href="{{ route('students.index') }}"]').on('click', function () {
+        sessionStorage.removeItem('students_certificate_page');
+    });
     var table = $('#certificatesTable').DataTable({
-        "pageLength": 10,
+        "pageLength": pageLength,
+        "displayStart": savedPage ? (savedPage * pageLength) : 0,
+        'pagingType': "full_numbers", 
         "lengthMenu": [5, 10, 25, 50, 100],
         "scrollX": true,
        rowCallback: function (row, data) {
@@ -345,9 +419,14 @@ $(document).ready(function () {
             $('td:eq(13)', row).addClass("text-danger fw-bold");
         }
     }
+    });
 
-
-
+    // ✅ Save page whenever page changes
+    table.on('page.dt', function () {
+        sessionStorage.setItem(
+            'students_certificate_page',
+            table.page()
+        );
     });
 
     // Check/uncheck all
@@ -461,6 +540,21 @@ $(document).ready(function () {
         $('#bulkDownloadIds').val(JSON.stringify(ids));
         $('#bulkDownloadForm').submit();
     });
+
+     $('#deleteSelected').click(function() {
+            var ids = getSelectedIds();
+
+            if(ids.length === 0) {
+                alert('Select at least one student');
+                return;
+            }
+
+            if(confirm('Delete selected students?')) {
+                // $('#deleteIds').val(ids);
+                $('#deleteIds').val(JSON.stringify(ids));
+                $('#bulkDeleteForm').submit();
+            }
+        });
 
 });
 </script>

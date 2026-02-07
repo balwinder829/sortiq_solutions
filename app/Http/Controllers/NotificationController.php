@@ -9,9 +9,27 @@ class NotificationController extends Controller
 {
     // ===================== LIST =====================
     public function index()
-    {
-        $notifications = auth()->user()->notifications()->paginate(20);
-        return view('notifications.index', compact('notifications'));
+    {   
+        // 🔹 TRAINER
+        if (Auth::guard('trainer')->check()) {
+            $trainer = Auth::guard('trainer')->user();
+            $notifications = $trainer->notifications()->latest()->paginate(20);
+
+            return view('notifications.index', compact('notifications'));
+        }
+
+        if (Auth::check()) {
+            if (!in_array(Auth::user()->role, [1, 2, 3])) {
+                abort(403);
+            }
+
+            $notifications = Auth::user()->notifications()->latest()->paginate(20);
+
+            return view('notifications.index', compact('notifications'));
+        }
+        abort(403);
+        // $notifications = auth()->user()->notifications()->paginate(20);
+        // return view('notifications.index', compact('notifications'));
     }
 
 

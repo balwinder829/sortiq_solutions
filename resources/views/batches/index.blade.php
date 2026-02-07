@@ -45,13 +45,13 @@
 
             {{-- Trainer Filter --}}
             <div class="col-md-3">
-                <label><strong>Trainer</strong></label>
+                <label><strong>Mentor</strong></label>
                 <select name="trainer" class="form-control">
-                    <option value="">All Trainers</option>
+                    <option disabled selected value="">All Mentors</option>
                     @foreach($trainers as $trainer)
                         <option value="{{ $trainer->id }}"
                             {{ request('trainer') == $trainer->id ? 'selected' : '' }}>
-                            {{ $trainer->user?->name ?? 'Unknown' }}
+                            {{ ucwords($trainer?->name ?? 'Unknown') }}
                         </option>
                     @endforeach
                 </select>
@@ -61,7 +61,7 @@
             <div class="col-md-3">
                 <label><strong>Technology</strong></label>
                 <select name="technology" class="form-control">
-                    <option value="">All Technologies</option>
+                    <option  disabled selected value="">All Technologies</option>
                     @foreach($courses as $course)
                         <option value="{{ $course->id }}"
                             {{ request('technology') == $course->id ? 'selected' : '' }}>
@@ -70,12 +70,51 @@
                     @endforeach
                 </select>
             </div>
+<!-- 
+            <div class="col-md-3">
+    <label class="form-label">Start Time</label>
+    <input type="time"
+           name="start_time"
+           value="{{ request('start_time') }}"
+           class="form-control">
+</div>
+
+<div class="col-md-3">
+    <label class="form-label">End Time</label>
+    <input type="time"
+           name="end_time"
+           value="{{ request('end_time') }}"
+           class="form-control">
+</div> -->
+
+        <div class="col-md-3">
+            <label class="form-label">Start Time</label>
+            <input type="text"
+                   id="filter_start_time"
+                   name="start_time"
+                   value="{{ request('start_time') }}"
+                   class="form-control"
+                   placeholder="hh:mm AM/PM"
+                   autocomplete="off">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">End Time</label>
+            <input type="text"
+                   id="filter_end_time"
+                   name="end_time"
+                   value="{{ request('end_time') }}"
+                   class="form-control"
+                   placeholder="hh:mm AM/PM"
+                   autocomplete="off">
+        </div>
+
 
             {{-- Status Filter --}}
             <div class="col-md-3">
                 <label><strong>Status</strong></label>
                 <select name="status" class="form-control">
-                    <option value="">All Status</option>
+                    <option  disabled selected value="">All Status</option>
                     <option value="active"    {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                     <option value="inactive"  {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
@@ -87,7 +126,7 @@
             <div class="col-md-3">
                 <label><strong>Mode</strong></label>
                 <select name="mode" class="form-control">
-                    <option value="">All Modes</option>
+                    <option  disabled selected value="">All Modes</option>
                     <option value="online"  {{ request('mode') == 'online' ? 'selected' : '' }}>Online</option>
                     <option value="offline" {{ request('mode') == 'offline' ? 'selected' : '' }}>Offline</option>
                 </select>
@@ -144,22 +183,37 @@
                     <td>{{ \Carbon\Carbon::parse($batch->start_time)->format('h:i A') }}</td>
                     <td>{{ \Carbon\Carbon::parse($batch->end_time)->format('h:i A') }}</td>
                     <td>
-                        @foreach($batch->courses as $course)
+                        @forelse($batch->courses ?? [] as $course)
                             <span class="badge bg-primary">{{ $course->course_name }}</span>
-                        @endforeach
+                        @empty
+                            <span class="text-muted">-</span>
+                        @endforelse
                     </td>
 
-                    <td>{{ $batch->trainerData?->user?->name ?? '-' }}</td>
+
+                    <td>{{ ucwords($batch->trainerData?->name ?? '-') }}</td>
                     <td>{{ $batch->batch_mode ?? '-' }}</td>
                     <td>{{ ucwords($batch->status) ?? '-' }}</td>
 
-                    <td>
+                    <!-- <td>
                         <span class="badge rounded-pill bg-primary view-students"
                               style="cursor:pointer;"
                               data-id="{{ $batch->id }}">
                             {{ $batch->students_count }}
                         </span>
+                    </td> -->
+
+                    <td>
+                        <a href="{{ route('common_filtered_student', [
+                            'batch_assign' => $batch->id
+                        ]) }}"
+                           class="text-decoration-none">
+                            <span class="badge bg-success">
+                                {{ $batch->students_count }}
+                            </span>
+                        </a>
                     </td>
+
 
                     <!-- <td>{{ $batch->durationData->name ?? '-' }}</td> -->
 
@@ -227,6 +281,7 @@
     </div>
 </div>
 {{-- ==================== END MODAL ==================== --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 @endsection
 
@@ -321,7 +376,20 @@ $(document).on('click', '.view-students', function() {
     });
 });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+const filterTimeConfig = {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "h:i K",
+    time_24hr: false,
+    disableMobile: true,
+    allowInput: false
+};
 
+flatpickr("#filter_start_time", filterTimeConfig);
+flatpickr("#filter_end_time", filterTimeConfig);
+</script>
 
 
 @endpush

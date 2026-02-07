@@ -6,14 +6,53 @@ use App\Models\User;
 use App\Models\Trainer;
 use Illuminate\Http\Request;
 use App\Models\Role;
+use Spatie\Permission\Models\Role as SpatieRole;
 
 class UserController extends Controller
 {
+    protected string $permissionPrefix = 'users';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+        'restore'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
     // Blade: show all users
     public function index()
     {
         // $users = User::all();
-        $users = User::withTrashed()->with('roles')->get();
+        $users = User::whereIn('role', [1, 3, 4])
+            ->withTrashed()
+            ->with('roles')
+            ->get();
         return view('users.index', compact('users'));
     }
 
@@ -67,7 +106,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         // $roles = Role::whereIn('id', [2, 3, 4])->get();
-        $roles = Role::whereNotIn('name', ['Admin', 'Trainer'])->get();
+        $roles = Role::whereNotIn('name', ['Admin', 'Trainer','HR','Employee'])->get();
         return view('users.edit', compact('user', 'roles'));
     }
 
@@ -80,19 +119,20 @@ class UserController extends Controller
             'username' => 'required|string|unique:users,username,' . $user->id,
             'password' => 'nullable|string|min:6',
             'status'   => 'required|in:active,inactive',
+            'role'   => 'required',
         ];
 
         // 🔒 Apply role validation ONLY if admin is NOT editing admin
-        if (!($loggedInUser->role == 1 && $user->role == 1)) {
-            $rules['role'] = 'required';
-        }
+        // if (!($loggedInUser->role == 1 && $user->role == 1)) {
+        //     $rules['role'] = 'required';
+        // }
 
         $data = $request->validate($rules);
 
         // 🔒 Do not change role when admin edits admin
-        if ($loggedInUser->role == 1 && $user->role == 1) {
-            unset($data['role']);
-        }
+        // if ($loggedInUser->role == 1 && $user->role == 1) {
+        //     unset($data['role']);
+        // }
 
         // ❌ Keep old password if empty
         if (empty($data['password'])) {
@@ -100,6 +140,25 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🔑 SPATIE ROLE SYNC (ONLY FOR ADMIN & MANAGER)
+        |--------------------------------------------------------------------------
+        */
+        if (in_array($data['role'], [1, 4])) {
+
+            // Find role name from roles table
+            $roleName = SpatieRole::where('id', $data['role'])->value('name');
+
+            if ($roleName) {
+                $user->syncRoles([$roleName]); // replaces old spatie role
+            }
+
+        } else {
+            // Remove any spatie roles for fixed-role users
+            $user->syncRoles([]);
+        }
 
         return redirect()
             ->route('users.index')

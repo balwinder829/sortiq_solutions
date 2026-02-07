@@ -26,6 +26,41 @@ use Illuminate\Support\Str;
 
 class CloseStudenController extends Controller
 {
+
+    protected string $permissionPrefix = 'close_students';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
 // Show all students
 public function index(Request $request)
 {
@@ -71,6 +106,10 @@ public function index(Request $request)
         $query->where('department', $request->department);
     }
 
+    if ($request->filled('gender')) {
+        $query->where('gender', $request->gender);
+    }
+
     if (auth()->user()->role == 1) {
          $activeSessionId = session('admin_session_id');
         $query->where('session', $activeSessionId);
@@ -103,8 +142,10 @@ public function index(Request $request)
 
     // Show a single student (for view/edit)
     public function edit(Student $student)
-    {
-         $sessions = StudentSession::all();
+    {   
+        $activeSessionId = session('admin_session_id');
+        $activeSession = StudentSession::find($activeSessionId);
+        $sessions = StudentSession::all();
         $colleges = College::all();
         $courses = Course::all();
         $batches = Batch::all();
@@ -113,7 +154,7 @@ public function index(Request $request)
         $users = User::all();
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
-        return view('close_student.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status'));
+        return view('close_student.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status','activeSession'));
     }
 
     // Update student data
@@ -162,6 +203,7 @@ public function index(Request $request)
         if (!empty($validates['contact'])) {
             $contactExists = Student::withTrashed()
                 ->where('student_name', $validates['student_name'])
+                ->where('f_name', $validates['f_name'])
                 ->where('contact', $validates['contact'])
                 ->where('session', $activeSessionId)
                 ->where('id', '!=', $student->id) // 👈 ignore current record

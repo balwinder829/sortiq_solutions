@@ -75,16 +75,10 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                        {{ ucwords($letter->student?->collegeData?->FullName ?? 'N/A') }}
+                        {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}
                     </td>
                 </tr>
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                        {{ ucwords($letter->student?->collegeData?->district?->name ?? 'N/A') }},
-                        {{ ucwords($letter->student?->collegeData?->state?->name ?? 'N/A') }}
-
-                    </td>
-                </tr>
+                
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
                         Dear <b>{{ ucwords($letter->student->student_name) }}</b>,
@@ -110,9 +104,10 @@
                                 <td style="font-size: 14px; line-height: 24px;">
                                      <strong style="margin-left: 20px;">Duration:</strong> 6 Months<br>
                                     <strong style="margin-left: 20px;">Type:</strong> Free Internship<br>
+                                    <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }}<br>
                                     <strong style="margin-left: 20px;">Location:</strong> Mohali / Remote (based on project requirement)<br>
                                     <strong style="margin-left: 20px;">Start Date:</strong> {{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}<br>
-                                    <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }}<br>
+                                    
                                 </td>
                             </tr>
                         </table>

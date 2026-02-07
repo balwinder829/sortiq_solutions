@@ -9,12 +9,49 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Mail;
 
 class StudentEvaluationController extends Controller
 {
+    protected string $permissionPrefix = 'student_evaluations';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'downloadEmpty'         => 'view',
+        'downloadFull'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
     public function index()
     {
-        $evaluations = StudentEvaluation::with(['student','trainer.user'])
+        $evaluations = StudentEvaluation::with(['student','trainer'])
             ->latest()
             ->get();
 
@@ -23,16 +60,14 @@ class StudentEvaluationController extends Controller
 
     public function create()
     {
-        $students = Student::orderBy('student_name')->get();
-        $trainers = Trainer::with('user')
-            ->whereHas('user', function ($q) {
-                $q->where('role', 2)
-                  ->where('status', 'active');
-            })
-            ->join('users', 'users.id', '=', 'trainers.user_id')
-            ->orderBy('users.name', 'asc')
-            ->select('trainers.*')
+        $activeSessionId = session('admin_session_id');
+        $students = Student::where('session', $activeSessionId)->orderBy('student_name')->get();
+
+        $trainers = Trainer::query()
+            ->where('status', 'active')
+            ->orderBy('name', 'asc')
             ->get();
+
 
 
 
@@ -46,6 +81,7 @@ class StudentEvaluationController extends Controller
             'student_id' => 'required|exists:students_detail,id',
             'trainer_id' => 'required|exists:trainers,id',
             'attendance_percentage' => 'required|integer|min:0|max:100',
+            'email' => 'nullable|email',
 
             'behavior' => 'required|in:good,avg,bad',
             'technical' => 'required|in:good,avg,bad',
@@ -54,7 +90,7 @@ class StudentEvaluationController extends Controller
             'github' => 'required|in:good,avg,bad',
 
             'projects' => 'required|in:completed,partial,pending',
-            'assignments' => 'required|in:completed,pending',
+            'assignments' => 'required|in:completed,partial,pending',
         ]);
 
         StudentEvaluation::create($data);
@@ -66,25 +102,24 @@ class StudentEvaluationController extends Controller
 
     public function show(StudentEvaluation $student_evaluation)
     {
-        $student_evaluation->load(['student','trainer.user']);
+        $student_evaluation->load(['student','trainer']);
 
         return view('student_evaluations.print', compact('student_evaluation'));
     }
 
     public function edit(StudentEvaluation $student_evaluation)
     {
-        $students = Student::orderBy('student_name', 'asc')->get();
+        // $students = Student::orderBy('student_name', 'asc')->get();
+        $activeSessionId = session('admin_session_id');
+        $students = Student::where('session', $activeSessionId)->orderBy('student_name')->get();
 
-        $trainers = Trainer::with('user')
-            ->whereHas('user', function ($q) {
-                $q->where('role', 2)
-                  ->where('status', 'active');
-            })
-            ->join('users', 'users.id', '=', 'trainers.user_id')
-            ->orderBy('users.name', 'asc')
-            ->select('trainers.*')
+        $trainers = Trainer::query()
+            ->where('status', 'active')
+            ->orderBy('name', 'asc')
             ->get();
 
+
+ 
         return view('student_evaluations.edit', compact(
             'student_evaluation',
             'students',
@@ -97,7 +132,8 @@ class StudentEvaluationController extends Controller
     {
         $data = $request->validate([
             'attendance_percentage' => 'required|integer|min:0|max:100',
-
+            'trainer_id' => 'required|exists:trainers,id',
+            'email' => 'nullable|email',
             'behavior' => 'required|in:good,avg,bad',
             'technical' => 'required|in:good,avg,bad',
             'live_project' => 'required|in:good,avg,bad',
@@ -137,7 +173,7 @@ class StudentEvaluationController extends Controller
             'tempDir' => storage_path('app/mpdf'),
         ]);
 
-        $evaluation->load(['student', 'trainer.user']);
+        $evaluation->load(['student', 'trainer']);
         // dd($mode, $evaluation);
         $html = View::make('student_evaluations.pdf', [
             'evaluation' => $evaluation,
@@ -153,32 +189,6 @@ class StudentEvaluationController extends Controller
     {
         $pdf = $this->generateEvaluationPdf($student_evaluation, 'full');
 
-        return response($pdf)
-            ->header('Content-Type', 'application/pdf')
-            ->header(
-                'Content-Disposition',
-                'attachment; filename="STUDENT_EVALUATION_FULL.pdf"'
-            );
-    }
-
-    public function downloadEmpty(StudentEvaluation $student_evaluation)
-    {
-        $pdf = $this->generateEvaluationPdf($student_evaluation, 'empty');
-
-        return response($pdf)
-            ->header('Content-Type', 'application/pdf')
-            ->header(
-                'Content-Disposition',
-                'attachment; filename="STUDENT_EVALUATION_EMPTY.pdf"'
-            );
-    }
-
-
-    public function downloadPdf(StudentEvaluation $student_evaluation)
-    {
-        $pdfContent = $this->generateEvaluationPdf($student_evaluation);
-
-        // Build clean filename
         $studentName = strtoupper(
             preg_replace(
                 '/[^A-Za-z0-9]+/',
@@ -187,22 +197,24 @@ class StudentEvaluationController extends Controller
             )
         );
 
-        $trainerName = strtoupper(
+        $fatherName = strtoupper(
             preg_replace(
                 '/[^A-Za-z0-9]+/',
                 '_',
-                trim(optional($student_evaluation->trainer->user)->name ?? 'TRAINER')
+                trim($student_evaluation->student->f_name ?? 'STUDENT')
             )
         );
+
+       
 
         $date = $student_evaluation->created_at->format('Y_M_d');
 
         $fileName = trim(
-            preg_replace('/_+/', '_', "{$studentName}_{$trainerName}_EVALUATION_{$date}"),
+            preg_replace('/_+/', '_', "{$studentName}_{$fatherName}_EVALUATION_{$date}"),
             '_'
         ) . '.pdf';
 
-        return response($pdfContent)
+        return response($pdf)
             ->header('Content-Type', 'application/pdf')
             ->header(
                 'Content-Disposition',
@@ -210,12 +222,116 @@ class StudentEvaluationController extends Controller
             );
     }
 
+    public function downloadEmpty(StudentEvaluation $student_evaluation)
+    {
+
+        $studentName = strtoupper(
+            preg_replace(
+                '/[^A-Za-z0-9]+/',
+                '_',
+                trim($student_evaluation->student->student_name ?? 'STUDENT')
+            )
+        );
+
+        $fatherName = strtoupper(
+            preg_replace(
+                '/[^A-Za-z0-9]+/',
+                '_',
+                trim($student_evaluation->student->f_name ?? 'STUDENT')
+            )
+        );
+
+       
+
+        $date = $student_evaluation->created_at->format('Y_M_d');
+
+        $fileName = trim(
+            preg_replace('/_+/', '_', "{$studentName}_{$fatherName}_EVALUATION_{$date}"),
+            '_'
+        ) . '.pdf';
+
+
+        $pdf = $this->generateEvaluationPdf($student_evaluation, 'empty');
+
+        return response($pdf)
+            ->header('Content-Type', 'application/pdf')
+            ->header(
+                'Content-Disposition',
+                'attachment; filename="'.$fileName.'"'
+            );
+    }
+
+
+public function sendEmail(StudentEvaluation $student_evaluation)
+{
+
+    // dd($student_evaluation);
+
+
+    if (
+        !$student_evaluation->email ||
+        empty($student_evaluation->email)
+    ) {
+        return back()->with('error', 'Please add email to send report.');
+    }
+
+
+    $studentName = strtoupper(
+        preg_replace(
+            '/[^A-Za-z0-9]+/',
+            '_',
+            trim($student_evaluation->student->student_name ?? 'STUDENT')
+        )
+    );
+
+    $fatherName = strtoupper(
+        preg_replace(
+            '/[^A-Za-z0-9]+/',
+            '_',
+            trim($student_evaluation->student->f_name ?? 'STUDENT')
+        )
+    );
+
+   
+
+    $date = $student_evaluation->created_at->format('Y_M_d');
+
+    $fileName = trim(
+        preg_replace('/_+/', '_', "{$studentName}_{$fatherName}_EVALUATION_{$date}"),
+        '_'
+    ) . '.pdf';
+
+    $pdfContent = $this->generateEvaluationPdf($student_evaluation, 'full');
+
+     
+
+    $body = 
+        "Dear ,\n\n" .
+        "Please find attached report.\n\n" .
+        "Regards,\nHR Department";
+
+    Mail::raw($body, function ($message) use (
+        $student_evaluation,
+        $pdfContent,
+        $fileName
+    ) {
+        $message->to($student_evaluation->email)
+            ->subject("REPORT OF - {$student_evaluation->student->student_name}")
+            ->attachData(
+                $pdfContent,
+                $fileName,
+                ['mime' => 'application/pdf']
+            );
+    });
+
+    return back()->with('success', 'Report emailed successfully.');
+}  
     /*
 public function sendEmail(StudentEvaluation $student_evaluation)
 {
     $pdfContent = $this->generateEvaluationPdf($student_evaluation);
 
-    $email = optional($student_evaluation->student->user)->email;
+    
 
     if (!$email) {
         return back()->withErrors([

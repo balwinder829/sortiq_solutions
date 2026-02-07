@@ -15,6 +15,45 @@ use App\Traits\PdfLayoutTrait;
 class MouController extends Controller
 {	
 	use PdfLayoutTrait;
+
+	protected string $permissionPrefix = 'mous';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        'uploadSigned' => 'edit',
+        'download'     => 'view',
+        'sendEmail'    => 'edit',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
+
+    // controller methods stay unchanged
+
     public function index(Request $request)
     {
         $query = Mou::with('college')->latest();

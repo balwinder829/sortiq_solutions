@@ -5,7 +5,7 @@
 <div class="container">
     <div class="row mb-2">
         <div class="col-md-8">
-            <h1 class="page_heading">Add Student</h1>
+            <h1 class="page_heading">Add Student - SNo- {{ $nextSno }}</h1>
         </div>  
     </div>
 
@@ -24,13 +24,13 @@
             <div class="form-group col-md-6">
                 <label>Father Name</label>
                 <input type="text" maxlength="55" required class="form-control" 
-                       name="f_name" value="{{ old('f_name') }}" oninput="capitalizeWords(this)">
+                       name="f_name" value="{{ old('f_name', 'Mr. ') }}" oninput="handleMrPrefix(this)">
                 @error('f_name') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
 
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-6 d-none">
                 <label>Serial No.</label>
-                <input type="text" maxlength="55" class="form-control" 
+                <input type="hidden" maxlength="55" class="form-control" 
                        name="sno" value="{{ $nextSno }}" readonly>
                 @error('sno') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
@@ -64,7 +64,7 @@
 
             <div class="form-group col-md-6">
                 <label>College Name</label>
-                <select name="college_name" required class="form-control">
+                <select name="college_name" required class="form-control select2">
                     <option value="" disabled {{ old('college_name') ? '' : 'selected' }}>Choose one</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->id }}" 
@@ -134,21 +134,24 @@
             <div class="form-group col-md-6">
                 <label>Total Fees</label>
                 <input type="text" name="total_fees" required class="form-control"
-                       value="{{ old('total_fees') }}"  id="total_fees" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')">
+                       value="{{ old('total_fees') }}"  id="total_fees" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                 @error('total_fees') <small class="text-danger">{{ $message }}</small> @enderror
+                <small id="total_fee_warning" class="text-danger d-none">
+                    Total fees cannot exceed 200,000.
+                </small>
             </div>
 
             <div class="form-group col-md-6">
                 <label>Reg Fees</label>
                 <input type="text" name="reg_fees" required class="form-control" id="reg_fees" 
-                       value="{{ old('reg_fees') }}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')">
+                       value="{{ old('reg_fees') }}" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                 @error('reg_fees') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
 
             <div class="form-group col-md-6">
                 <label>Paid Fees</label>
                 <input type="text" name="paid_fees" required class="form-control" id="paid_fees" 
-                       value="{{ old('paid_fees') }}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')">
+                       value="{{ old('paid_fees') }}" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                 @error('paid_fees') <small class="text-danger">{{ $message }}</small> @enderror
                  <small id="fee_warning" class="text-danger d-none">
                     Registration fees + Paid fees cannot be greater than Total fees.
@@ -169,7 +172,7 @@
                 @error('reg_due_amount') <small class="text-danger">{{ $message }}</small> @enderror
             </div> -->
 
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-6" id="pending_next_due_date">
                 <label>Pending Fees Due Date</label>
                 <input type="date" name="next_due_date" class="form-control" value="{{ old('next_due_date') }}">
             </div>
@@ -210,6 +213,9 @@
                        value="{{ old('start_date') }}"  id="start_date" required>
                 <small class="text-danger d-none" id="start_error">
                     Sunday is not allowed
+                </small>
+                <small id="date_error" class="text-danger d-none">
+                    Start date must be after registered date.
                 </small>
                 @error('start_date') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
@@ -302,8 +308,22 @@
             <!-- </div> -->
     </form>    
 </div>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+
 @endsection
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            placeholder: "Search college name",
+            allowClear: true
+        });
+    });
+</script>
 
 <script>
 let endDateManuallyChanged = false;
@@ -319,10 +339,25 @@ document.getElementById('end_date').addEventListener('input', function () {
 
 // Recalculate when start date changes (only if user didn't override)
 document.getElementById('start_date').addEventListener('change', function () {
+    validateDates();
     if (!endDateManuallyChanged) {
         calculateEndDateFromSession();
     }
 });
+function validateDates() {
+    let joinDate  = $('#join_date').val();
+    let startDate = $('#start_date').val();
+
+    if (!joinDate || !startDate) return;
+
+    if (new Date(startDate) <= new Date(joinDate)) {
+        $('#date_error').removeClass('d-none');
+        $('#start_date').val('');
+        $('#end_date').val('');
+    } else {
+        $('#date_error').addClass('d-none');
+    }
+}
 
 function calculateEndDateFromSession() {
     const sessionEnd = document.getElementById('session_end_date').value;
@@ -368,69 +403,71 @@ document.getElementById('end_date').addEventListener('change', function () {
         document.getElementById('end_error').classList.add('d-none');
     }
 });
+
+$('#join_date').on('change', validateDates);
 </script>
 
 
 <script>
-    // function calculateEndDate() {
-    //     let startDate = document.getElementById('start_date').value;
-    //     let duration  = document.getElementById('duration').value;
+$(document).ready(function () {
 
-    //     if (startDate && duration) {
-    //         let date = new Date(startDate);
-    //         date.setDate(date.getDate() + parseInt(duration));
+    function calculateFees(changed) {
+        let total = parseInt($('#total_fees').val()) || 0;
+        let reg   = parseInt($('#reg_fees').val()) || 0;
+        let paid  = parseInt($('#paid_fees').val()) || 0;
 
-    //          // If Sunday (0), move to Monday
-    //         if (date.getDay() === 0) {
-    //             date.setDate(date.getDate() + 1);
-    //         }
-
-
-    //         let year  = date.getFullYear();
-    //         let month = String(date.getMonth() + 1).padStart(2, '0');
-    //         let day   = String(date.getDate()).padStart(2, '0');
-
-    //         document.getElementById('end_date').value = `${year}-${month}-${day}`;
-    //     }
-    // }
-
-    // document.getElementById('start_date').addEventListener('change', calculateEndDate);
-    // document.getElementById('duration').addEventListener('change', calculateEndDate);
- 
-    function calculatePendingFees() {
-        let totalFees = parseFloat(document.getElementById('total_fees').value) || 0;
-        let regFees   = parseFloat(document.getElementById('reg_fees').value) || 0;
-        let paidFees   = parseFloat(document.getElementById('paid_fees').value) || 0;
-
-        let warningEl = document.getElementById('fee_warning');
-
-        // Check validation
-        if ((regFees + paidFees) > totalFees) {
-            warningEl.classList.remove('d-none');
-
-            // Optional: auto-fix by resetting last input
-            document.getElementById('paid_fees').value = '';
-            paidFees = 0;
-        } else {
-            warningEl.classList.add('d-none');
+        /* RULE 1: Total ≤ 200000 */
+        if (total > 200000) {
+            total = 200000;
+            $('#total_fees').val(200000);
+            $('#total_fee_warning').removeClass('d-none');
+            // alert('Total fees cannot exceed 200,000');
+        }else{
+            $('#total_fee_warning').addClass('d-none');
         }
-        let pending = totalFees - regFees - paidFees;
 
-        // Prevent negative value
+        /* RULE 2: Reg + Paid ≤ Total */
+        if ((reg + paid) > total) {
+            $('#fee_warning').removeClass('d-none');
+
+            if (changed === 'reg') {
+                $('#reg_fees').val(0);
+                reg = 0;
+            }
+
+            if (changed === 'paid') {
+                $('#paid_fees').val(0);
+                paid = 0;
+            }
+        } else {
+            $('#fee_warning').addClass('d-none');
+        }
+
+        /* RULE 3: Pending ALWAYS derived */
+        let pending = total - reg - paid;
         if (pending < 0) pending = 0;
 
-        document.getElementById('pending_fees').value = pending.toFixed(2);
+        $('#pending_fees').val(pending);
     }
 
-    document.getElementById('total_fees').addEventListener('input', calculatePendingFees);
-    document.getElementById('reg_fees').addEventListener('input', calculatePendingFees);
-    document.getElementById('paid_fees').addEventListener('input', calculatePendingFees);
+    /* EVENTS */
+    $('#total_fees').on('input', function () {
+        calculateFees();
+    });
 
-// function capitalizeWords(input) {
-//     let value = input.value.toLowerCase();
-//     input.value = value.replace(/\b\w/g, char => char.toUpperCase());
-// }
+    $('#reg_fees').on('input', function () {
+        calculateFees('reg');
+    });
 
+    $('#paid_fees').on('input', function () {
+        calculateFees('paid');
+    });
+
+});
+</script>
+
+<script>
+   
 function capitalizeWords(input) {
     const start = input.selectionStart;
     const end = input.selectionEnd;
@@ -482,8 +519,44 @@ function blockSunday(input, errorId) {
 blockSunday(document.getElementById('start_date'), 'start_error');
 blockSunday(document.getElementById('end_date'), 'end_error');
 // blockSunday(document.getElementById('join_date'), 'join_error');
+
+function toggleDueDate() {
+        let total = parseInt($('#total_fees').val()) || 0;
+        let reg   = parseInt($('#reg_fees').val()) || 0;
+        let paid  = parseInt($('#paid_fees').val()) || 0;
+
+        let pending = total - (reg + paid);
+
+        if (pending < 0) pending = 0;
+
+        $('#pending_fees').val(pending);
+
+        if (pending === 0) {
+            $('#pending_next_due_date').hide();
+        } else {
+            $('#pending_next_due_date').show();
+        }
+    }
+
+    // Run on page load (important for edit page)
+    toggleDueDate();
+
+    // Run whenever fees change
+    $('#total_fees, #reg_fees, #paid_fees').on('input', function () {
+        toggleDueDate();
+    });
+
+    function handleMrPrefix(input) {
+        const prefix = 'Mr. ';
+
+        // Remove any existing prefix
+        let value = input.value.replace(/^mr\.?\s*/i, '');
+
+        // Capitalize each word
+        value = value.replace(/\b\w/g, char => char.toUpperCase());
+
+        // Set final value
+        input.value = prefix + value;
+    }
 </script>
-
-
-
 @endpush

@@ -6,11 +6,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash; // <-- Import Hash
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class User extends Authenticatable
 {
     use SoftDeletes;
     use Notifiable;
+    use HasRoles;
     protected $table = 'users';
 
 
@@ -37,10 +40,16 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::make($password);
     }
 
-    public function roles()
+    // public function roles()
+    // {
+    //     return $this->belongsTo(Role::class, 'role','id');
+    // }
+
+    public function legacyRole()
     {
-        return $this->belongsTo(Role::class, 'role','id');
+        return $this->belongsTo(\App\Models\Role::class, 'role', 'id');
     }
+
 
     public function assignedLeads()
     {

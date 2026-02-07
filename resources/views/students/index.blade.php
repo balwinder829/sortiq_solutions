@@ -152,6 +152,63 @@
                 @endforeach
             </select>
         </div> -->
+
+        <div class="col-md-3 col-6">
+            <select name="fee_filter" class="form-control">
+                <option value="">-- Fee Related Filter --</option>
+
+                {{-- Fee Status --}}
+                <option value="completed"
+                    {{ request('fee_filter')=='completed' ? 'selected' : '' }}>
+                    Completed Fees (No Pending)
+                </option>
+
+                <option value="pending"
+                    {{ request('fee_filter')=='pending' ? 'selected' : '' }}>
+                    Pending Fees Only
+                </option>
+
+                {{-- Sorting --}}
+                <option value="pending_high"
+                    {{ request('fee_filter')=='pending_high' ? 'selected' : '' }}>
+                    Pending Fees: High → Low
+                </option>
+
+                <option value="pending_low"
+                    {{ request('fee_filter')=='pending_low' ? 'selected' : '' }}>
+                    Pending Fees: Low → High
+                </option>
+
+                <option value="fees_high"
+                    {{ request('fee_filter')=='fees_high' ? 'selected' : '' }}>
+                    Total Fees: High → Low
+                </option>
+
+                <option value="fees_low"
+                    {{ request('fee_filter')=='fees_low' ? 'selected' : '' }}>
+                    Total Fees: Low → High
+                </option>
+            </select>
+        </div>
+
+
+        <div class="col-md-2 col-12">
+            <select name="gender" class="form-control">
+                <option value="">--Gender--</option>
+
+                <option value="male"
+                    {{ request('gender') == 'male' ? 'selected' : '' }}>
+                    Male
+                </option>
+
+                <option value="female"
+                    {{ request('gender') == 'female' ? 'selected' : '' }}>
+                    Female
+                </option>
+            </select>
+        </div>
+
+
         <div class="col-md-1 col-12">
             <input type="number"
            name="limit"
@@ -163,13 +220,13 @@
            oninput="this.value = this.value.replace(/\D/g, '')">
        </div>
 
-        <div class="col-md-3">
+        <!-- <div class="col-md-3">
             <div class="form-check d-flex align-items-center">
                 <input type="checkbox" class="form-check-input me-2" name="pending_fees" id="pending_fees" value="1" 
                 {{ request('pending_fees') == 1 ? 'checked' : '' }}>
                 <label class="form-check-label" for="pending_fees">Pending Fee Only</label>
             </div>
-        </div>
+        </div> -->
     </div>
 	{{-- Buttons --}}
 	<div class="mt-2 tble-bts">
@@ -314,7 +371,7 @@
 
 
         {{-- Edit --}}
-        <a href="{{ route('students.edit',$student->id) }}" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Student">
+        <a href="{{ route('students.edit',$student->id) }}" class="btn btn-sm edit_btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Student">
             <i class="fa fa-edit"></i>
         </a>
 
@@ -700,10 +757,23 @@ $(document).ready(function () {
         let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
         $(this).find('.isInternshipHiddenSingle').val(isInternship);
     });
+var savedPage = sessionStorage.getItem('students_confirmation_page');
+
+var pageLength = 10;
+$.fn.dataTable.ext.pager.numbers_length = 12;
+// Reset page index on search submit
+$('form[action*="students"]').on('submit', function () {
+    sessionStorage.removeItem('students_confirmation_page');
+});
+$('a[href="{{ route('students.index') }}"]').on('click', function () {
+    sessionStorage.removeItem('students_confirmation_page');
+});
 
     
     var table = $('#studentsTable').DataTable({
-        "pageLength": 10,
+        "pageLength": pageLength,
+        "displayStart": savedPage ? (savedPage * pageLength) : 0,
+        'pagingType': "full_numbers", 
         "lengthMenu": [10,15,20, 25, 50, 100],
         "scrollX": true,
         "rowCallback": function(row, data) {
@@ -727,7 +797,16 @@ $(document).ready(function () {
 
     });
 
-    
+     // ✅ Save page whenever page changes
+    table.on('page.dt', function () {
+        sessionStorage.setItem(
+            'students_confirmation_page',
+            table.page()
+        );
+    });
+
+
+
     $('#checkAll').on('change', function () {
         const checked = this.checked;
 
@@ -959,6 +1038,28 @@ $(document).ready(function () {
             $('#copyStudentsModal').modal('show');
         });
 
+        // $('.edit_btn').on('click', function () {
+            
+        //     console.log('Edit clicked');
+        //     let table = $('#studentsTable').DataTable();
+        //     let page = table.page(); // zero-based index
+        //     sessionStorage.setItem('students_datatable_page', page);
+        // });
+
+        // $('.edit_btn').on('click', function (e) {
+
+        //     let table = $('#studentsTable').DataTable();
+        //     let page = table.page(); // zero-based
+        //     alert(page);
+        //     let url = $(this).attr('href');
+
+        //     // append ?page_index=#
+        //     $(this).attr('href', url + '?datatable_page=' + page);
+        // });
+
+
 });
 </script>
+ 
+
 @endpush

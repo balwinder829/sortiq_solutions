@@ -96,4 +96,16 @@ class Student extends Model
         return $this->belongsTo(Enquiry::class, 'enquiry_id');
     }
 
+    public function getFatherNameWithTitleAttribute()
+    {
+        $name = trim($this->f_name);
+
+        if (!preg_match('/^mr\.?/i', $name)) {
+            $name = 'Mr. ' . $name;
+        }
+
+        return ucwords($name);
+    }
+
+
 }

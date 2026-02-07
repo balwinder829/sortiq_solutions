@@ -1,65 +1,66 @@
 <?php
 
-// app/Http/Controllers/Admin/ManagerPermissionController.php
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\User;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
-use App\Models\Permission;
-use App\Models\RolePermission;
 
 class ManagerPermissionController extends Controller
 {
-    private int $managerRole = 4;
+    // Show page
+  public function index(Request $request)
+{
+    $managers = User::role('Manager')->get();
+    // $permissions = Permission::all();
 
-    /**
-     * Show permission assignment page
-     */
-    public function edit()
-    {
-        // $permissions = Permission::orderBy('label')->get();
+    $permissions = Permission::orderBy('name')->get()
+    ->groupBy(function ($permission) {
+        return explode('.', $permission->name)[0]; // students.view → students
+    });
+    
 
-        // $assignedPermissions = RolePermission::where('role', $this->managerRole)
-        //     ->pluck('permission_id')
-        //     ->toArray();
+    $selectedUser = null;
 
+    if ($request->filled('user_id')) {
+        $user = User::find($request->user_id);
 
-
-        $permissions = Permission::orderBy('name')->get()
-            ->groupBy(function ($perm) {
-                return explode('.', $perm->name)[0]; // students, enquiries, analytics
-            });
-
-        $assignedPermissions = RolePermission::where('role', 4)
-            ->pluck('permission_id')
-            ->toArray();
-
-        return view('roles.manager-permissions', compact(
-            'permissions',
-            'assignedPermissions'
-        ));
+        // ✅ HARD SAFETY CHECK
+        if ($user && $user->hasRole('Manager')) {
+            $selectedUser = $user;
+        }
     }
 
-    /**
-     * Save permissions for manager role
-     */
-    public function update(Request $request)
+    return view(
+        'roles.manager-permissions',
+        compact('managers', 'permissions', 'selectedUser')
+    );
+}
+
+
+
+
+    public function edit()
     {
-        $permissionIds = $request->input('permissions', []);
+        $managers = User::role('Manager')->get();   // Spatie helper
+        $permissions = Permission::all();
+        // dd($managers, $permissions);
+        return view('roles.manager-permissions', compact('managers', 'permissions'));
+    }
 
-        // Remove old permissions
-        RolePermission::where('role', $this->managerRole)->delete();
+    // Save permissions
+    public function store(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'permissions' => 'array',
+        ]);
 
-        // Assign new permissions
-        foreach ($permissionIds as $permissionId) {
-            RolePermission::create([
-                'role' => $this->managerRole,
-                'permission_id' => $permissionId,
-            ]);
-        }
+        $user = User::findOrFail($request->user_id);
 
-        return redirect()
-            ->route('admin.manager.permissions.edit')
-            ->with('success', 'Manager permissions updated successfully.');
+        // IMPORTANT: overwrite user-specific permissions
+        $user->syncPermissions($request->permissions ?? []);
+
+        return back()->with('success', 'Permissions updated successfully');
     }
 }

@@ -14,6 +14,8 @@ class Batch extends Model
 
     protected $table = 'batches';
 
+    // protected $appends = ['trainer_name'];
+
     protected $casts = [
         'session_name' => 'integer',
     ];
@@ -42,6 +44,11 @@ class Batch extends Model
     {
         return $this->belongsTo(Trainer::class, 'batch_assign', 'id');
     }
+
+    // public function getTrainerNameAttribute()
+    // {
+    //     return $this->trainerData?->name ?? 'Not Assigned';
+    // }
 
     public function sessionData()
     {

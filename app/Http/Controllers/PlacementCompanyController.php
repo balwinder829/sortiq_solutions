@@ -9,7 +9,47 @@ use App\Imports\PlacementCompanyImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\View;
 class PlacementCompanyController extends Controller
-{
+{   
+    protected string $permissionPrefix = 'placement_companies';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'download'         => 'view',
+        'sendEmail'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        'import'      => 'import',
+        'importForm'      => 'import',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
+
     public function index()
     {
         $companies = PlacementCompany::orderBy('name')->get();

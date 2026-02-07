@@ -21,10 +21,146 @@ use App\Exports\EnquiriesExport;
 
 class EnquiryController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
+     protected array $permissionMap = [
+    'index' => [
+        'types'  => ['enquiries'],
+        'action' => 'view',
+    ],
+
+    'show' => [
+        'types'  => ['enquiries'],
+        'action' => 'view',
+    ],
+
+    'dashboard' => [
+        'types'  => ['enquiries'],
+        'action' => 'view',
+    ],
+
+    'create' => [
+        'types'  => ['enquiries'],
+        'action' => 'create',
+    ],
+
+    'store' => [
+        'types'  => ['enquiries'],
+        'action' => 'create',
+    ],
+
+    'edit' => [
+        'types'  => ['enquiries'],
+        'action' => 'edit',
+    ],
+
+    'assign' => [
+        'types'  => ['enquiries'],
+        'action' => 'edit',
+    ],
+
+    'convert' => [
+        'types'  => ['enquiries'],
+        'action' => 'edit',
+    ],
+
+    'update' => [
+        'types'  => ['enquiries'],
+        'action' => 'edit',
+    ],
+
+    'import' => [
+        'types'  => ['enquiries'],
+        'action' => 'import',
+    ],
+
+
+    'salespersonShow' => [
+        'types'  => ['salespersons'],
+        'action' => 'view',
+    ],
+
+    'salespersons' => [
+        'types'  => ['salespersons'], // ❗ only blocked allowed
+        'action' => 'view',
+    ],
+
+    'callDashboard' => [
+        'types'  => ['calls'], // ❗ only certificate allowed
+        'action' => 'view',
+    ],
+
+    'registeredIndex' => [
+        'types'  => ['registrations'],
+        'action' => 'view',
+    ],
+
+    'convertToStudent' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'edit',
+    ],
+
+    'bulkConvert' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'edit',
+    ],
+
+    'exportAll' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'view',
+    ],
+
+    'export' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'view',
+    ],
+
+    'exportPending' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'view',
+    ],
+];
+
+public function __construct()
+{
+    $this->middleware('auth');
+
+    foreach ($this->permissionMap as $method => $config) {
+
+        $permissions = collect($config['types'] ?? [])
+            ->map(fn ($type) => "{$type}.{$config['action']}")
+            ->toArray();
+
+        if (empty($permissions)) {
+            continue;
+        }
+
+        $this->middleware(function ($request, $next) use ($permissions) {
+            abort_unless(
+                auth()->user()?->canAny($permissions),
+                403
+            );
+
+            return $next($request);
+        })->only($method);
     }
+}
+
+
+// public function __construct()
+// {
+//     $this->middleware('auth');
+
+//     foreach ($this->permissionMap as $method => $config) {
+
+//         $permissions = collect($config['types'])
+//             ->map(fn ($type) => "{$type}.{$config['action']}")
+//             ->implode('|'); // OR logic
+
+//         $this->middleware("permission:{$permissions}")
+//              ->only($method);
+//     }
+// }
+
+     
 
     // LIST WITH FILTER
     // LIST WITH FILTER (ADMIN INDEX)
@@ -95,64 +231,64 @@ public function index(Request $request)
         ]);
     }
 
+        // =========================
+    // QUICK DATE FILTER
     // =========================
-// QUICK DATE FILTER
-// =========================
-    if ($request->filled('quick_date')) {
+        if ($request->filled('quick_date')) {
 
-        switch ($request->quick_date) {
-            case 'today':
-                $query->whereDate('created_at', today());
-                break;
+            switch ($request->quick_date) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
 
-            case 'yesterday':
-                $query->whereDate('created_at', today()->subDay());
-                break;
+                case 'yesterday':
+                    $query->whereDate('created_at', today()->subDay());
+                    break;
 
-            case 'last7':
-                $query->whereBetween('created_at', [
-                    now()->subDays(7)->startOfDay(),
-                    now()->endOfDay()
-                ]);
-                break;
+                case 'last7':
+                    $query->whereBetween('created_at', [
+                        now()->subDays(7)->startOfDay(),
+                        now()->endOfDay()
+                    ]);
+                    break;
 
-            case 'this_month':
-                $query->whereMonth('created_at', now()->month)
-                      ->whereYear('created_at', now()->year);
-                break;
+                case 'this_month':
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year);
+                    break;
 
-            case 'last_month':
-                $query->whereMonth('created_at', now()->subMonth()->month)
-                      ->whereYear('created_at', now()->subMonth()->year);
-                break;
+                case 'last_month':
+                    $query->whereMonth('created_at', now()->subMonth()->month)
+                          ->whereYear('created_at', now()->subMonth()->year);
+                    break;
+            }
+
         }
+        // ===============================
+        // FOLLOW-UP FILTERS (SNAPSHOT)
+        // ===============================
+        if ($request->filled('followup_filter')) {
 
-    }
-// ===============================
-// FOLLOW-UP FILTERS (SNAPSHOT)
-// ===============================
-if ($request->filled('followup_filter')) {
+            switch ($request->followup_filter) {
 
-    switch ($request->followup_filter) {
+                case 'today':
+                    $query->whereDate('next_followup_at', today());
+                    break;
 
-        case 'today':
-            $query->whereDate('next_followup_at', today());
-            break;
+                case 'overdue':
+                    $query->whereNotNull('next_followup_at')
+                          ->where('next_followup_at', '<', now());
+                    break;
 
-        case 'overdue':
-            $query->whereNotNull('next_followup_at')
-                  ->where('next_followup_at', '<', now());
-            break;
+                case 'upcoming':
+                    $query->whereDate('next_followup_at', '>', today());
+                    break;
 
-        case 'upcoming':
-            $query->whereDate('next_followup_at', '>', today());
-            break;
-
-        case 'none':
-            $query->whereNull('next_followup_at');
-            break;
-    }
-}
+                case 'none':
+                    $query->whereNull('next_followup_at');
+                    break;
+            }
+        }
 
 
     // =========================
@@ -179,39 +315,7 @@ if ($request->filled('followup_filter')) {
     ));
 }
 
-    public function index17dec(Request $request)
-    {
-        $query = Enquiry::query();
-
-        if (!auth()->user()->isAdmin()) {
-            $query->where('assigned_to', auth()->id());
-        }
-
-        if ($request->filled('college')) {
-            $query->where('college', $request->college);
-        }
-
-        if ($request->filled('study')) {
-            $query->where('study', $request->study);
-        }
-
-        if ($request->filled('semester')) {
-            $query->where('semester', $request->semester);
-        }
-
-        if ($request->filled('alpha')) {
-            $query->orderBy('name', 'asc');
-        } else {
-            $query->latest();
-        }
-
-        $enquiries = $query->paginate(20);
-        $sales = User::where('role', 3)->get();
-        $colleges = College::all();
-
-        return view('enquiries.index', compact('enquiries', 'sales', 'colleges'));
-    }
-
+    
     // ADD MANUALLY
     public function create()
     {
@@ -800,7 +904,7 @@ public function salespersons(Request $request)
 public function pendingFollowups(Request $request)
 {
     if (!auth()->user()->isAdmin()) {
-        abort(403);
+        // abort(403);
     }
 
     $query = Enquiry::whereNotNull('assigned_to');
@@ -857,7 +961,7 @@ public function pendingFollowups(Request $request)
 public function callDashboard(Request $request)
 {
     if (!auth()->user()->isAdmin()) {
-        abort(403);
+        // abort(403);
     }
 
     // ======================

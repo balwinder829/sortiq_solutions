@@ -99,7 +99,7 @@
                 <ul class="navbar-nav header-right">
 
                     {{-- 🔥 SESSION SWITCHER (ROLE = 1 ONLY) --}}
-                    @if(Auth::check() && Auth::user()->role == 1)
+                    @if(Auth::check() && (Auth::user()->role == 1|| Auth::user()->role == 4 ))
                        @if(isset($sessions) && count($sessions) > 0)
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"

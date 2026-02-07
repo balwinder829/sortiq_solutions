@@ -134,6 +134,22 @@
             </select>
         </div>
 
+         <div class="col-md-2 col-12">
+            <select name="gender" class="form-control">
+                <option value="">--Gender--</option>
+
+                <option value="male"
+                    {{ request('gender') == 'male' ? 'selected' : '' }}>
+                    Male
+                </option>
+
+                <option value="female"
+                    {{ request('gender') == 'female' ? 'selected' : '' }}>
+                    Female
+                </option>
+            </select>
+        </div>
+
         {{-- Department --}}
       <!--   <div class="col-md-2">
             <select name="department" class="form-control" id="txtdepartment">
@@ -276,11 +292,26 @@
 <script>
 $(document).ready(function () {
     // Initialize DataTable
+    var savedPage = sessionStorage.getItem('students_closed_page');
+
+    var pageLength = 10;
+    $.fn.dataTable.ext.pager.numbers_length = 12;
     var table = $('#certificatesTable').DataTable({
-        "pageLength": 10,
+        "pageLength": pageLength,
+        "displayStart": savedPage ? (savedPage * pageLength) : 0,
+        'pagingType': "full_numbers", 
         "lengthMenu": [5, 10, 25, 50, 100],
         "scrollX": true
     });
+
+     // ✅ Save page whenever page changes
+    table.on('page.dt', function () {
+        sessionStorage.setItem(
+            'students_closed_page',
+            table.page()
+        );
+    });
+
 
     // Check/uncheck all
     $('#checkAll').click(function(){

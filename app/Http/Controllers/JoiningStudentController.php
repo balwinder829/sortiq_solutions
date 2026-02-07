@@ -12,6 +12,38 @@ use Mail;
 
 class JoiningStudentController extends Controller
 {
+    protected string $permissionPrefix = 'joined_students';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'adminUrl'         => 'view',
+      
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
+
     // Frontend form
     public function create()
     {

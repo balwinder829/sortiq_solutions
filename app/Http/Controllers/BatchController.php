@@ -10,25 +10,60 @@ use App\Models\Course;
 use App\Models\Duration;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+
 
 class BatchController extends Controller
 {
-    // public function index()
-    // {
-    //     $currentSession = session('admin_session_id');
-    //     // dd( $currentSession);
-    //     // $batches = Batch::latest()->paginate(10);
-    //     $batches = Batch::with(['trainerData.user'])->withCount('students')->where('session_name', $currentSession)->latest()->get();
 
-    //     return view('batches.index', compact('batches'));
-    // }
+    protected string $permissionPrefix = 'batches';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
 
     public function index(Request $request)
 {
     $currentSession = session('admin_session_id');
 
-    $query = Batch::with(['trainerData.user', 'courseData', 'durationData'])
-        ->withCount('students')
+    // $query = Batch::with(['trainerData', 'courseData', 'durationData'])
+    //     ->withCount('students')
+    //     ->where('session_name', $currentSession)
+    //     ->latest();
+
+    $query = Batch::with(['trainerData', 'courseData', 'durationData'])
+        ->withCount([
+            'students as students_count' => function ($q) use ($currentSession) {
+                $q->where('session', $currentSession);
+            }
+        ])
         ->where('session_name', $currentSession)
         ->latest();
 
@@ -47,16 +82,37 @@ class BatchController extends Controller
         $query->where('status', $request->status);
     }
 
+    // Start time filter
+    if ($request->filled('start_time')) {
+        $startTime = Carbon::createFromFormat('g:i A', $request->start_time)
+                       ->format('H:i:s');
+
+        $query->whereTime('start_time', '>=', $startTime);
+
+        // $query->whereTime('start_time', '>=', $request->start_time);
+    }
+
+    // End time filter
+    if ($request->filled('end_time')) {
+         $endTime = Carbon::createFromFormat('g:i A', $request->end_time)
+                     ->format('H:i:s');
+
+        $query->whereTime('end_time', '<=', $endTime);
+        // $query->whereTime('end_time', '<=', $request->end_time);
+    }
+
     // Mode filter
     if ($request->mode) {
         $query->where('batch_mode', $request->mode);
     }
 
     $batches  = $query->get();
-    $trainers = Trainer::with('user')->get();
+    // $trainers = Trainer::with('user')->get();
+    $trainers = Trainer::where('status', 'active')->orderBy('name', 'asc')->get();
     // dd($trainers->user);
     
-    $courses  = Course::all();
+    // $courses  = Course::all();
+    $courses = Course::orderBy('course_name', 'asc')->get();
 
     return view('batches.index', compact('batches','trainers','courses'));
 }
@@ -66,21 +122,30 @@ class BatchController extends Controller
     {
         // $sessions = StudentSession::all(); // get all session_start values
         $sessionsData = StudentSession::where('status', 'active')->get();
+        $trainers = Trainer::where('status', 'active')->orderBy('name', 'asc')->get();
+
          
-        $trainers = Trainer::with('activeUser')->whereHas('activeUser')->get();
+        // $trainers = Trainer::with('activeUser')->whereHas('activeUser')->get();
         
-        $courses = Course::get();
+        $courses = Course::orderBy('course_name', 'asc')->get();
         $course_duration = Duration::all();
         return view('batches.create', compact('sessionsData', 'trainers', 'courses','course_duration'));
     }
 
     public function store(Request $request)
     {
+        $request->merge([
+            'start_time' => strtoupper(trim($request->start_time)),
+            'end_time'   => strtoupper(trim($request->end_time)),
+        ]);
         $request->validate([
             'batch_name'   => 'required|string|max:255',
             'session_name' => 'required|string|max:255', // now store session_start directly
-            'start_time'   => 'required',
-            'end_time'     => 'required|after:start_time',
+            // 'start_time'   => 'required',
+            // 'end_time'     => 'required|after:start_time',
+            'start_time' => 'required|date_format:g:i A',
+            'end_time'   => 'required|date_format:g:i A',
+
             'batch_assign' => 'required|max:255',
             // 'class_assign' => 'required|max:255',
             'class_assign'   => 'required|array',
@@ -91,11 +156,25 @@ class BatchController extends Controller
             'status'       => 'required|in:active,inactive,completed,cancelled',
         ]);
 
+         // Convert to Carbon
+        $startTime = Carbon::createFromFormat('g:i A', $request->start_time);
+        $endTime   = Carbon::createFromFormat('g:i A', $request->end_time);
+
+        // Ensure start_time < end_time
+        if ($endTime->lessThanOrEqualTo($startTime)) {
+            return back()
+                ->withErrors(['end_time' => 'End time must be greater than start time'])
+                ->withInput();
+        }
+
+
         $batch = Batch::create([
             'batch_name'   => $request->batch_name,
             'session_name' => $request->session_name, // directly from form
-            'start_time'   => $request->start_time,
-            'end_time'     => $request->end_time,
+            // 'start_time'   => $request->start_time,
+            // 'end_time'     => $request->end_time,
+             'start_time'   => $startTime->format('H:i:s'),
+            'end_time'     => $endTime->format('H:i:s'),
             'department'   => $request->department,
             'batch_assign' => $request->batch_assign,
             // 'class_assign' => $request->class_assign,
@@ -106,15 +185,24 @@ class BatchController extends Controller
         ]);
 
 
-        $trainer = Trainer::with('activeUser')->find($request->batch_assign);
+         // ✅ NOTIFY TRAINER (NEW WAY)
+            $trainer = Trainer::find($request->batch_assign);
 
-        if ($trainer && $trainer->activeUser) {
-            $trainerUser = $trainer->activeUser;
+            if ($trainer) {
+                $trainer->notify(
+                     new \App\Notifications\TrainerBatchAssignedNotification($batch)
+                );
+            }
 
-            $trainerUser->notify(
-                new \App\Notifications\TrainerBatchAssignedNotification($batch)
-            );
-        }
+        // $trainer = Trainer::with('activeUser')->find($request->batch_assign);
+
+        // if ($trainer && $trainer->activeUser) {
+        //     $trainerUser = $trainer->activeUser;
+
+        //     $trainerUser->notify(
+        //         new \App\Notifications\TrainerBatchAssignedNotification($batch)
+        //     );
+        // }
         return redirect()->route('batches.index')->with('success', 'Batch created successfully.');
     }
 
@@ -124,7 +212,8 @@ class BatchController extends Controller
         $sessionsData = StudentSession::where('status', 'active')->get();
         //$technologies = Trainer::select('technology')->distinct()->get();
         // $trainers = Trainer::get();
-        $trainers = Trainer::with('activeUser')->whereHas('activeUser')->get();
+        // $trainers = Trainer::with('activeUser')->whereHas('activeUser')->get();
+        $trainers = Trainer::where('status', 'active')->orderBy('name', 'asc')->get();
         // dd($trainers);
         $courses = Course::get();
         $course_duration = Duration::all();
@@ -134,9 +223,10 @@ class BatchController extends Controller
 
     public function show(Batch $batch)
     {
+        // dd($batch);
         // Load related data
         $batch->load([
-            'trainerData.user',         // trainer name
+            'trainerData',         // trainer name
             'courseData',               // technology
             'sessionData',              // session info
             'students',                 // batch students
@@ -148,11 +238,19 @@ class BatchController extends Controller
 
     public function update(Request $request, Batch $batch)
 {
+    $request->merge([
+        'start_time' => strtoupper(trim($request->start_time)),
+        'end_time'   => strtoupper(trim($request->end_time)),
+    ]);
+
     $request->validate([
         'batch_name'   => 'required|string|max:255',
         'session_name' => 'required|string',
-        'start_time'   => 'required',
-        'end_time'     => 'required|after:start_time',
+        // 'start_time'   => 'required',
+        // 'end_time'     => 'required|after:start_time',
+
+        'start_time' => 'required|date_format:g:i A',
+        'end_time'   => 'required|date_format:g:i A',
         'batch_assign' => 'required|max:255',
 
         // 🔵 MULTIPLE TECHNOLOGY VALIDATION
@@ -169,6 +267,15 @@ class BatchController extends Controller
         'class_assign.*.exists'   => 'One of the selected technologies is invalid.',
     ]);
 
+    $startTime = Carbon::createFromFormat('g:i A', $request->start_time);
+    $endTime   = Carbon::createFromFormat('g:i A', $request->end_time);
+
+    if ($endTime->lessThanOrEqualTo($startTime)) {
+        return back()
+            ->withErrors(['end_time' => 'End time must be greater than start time'])
+            ->withInput();
+    }
+
     // OLD trainer_id from trainer table
     $oldTrainerId = $batch->batch_assign;
 
@@ -176,8 +283,10 @@ class BatchController extends Controller
     $batch->update([
         'batch_name'   => $request->batch_name,
         'session_name' => $request->session_name,
-        'start_time'   => $request->start_time,
-        'end_time'     => $request->end_time,
+        // 'start_time'   => $request->start_time,
+        // 'end_time'     => $request->end_time,
+         'start_time' => $startTime->format('H:i:s'),
+        'end_time'   => $endTime->format('H:i:s'),
         'department'   => $request->department,
         'batch_assign' => $request->batch_assign,
 
@@ -194,72 +303,31 @@ class BatchController extends Controller
     // ======================================
     if ($oldTrainerId != $request->batch_assign) {
 
-        $trainer = Trainer::with('activeUser')->find($request->batch_assign);
+        // $trainer = Trainer::with('activeUser')->find($request->batch_assign);
 
-        if ($trainer && $trainer->activeUser) {
-            $trainerUser = $trainer->activeUser;
+        // if ($trainer && $trainer->activeUser) {
+        //     $trainerUser = $trainer->activeUser;
 
-            $trainerUser->notify(
-                new \App\Notifications\TrainerBatchAssignedNotification($batch)
-            );
-        }
+        //     $trainerUser->notify(
+        //         new \App\Notifications\TrainerBatchAssignedNotification($batch)
+        //     );
+        // }
+
+        // ✅ NOTIFY TRAINER (NEW WAY)
+            $trainer = Trainer::find($request->batch_assign);
+
+            if ($trainer) {
+                $trainer->notify(
+                    new \App\Notifications\TrainerBatchAssignedNotification($batch)
+                );
+            }
     }
 
     return redirect()->route('batches.index')
         ->with('success', 'Batch updated successfully.');
 }
 
-    public function oldupdate(Request $request, Batch $batch)
-    {
-        $request->validate([
-            'batch_name'   => 'required|string|max:255',
-            'session_name' => 'required|string', // store session_start directly
-            'start_time'   => 'required',
-            'end_time'     => 'required|after:start_time',
-            // 'department'   => 'required|string|max:255',
-            'batch_assign' => 'required|max:255',
-            'class_assign' => 'required|max:255',
-             'batch_mode'     => 'required|max:255',
-            'duration'     => 'required|string|max:255',
-            'status'       => 'required|in:active,inactive,completed,cancelled',
-        ]);
-
-        // OLD trainer_id from trainer table
-        $oldTrainerId = $batch->batch_assign;
-
-        $batch->update([
-            'batch_name'   => $request->batch_name,
-            'session_name' => $request->session_name, // directly from form
-            'start_time'   => $request->start_time,
-            'end_time'     => $request->end_time,
-            'department'   => $request->department,
-            'batch_assign' => $request->batch_assign,
-            'class_assign' => $request->class_assign,
-            'batch_mode' => $request->batch_mode,
-            'duration'     => $request->duration,
-            'status'     => $request->status,
-        ]);
-
-        // ======================================
-    // SEND NOTIFICATION *ONLY* IF TRAINER CHANGED
-    // ======================================
-    if ($oldTrainerId != $request->batch_assign) {
-
-        // Find trainer from trainer table
-        $trainer = Trainer::with('activeUser')->find($request->batch_assign);
-
-        // Trainer must exist AND have a related user
-        if ($trainer && $trainer->activeUser) {
-            $trainerUser = $trainer->activeUser; // User Model
-
-            // Notify the trainer's USER ACCOUNT
-            $trainerUser->notify(
-                new \App\Notifications\TrainerBatchAssignedNotification($batch)
-            );
-        }
-    }
-        return redirect()->route('batches.index')->with('success', 'Batch updated successfully.');
-    }
+     
 
     public function destroy($id)
     {
@@ -295,6 +363,23 @@ class BatchController extends Controller
     }
 
     public function MyBatches()
+    {
+        // ✅ Get logged-in trainer
+        $trainer = Auth::guard('trainer')->user();
+
+        if (!$trainer) {
+            abort(403, 'Unauthorized');
+        }
+
+        // ✅ Fetch batches assigned to this trainer
+        $batches = Batch::with(['students.collegeData', 'courseData'])
+            ->where('batch_assign', $trainer->id)
+            ->get();
+
+        return view('trainers.trainer_index', compact('batches'));
+    }
+
+    public function MyBatches27jan()
     {
         $user = auth()->user();
 

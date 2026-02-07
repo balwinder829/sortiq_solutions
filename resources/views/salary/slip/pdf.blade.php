@@ -119,7 +119,7 @@
 							<strong>A/C NO.</strong>
 						</td>
 						<td width="25%" style="font-size: 14px; line-height: 14px; padding: 5px; font-family: 'Inter', sans-serif; border: 1px solid #d1d1d1; padding-left: 10px; padding-right: 10px;">
-							{{ $salary->account_number }}
+							{{ ($salary->account_number == 0 || empty($salary->account_number)) ? '-' : $salary->account_number }}
 						</td>
 					</tr>
 				</tbody>

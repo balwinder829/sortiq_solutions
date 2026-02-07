@@ -26,6 +26,41 @@ use Illuminate\Support\Str;
 
 class CertificateController extends Controller
 {
+
+    protected string $permissionPrefix = 'certificates';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
 // Show all students
 public function index(Request $request)
 {   
@@ -91,7 +126,44 @@ public function index(Request $request)
         if ($request->filled('department')) {
             $query->where('department', $request->department);
         }
+
+        if ($request->filled('fee_filter')) {
+                switch ($request->fee_filter) {
+
+                    case 'completed':
+                        $query->where('pending_fees', 0);
+                        break;
+
+                    case 'pending':
+                        $query->where('pending_fees', '>', 0);
+                        break;
+
+                    case 'pending_high':
+                        $query->where('pending_fees', '>', 0)
+                              ->orderBy('pending_fees', 'desc');
+                        break;
+
+                    case 'pending_low':
+                        $query->where('pending_fees', '>', 0)
+                              ->orderBy('pending_fees', 'asc');
+                        break;
+
+                    case 'fees_high':
+                        $query->orderBy('total_fees', 'desc');
+                        break;
+
+                    case 'fees_low':
+                        $query->orderBy('total_fees', 'asc');
+                        break;
+                }
+            }
+
+            if ($request->filled('gender')) {
+                $query->where('gender', $request->gender);
+            }
+         
         $query->whereIn('certificate_status', [1, 2]);
+
     }
 
     // Always filter students with 0.00 pending fees
@@ -120,9 +192,13 @@ public function index(Request $request)
     //              });
     //       });
     // });
+if (!$request->filled('fee_filter')) {
+        $query->orderBy('id', 'desc');
+    }
 
+    $students = $query->get();
 
-    $students    = $query->latest()->get();
+    // $students    = $query->latest()->get();
     $sessions    = StudentSession::all();
     $colleges    = \App\Models\College::all();
     $courses     = \App\Models\Course::all();
@@ -158,7 +234,9 @@ public function index(Request $request)
 
     // Show a single student (for view/edit)
     public function edit(Student $student)
-    {
+    {   
+        $activeSessionId = session('admin_session_id');
+        $activeSession = StudentSession::find($activeSessionId);
         $sessions = StudentSession::all();
         $colleges    = College::orderBy('college_display_name', 'asc')->get();
         $courses     = Course::orderBy('course_name', 'asc')->get();
@@ -169,7 +247,7 @@ public function index(Request $request)
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
 
-        return view('certificates.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status'));
+        return view('certificates.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status','activeSession'));
         // return view('certificates.edit', compact('student'));
     }
 
@@ -223,6 +301,7 @@ public function index(Request $request)
         if (!empty($validates['contact'])) {
             $contactExists = Student::withTrashed()
                 ->where('student_name', $validates['student_name'])
+                ->where('f_name', $validates['f_name'])
                 ->where('contact', $validates['contact'])
                 ->where('session', $activeSessionId)
                 ->where('id', '!=', $student->id) // 👈 ignore current record

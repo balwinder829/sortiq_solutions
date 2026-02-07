@@ -43,7 +43,7 @@
 
                     {{-- Amount --}}
                     <div class="form-group col-md-6">
-                        <label>Amount</label>
+                        <label>Bill Amount</label>
                         <input type="number"
                                step="0.01"
                                name="amount"
@@ -56,11 +56,25 @@
                         @enderror
                     </div>
 
+                    <div class="form-group col-md-6">
+                        <label>Total Units</label>
+                        <input type="text"
+                               name="total_units"
+                               required 
+                               value="{{ old('total_units') }}"
+                               class="form-control @error('total_units') is-invalid @enderror">
+
+                        @error('total_units')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- Image --}}
                     <div class="form-group col-md-6">
-                        <label>Image</label>
+                        <label>Photo</label>
                         <input type="file"
                                name="image" 
+                               required 
                                class="form-control @error('image') is-invalid @enderror">
 
                         @error('image')

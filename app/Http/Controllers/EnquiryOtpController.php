@@ -10,7 +10,45 @@ class EnquiryOtpController extends Controller
     /**
      * Send / Resend OTP
      */
+
     public function sendOtp(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        // Generate OTP
+        $otp = rand(100000, 999999);
+
+        // Expiry (2 minutes)
+        $expiresAt = now()->addMinutes(2)->timestamp;
+
+        // Store in session
+        session([
+            'enquiry_otp_code'       => $otp,
+            'enquiry_otp_expires_at' => $expiresAt,
+        ]);
+
+        // Send mail
+        Mail::raw("Your admin verification OTP is: $otp", function ($msg) use ($user) {
+            $msg->to($user->email)
+                ->subject('Admin Access OTP');
+        });
+
+        return response()->json([
+            'status'      => 'sent',
+            'expires_at'  => $expiresAt, // 🔥 IMPORTANT for timer
+            'expires_in'  => 120
+        ]);
+    }
+
+
+    public function sendOtpold(Request $request)
     {
         $user = auth()->user();
 

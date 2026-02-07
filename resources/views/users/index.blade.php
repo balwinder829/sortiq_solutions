@@ -22,6 +22,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Name</th>
                 <th>Username</th>
                 <th>Role</th>
                 <th>Status</th> <!-- Active / Inactive / Deleted -->
@@ -36,6 +37,7 @@
 
                 <!-- ID -->
                 <td>{{ $user->id }}</td>
+                <td>{{ ucwords($user->name) }}</td>
 
                 <!-- Username -->
                 <td>
@@ -47,7 +49,10 @@
                 </td>
 
                 <!-- Role -->
-                <td>{{ $user->roles->name }}</td>
+                <td>
+    {{ $user->getRoleNames()->implode(', ') ?:  $user->legacyRole->name }}
+</td>
+
 
                 <!-- Status Column (Active / Inactive / Deleted) -->
                 <td>
@@ -69,7 +74,7 @@
                     @if(!$user->trashed())
 
                     @if($user->role == 4 && auth()->user()->role == 1)
-                        <a href="{{ route('admin.manager.permissions.edit') }}"
+                        <a href="{{ route('admin.manager.permissions.edit', ['user_id' => $user->id]) }}"
                            class="btn btn-sm btn-outline-primary"
                            data-bs-toggle="tooltip"
                            title="Manage Manager Permissions">

@@ -17,24 +17,68 @@
 
 
     <form method="POST" action="{{ route('trainers.update', $trainer->id) }}">
+        <div class="row">
         @csrf
         @method('PUT')
 
+         {{-- Trainer Name --}}
+        <div class="form-group col-md-6">
+            <label>UserName</label>
+            <input type="text" 
+                   name="name" 
+                   class="form-control @error('name') is-invalid @enderror"
+                   value="{{ old('name', $trainer->username ?? '') }}"
+                   readonly>
+            @error('name')
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
         {{-- Trainer Name --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Full Name</label>
             <input type="text" 
-                   name="trainer_name" 
-                   class="form-control @error('trainer_name') is-invalid @enderror"
-                   value="{{ old('trainer_name', $trainer->trainer_name ?? $trainer->user->name ?? '') }}"
+                   name="name" 
+                   class="form-control @error('name') is-invalid @enderror"
+                   value="{{ old('name', $trainer->name ?? '') }}"
                    required>
-            @error('trainer_name')
+            @error('name')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
 
+         {{-- Password --}}
+        <div class="form-group col-md-6">
+            <label>Password</label>
+            <input type="text" 
+                   name="password" 
+                   class="form-control @error('password') is-invalid @enderror"
+                   value="{{ old('password') }}"
+                   placeholder="Leave blank to keep current password">
+            @error('password')
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
+
+        {{-- Password --}}
+            <div class="form-group col-md-6">
+                <label>Existing Password</label>
+
+                <div class="input-group">
+                    <input type="password"
+                           id="trainer_pswd"
+                           name="trainer_pswd"
+                           class="form-control @error('trainer_pswd') is-invalid @enderror"
+                           value="{{ old('trainer_pswd', $trainer->trainer_pswd) }}"
+                           readonly>
+
+                    <span class="input-group-text" style="cursor:pointer"
+                          onclick="toggleProbation()">
+                        👁
+                    </span>
+                </div>
+            </div>
         {{-- Gender --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Gender</label>
             <select name="gender" 
                     class="form-control @error('gender') is-invalid @enderror" 
@@ -49,12 +93,12 @@
         </div>
 
         {{-- Phone --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Phone</label>
             <input type="text" 
                    name="phone" 
                    class="form-control @error('phone') is-invalid @enderror"
-                   value="{{ old('phone', $trainer->phone ?? $trainer->user->phone ?? '') }}"
+                   value="{{ old('phone', $trainer->phone ?? '') }}"
                    required
                     minlength="10"
                     maxlength="10"
@@ -66,7 +110,7 @@
         </div>
 
         {{-- Email (READ ONLY) --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Email</label>
             <input type="email" 
                     name="email"
@@ -77,8 +121,19 @@
             @enderror
         </div>
 
+        
+        {{-- Status --}}
+        <div class="form-group col-md-6">
+            <label>Status</label>
+            <select name="status" class="form-control" required>
+                <option value="">Select Status</option>
+                <option value="active"   {{ $trainer->status == 'active' ? 'selected' : '' }}>Active</option>
+                <option value="inactive" {{ $trainer->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
+            </select>
+        </div>
+
         {{-- Technology (MULTIPLE) --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Technology</label>
 
             @php
@@ -105,10 +160,18 @@
             @enderror
         </div>
 
- 
 
-        <button type="submit" class="btn btn-primary mt-3">Update</button>
-
+        <div class="form-group col-md-12">
+            <button type="submit" class="btn btn-primary mt-3">Update</button>
+             <a href="{{ route('trainers.index') }}" class="btn btn-secondary mt-3 ml-2">Back</a>
+        </div>
+        </div>
     </form>
 </div>
+<script>
+    function toggleProbation() {
+        const input = document.getElementById('trainer_pswd');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    } 
+</script>
 @endsection

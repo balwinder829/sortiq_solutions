@@ -57,6 +57,17 @@
     @enderror
 </div>
 
+{{-- EMail --}}
+<div class="form-group col-md-6">
+    <label>Email</label>
+    <input type="email"
+           name="email"
+           
+           value="{{ old('email') }}"
+           class="form-control">
+</div>
+
+
 {{-- WEBSITE --}}
 <div class="form-group col-md-6">
     <label>Website</label>
@@ -74,7 +85,7 @@
     <label>Address</label>
     <textarea name="address"
               rows="2"
-              class="form-control @error('address') is-invalid @enderror">{{ old('address') }}</textarea>
+              class="form-control @error('address') is-invalid @enderror" required>{{ old('address') }}</textarea>
     @error('address')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror

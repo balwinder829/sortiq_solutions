@@ -3,26 +3,36 @@
 @section('content')
 <div class="container">
     <h3>Add Mentor</h3>
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
     <form method="POST" action="{{ route('trainers.store') }}">
+        <div class="row">
         @csrf
 
         {{-- Trainer Name --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Full Name</label>
             <input type="text" 
-                   name="trainer_name" 
-                   class="form-control @error('trainer_name') is-invalid @enderror"
-                   value="{{ old('trainer_name') }}"
+                   name="name" 
+                   class="form-control @error('name') is-invalid @enderror"
+                   value="{{ old('name') }}"
                    placeholder="Full Name" 
                    required>
-            @error('trainer_name')
+            @error('name')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
 
         {{-- User Name --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>User Name</label>
             <input type="text" 
                    name="username" 
@@ -36,7 +46,7 @@
         </div>
 
         {{-- Password --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Password</label>
             <input type="text" 
                    name="password" 
@@ -49,7 +59,7 @@
             @enderror
         </div>
         {{-- Gender --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Gender</label>
             <select name="gender" 
                     class="form-control @error('gender') is-invalid @enderror" 
@@ -65,7 +75,7 @@
         </div>
 
         {{-- Phone --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Phone</label>
             <input type="text" 
                    name="phone" 
@@ -83,7 +93,7 @@
         </div>
 
         {{-- Email --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Email</label>
             <input type="email" 
                    name="email"
@@ -97,7 +107,7 @@
         </div>
 
         {{-- Technology --}}
-        <div class="form-group">
+        <div class="form-group col-md-6">
             <label>Technology</label>
             <select name="technology[]" 
                 class="form-control technology" 
@@ -118,9 +128,21 @@
             @enderror
         </div>
 
-         
-        <button type="submit" class="btn btn-primary mt-2">Save</button>
+        {{-- Status --}}
+        <div class="form-group col-md-6">
+            <label>Status</label>
+            <select name="status" class="form-control" required>
+                <option value="">Select Status</option>
+                <option value="active"   {{ old('status') == 'active' ? 'selected' : '' }}>Active</option>
+                <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+            </select>
+        </div>
 
+         <div class="form-group col-md-6">
+        <button type="submit" class="btn btn-primary mt-2">Save</button>
+         <a href="{{ route('trainers.index') }}" class="btn btn-secondary mt-1 ml-2">Back</a>
+    </div>
+</div>
     </form>
 </div>
 @endsection

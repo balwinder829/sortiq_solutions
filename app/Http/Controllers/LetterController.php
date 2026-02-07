@@ -20,6 +20,43 @@ class LetterController extends Controller
 {
     use PdfLayoutTrait;
 
+    protected string $permissionPrefix = 'letters';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'download'         => 'view',
+        'sendEmail'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
+
     public function index(Request $request)
     {
         $query = Letter::with(['employee', 'employee.user']);
@@ -33,20 +70,7 @@ class LetterController extends Controller
             'selectedType' => $request->letter_type
         ]);
     }
-    public function index13dec(Request $request)
-    {
-        $query = Letter::query();
-
-        // 🔍 Filter by letter type
-        if ($request->filled('letter_type')) {
-            $query->where('letter_type', $request->letter_type);
-        }
-
-        return view('letters.index', [
-            'letters' => $query->latest()->get(),
-            'selectedType' => $request->letter_type
-        ]);
-    }
+    
 
 
     public function create()
@@ -418,53 +442,7 @@ private function generateLetterPdf(Letter $letter): string
         return back()->with('success', 'Email sent successfully.');
     }
 
-    public function sendEmail13jan(Letter $letter)
-    {
-        $pdfContent = $this->generateLetterPdf($letter);
-        
-        $letterType = strtoupper(
-            preg_replace('/[^A-Za-z0-9]+/', '_', trim($letter->letter_type))
-        );
-
-        $employeeName = strtoupper(
-            preg_replace('/[^A-Za-z0-9]+/', '_', trim($letter->emp_name))
-        );
-
-        $profileName = strtoupper(
-            preg_replace('/[^A-Za-z0-9]+/', '_', trim($letter->position))
-        );
-
-        // Remove double underscores just in case
-        $fileName = trim(
-            preg_replace('/_+/', '_', "{$employeeName}_{$profileName}_{$letterType}"),
-            '_'
-        ) . '.pdf';
-
-        Mail::send([], [], function ($message) use ($letter, $pdfContent, $fileName) {
-            $message->to($letter->email)
-                ->subject(strtoupper($letter->letter_type) . ' Letter')
-                ->attachData(
-                    $pdfContent,
-                    $fileName,
-                    ['mime' => 'application/pdf']
-                );
-        });
-        // Mail::send([], [], function ($message) use ($letter, $pdfContent, $employeeName) {
-        //     $message->to($letter->email)
-        //         ->subject(strtoupper($letter->letter_type) . ' Letter')
-        //         ->attachData(
-        //             $pdfContent,
-        //             strtoupper($letter->letter_type)
-        //             . '_LETTER_'
-        //             . $employeeName
-        //             . '.pdf',
-        //             ['mime' => 'application/pdf']
-        //         );
-        // });
-
-        return back()->with('success', 'Email sent successfully.');
-    }
-
+     
 
     public function edit(Letter $letter)
     {
@@ -684,84 +662,8 @@ private function generateLetterPdf(Letter $letter): string
             ->with('success', 'Letter updated successfully');
     }
 
-    public function update13dec(Request $request, Letter $letter)
-    {
-        $request->validate([
-            'emp_name'     => 'required',
-            'position'     => 'required',
-            'joining_date' => 'required|date',
-            'issue_date'   => 'required|date',
-            'email'        => 'required|email',
-            'address'      => 'nullable|required_if:letter_type,appointment',
-
-            // experience
-            'relieving_date' => 'nullable|required_if:letter_type,experience,relieving|date',
-            // appointment
-            'probation_period'=> 'required_if:letter_type,appointment',
-            'bond_period'=> 'required_if:letter_type,appointment',
-
-            // increment
-            'old_salary' => 'required_if:letter_type,increment',
-            'new_salary' => 'required_if:letter_type,increment',
-            'increment_percentage' => 'nullable',
-            'effective_date' => 'required_if:letter_type,increment',
-
-            // bond
-            'bond_start_date' => 'required_if:letter_type,bond,custom_bond',
-            'bond_end_date' => 'required_if:letter_type,bond,custom_bond',
-            'bond_amount' => 'required_if:letter_type,bond',
-            'bond_terms' => 'required_if:letter_type,custom_bond|nullable',
-            // salary
-            'salary' => 'nullable|numeric',
-        ]);
-
-        if (
-            $letter->letter_type === 'experience' &&
-            $request->filled('joining_date') &&
-            $request->filled('relieving_date')
-        ) {
-            $diff = Carbon::parse($request->joining_date)
-                ->diff(Carbon::parse($request->relieving_date));
-
-            $request['experience_time'] =
-                "{$diff->y} Years {$diff->m} Months";
-        }
-
-        $letter->update($request->all());
-
-        return redirect()->route('letters.index')
-            ->with('success','Letter updated successfully');
-    }
-
-    public function update29dec(Request $request, Letter $letter)
-    {
-        $request->validate([
-            'emp_name'     => 'required',
-            'position'     => 'required',
-            'joining_date' => 'required|date',
-            'issue_date'   => 'required|date',
-            'email'        => 'required|email',
-            'salary'      => 'required',
-            'probation_period'=> 'required_if:letter_type,appointment',
-            'bond_period'=> 'required_if:letter_type,appointment',
-            'relieving_date' => 'required_if:letter_type,experience'
-        ]);
-
-        // Recalculate experience if needed
-        if ($letter->letter_type === 'experience') {
-            $diff = \Carbon\Carbon::parse($request->joining_date)
-                ->diff(\Carbon\Carbon::parse($request->relieving_date));
-
-            $request['experience_time'] =
-                "{$diff->y} Years {$diff->m} Months";
-        }
-
-        $letter->update($request->all());
-
-        return redirect()->route('letters.index')
-            ->with('success','Letter updated successfully');
-    }
-
+    
+    
     public function destroy(Letter $letter)
     {
         $letter->delete();

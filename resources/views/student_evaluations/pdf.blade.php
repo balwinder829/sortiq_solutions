@@ -261,7 +261,7 @@ th{
 </table>
 
 <div class="footer">
-<p><strong>Trainer Name: </strong>{{ ucwords($evaluation->trainer->user->name) ?? '____________________' }}</p>
+<p><strong>Mentor Name: </strong>{{ ucwords($evaluation->trainer->name) ?? '____________________' }}</p>
 <p><strong>Signature:</strong> ______________________</p>
 </div>
 

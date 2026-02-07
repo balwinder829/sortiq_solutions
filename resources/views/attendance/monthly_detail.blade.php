@@ -7,7 +7,11 @@
 <div class="container mt-4">
     <div class="row mb-2">
     <div class="col-md-6">
-        <h1 class="page_heading">Attendance Detail – {{ $employee->name }}</h1>
+        
+        <h1 class="page_heading">
+            Attendance Detail –
+            {{ $actorType === 'trainer' ? $actor->name : $actor->name }}
+        </h1>
     </div>
 
     <div class="col-md-6">

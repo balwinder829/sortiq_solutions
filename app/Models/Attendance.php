@@ -21,12 +21,20 @@ class Attendance extends Model
         'device_type',
         'latitude',
         'longitude',
+        'actor_type',
+        'actor_id',
     ];
 
     protected $casts = [
         'login_time'  => 'datetime',
         'logout_time' => 'datetime',
     ];
+
+    // NEW
+    public function actor()
+    {
+        return $this->morphTo(null, 'actor_type', 'actor_id');
+    }
 
     public function employee()
     {

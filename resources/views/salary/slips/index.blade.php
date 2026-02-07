@@ -85,7 +85,7 @@
                         </a>
 
                         {{-- SINGLE EMAIL --}}
-                       <!--  <form method="POST"
+                       <form method="POST"
                               action="{{ route('salary-slips.email.single', $slip) }}"
                               style="display:inline;">
                             @csrf
@@ -94,7 +94,7 @@
                                     title="Email">
                                 <i class="fas fa-envelope"></i>
                             </button>
-                        </form> -->
+                        </form>
 
                     </td>
                 </tr>

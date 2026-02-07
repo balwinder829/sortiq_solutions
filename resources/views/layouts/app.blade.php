@@ -65,19 +65,54 @@
 @if(isset($showOtpPopup) && $showOtpPopup)
 
 @php
-    $user = auth()->user();
-    $email = $user->email;
+     
+@endphp
 
-    $maskedEmail =
-        substr($email, 0, 5)
-        . str_repeat('*', max(0, strpos($email, '@') - 5))
-        . substr($email, strpos($email, '@'));
+@php
+    $user = auth()->user();
+    $email = $user->email ?? '';
+
+    if ($email && str_contains($email, '@')) {
+
+        [$local, $domain] = explode('@', $email);
+        $localLength = strlen($local);
+
+        if ($localLength > 6) {
+            // Normal email
+            $maskedLocal =
+                substr($local, 0, 4)
+                . str_repeat('*', $localLength - 6)
+                . substr($local, -2);
+        } elseif ($localLength > 2) {
+            // Short email
+            $maskedLocal =
+                substr($local, 0, 1)
+                . str_repeat('*', $localLength - 2)
+                . substr($local, -1);
+        } else {
+            // Very short (1–2 chars)
+            $maskedLocal = str_repeat('*', $localLength);
+        }
+
+        $maskedEmail = $maskedLocal . '@' . $domain;
+
+    } else {
+        // Fallback if email missing or invalid
+        $maskedEmail = '********';
+    }
 
     $otpExpiresAt = session('enquiry_otp_expires_at');
 @endphp
 
+
+@php
+    $otpExpiresAt = session('enquiry_otp_expires_at');
+    $otpExists = session()->has('enquiry_otp_code');
+    $otpValid = $otpExists && $otpExpiresAt && now()->timestamp < $otpExpiresAt;
+@endphp
+
 <div id="otpOverlay" class="otp-overlay">
-    
+    <!-- 
     <div class="otp-modal">
         <button type="button"
                 class="btn-close position-absolute"
@@ -115,7 +150,65 @@
                 style="display:none">
             Resend OTP
         </button>
+    </div> -->
+
+    <div class="otp-modal">
+    <button type="button"
+            class="btn-close position-absolute"
+            style="top:15px; right:15px;"
+            onclick="closeOtpPopup()">
+    </button>
+
+    <h4>Email Verification</h4>
+
+    <p class="text-muted mb-3">
+        Verify your email to continue
+    </p>
+
+    <!-- SEND OTP SECTION -->
+    <div id="sendOtpSection" style="{{ $otpValid ? 'display:none' : '' }}">
+        <p class="text-muted mb-2">
+            OTP will be sent to<br>
+            <strong>{{ $maskedEmail }}</strong>
+        </p>
+
+        <button class="btn btn-primary w-100" id="sendOtpBtn"  onclick="sendOtp()">
+            Send OTP
+        </button>
     </div>
+
+    <!-- VERIFY OTP SECTION -->
+    <div id="verifyOtpSection"  style="{{ $otpValid ? '' : 'display:none' }}">
+        <input type="text"
+               id="otpCode"
+               class="form-control mb-2"
+               placeholder="Enter OTP"
+
+                oninput="toggleVerifyBtn()">
+
+        <div id="otpError" class="text-danger small mb-2"></div>
+
+        <div class="small text-muted mb-2">
+            Time remaining:
+            <span id="otpTimer">--:--</span>
+        </div>
+
+        <button id="verifyBtn"
+                class="btn btn-success w-100"
+                onclick="verifyOtp()">
+            Verify OTP
+        </button>
+
+        <button id="resendBtn"
+                class="btn btn-link w-100 mt-2"
+                onclick="sendOtp()"
+                style="display:none">
+            Resend OTP
+        </button>
+    </div>
+</div>
+
+
 </div>
 
 <style>
@@ -171,6 +264,86 @@ function startOtpTimer() {
 }
 
 function sendOtp() {
+
+    const btn = document.getElementById('sendOtpBtn');
+    btn.disabled = true;
+    btn.innerText = 'Sending...';
+
+    fetch("{{ route('enquiry.otp.send') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.status === 'sent') {
+
+            document.getElementById('sendOtpSection').style.display = 'none';
+            document.getElementById('verifyOtpSection').style.display = 'block';
+
+            expiresAt = data.expires_at;
+            startOtpTimer();
+
+             // 🔥 RESET VERIFY STATE
+            const verifyBtn = document.getElementById('verifyBtn');
+            const otpInput = document.getElementById('otpCode');
+            const resendBtn = document.getElementById('resendBtn');
+
+            verifyBtn.disabled = true;
+            verifyBtn.innerText = 'Verify OTP';
+
+            otpInput.value = '';
+            otpInput.focus();
+
+            resendBtn.style.display = 'none';
+
+        } else {
+            btn.disabled = false;
+            btn.innerText = 'Send OTP';
+            alert(data.message || 'Failed to send OTP');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerText = 'Send OTP';
+        alert('Network error. Try again.');
+    });
+}
+
+function sendOtpworkformanualotp() {
+
+    fetch("{{ route('enquiry.otp.send') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'sent') {
+
+            // Switch UI
+            document.getElementById('sendOtpSection').style.display = 'none';
+            document.getElementById('verifyOtpSection').style.display = 'block';
+
+            // Set expiry & start timer
+            expiresAt = data.expires_at;
+            startOtpTimer();
+
+        } else {
+            alert(data.message || 'Failed to send OTP');
+        }
+    });
+}
+
+
+function sendOtpold() {
     fetch("{{ route('enquiry.otp.send') }}", {
         method: 'POST',
         headers: {
@@ -190,6 +363,57 @@ function sendOtp() {
 }
 
 function verifyOtp() {
+
+    const btn = document.getElementById('verifyBtn');
+    const errorBox = document.getElementById('otpError');
+    const resendBtn = document.getElementById('resendBtn');
+
+    btn.disabled = true;
+    btn.innerText = 'Verifying...';
+    errorBox.innerText = '';
+
+    fetch("{{ route('enquiry.otp.verify') }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            otp: document.getElementById('otpCode').value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.status === 'verified') {
+            location.reload();
+            return;
+        }
+
+        // 🔥 RE-ENABLE VERIFY BUTTON ON FAILURE
+        btn.disabled = false;
+        btn.innerText = 'Verify OTP';
+
+        errorBox.innerText = data.message || 'Invalid OTP';
+
+        if (data.status === 'expired') {
+            btn.disabled = true; // expired → cannot verify
+            resendBtn.style.display = 'block';
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerText = 'Verify OTP';
+        errorBox.innerText = 'Network error. Try again.';
+    });
+}
+
+function verifyOtpas() {
+    const btn = document.getElementById('verifyBtn');
+    btn.disabled = true;
+    btn.innerText = 'Verifying...';
+
     document.getElementById('otpError').innerText = '';
 
     fetch("{{ route('enquiry.otp.verify') }}", {
@@ -213,8 +437,21 @@ function verifyOtp() {
                 document.getElementById('resendBtn').style.display = 'block';
             }
         }
+    })
+     .catch(() => {
+        btn.disabled = false;
+        btn.innerText = 'Verify OTP';
+        document.getElementById('otpError').innerText = 'Network error. Try again.';
     });
 }
+
+function toggleVerifyBtn() {
+    const otp = document.getElementById('otpCode').value;
+    const btn = document.getElementById('verifyBtn');
+
+    btn.disabled = otp.length < 6;
+}
+
 
 @if($otpExpiresAt)
     startOtpTimer();

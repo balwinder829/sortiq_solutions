@@ -23,9 +23,16 @@
             </div>
 
             <div class="row mb-3">
-                <div class="col-md-4 fw-bold">Amount</div>
+                <div class="col-md-4 fw-bold">Bill Amount</div>
                 <div class="col-md-8">
                     {{ number_format($expense->amount, 2) }}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4 fw-bold">Total Units</div>
+                <div class="col-md-8">
+                    {{ $expense->total_units ?? '-' }}
                 </div>
             </div>
 

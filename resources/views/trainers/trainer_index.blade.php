@@ -59,7 +59,9 @@ table.dataTable td {
 
                         <td>{{ $batch->sessionData?->session_name ?? '-' }}</td>
 
-                        <td>{{ $batch->courseData?->course_name ?? '-' }}</td>
+                        <td> @foreach($batch->courses as $course)
+                            <span class="badge bg-primary">{{ $course->course_name }}</span>
+                        @endforeach</td>
 
                         {{-- SESSION TIME --}}
                         <td>

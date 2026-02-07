@@ -2,32 +2,34 @@
 
 namespace Database\Seeders;
 
-// database/seeders/PermissionSeeder.php
-use Illuminate\Database\Seeder; 
-use App\Models\Permission;
+use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class PermissionSeeder extends Seeder
 {
     public function run()
     {
         $permissions = [
-            // STUDENTS
-            ['name' => 'students.view',   'label' => 'View Students'],
-            ['name' => 'students.create', 'label' => 'Create Students'],
-            ['name' => 'students.update', 'label' => 'Update Students'],
-            ['name' => 'students.delete', 'label' => 'Delete Students'],
-
-            // ENQUIRIES
-            ['name' => 'enquiries.view',   'label' => 'View Enquiries'],
-            ['name' => 'enquiries.assign','label' => 'Assign Enquiries'],
-            ['name' => 'enquiries.convert','label' => 'Convert Enquiries'],
-
-            // ANALYTICS
-            ['name' => 'analytics.view', 'label' => 'View Analytics'],
+            'trainer.view',
+            'trainer.create',
+            'trainer.edit',
+            'trainer.delete',
+            'entries.view',
+            'entries.add',
         ];
 
-        foreach ($permissions as $perm) {
-            Permission::firstOrCreate(['name' => $perm['name']], $perm);
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web',
+            ]);
+        }
+
+        $adminRole = Role::where('name', 'Admin')->first();
+
+        if ($adminRole) {
+            $adminRole->syncPermissions(Permission::all());
         }
     }
 }

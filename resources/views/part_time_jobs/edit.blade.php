@@ -71,17 +71,40 @@
             pattern="[0-9]{10}"
             title="Enter a valid 10-digit mobile number"
             maxlength="10"
+            required 
            inputmode="numeric"
            oninput="this.value=this.value.replace(/[^0-9]/g,'')"
            placeholder="10 digit number">
 </div>
 
-<div class="form-group col-md-12">
+<div class="form-group col-md-6">
+    <label>Email</label>
+    <input type="text"
+           name="email"
+           value="{{ old('email', $job->email) }}"
+           class="form-control">
+</div>
+
+<!-- <div class="form-group col-md-12">
     <label>Address</label>
     <textarea name="address"
               rows="2"
               class="form-control">{{ old('address', $job->address) }}</textarea>
+</div> -->
+<div class="form-group col-md-12">
+    <label>
+        Address <span class="text-danger">*</span>
+    </label>
+    <textarea name="address"
+              rows="2"
+              class="form-control @error('address') is-invalid @enderror"
+              required>{{ old('address', $job->address) }}</textarea>
+
+    @error('address')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
 </div>
+
 
 <div class="form-group col-md-6">
     <label>Status</label>

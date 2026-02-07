@@ -31,7 +31,56 @@ use Illuminate\Support\Str;
 
 
 class StudentController extends Controller
-{
+{   
+
+    protected string $permissionPrefix = 'students';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'confirmStudent'         => 'view',
+        'confirmMultiple'         => 'view',
+        'importForm'         => 'import',
+        'import'         => 'import',
+        'exportExcel'         => 'import',
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        'bulkDelete'      => 'bulk_deletes',
+        
+        'downloadconfirmMultiple'      => 'downloads',
+        'downloadMultipleReceipts'      => 'downloads',
+        'downloadCertificateMultiple'      => 'downloads',
+        'generateIdCard'      => 'downloads',
+        'downloadIdStudentCard'      => 'downloads',
+
+        'copyStudents'      => 'copy_to_other_session',
+
+        'moveMultipleToCertificate'      => 'move_to_certificates',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
     // Constructor to apply auth middleware
 
     // List students
@@ -96,6 +145,42 @@ class StudentController extends Controller
             if ($request->filled('pg_offer')) {
                 $query->where('pg_offer', $request->pg_offer);
             }
+
+            if ($request->filled('fee_filter')) {
+                switch ($request->fee_filter) {
+
+                    case 'completed':
+                        $query->where('pending_fees', 0);
+                        break;
+
+                    case 'pending':
+                        $query->where('pending_fees', '>', 0);
+                        break;
+
+                    case 'pending_high':
+                        $query->where('pending_fees', '>', 0)
+                              ->orderBy('pending_fees', 'desc');
+                        break;
+
+                    case 'pending_low':
+                        $query->where('pending_fees', '>', 0)
+                              ->orderBy('pending_fees', 'asc');
+                        break;
+
+                    case 'fees_high':
+                        $query->orderBy('total_fees', 'desc');
+                        break;
+
+                    case 'fees_low':
+                        $query->orderBy('total_fees', 'asc');
+                        break;
+                }
+            }
+
+            if ($request->filled('gender')) {
+                $query->where('gender', $request->gender);
+            }
+
             
             if (auth()->user()->role == 1) {
                 $activeSessionId = session('admin_session_id');
@@ -106,8 +191,13 @@ class StudentController extends Controller
         
             
             $query->where('certificate_status', 0);
+            if (!$request->filled('fee_filter')) {
+                $query->orderBy('id', 'desc');
+            }
+
+            $students = $query->get();
             //dd($request->all());
-            $students = $query->orderBy('id', 'desc')->get();
+            // $students = $query->orderBy('id', 'desc')->get();
 
             // $students = $query->paginate(10);
 
@@ -173,7 +263,20 @@ class StudentController extends Controller
     {
         $validate= $request->validate([
             'student_name'   => 'required|string|max:255',
-            'f_name'         => 'required|string|max:255',
+            // 'f_name'         => 'required|string|max:255',
+            'f_name' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    // Remove "Mr." and validate remaining name
+                    $nameOnly = trim(preg_replace('/^mr\.?\s*/i', '', $value));
+
+                    if ($nameOnly === '') {
+                        $fail('Father name is required.');
+                    }
+                }
+            ],
             'sno'            => 'nullable|string|max:255',
 
             // 🔽 removed DB unique, handled manually below
@@ -245,6 +348,7 @@ class StudentController extends Controller
         if (!empty($validate['contact'])) {
             $contactExists = Student::withTrashed()
                 ->where('student_name', $validate['student_name'])
+                ->where('f_name', $validate['f_name'])
                 ->where('contact', $validate['contact'])
                 ->where('session', $activeSessionId)
                 ->exists();
@@ -277,7 +381,7 @@ class StudentController extends Controller
         /* =================== EXISTING CODE =================== */
         $validate['student_name'] = Str::lower($validate['student_name']);
         $validate['f_name']       = Str::lower($validate['f_name']);
-        $validate['pending_fees'] = "0.00";
+        $validate['pending_fees'] = "0";
         $validate['paid_fees'] = $validate['paid_fees'] ?? 0;
 
         $validate['pending_fees'] = max(
@@ -302,7 +406,9 @@ class StudentController extends Controller
 
     // Show edit form
     public function edit(Student $student)
-    {
+    {   
+        $activeSessionId = session('admin_session_id');
+        $activeSession = StudentSession::find($activeSessionId);
         $sessions = StudentSession::all();
         $colleges    = College::orderBy('college_display_name', 'asc')->get();
         $courses     = Course::orderBy('course_name', 'asc')->get();
@@ -313,7 +419,7 @@ class StudentController extends Controller
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
 
-        return view('students.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status'));
+        return view('students.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status','activeSession'));
         // return view('students.edit', compact('student','sessions','colleges','courses','batches','department','references','users'));
     }
 
@@ -322,7 +428,20 @@ class StudentController extends Controller
         // dd($request->all());
         $validates = $request->validate([
             'student_name'   => 'required|string|max:255',
-            'f_name'         => 'required|string|max:255',
+            // 'f_name'         => 'required|string|max:255',
+            'f_name' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    // Remove "Mr." and validate remaining name
+                    $nameOnly = trim(preg_replace('/^mr\.?\s*/i', '', $value));
+
+                    if ($nameOnly === '') {
+                        $fail('Father name is required.');
+                    }
+                }
+            ],
             'sno'            => 'required|string|max:255',
             // 'email_id'       => 'required|email|unique:students_detail,email_id,'.$student->id,
             'email_id'       => 'nullable',
@@ -366,6 +485,7 @@ class StudentController extends Controller
         if (!empty($validates['contact'])) {
             $contactExists = Student::withTrashed()
                 ->where('student_name', $validates['student_name'])
+                ->where('f_name', $validates['f_name'])
                 ->where('contact', $validates['contact'])
                 ->where('session', $activeSessionId)
                 ->where('id', '!=', $student->id) // 👈 ignore current record
@@ -406,20 +526,20 @@ class StudentController extends Controller
     }
 
     public function bulkDelete(Request $request)
-{
-    // If no ids sent (GET request or empty payload), DO NOTHING
-    // If no valid IDs are sent, ignore GET request
-    if (!$request->filled('ids') || is_array($request->ids)) {
-        return back()->with('error', 'No students selected.');
+    {
+        // If no ids sent (GET request or empty payload), DO NOTHING
+        // If no valid IDs are sent, ignore GET request
+        if (!$request->filled('ids') || is_array($request->ids)) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Now decode properly
+        $ids = json_decode($request->ids, true);
+
+        Student::whereIn('id', $ids)->delete();
+
+        return back()->with('success', 'Selected students deleted.');
     }
-
-    // Now decode properly
-    $ids = json_decode($request->ids, true);
-
-    Student::whereIn('id', $ids)->delete();
-
-    return back()->with('success', 'Selected students deleted.');
-}
 
 
 

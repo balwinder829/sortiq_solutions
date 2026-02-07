@@ -40,7 +40,7 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
-
+<!-- 
                     {{-- Start Time --}}
                     <div class="form-group col-md-6">
                         <label>Start Time</label>
@@ -63,7 +63,39 @@
                         @error('end_time')
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
+                    </div> -->
+                    {{-- Start Time --}}
+                    <div class="form-group col-md-6">
+                        <label>Start Time</label>
+                        <input type="text"
+                               id="start_time"
+                               name="start_time"
+                               class="form-control @error('start_time') is-invalid @enderror"
+                               value="{{ old('start_time', \Carbon\Carbon::createFromFormat('H:i:s', $batch->start_time)->format('g:i A')) }}"
+                               placeholder="hh:mm AM/PM"
+                               autocomplete="off"
+                               required>
+                        @error('start_time')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
+
+                    {{-- End Time --}}
+                    <div class="form-group col-md-6">
+                        <label>End Time</label>
+                        <input type="text"
+                               id="end_time"
+                               name="end_time"
+                               class="form-control @error('end_time') is-invalid @enderror"
+                               value="{{ old('end_time', \Carbon\Carbon::createFromFormat('H:i:s', $batch->end_time)->format('g:i A')) }}"
+                               placeholder="hh:mm AM/PM"
+                               autocomplete="off"
+                               required>
+                        @error('end_time')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
 
                     {{-- Technology (MULTIPLE) --}}
 <div class="form-group col-md-6">
@@ -114,7 +146,7 @@
                             @foreach($trainers as $trainer)
                                 <option value="{{ $trainer->id }}"
                                     {{ old('batch_assign', $batch->batch_assign) == $trainer->id ? 'selected' : '' }}>
-                                    {{ $trainer->activeUser->name }}
+                                    {{ ucwords($trainer->name) }}
                                 </option>
                             @endforeach
                         </select>
@@ -206,4 +238,24 @@
         </div>
     </div>
 </div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 @endsection
+
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+const timePickerConfig = {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "h:i K", // 12-hour format
+    time_24hr: false,
+    disableMobile: true,
+     allowInput: false // 🚨 prevents typing "A"
+};
+
+flatpickr("#start_time", timePickerConfig);
+flatpickr("#end_time", timePickerConfig);
+</script>
+@endpush

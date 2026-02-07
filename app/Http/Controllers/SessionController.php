@@ -10,6 +10,14 @@ use App\Models\Student;
 
 class SessionController extends Controller
 {   
+
+    public function __construct()
+    {
+        $this->middleware('permission:sessions.view')->only('index');
+        $this->middleware('permission:sessions.create')->only(['create','store']);
+        $this->middleware('permission:sessions.edit')->only(['edit','update']);
+        $this->middleware('permission:sessions.delete')->only('destroy');
+    }
 //    public function index()
 // {
 //     $sessions = StudentSession::with(['batches.students'])
@@ -42,12 +50,13 @@ class SessionController extends Controller
 // }
 public function index()
 {
+    $activeSessionId = session('admin_session_id');
     $sessions = StudentSession::with(['batches.students'])
         // ->withCount('batches')
         ->latest()
         ->get();
 
-    return view('sessions.index', compact('sessions'));
+    return view('sessions.index', compact('sessions','activeSessionId'));
 }
 
     public function i12312ndex()
@@ -206,7 +215,7 @@ public function update(Request $request, StudentSession $session)
     {
         $session = StudentSession::with([
             'batches.courseData',
-            'batches.trainerData.user'
+            'batches.trainerData:id,name'
         ])->findOrFail($id);
         // dd($session->batches);
         return response()->json($session->batches);

@@ -9,7 +9,47 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\View;
 
 class PartTimeJobController extends Controller
-{
+{   
+    protected string $permissionPrefix = 'part_time_jobs';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'download'         => 'view',
+        'sendEmail'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        'import'      => 'import',
+        'importForm'      => 'import',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
+
    public function index(Request $request)
 	{
 	    $jobs = PartTimeJob::query();
@@ -47,6 +87,7 @@ class PartTimeJobController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => 'nullable|string|max:20',
             'status' => 'required|in:active,inactive',
+            'email' => 'nullable|email',
         ]);
 
         PartTimeJob::create($request->all());
@@ -76,6 +117,7 @@ class PartTimeJobController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => 'nullable|string|max:20',
             'status' => 'required|in:active,inactive',
+            'email' => 'nullable|email',
         ]);
 
         $job->update($request->all());

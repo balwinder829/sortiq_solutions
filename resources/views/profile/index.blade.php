@@ -46,7 +46,7 @@
                 <div class="card-header">Profile Details</div>
                 <div class="card-body">
                     <p><strong>Name:</strong> {{ ucwords(strtolower($user->name)) }}</p>
-                    <p><strong>Role:</strong> {{ $user->roles->name ?? 'N/A' }}</p>
+                    <p><strong>Role:</strong> {{ $user->legacyRole->name ?? 'N/A' }}</p>
                 </div>
             </div>
 

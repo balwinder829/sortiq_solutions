@@ -8,6 +8,11 @@ use App\Models\Student;
 
 class AnalyticsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:analytics.view')->only('index');
+    }
+
     public function index()
     {   
 

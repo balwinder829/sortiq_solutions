@@ -75,16 +75,10 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                        {{ ucwords($letter->student?->collegeData?->FullName ?? 'N/A') }}
+                        {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}
                     </td>
                 </tr>
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                        {{ ucwords($letter->student?->collegeData?->district?->name ?? 'N/A') }},
-                        {{ ucwords($letter->student?->collegeData?->state?->name ?? 'N/A') }}
-
-                    </td>
-                </tr>
+                
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                         <br>It is with great pleasure that we extend to you an offer for a <b>six-month internship</b> with <strong> Sortiq Solutions Pvt. Ltd.</strong> This internship is designed to provide you with practical learning experiences, real-time project exposure, and professional growth under the mentorship of industry experts.

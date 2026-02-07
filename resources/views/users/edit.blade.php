@@ -19,7 +19,7 @@
 
             <div class="form-group col-md-6">
                 <label>Name</label>
-                <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}">
+                <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" readonly disabled>
                 @error('name')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror

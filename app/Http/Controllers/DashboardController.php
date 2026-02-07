@@ -22,9 +22,29 @@ use Illuminate\Support\Facades\DB;
 class DashboardController extends Controller
 {
 
+    // public function __construct()
+    // {
+    //     $this->middleware([
+    //         'auth',
+    //         'role:Admin|permission:dashboard.view'
+    //     ])->only('index');
+    // }
+
+    public function __construct()
+{
+    $this->middleware('auth')->only('index');
+    $this->middleware('permission:dashboard.view')->only('index');
+    $this->middleware('permission:dashboard.view')->only('changeSession');
+}
+
+
+
     public function index()
     {
-        if (auth()->user()->role == 1 || auth()->user()->role == 4) {
+        // if (!auth()->check() || !auth()->user()->hasRole('Admin')) {
+        //     abort(403, 'Unauthorized');
+        // }
+        // if (auth()->user()->role == 1 || auth()->user()->role == 4) {
             
             $activeSessionId = session('admin_session_id');
 
@@ -52,15 +72,23 @@ class DashboardController extends Controller
             $totalEmployye  = User::where('role', [2,3])->count();
             $totalSaleEmployye  = User::where('role', 3)->count();
             $placedStudents = Student::where('is_placed', 1)->where('session', $activeSessionId)->count();
-            $feeconfirmSum = Student::where('certificate_status', 1)
+            $feeconfirmSum = Student::where('certificate_status', 0)
                 ->where('session', $activeSessionId)
                 ->selectRaw('SUM(total_fees - pending_fees) as collected')
                 ->value('collected');
 
-            $feecertificateSum = Student::where('certificate_status', 2)
+            $feecertificateSum = Student::where('certificate_status', '!=' , 0)
                 ->where('session', $activeSessionId)
                 ->selectRaw('SUM(total_fees - pending_fees) as collected')
                 ->value('collected');
+
+            $feeSums = Student::where('session', $activeSessionId)
+                ->selectRaw('
+                    SUM(COALESCE(total_fees, 0)) AS total_fees,
+                    SUM(COALESCE(pending_fees, 0)) AS pending_fees,
+                    SUM(COALESCE(total_fees, 0) - COALESCE(pending_fees, 0)) AS collected
+                ')
+                ->first();
 
 
             $topCollegeData = DB::table('students_detail')
@@ -138,6 +166,17 @@ class DashboardController extends Controller
                                     ->orderBy('event_date')
                                     ->get();
 
+
+            
+
+            $batchTypestudentCounts = Student::join('batches', 'students_detail.batch_assign', '=', 'batches.id')
+                ->where('students_detail.session', $activeSessionId)
+                ->selectRaw('
+                    COALESCE(SUM(CASE WHEN batches.batch_mode = "online" THEN 1 ELSE 0 END), 0) AS online_count,
+                    COALESCE(SUM(CASE WHEN batches.batch_mode = "offline" THEN 1 ELSE 0 END), 0) AS offline_count
+                ')
+                ->first();
+
             // POPUP DISMISS RECORD (only for today)
             $todayNotification = EventNotification::today();
              /** FINALLY — RETURN VIEW **/
@@ -166,45 +205,48 @@ class DashboardController extends Controller
                 'feeconfirmSum',
                 'feecertificateSum',
                 'topCollegeData',
+                'feeSums',
+                'batchTypestudentCounts',
                 'todayNotification'
             ));
-        }else{
-            /** EXISTING DASHBOARD COUNTERS **/
-            $totalStudents = Student::count();
-            $totalBatches  = Batch::count();
-            $totalColleges = College::count();
-            $totalTrainers = Trainer::count();
-            $totalSessions = StudentSession::count();
-            $totalCourses  = Course::count();
-            $pendingFeeStudents = Student::where('pending_fees', '>', 0)
-                                        ->whereDate('next_due_date', '<=', now())
-                                        ->count();
-            $sessions = StudentSession::all();
-            $pendingStudents = collect();
-            $todayEvents = collect();
-            $tomorrowEvents = collect();
-            $upcomingEvents = collect();
-            $todayNotification = (object)['dismissed' => true];
+        // }
+        // else{
+        //     /** EXISTING DASHBOARD COUNTERS **/
+        //     $totalStudents = Student::count();
+        //     $totalBatches  = Batch::count();
+        //     $totalColleges = College::count();
+        //     $totalTrainers = Trainer::count();
+        //     $totalSessions = StudentSession::count();
+        //     $totalCourses  = Course::count();
+        //     $pendingFeeStudents = Student::where('pending_fees', '>', 0)
+        //                                 ->whereDate('next_due_date', '<=', now())
+        //                                 ->count();
+        //     $sessions = StudentSession::all();
+        //     $pendingStudents = collect();
+        //     $todayEvents = collect();
+        //     $tomorrowEvents = collect();
+        //     $upcomingEvents = collect();
+        //     $todayNotification = (object)['dismissed' => true];
 
-             /** FINALLY — RETURN VIEW **/
-            return view('dashboard', compact(
-                'totalStudents',
-                'totalBatches',
-                'totalColleges',
-                'totalTrainers',
-                'totalSessions',
-                'totalCourses',
-                'pendingFeeStudents',
-                'sessions',
-                'pendingStudents',
+        //      /** FINALLY — RETURN VIEW **/
+        //     return view('dashboard', compact(
+        //         'totalStudents',
+        //         'totalBatches',
+        //         'totalColleges',
+        //         'totalTrainers',
+        //         'totalSessions',
+        //         'totalCourses',
+        //         'pendingFeeStudents',
+        //         'sessions',
+        //         'pendingStudents',
 
-                // event notification variables (admin only)
-                'todayEvents',
-                'tomorrowEvents',
-                'upcomingEvents',
-                'todayNotification'
-            ));
-        }
+        //         // event notification variables (admin only)
+        //         'todayEvents',
+        //         'tomorrowEvents',
+        //         'upcomingEvents',
+        //         'todayNotification'
+        //     ));
+        // }
        
     }
 
@@ -268,7 +310,7 @@ class DashboardController extends Controller
     {
 
         if (Auth::user()->role != 1) {
-            abort(403, "Unauthorized");
+            // abort(403, "Unauthorized");
         }
         $request->validate([
             'session_id' => 'required|exists:student_sessions,id',

@@ -89,6 +89,41 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                 $query->where('pg_offer', $request->pg_offer);
             }
 
+            if ($request->filled('fee_filter')) {
+                switch ($request->fee_filter) {
+
+                    case 'completed':
+                        $query->where('pending_fees', 0);
+                        break;
+
+                    case 'pending':
+                        $query->where('pending_fees', '>', 0);
+                        break;
+
+                    case 'pending_high':
+                        $query->where('pending_fees', '>', 0)
+                              ->orderBy('pending_fees', 'desc');
+                        break;
+
+                    case 'pending_low':
+                        $query->where('pending_fees', '>', 0)
+                              ->orderBy('pending_fees', 'asc');
+                        break;
+
+                    case 'fees_high':
+                        $query->orderBy('total_fees', 'desc');
+                        break;
+
+                    case 'fees_low':
+                        $query->orderBy('total_fees', 'asc');
+                        break;
+                }
+            }
+
+            if ($request->filled('gender')) {
+                $query->where('gender', $request->gender);
+            }
+
             if (auth()->user()->role == 1) {
                 $query->where('session', session('admin_session_id'));
             }
@@ -142,6 +177,17 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             'College',
             'Technology',
             'Status',
+            'Total Fee',
+            'Pending Fee',
+            'Registration Fee',
+            'Paid Fee',
+            'Next Due Date',
+            'Registered Date',
+            'Joining Date',
+            'End Date',
+            'Placement Offer',
+            'Part Time Job Offer',
+            'PG Offer',
             // 'Pending Fees',
         ];
     }
@@ -159,7 +205,29 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             $student->collegeData->college_display_name ?? '-',
             $student->courseData->course_name ?? '-',
             $student->status,
-            // $student->pending_fees,
+            $student->total_fees,
+            $student->pending_fees,
+            $student->reg_fees,
+            $student->paid_fees,
+            $student->next_due_date 
+            ? \Carbon\Carbon::parse($student->next_due_date)->format('d M Y') 
+            : '-',
+
+            $student->join_date 
+                ? \Carbon\Carbon::parse($student->join_date)->format('d M Y') 
+                : '-',
+
+            $student->start_date 
+                ? \Carbon\Carbon::parse($student->start_date)->format('d M Y') 
+                : '-',
+
+            $student->end_date 
+                ? \Carbon\Carbon::parse($student->end_date)->format('d M Y') 
+                : '-',
+
+            $student->placement_offer ? 'Yes' : 'No',
+            $student->part_time_offer ? 'Yes' : 'No',
+            $student->pg_offer ? 'Yes' : 'No',
         ];
     }
 

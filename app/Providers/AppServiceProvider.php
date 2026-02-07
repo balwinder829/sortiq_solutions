@@ -13,6 +13,7 @@ use App\Models\RolePermission;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Gate; // add at top with other uses
 
 
 class AppServiceProvider extends ServiceProvider
@@ -135,6 +136,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
 {
 
+    Gate::before(function ($user) {
+        return $user->hasRole('Admin') ? true : null;
+    });
+    
      if (app()->environment('production')) {
         URL::forceScheme('https');
     }

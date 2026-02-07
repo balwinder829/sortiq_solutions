@@ -9,7 +9,7 @@
             <div class="col-12">          
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Edit Student Detail</h4>
+                        <h4 class="card-title">Edit Student Detail - SNo- {{ $student->sno }}</h4>
                     </div>
                     
                     <div class="card-body">
@@ -39,11 +39,11 @@
                                 <div class="form-group col-md-6">
                                     <label>Father Name</label>
                                     <input type="text" name="f_name" maxlength="55" required class="form-control" 
-                                        value="{{ old('f_name', $student->f_name) }}"  oninput="capitalizeWords(this)">
+                                        value="{{ ucwords(old('f_name', preg_match('/^mr\.?/i', $student->f_name) ? $student->f_name : 'Mr. '.$student->f_name) )}}"   oninput="handleMrPrefix(this)">
                                 </div>
-                                <div class="form-group col-md-6">
+                                <div class="form-group col-md-6 d-none">
                                     <label>Serial No.</label>
-                                    <input type="text" name="sno" maxlength="55" required class="form-control" 
+                                    <input type="hidden" name="sno" maxlength="55" required class="form-control" 
                                         value="{{ old('sno', $student->sno) }}">
                                 </div>
                                 <!-- Gender -->
@@ -73,7 +73,7 @@
                                 <!-- College -->
                                 <div class="form-group col-md-6">
                                     <label>College</label>
-                                    <select name="college_name" required class="form-control">
+                                    <select name="college_name" required class="form-control select2">
                                         <option value="" disabled>--Choose--</option>
                                         @foreach($colleges as $college)
                                             <option value="{{ $college->id }}" 
@@ -132,19 +132,19 @@
                                 <div class="form-group col-md-6">
                                     <label>Total Fees</label>
                                     <input type="number" name="total_fees" class="form-control" id="total_fees"
-                                        value="{{ old('total_fees', $student->total_fees) }}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')" readonly>
+                                        value="{{ old('total_fees', $student->total_fees) }}" oninput="this.value=this.value.replace(/[^0-9]/g,'')"> readonly>
                                 </div>
 
                                 <div class="form-group col-md-6">
                                     <label>Registration Fees</label>
                                     <input type="number" name="reg_fees" class="form-control"   id="reg_fees"
-                                        value="{{ old('reg_fees', $student->reg_fees) }}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')" readonly>
+                                        value="{{ old('reg_fees', $student->reg_fees) }}" oninput="this.value=this.value.replace(/[^0-9]/g,'')"> readonly>
                                 </div>
 
                                  <div class="form-group col-md-6">
                                     <label>Paid Fees</label>
                                     <input type="text" name="paid_fees" required class="form-control" id="paid_fees" 
-                                           value="{{ old('paid_fees', $student->paid_fees) }}" oninput="this.value=this.value.replace(/[^0-9.]/g,'').replace(/(\..*)\./g,'$1')" readonly>
+                                           value="{{ old('paid_fees', $student->paid_fees) }}" oninput="this.value=this.value.replace(/[^0-9]/g,'')"> readonly>
                                     @error('paid_fees') <small class="text-danger">{{ $message }}</small> @enderror
                                     <small id="fee_warning" class="text-danger d-none">
                                         Registration fees + Paid fees cannot be greater than Total fees.
@@ -248,6 +248,38 @@
     </div>
 </div>
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+@endsection
+@push('scripts')
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            placeholder: "Search college name",
+            allowClear: true
+        });
+    });
+</script>
+<script>
+function handleMrPrefix(input) {
+    const prefix = 'Mr. ';
+
+    // Remove any existing Mr.
+    let value = input.value.replace(/^mr\.?\s*/i, '');
+
+    // Capitalize properly
+    value = value
+        .toLowerCase()
+        .replace(/\b\w/g, c => c.toUpperCase());
+
+    // Set final value
+    input.value = prefix + value;
+}
+</script>
 <script>
     function calculatePendingFees() {
         let totalFees = parseFloat(document.getElementById('total_fees').value) || 0;
@@ -288,4 +320,4 @@
         input.setSelectionRange(start, end);
     }
 </script>
-@endsection
+@endpush

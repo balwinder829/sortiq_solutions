@@ -101,6 +101,7 @@ table.dataTable td {
             <thead>
                 <tr>
                     <th>ID</th>
+                    <th>UserName</th>
                     <th>Name</th>
                     <th>Gender</th>
                     <th>Phone</th>
@@ -121,10 +122,11 @@ table.dataTable td {
                     <tr>
                         <td>{{ $loop->iteration }}</td>
 
-                        <td>{{ $trainer->user->name ?? 'N/A' }}</td>
+                        <td>{{ $trainer->username ?? '' }}</td>
+                        <td>{{ ucwords($trainer->name ?? '') }}</td>
                         <td>{{ ucfirst($trainer->gender ?? '-') }}</td>
-                        <td>{{ $trainer->user->phone ?? 'N/A' }}</td>
-                        <td>{{ $trainer->user->email ?? 'N/A' }}</td>
+                        <td>{{ $trainer->phone ?? 'N/A' }}</td>
+                        <td>{{ $trainer->email ?? 'N/A' }}</td>
                         <td>
                             @php
                                 $techIds = $trainer->technology ? explode(',', $trainer->technology) : [];
@@ -141,7 +143,7 @@ table.dataTable td {
                         <td class="text-center">
                             <div class="batch-circle batch-link"
                                  data-id="{{ $trainer->id }}"
-                                 data-name="{{ $trainer->user->name ?? 'N/A' }}"
+                                 data-name="{{ $trainer->name ?? 'N/A' }}"
                                  data-type="all"
                                  title="View All Batches">
                                 {{ $trainer->session_batches_count }}
@@ -171,7 +173,7 @@ table.dataTable td {
                         <td class="text-center">
                             <div class="batch-circle batch-link"
                                  data-id="{{ $trainer->id }}"
-                                 data-name="{{ $trainer->user->name ?? 'N/A' }}"
+                                 data-name="{{ $trainer->name ?? 'N/A' }}"
                                  data-type="remaining"   {{-- NEW --}}
                                  title="View Today's Remaining Batches">
                                 {{ $trainer->today_remaining_batches_count ?? 0 }}

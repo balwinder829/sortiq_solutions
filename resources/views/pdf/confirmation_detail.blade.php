@@ -68,7 +68,7 @@
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Dear Sir/Madam,					</td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">						We are pleased to confirm that {{ $title }} <strong>{{ ucwords($student->student_name) }},</strong> {{ $relation }} <strong>{{ ucwords($student->f_name) }}</strong> and a student of your esteemed institution, has been formally enrolled in our <strong>{{ ucwords($sessionName) }}</strong> industrial training for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>.					</td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">						We are pleased to confirm that {{ $title }} <strong>{{ ucwords($student->student_name) }},</strong> {{ $relation }} <strong>{{ ucwords($student->father_name_with_title) }}</strong> and a student of your esteemed institution, has been formally enrolled in our <strong>{{ ucwords($sessionName) }}</strong> industrial training for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>.					</td>
                   </tr>
                   <tr>
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">The candidate's performance will be closely evaluated by the management throughout the duration of the internship period regularly.</td>

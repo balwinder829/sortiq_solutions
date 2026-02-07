@@ -89,6 +89,7 @@ use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\ScannerShareController;
 use App\Http\Controllers\MouController;
 use App\Http\Controllers\FeeStatusController;
+use App\Http\Controllers\CommonFilteredStudentController;
 
 
 use App\Models\Test;
@@ -113,8 +114,10 @@ Route::get('/scanners/view/{token}', [ScannerShareController::class, 'show'])
 // Route::get('/page/{slug}', [FrontendPageController::class, 'show'])->name('page.show');
 
 // Route::get('/ads-landing-page', [FrontendPageController::class, 'show_ads'])->name('page.show_ads');
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
+        Route::get('filtered-students', [CommonFilteredStudentController::class, 'index'])
+            ->name('common_filtered_student');
         Route::resource('pages', AdminPageController::class);
         Route::post('pages/{page}/toggle', [AdminPageController::class, 'toggle'])
             ->name('pages.toggle');
@@ -167,6 +170,11 @@ Route::middleware(['auth', 'permission'])->group(function () {
             'student-evaluations/{student_evaluation}/download-empty',
             [StudentEvaluationController::class, 'downloadEmpty']
         )->name('student-evaluations.download.empty');
+
+        Route::post(
+            'student-evaluations/{student_evaluation}/email',
+            [StudentEvaluationController::class, 'sendEmail']
+        )->name('student-evaluations.email');
 
         Route::resource('mous', MouController::class);
         Route::post('mous/{mou}/send-email', [MouController::class, 'sendEmail'])->name('mous.sendEmail');
@@ -232,7 +240,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
     });
 });
 
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     
     Route::get('/admin/joining-students',
         [JoiningStudentController::class, 'index']
@@ -401,7 +409,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
 });
 
 Route::prefix('sales')
-    ->middleware(['auth', 'role:3'])  // only sales employees
+    ->middleware(['auth', 'legacy.role:3'])
     ->group(function () {
 
         Route::get('/enquiries', [SalesEnquiryController::class, 'index'])
@@ -438,7 +446,7 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
 
 // Protected Enquiry CRUD
     Route::prefix('admin')
-    ->middleware(['auth', 'enquiry.otp','role:1'])   // admin users only
+    ->middleware(['auth', 'enquiry.otp'])   // admin users only
     ->group(function () {
         Route::resource('enquiries', EnquiryController::class);
         Route::post('enquiries/import', [EnquiryController::class, 'import'])
@@ -463,7 +471,7 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
 
     });
     Route::prefix('admin')
-    ->middleware(['auth','permission'])   // admin users only
+    ->middleware(['auth'])   // admin users only
     // ->middleware(['auth','role:1'])   // admin users only
     ->group(function () {
 // Route::middleware(['auth', 'enquiry.otp','role:1'])->group(function () {
@@ -521,7 +529,7 @@ Route::post('/change-session', [DashboardController::class, 'changeSession'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     Route::post('/admin/pending-fees/dismiss', function () {
         session(['dismiss_pending_fee' => true]);
@@ -617,11 +625,14 @@ Route::middleware(['auth', 'permission'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:1,2,3,4'])->get('/dashboard', [DashboardController::class, 'index'])
-    ->name('dashboard');
+// Route::middleware(['auth:web', 'role:1,3,4'])->get('/dashboard', [DashboardController::class, 'index'])
+    // ->name('dashboard');
 
-Route::middleware(['auth', 'role:1,2,3'])->group(function () {
+// Route::middleware(['auth:trainer', 'role:1,2,3,4'])->get('/dashboard', [DashboardController::class, 'index'])
+//     ->name('dashboard');
 
+// Route::middleware(['auth', 'role:1,2,3'])->group(function () {
+Route::middleware(['auth:web,trainer'])->group(function () {
     // List all notifications
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->name('notifications.index');
@@ -675,10 +686,24 @@ Route::delete(
 | ADMIN MODULES (role = 1)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     Route::resource('sessions', SessionController::class);
+    // routes/web.php
+    Route::get('/courses/{course}/students', [CourseController::class, 'students'])
+        ->name('courses.students');
+
+    Route::get(
+        '/courses/{course}/students/export-excel',
+        [CourseController::class, 'exportStudentsExcel']
+    )->name('courses.students.export.excel');
+
+
     Route::resource('courses', CourseController::class);
+
+    Route::get('/colleges/{college}/students', [CollegeController::class, 'students']);
+    Route::get('/colleges/{college}/students/export-excel', [CollegeController::class, 'exportStudentsExcel']);
+
     Route::get('colleges/export/excel', [CollegeController::class, 'exportExcel'])
     ->name('colleges.export.excel');
     Route::resource('colleges', CollegeController::class);
@@ -697,16 +722,20 @@ Route::middleware(['auth', 'permission'])->group(function () {
     Route::resource('batches', BatchController::class);
 
 
-     Route::get('/manager/permissions',
-        [\App\Http\Controllers\ManagerPermissionController::class, 'edit']
-    )->name('admin.manager.permissions.edit');
+    // Route::get('/manager/permissions',
+    //     [\App\Http\Controllers\ManagerPermissionController::class, 'edit']
+    // )->name('admin.manager.permissions.edit');
 
-    Route::post('/manager/permissions',
-        [\App\Http\Controllers\ManagerPermissionController::class, 'update']
-    )->name('admin.manager.permissions.update');
+    // Route::post('/manager/permissions',
+    //     [\App\Http\Controllers\ManagerPermissionController::class, 'update']
+    // )->name('admin.manager.permissions.update');
 
 
+// Show page
+Route::get('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissionController::class, 'index'])->name('admin.manager.permissions.edit');
 
+// Save permissions
+Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissionController::class, 'store']);
     // Tests module
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('tests', TestController::class);
@@ -839,7 +868,7 @@ Route::get(
 | TRAINER MODULES (role = 2)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     // route to download skipped rows: type = txt|csv|xlsx
     Route::get('/trainers/import/skipped/download/{type}', [TrainerController::class, 'downloadSkipped'])
@@ -881,7 +910,8 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
 });
 
-Route::middleware(['auth', 'role:2'])->group(function () {
+// Route::middleware(['auth', 'role:2'])->group(function () {
+Route::middleware(['auth:trainer'])->group(function () {
 
     // Trainer can ONLY view the batch from notification
     Route::get('/batches/{batch}', [BatchController::class, 'show'])
@@ -916,7 +946,7 @@ Route::middleware(['auth', 'role:1,2,3'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'permission'])->get('/manager/students', [StudentController::class, 'managerIndex'])
+Route::middleware(['auth'])->get('/manager/students', [StudentController::class, 'managerIndex'])
     ->name('manager.students.index');
 
 
@@ -926,7 +956,7 @@ Route::middleware(['auth', 'permission'])->get('/manager/students', [StudentCont
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     Route::post('/students/issue-certificate/{id}', [StudentController::class,'issueCertificate'])
         ->name('students.issueCertificate');
@@ -949,7 +979,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth:web,trainer'])->group(function () {
 
     Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -965,7 +995,7 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth:web,trainer'])->group(function () {
     // Employee section
     Route::get('/attendance', [AttendanceController::class, 'employeePanel'])
         ->name('attendance.employee');
@@ -982,7 +1012,7 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('student-certificates/upload', [StudentCertificateController::class, 'uploadForm'])
         ->name('student_certificates.upload_form');
     Route::post('student-certificates/upload', [StudentCertificateController::class, 'uploadFile'])
@@ -1140,7 +1170,7 @@ Route::middleware(['auth', 'role:1,3'])->group(function () {
     // });
 });
 
-Route::middleware(['auth', 'permission'])->group(function () {
+Route::middleware(['auth'])->group(function () {
 
     Route::prefix('admin')->group(function () {
         Route::get('/activity', [ActivityController::class, 'index'])->name('admin.activity');
@@ -1264,13 +1294,16 @@ Route::middleware(['auth', 'permission'])->group(function () {
 
         Route::resource('close_student', CloseStudenController::class)->parameters(['close_student' => 'student']);
         Route::resource('test-categories', TestCategoryController::class);
+        Route::get('/attendance/trainer/{trainer}/detail', [AttendanceController::class, 'trainerAttendanceDetail'])->name('attendance.trainerDetail');
          Route::get('/employees_attendece', [AttendanceController::class, 'employeeList'])
             ->name('attendance.employees');
+
 
         // Route::get('/employees/{id}', [AttendanceController::class, 'employeeDetail'])
             // ->name('attendance.employeeDetail');
 
         Route::get('/attendance/{id}/detail', [AttendanceController::class, 'monthlyDetail'])->name('attendance.employeeDetail');
+
         Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
 
 

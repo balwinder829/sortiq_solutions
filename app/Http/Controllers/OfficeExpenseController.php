@@ -9,6 +9,44 @@ use Carbon\Carbon;
 
 class OfficeExpenseController extends Controller
 {
+
+    protected string $permissionPrefix = 'office_expenses';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'download'         => 'view',
+        'sendEmail'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
+
     /* ================= LIST ================= */
 
  public function index(Request $request)
@@ -90,12 +128,13 @@ class OfficeExpenseController extends Controller
             'expense_date' => 'required|date',
             'title'        => 'required|string|max:255',
             'amount'       => 'required|numeric',
+            'total_units'       => 'required',
             'description'  => 'nullable|string',
             'image'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->only([
-            'expense_date', 'title', 'amount', 'description'
+            'expense_date', 'title', 'amount', 'description','total_units'
         ]);
 
         /* Store Image in PUBLIC directory */
@@ -123,17 +162,18 @@ class OfficeExpenseController extends Controller
     public function update(Request $request, $id)
     {
         $expense = OfficeExpense::findOrFail($id);
-
+        // dd($request);
         $request->validate([
             'expense_date' => 'required|date',
             'title'        => 'required|string|max:255',
             'amount'       => 'required|numeric',
             'description'  => 'nullable|string',
+            'total_units'       => 'required',
             'image'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $data = $request->only([
-            'expense_date', 'title', 'amount', 'description'
+            'expense_date', 'title', 'amount', 'description','total_units'
         ]);
 
         /* Replace image if uploaded */

@@ -5,19 +5,46 @@ namespace App\Http\Controllers;
 use App\Models\College;
 use App\Models\State;
 use App\Models\District;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Exports\CollegesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\CollegeResolver;
 use App\Imports\CollegesImport;
+use App\Exports\CollegeStudentsExport;
 
 class CollegeController extends Controller
 {
+     public function __construct()
+    {
+        $this->middleware('permission:colleges.view')->only('index');
+        $this->middleware('permission:colleges.create')->only(['create','store']);
+        $this->middleware('permission:colleges.edit')->only(['edit','update']);
+        $this->middleware('permission:colleges.delete')->only('destroy');
+        $this->middleware('permission:colleges.import')->only('showImport');
+    }
+
     public function index()
     {
         // $colleges = College::all();
-        $colleges = College::with(['state','district'])->get();
+        // $colleges = College::with(['state','district'])->get();
+
+        $activeSessionId = session('admin_session_id');
+
+         $colleges = College::with(['state', 'district'])
+        ->withCount([
+            'students as students_count' => function ($query) use ($activeSessionId) {
+                $query->where('session', $activeSessionId);
+            }
+        ])
+        ->orderBy('college_name', 'asc')
+        ->get();
+        
+        // $colleges = College::with(['state','district'])
+        //     ->withCount('students')
+        //     ->orderBy('college_name', 'asc')
+        //     ->get();
         $states = State::orderBy('name')->get();
 
 $districtsGrouped = District::select('districts.id','districts.name','districts.state_id','states.name as state_name')
@@ -280,4 +307,29 @@ public function update(Request $request, $id)
         return view('colleges.import');
     }
 
+    public function students(College $college)
+    {
+        $students = Student::with('sessionData')
+            ->where('college_name', $college->id)
+            ->orderBy('student_name', 'asc')
+            ->get()
+            ->map(function ($student) {
+                return [
+                    'student_name' => $student->student_name,
+                    'sno'          => $student->sno,
+                    'session_id'   => $student->session,
+                    'session_name' => optional($student->sessionData)->session_name,
+                ];
+            });
+
+        return response()->json($students);
+    }
+
+    public function exportStudentsExcel(College $college)
+    {
+        return Excel::download(
+            new \App\Exports\CollegeStudentsExport($college->id),
+            $college->college_name . '_students.xlsx'
+        );
+    }
 }

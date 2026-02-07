@@ -13,11 +13,48 @@ use Illuminate\Support\Facades\File;
 use App\Traits\PdfLayoutTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Mail;
 
 class SalarySlipController extends Controller
 {   
     use PdfLayoutTrait;
+    protected string $permissionPrefix = 'letters';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'generateForm'         => 'view',
+        'generate'         => 'view',
+        'sendEmail'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
     public function index()
     {
         $salarySlips = SalarySlip::latest()->get();
@@ -89,48 +126,63 @@ class SalarySlipController extends Controller
         ->with('success', 'Salary slips generated');
     }
 
-    public function download1(SalarySlip $salarySlip)
-    {
-        // $mpdf = new Mpdf();
-         $mpdf = new Mpdf([
-            'mode'           => 'utf-8',
-            'format' => [210, 297],
-            'margin_left' => 20,
-            'margin_right' => 20,
-            'margin_top' => 20,
-            'margin_bottom' => 20,
-        ]);
+     public function sendEmail(SalarySlip $salarySlip)
+{
+    $salarySlip->load('employee.user');
 
-
-        $html = View::make('salary.slip.pdf', compact('salarySlip'))->render();
-        $mpdf->WriteHTML($html);
-
-        return response($mpdf->Output('', 'S'))
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="SALARY_SLIP_'.$salarySlip->emp_code.'.pdf"');
+    if (
+        !$salarySlip->employee ||
+        !$salarySlip->employee->user ||
+        empty($salarySlip->employee->user->email)
+    ) {
+        return back()->with('error', 'Please add employee email to send salary slip.');
     }
 
-    // public function sendEmail(SalarySlip $salarySlip)
-    // {
-    //     $pdfContent = $this->generatePdf($salarySlip);
-    //     $employeeName = strtoupper(str_replace(' ', '_', $salarySlip->emp_name));
+    $pdfContent = $this->generateSalarySlipPdf($salarySlip);
 
-    //     Mail::send([], [], function ($message) use ($salarySlip, $pdfContent, $employeeName) {
-    //         $message->to($salarySlip->email)
-    //             ->subject('Salary Slip - ' . $salarySlip->month . ' ' . $salarySlip->year)
-    //             ->attachData(
-    //                 $pdfContent,
-    //                 'SALARY_SLIP_' . $employeeName . '.pdf',
-    //                 ['mime' => 'application/pdf']
-    //             );
-    //     });
+    $employeeName = strtoupper(str_replace(' ', '_', $salarySlip->emp_name));
 
-    //     return back()->with('success', 'Salary slip emailed successfully.');
-    // }
+    $monthName = Carbon::create()
+        ->month($salarySlip->month)
+        ->format('F');
 
-    public function sendEmail(SalarySlip $salarySlip)
+    $body = 
+        "Dear {$salarySlip->emp_name},\n\n" .
+        "Please find attached your salary slip for {$monthName} {$salarySlip->year}.\n\n" .
+        "Regards,\nHR Department";
+
+    Mail::raw($body, function ($message) use (
+        $salarySlip,
+        $pdfContent,
+        $employeeName,
+        $monthName
+    ) {
+        $message->to($salarySlip->employee->user->email)
+            ->subject("Salary Slip - {$monthName} {$salarySlip->year}")
+            ->attachData(
+                $pdfContent,
+                "SALARY_SLIP_{$employeeName}_{$monthName}_{$salarySlip->year}.pdf",
+                ['mime' => 'application/pdf']
+            );
+    });
+
+    return back()->with('success', 'Salary slip emailed successfully.');
+}  
+public function sendEmaiqql(SalarySlip $salarySlip)
 {
-    $pdfContent = $this->generatePdf($salarySlip);
+    // dd($salarySlip);
+     $salarySlip->load('employee');
+
+    // ❌ If no employee or no email
+    if (!$salarySlip->employee || empty($salarySlip->employee->email)) {
+        return back()->with(
+            'error',
+            'Please add employee email address to send salary slip.'
+        );
+    }
+
+    // Generate PDF
+    $pdfContent = $this->generateSalarySlipPdf($salarySlip);
 
     $employeeName = strtoupper(str_replace(' ', '_', $salarySlip->emp_name));
 
@@ -157,6 +209,36 @@ class SalarySlipController extends Controller
 
     return back()->with('success', 'Salary slip emailed successfully.');
 }
+
+//     public function sendEmail(SalarySlip $salarySlip)
+// {
+//     $pdfContent = $this->generatePdf($salarySlip);
+
+//     $employeeName = strtoupper(str_replace(' ', '_', $salarySlip->emp_name));
+
+//     $monthName = Carbon::create()
+//         ->month($salarySlip->month)
+//         ->format('F');
+
+//     Mail::send([], [], function ($message) use ($salarySlip, $pdfContent, $employeeName, $monthName) {
+
+//         $message->to($salarySlip->email)
+//             ->subject("Salary Slip - {$monthName} {$salarySlip->year}")
+//             ->setBody(
+//                 "Dear {$salarySlip->emp_name},\n\n" .
+//                 "Please find attached your salary slip for {$monthName} {$salarySlip->year}.\n\n" .
+//                 "Regards,\nHR Department",
+//                 'text/plain'
+//             )
+//             ->attachData(
+//                 $pdfContent,
+//                 "SALARY_SLIP_{$employeeName}_{$monthName}_{$salarySlip->year}.pdf",
+//                 ['mime' => 'application/pdf']
+//             );
+//     });
+
+//     return back()->with('success', 'Salary slip emailed successfully.');
+// }
 
     public function download(SalarySlip $salarySlip)
 {

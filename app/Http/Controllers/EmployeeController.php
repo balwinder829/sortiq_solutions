@@ -12,10 +12,47 @@ use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
 use Carbon\Carbon;
+// use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Role as SpatieRole;
+
 
 class EmployeeController extends Controller
 {   
     use PdfLayoutTrait;
+    protected string $permissionPrefix = 'employees';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
     public function index()
     {
         $employees = Employee::with('user')->get();
@@ -86,6 +123,19 @@ class EmployeeController extends Controller
             'role'     => $data['role'],
             'status'   => 'active',
         ]);
+
+
+        // ✅ SPATIE ROLE SYNC (ONLY ADMIN & MANAGER)
+        if (in_array($data['role'], [1, 4])) {
+            $roleName = SpatieRole::where('id', $data['role'])->value('name');
+
+            if ($roleName) {
+                $user->syncRoles([$roleName]); // replaces any old role
+            }
+        } else {
+            // ensure no spatie roles for fixed roles
+            $user->syncRoles([]);
+        }
 
         Employee::create([
             'user_id'      => $user->id,
@@ -218,6 +268,20 @@ class EmployeeController extends Controller
         }
 
         $employee->user->update($userData);
+
+         // 🔁 SPATIE ROLE SYNC (ONLY ADMIN & MANAGER)
+        if (in_array($data['role'], [1, 4])) {
+
+            $roleName = SpatieRole::where('id', $data['role'])->value('name');
+
+            if ($roleName) {
+                $employee->user->syncRoles([$roleName]);
+            }
+
+        } else {
+            // Remove spatie roles for fixed-role users
+            $employee->user->syncRoles([]);
+        }
 
 
     });
