@@ -26,6 +26,7 @@ class DailyInterview extends Model
         'interview_status',
         'interviewer_name',
         'interview_type',
+        'interview_mode',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class DailyInterview extends Model
         'joining_date' => 'date',
         'interview_status' => 'string',
         'interview_type' => 'string',
+        'interview_mode' => 'string',
     ];
 
     // Assuming you have a user tracking system, though not in the migration:

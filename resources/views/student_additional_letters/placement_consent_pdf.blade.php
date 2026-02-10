@@ -70,7 +70,9 @@
                  
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       I, <b>{{ ucwords($letter->student->student_name) }}</b>, son/daughter of <b>{{ $letter->student->father_name_with_title }}</b>, enrolled in <b>{{ ucwords($letter->student?->collegeData?->college_display_name ?? '-') }},</b>
+                       I, <b>{{ ucwords($letter->student->student_name) }}</b>, son/daughter of <b>{{ $letter->student->father_name_with_title }}</b>, enrolled in <b>{{ ucwords($letter->student?->collegeData?->college_display_name ?? '-') }}@if(!empty($letter->student?->collegeData?->college_short_name))
+    ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
+@endif,</b>
                         hereby give my consent and full agreement to the following terms regarding my placement/training with <b>Sortiq Solutions Pvt. Ltd</b>.:
                     </td>
                 </tr>

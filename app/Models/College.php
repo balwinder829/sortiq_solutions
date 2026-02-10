@@ -21,6 +21,7 @@ class College extends Model
         'state_id',
         'district_id',
         'college_display_name',
+        'college_short_name',
     ];
 
     /**

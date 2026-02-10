@@ -325,6 +325,13 @@
             <i class="fa fa-plus"></i>
         </a>
 
+        <a href="{{ route('admin.online.tests.download.mcq.paper', $test->id) }}"
+           class="btn btn-sm btn-outline-warning"
+           data-bs-toggle="tooltip"
+           title="Download Paper">
+            <i class="fa fa-download"></i>
+        </a>
+
         <a href="{{ route('admin.tests.edit', $test->id) }}"
            class="btn btn-sm btn-outline-warning"
            data-bs-toggle="tooltip"

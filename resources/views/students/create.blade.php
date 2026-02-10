@@ -148,7 +148,7 @@
                 @error('reg_fees') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
 
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-6"  id="paidFeesWrapper">
                 <label>Paid Fees</label>
                 <input type="text" name="paid_fees" required class="form-control" id="paid_fees" 
                        value="{{ old('paid_fees') }}" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -215,7 +215,7 @@
                     Sunday is not allowed
                 </small>
                 <small id="date_error" class="text-danger d-none">
-                    Start date must be after registered date.
+                    Start date must be on or after the registered date.
                 </small>
                 @error('start_date') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
@@ -350,7 +350,7 @@ function validateDates() {
 
     if (!joinDate || !startDate) return;
 
-    if (new Date(startDate) <= new Date(joinDate)) {
+    if (new Date(startDate) < new Date(joinDate)) {
         $('#date_error').removeClass('d-none');
         $('#start_date').val('');
         $('#end_date').val('');
@@ -466,6 +466,34 @@ $(document).ready(function () {
 });
 </script>
 
+
+<script>
+$(document).ready(function () {
+
+    function togglePaidFees() {
+        let total = parseInt($('#total_fees').val()) || 0;
+        let reg   = parseInt($('#reg_fees').val()) || 0;
+
+        if (total > 0 && reg === total) {
+            // Hide paid fees
+            $('#paidFeesWrapper').hide();
+            $('#paid_fees').val(0);
+        } else {
+            $('#paidFeesWrapper').show();
+        }
+    }
+
+    // Run on load (important for edit)
+    togglePaidFees();
+
+    // Run when total or reg fees change
+    $('#total_fees, #reg_fees').on('input', function () {
+        togglePaidFees();
+    });
+
+});
+</script>
+
 <script>
    
 function capitalizeWords(input) {
@@ -546,7 +574,39 @@ function toggleDueDate() {
         toggleDueDate();
     });
 
-    function handleMrPrefix(input) {
+     function handleMrPrefix(input) {
+        const prefix = 'Mr. ';
+
+        // Save cursor position
+        let cursorPos = input.selectionStart;
+
+        // Current value
+        let original = input.value;
+
+        // Remove all Mr prefixes
+        let value = original.replace(/^(mr\.?\s*)+/i, '');
+
+        // Capitalize words
+        value = value.replace(/\b\w/g, char => char.toUpperCase());
+
+        // Build final value
+        let finalValue = prefix + value;
+
+        // Adjust cursor position
+        let diff = finalValue.length - original.length;
+        cursorPos += diff;
+
+        // Set value
+        input.value = finalValue;
+
+        // Restore cursor safely
+        requestAnimationFrame(() => {
+            input.setSelectionRange(cursorPos, cursorPos);
+        });
+    }
+
+
+    function handleMrPrefixold(input) {
         const prefix = 'Mr. ';
 
         // Remove any existing prefix

@@ -139,13 +139,13 @@ public function index(Request $request)
                         break;
 
                     case 'pending_high':
-                        $query->where('pending_fees', '>', 0)
-                              ->orderBy('pending_fees', 'desc');
+                        // $query->where('pending_fees', '>', 0)
+                              $query->orderBy('pending_fees', 'desc');
                         break;
 
                     case 'pending_low':
-                        $query->where('pending_fees', '>', 0)
-                              ->orderBy('pending_fees', 'asc');
+                        // $query->where('pending_fees', '>', 0)
+                              $query->orderBy('pending_fees', 'asc');
                         break;
 
                     case 'fees_high':
@@ -157,6 +157,39 @@ public function index(Request $request)
                         break;
                 }
             }
+
+            /* =========================
+               AMOUNT SLIDER FILTER
+               (ONLY for last 4 options)
+               ========================= */
+
+            if (
+                $request->filled('fee_filter') &&
+                in_array($request->fee_filter, [
+                    'pending_high',
+                    'pending_low',
+                    'fees_high',
+                    'fees_low'
+                ])
+            ) {
+
+                $minAmount = $request->amount_min;
+                $maxAmount = $request->amount_max;
+                // dd($request->amount_min, $request->amount_max,$request->fee_filter);
+                // Decide column
+                $amountColumn = in_array($request->fee_filter, ['pending_high', 'pending_low'])
+                    ? 'pending_fees'
+                    : 'total_fees';
+
+                if ($minAmount !== null && $minAmount !== '') {
+                    $query->where($amountColumn, '>=', $minAmount);
+                }
+
+                if ($maxAmount !== null && $maxAmount !== '') {
+                    $query->where($amountColumn, '<=', $maxAmount);
+                }
+            }
+
 
             if ($request->filled('gender')) {
                 $query->where('gender', $request->gender);
@@ -255,9 +288,28 @@ if (!$request->filled('fee_filter')) {
      public function update(Request $request, Student $student)
     {
         // dd($request->all());
+        $request->merge([
+            'f_name' => 'Mr. ' . ucwords(
+                trim(preg_replace('/^(mr\.?\s*)+/i', '', $request->f_name))
+            )
+        ]);
+
         $validates = $request->validate([
             'student_name'   => 'required|string|max:255',
-            'f_name'         => 'required|string|max:255',
+            // 'f_name'         => 'required|string|max:255',
+            'f_name' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    // Remove "Mr." and validate remaining name
+                    $nameOnly = trim(preg_replace('/^mr\.?\s*/i', '', $value));
+
+                    if ($nameOnly === '') {
+                        $fail('Father name is required.');
+                    }
+                }
+            ],
             'sno'            => 'required|string|max:255',
             'email_id'       => 'nullable|email',
             'contact'        => 'required|string|max:15',

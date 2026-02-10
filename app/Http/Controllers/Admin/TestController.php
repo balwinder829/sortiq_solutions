@@ -19,10 +19,15 @@ use App\Exports\FinalizedStudentsExport;
 use App\Models\Enquiry;
 use App\Exports\SingleTestStudentsExport;
 use App\Exports\OverallStudentsExport;
-
+use Mpdf\Mpdf;
+use Illuminate\Support\Facades\View;
+use App\Traits\PdfLayoutTrait;
 
 class TestController extends Controller
 {
+
+    use PdfLayoutTrait;
+    
     protected string $permissionPrefix = 'tests';
 
     protected array $permissionMap = [
@@ -737,6 +742,56 @@ class TestController extends Controller
             ]),
             'offline_all_students.xlsx'
         );
+    }
+
+    public function downloadMcqPaper($testId)
+    {
+        $test = Test::with(['questions.options'])->findOrFail($testId);
+
+        // Keep question order as stored
+        $questions = $test->questions->map(function ($question) {
+            return (object) [
+                'id' => $question->id,
+                'question' => $question->question,
+                'marks' => $question->marks ?? null,
+
+                // Options in original order
+                'options' => $question->options->values(),
+
+                // Correct option index (a,b,c,d)
+                'correct_index' => $question->options
+                    ->values()
+                    ->search(fn ($opt) => $opt->is_correct === 1),
+            ];
+        });
+
+         $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 0,
+            'margin_right' => 0,
+            'margin_top' => 20,
+            'margin_bottom' => 20,
+            'tempDir' => storage_path('app/mpdf'), // IMPORTANT
+        ]);
+
+        $html = View::make('pdf.aptitude-test-pdf', compact('questions','test'))->render();
+        // $mpdf->SetHTMLHeaderByName('firstHeader');
+        $mpdf->SetHTMLFooter('');
+
+        // Write ALL content in one go
+        $mpdf->WriteHTML($html);
+
+        // Footer only on last page
+        $mpdf->SetHTMLFooter($this->getStudentTestPDFFooter());
+        $mpdf->WriteHTML('');
+
+         return response()->streamDownload(
+            fn () => $mpdf->Output('', 'D'),
+            $test->title . '-question-paper.pdf'
+        );
+    
     }
 
 

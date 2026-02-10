@@ -411,7 +411,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         {{-- Technology / Course --}}
         <div class="col-md-12">
             <select name="technology" class="form-control" required>
-                <option value="">Select Technology / Domain</option>
+                <option value="" disabled selected>Select Technology / Domain</option>
 
                 @foreach($courses as $course)
                     <option value="{{ $course->id }}"

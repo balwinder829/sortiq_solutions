@@ -53,6 +53,7 @@ class DailyInterviewController extends Controller
             'candidate_name' => 'required|string|max:255',
             'mobile_no' => 'nullable|string|max:20',
             'technology' => 'nullable|string|max:100',
+            'interview_mode' => 'nullable|string',
             
             'notice_period' => 'nullable|string|max:50',
             'exp_ctc' => 'nullable|string|max:50',

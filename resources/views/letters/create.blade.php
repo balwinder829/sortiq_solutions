@@ -20,6 +20,32 @@
 
         <div class="row">
 
+             {{-- Letter Type --}}
+            <div class="form-group col-md-6">
+                <label>Letter Type</label>
+                <select
+                    name="letter_type"
+                    id="letterType"
+                    class="form-control @error('letter_type') is-invalid @enderror"
+                    required
+                >
+                    <option value="">Select Letter Type</option>
+                    <option value="offer" {{ old('letter_type')=='offer'?'selected':'' }}>Offer Letter</option>
+                    <option value="experience" {{ old('letter_type')=='experience'?'selected':'' }}>Experience Letter</option>
+                    <option value="relieving" {{ old('letter_type')=='relieving'?'selected':'' }}>Relieving Letter</option>
+                    <option value="appointment" {{ old('letter_type')=='appointment'?'selected':'' }}>Appointment Letter</option>
+                    <option value="appointment_with_bond" {{ old('letter_type')=='appointment_with_bond'?'selected':'' }}>Appointment With Bond Letter</option>
+                    <option value="increment" {{ old('letter_type')=='increment'?'selected':'' }}>Increment Letter</option>
+                    <option value="bond" {{ old('letter_type')=='bond'?'selected':'' }}>Employment Bond Letter</option>
+                    <option value="custom_bond" {{ old('letter_type')=='custom_bond'?'selected':'' }}>Custom Bond Letter</option>
+                    <option value="noc" {{ old('letter_type')=='noc'?'selected':'' }}>NOC Letter</option>
+                    <option value="custom" {{ old('letter_type')=='custom'?'selected':'' }}>Custom Office Letter</option>
+                </select>
+                @error('letter_type')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
             {{-- Employee --}}
             <div class="form-group col-md-6">
                 <label>Select Employee</label>
@@ -41,31 +67,6 @@
                     @endforeach
                 </select>
                 @error('employee_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            {{-- Letter Type --}}
-            <div class="form-group col-md-6">
-                <label>Letter Type</label>
-                <select
-                    name="letter_type"
-                    id="letterType"
-                    class="form-control @error('letter_type') is-invalid @enderror"
-                    required
-                >
-                    <option value="">Select Letter Type</option>
-                    <option value="offer" {{ old('letter_type')=='offer'?'selected':'' }}>Offer Letter</option>
-                    <option value="experience" {{ old('letter_type')=='experience'?'selected':'' }}>Experience Letter</option>
-                    <option value="relieving" {{ old('letter_type')=='relieving'?'selected':'' }}>Relieving Letter</option>
-                    <option value="appointment" {{ old('letter_type')=='appointment'?'selected':'' }}>Appointment Letter</option>
-                    <option value="appointment_with_bond" {{ old('letter_type')=='appointment_with_bond'?'selected':'' }}>Appointment With Bond Letter</option>
-                    <option value="increment" {{ old('letter_type')=='increment'?'selected':'' }}>Increment Letter</option>
-                    <option value="bond" {{ old('letter_type')=='bond'?'selected':'' }}>Employment Bond Letter</option>
-                    <option value="custom_bond" {{ old('letter_type')=='custom_bond'?'selected':'' }}>Custom Bond Letter</option>
-                    <option value="noc" {{ old('letter_type')=='noc'?'selected':'' }}>NOC Letter</option>
-                </select>
-                @error('letter_type')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
@@ -118,13 +119,12 @@
             <div class="form-group col-md-6 d-none" id="bondField">
                 <label>Bond Period (Years.Months)</label>
                 <input
-                    type="number"
+                    type="text"
                     name="bond_period"
                     id="bondPeriod"
                     class="form-control @error('bond_period') is-invalid @enderror"
-                    step="0.1"
-                    min="0"
                     value="{{ old('bond_period') }}"
+                    placeholder="e.g. 2.10 (2 years 10 months)"
                 >
                 @error('bond_period')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const isIncrement = letterType.value === 'increment';
         const isBond = letterType.value === 'bond'  || letterType.value === 'custom_bond';
         const isBondField = letterType.value === 'bond';
-        const isCustomBond = letterType.value === 'custom_bond';
+        const isCustomBond = letterType.value === 'custom_bond' || letterType.value === 'custom';
 
         document.getElementById('relievingField').classList.toggle('d-none', !isExperience);
         // document.getElementById('probationField').classList.toggle('d-none', !isAppointment);
@@ -366,7 +366,49 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSalaryVisibility();
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
 
+    const letterType     = document.getElementById('letterType');
+    const employeeSelect = document.getElementById('employeeSelect');
 
+    if (!letterType || !employeeSelect) return;
+
+    function toggleEmployeeRequired() {
+        const isCustom = letterType.value === 'custom';
+
+        if (isCustom) {
+            employeeSelect.removeAttribute('required');
+        } else {
+            employeeSelect.setAttribute('required', 'required');
+        }
+    }
+
+    letterType.addEventListener('change', toggleEmployeeRequired);
+
+    // run once on page load (important for old input / edit)
+    toggleEmployeeRequired();
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('bondPeriod');
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        const value = input.value;
+        if (!value.includes('.')) return;
+
+        const parts = value.split('.');
+        const months = parseInt(parts[1] || 0, 10);
+
+        if (months > 11) {
+            input.setCustomValidity('Months must be between 0 and 11');
+        } else {
+            input.setCustomValidity('');
+        }
+    });
+});
+</script>
 
 @endpush

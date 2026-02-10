@@ -69,7 +69,7 @@
                     <label class="form-label">College</label>
                     <select class="form-select @error('college') is-invalid @enderror"
                             name="college" required>
-                        <option value="">Select College</option>
+                        <option value="" disabled selected>Select College</option>
                         @foreach($colleges as $college)
                             <option value="{{ $college->id }}"
                                 {{ old('college') == $college->id ? 'selected' : '' }}>
@@ -87,7 +87,7 @@
                     <label class="form-label">Technology / Course</label>
                     <select class="form-select @error('technology') is-invalid @enderror"
                             name="technology" required>
-                        <option value="">Select Course</option>
+                        <option value="" disabled selected>Select Course</option>
                         @foreach($courses as $course)
                             <option value="{{ $course->id }}"
                                 {{ old('technology') == $course->id ? 'selected' : '' }}>
@@ -105,7 +105,7 @@
                     <label class="form-label">Duration</label>
                     <select class="form-select @error('duration') is-invalid @enderror"
                             name="duration" required>
-                        <option value="">Select Duration</option>
+                        <option value="" disabled selected>Select Duration</option>
                         @foreach($durations as $duration)
                             <option value="{{ $duration->duration }}"
                                 {{ old('duration') == $duration->duration ? 'selected' : '' }}>

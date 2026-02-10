@@ -66,6 +66,20 @@
                     @endforeach
                 </select>
             </div>
+
+             {{-- Interview Type Filter --}}
+            <div class="col-md-3">
+                <label for="type_filter" class="form-label">Filter by Mode</label>
+                <select name="type" id="type_filter" class="form-select">
+                    <option value="">-- All Types --</option>
+                     <option value="online" {{ request('type') == 'online' ? 'selected' : '' }}>
+                            Online</option>
+
+                    <option value="offline" {{ request('type') == 'offline' ? 'selected' : '' }}>
+                            Offline</option>
+                    
+                </select>
+            </div>
             
             {{-- Date Quick Select Filter (New) --}}
             <div class="col-md-3">

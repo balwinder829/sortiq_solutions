@@ -161,9 +161,28 @@ public function index(Request $request)
     public function update(Request $request, Student $student)
     {
          // dd($request->all());
+        $request->merge([
+            'f_name' => 'Mr. ' . ucwords(
+                trim(preg_replace('/^(mr\.?\s*)+/i', '', $request->f_name))
+            )
+        ]);
+
         $validates = $request->validate([
             'student_name'   => 'required|string|max:255',
-            'f_name'         => 'required|string|max:255',
+            // 'f_name'         => 'required|string|max:255',
+            'f_name' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    // Remove "Mr." and validate remaining name
+                    $nameOnly = trim(preg_replace('/^mr\.?\s*/i', '', $value));
+
+                    if ($nameOnly === '') {
+                        $fail('Father name is required.');
+                    }
+                }
+            ],
             'sno'            => 'required|string|max:255',
             'email_id'       => 'nullable|email',
             'contact'        => 'required|string|max:15',

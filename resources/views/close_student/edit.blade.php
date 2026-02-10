@@ -265,19 +265,35 @@
     });
 </script>
 <script>
-function handleMrPrefix(input) {
+ function handleMrPrefix(input) {
     const prefix = 'Mr. ';
 
-    // Remove any existing Mr.
-    let value = input.value.replace(/^mr\.?\s*/i, '');
+    // Save cursor position
+    let cursorPos = input.selectionStart;
 
-    // Capitalize properly
-    value = value
-        .toLowerCase()
-        .replace(/\b\w/g, c => c.toUpperCase());
+    // Current value
+    let original = input.value;
 
-    // Set final value
-    input.value = prefix + value;
+    // Remove all Mr prefixes
+    let value = original.replace(/^(mr\.?\s*)+/i, '');
+
+    // Capitalize words
+    value = value.replace(/\b\w/g, char => char.toUpperCase());
+
+    // Build final value
+    let finalValue = prefix + value;
+
+    // Adjust cursor position
+    let diff = finalValue.length - original.length;
+    cursorPos += diff;
+
+    // Set value
+    input.value = finalValue;
+
+    // Restore cursor safely
+    requestAnimationFrame(() => {
+        input.setSelectionRange(cursorPos, cursorPos);
+    });
 }
 </script>
 <script>

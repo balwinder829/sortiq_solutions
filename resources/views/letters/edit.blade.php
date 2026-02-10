@@ -20,20 +20,21 @@
 
         <div class="row">
 
-            {{-- Employee (READ ONLY) --}}
-            <div class="form-group col-md-6">
-                <label>Employee</label>
-                 <input type="hidden" name="employee_id" value="{{ $letter->employee_id }}">
-                <input
-                    type="text"
-                    class="form-control"
-                    value="{{ $letter->employee->emp_code }} - {{ $letter->employee->emp_name }}"
-                    readonly
-                >
-                @error('employee_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
+           {{-- Employee (READ ONLY) --}}
+<div class="form-group col-md-6" id="employeeSection">
+    <label>Employee</label>
+
+    <input type="hidden" name="employee_id" value="{{ $letter->employee_id }}">
+
+    <input
+        type="text"
+        class="form-control"
+        value="{{ $letter->employee
+            ? $letter->employee->emp_code . ' - ' . $letter->employee->emp_name
+            : 'Custom Office Letter' }}"
+        readonly
+    >
+</div>
 
             {{-- Letter Type --}}
             <div class="form-group col-md-6">
@@ -54,6 +55,7 @@
                     <option value="bond" {{ $letter->letter_type === 'bond' ? 'selected' : '' }}>Employment Bond Letter</option>
                     <option value="custom_bond" {{ $letter->letter_type === 'custom_bond' ? 'selected' : '' }}>Custom Bond Letter</option>
                     <option value="noc" {{ $letter->letter_type === 'noc' ? 'selected' : '' }}>NOC Letter</option>
+                    <option value="custom" {{ $letter->letter_type === 'custom' ? 'selected' : '' }}>Custom Office Letter</option>
                 </select>
                 @error('letter_type')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -106,7 +108,7 @@
 
             <div class="form-group col-md-6 d-none" id="bondField">
                 <label>Bond Period (Years.Months)</label>
-                <input
+               <!--  <input
                     type="number"
                     step="0.1"
                     min="0"
@@ -115,7 +117,17 @@
                     class="form-control @error('bond_period') is-invalid @enderror"
                     value="{{ old('bond_period', $letter->bond_period) }}"
                     placeholder="e.g. 1.2 (1 year 2 months)"
+                > -->
+
+                <input
+                    type="text"
+                    name="bond_period"
+                    id="bondPeriod"
+                    class="form-control @error('bond_period') is-invalid @enderror"
+                    value="{{ old('bond_period', $letter->bond_period) }}"
+                    placeholder="e.g. 2.10 (2 years 10 months)"
                 >
+
                 @error('bond_period')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -127,7 +139,7 @@
                 <input
                     type="text"
                     class="form-control"
-                    value="{{ optional($letter->employee->salaryStructure)->total_salary }}"
+                    value="{{ optional(optional($letter->employee)->salaryStructure)->total_salary }}"
                     readonly
                 >
             </div>
@@ -258,10 +270,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const isAppointment = letterType.value === 'appointment';
         const isIncrement = letterType.value === 'increment';
         const isBond = ['bond', 'custom_bond'].includes(letterType.value);
-        const isCustomBond = letterType.value === 'custom_bond';
+        // const isCustomBond = letterType.value === 'custom_bond';
+        const isCustomBond = letterType.value === 'custom_bond' || letterType.value === 'custom';
 
         document.getElementById('relievingField').classList.toggle('d-none', !isExperience);
-        document.getElementById('probationField').classList.toggle('d-none', !isAppointment);
+        // document.getElementById('probationField').classList.toggle('d-none', !isAppointment);
          const isAppointmentWithBond = letterType.value === 'appointment_with_bond';
 
         document.getElementById('bondField')
@@ -328,4 +341,25 @@ document.addEventListener('DOMContentLoaded', function () {
     calculateBondEndDate();
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('bondPeriod');
+    if (!input) return;
+
+    input.addEventListener('input', function () {
+        const value = input.value;
+        if (!value.includes('.')) return;
+
+        const parts = value.split('.');
+        const months = parseInt(parts[1] || 0, 10);
+
+        if (months > 11) {
+            input.setCustomValidity('Months must be between 0 and 11');
+        } else {
+            input.setCustomValidity('');
+        }
+    });
+});
+</script>
+
 @endpush

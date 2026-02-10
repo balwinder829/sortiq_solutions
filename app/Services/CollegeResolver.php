@@ -19,6 +19,7 @@ class CollegeResolver
         [$collegeNameRaw, $state, $district] = $this->explodeAndResolve($raw);
 
         $cleanName = $this->normalizeText($collegeNameRaw);
+        $shortName = $this->generateShortName($cleanName);
 // dd($cleanName);
         $stateId    = $state?->id;
         $districtId = $district?->id;
@@ -40,6 +41,7 @@ class CollegeResolver
             $college = College::create([
                 'college_name'         => $collegeNameRaw,
                 'college_display_name' => $collegeNameRaw,
+                'college_short_name'   => $shortName,
                 'clean_name'           => $cleanName,
                 'slug'                 => Str::slug($collegeNameRaw),
                 'state_id'             => $stateId,
@@ -170,6 +172,7 @@ class CollegeResolver
     ): College {
 
         $cleanName = $this->normalizeText($collegeName);
+        $shortName = $this->generateShortName($cleanName);
         // dd($cleanName);
         return College::firstOrCreate(
             [
@@ -180,6 +183,7 @@ class CollegeResolver
             [
                 // canonical name (system)
                 'college_name'         => $collegeName,
+                'college_short_name'   => $shortName,
 
                 // EXACT user input for display
                 'college_display_name' => $displayName ?? $collegeName,
@@ -229,9 +233,11 @@ class CollegeResolver
             ];
         }
 
+        $shortName = $this->generateShortName($cleanName);
         $college = College::create([
             'college_name'         => $collegeNameRaw,
             'college_display_name' => $collegeNameRaw,
+            'college_short_name'   => $shortName,
             'clean_name'           => $cleanName,
             'slug'                 => Str::slug($collegeNameRaw),
             'state_id'             => $stateId,
@@ -242,6 +248,20 @@ class CollegeResolver
             'college' => $college,
             'status'  => 'created',
         ];
+    }
+
+    protected function generateShortName(string $name): string
+    {
+        // Remove special characters
+        $name = preg_replace('/[^a-zA-Z\s]/', '', $name);
+
+        // Split into words
+        $words = preg_split('/\s+/', trim($name));
+
+        // Take first letter of each word
+        $initials = array_map(fn($w) => strtoupper($w[0]), $words);
+
+        return implode('', $initials);
     }
 
 

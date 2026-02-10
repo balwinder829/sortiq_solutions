@@ -11,6 +11,26 @@
     background-color: blue !important;  /* light yellow */
 }
 
+/* 🔴 OVERDUE */
+table.table-striped.dataTable tbody tr.row-overdue > * {
+    background-color: red !important;
+}
+
+/* 🟡 DUE TODAY */
+table.table-striped.dataTable tbody tr.row-due-today > * {
+    background-color: yellow !important;
+}
+
+/* Hover */
+table.table-striped.dataTable tbody tr.row-overdue:hover > * {
+    background-color: red !important;
+}
+
+table.table-striped.dataTable tbody tr.row-due-today:hover > * {
+    background-color: yellow !important;
+}
+
+
  </style>
 <div class="container mt-4">
     {{-- UNIVERSAL POPUP CONTAINER --}}
@@ -163,7 +183,7 @@
             </select>
         </div> -->
 
-         <div class="col-md-3 col-6">
+         <div class="col-md-2 col-6">
             <select name="fee_filter" class="form-control">
                 <option value="">-- Fee Related Filter --</option>
 
@@ -216,12 +236,47 @@
                 </option>
             </select>
         </div>
+         {{-- Amount Range Slider --}}
+<!-- <div class="col-md-3 col-12">
+    <label class="form-label fw-bold">Amount Range</label>
+
+    <div id="amountSlider"></div>
+
+    <div class="d-flex justify-content-between mt-2">
+        <span>Min: <strong id="amountMinText"></strong></span>
+        <span>Max: <strong id="amountMaxText"></strong></span>
+    </div>
+
+    {{-- Hidden inputs for GET --}}
+    <input type="hidden" name="amount_min" id="amountMin" value="{{ request('amount_min', 0) }}">
+    <input type="hidden" name="amount_max" id="amountMax" value="{{ request('amount_max', 200000) }}">
+</div> -->
+ 
+
+<!-- <div class="row mt-2"> -->
+      {{-- Amount Range Slider --}}
+<div class="col-md-4 col-12 mx-4 mt-4">
+    <!-- <label class="form-label fw-bold">Amount Range</label> -->
+
+    <div id="amountSlider"></div>
+
+    <div class="d-flex justify-content-between mt-2">
+        <span>Min: <strong id="amountMinText"></strong></span>
+        <span>Max: <strong id="amountMaxText"></strong></span>
+    </div>
+
+    {{-- Hidden inputs for GET --}}
+    <input type="hidden" name="amount_min" id="amountMin" value="{{ request('amount_min', 0) }}">
+    <input type="hidden" name="amount_max" id="amountMax" value="{{ request('amount_max', 200000) }}">
+</div>
+<!-- </div> -->
+
 
         {{-- Buttons --}}
-        <div class="col-md-1 d-grid">
+        <div class="col-md-1 d-flex align-items-end">
             <button type="submit" class="btn btn-primary">Search</button>
         </div>
-        <div class="col-md-1 d-grid">
+       <div class="col-md-1 d-flex align-items-end">
             <a href="{{ route('certificates.index') }}" class="btn btn-secondary">Reset</a>
         </div>
     </div>
@@ -276,7 +331,22 @@
         </thead>
             <tbody>
             @foreach ($students as $student)
-            <tr>
+             @php
+    $rowClass = '';
+
+    if ($student->next_due_date) {
+        $nextDue = \Carbon\Carbon::createFromFormat('Y-m-d', $student->next_due_date)->startOfDay();
+        $today   = \Carbon\Carbon::today();
+
+        if ($nextDue->lt($today)) {
+            $rowClass = 'row-overdue';
+        } elseif ($nextDue->eq($today)) {
+            $rowClass = 'row-due-today';
+        }
+    }
+@endphp
+
+<tr class="{{ $rowClass }}">
                 <td>
                     <input
                         type="checkbox"
@@ -377,9 +447,71 @@
     <input type="hidden" name="ids" id="deleteIds" value="">
 
 </form>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const slider = document.getElementById('amountSlider');
+    const feeFilter = document.querySelector('select[name="fee_filter"]');
+
+    const minInput = document.getElementById('amountMin');
+    const maxInput = document.getElementById('amountMax');
+    const minText  = document.getElementById('amountMinText');
+    const maxText  = document.getElementById('amountMaxText');
+
+    const startMin = Number(minInput.value || 0);
+    const startMax = Number(maxInput.value || 200000);
+
+    noUiSlider.create(slider, {
+        start: [startMin, startMax],
+        connect: true,
+        step: 1,
+        range: {
+            min: 0,
+            max: 200000
+        }
+    });
+
+    slider.noUiSlider.on('update', function (values) {
+        minInput.value = Math.round(values[0]);
+        maxInput.value = Math.round(values[1]);
+
+        minText.textContent = values[0];
+        maxText.textContent = values[1];
+    });
+
+    /**
+     * ✅ Enable slider ONLY for these fee_filter values
+     */
+    const amountEnabledFilters = [
+        'pending_high',
+        'pending_low',
+        'fees_high',
+        'fees_low'
+    ];
+
+    function toggleSlider() {
+        const value = feeFilter.value;
+
+        if (amountEnabledFilters.includes(value)) {
+            slider.noUiSlider.enable();
+            slider.style.opacity = 1;
+        } else {
+            slider.noUiSlider.disable();
+            slider.style.opacity = 0.4;
+        }
+    }
+
+    feeFilter.addEventListener('change', toggleSlider);
+    toggleSlider(); // run on page load
+});
+</script>
+
+
 <script>
 $(document).ready(function () {
     // Initialize DataTable

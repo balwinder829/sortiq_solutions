@@ -45,6 +45,9 @@
                                 <option value="{{ $college->id }}"
                                     {{ request('college') == $college->id ? 'selected' : '' }}>
                                     {{ $college->college_display_name }}
+                                     @if(!empty($college->college_short_name))
+                                        ({{ $college->college_short_name }})
+                                    @endif
                                 </option>
                             @endforeach
                         </select>

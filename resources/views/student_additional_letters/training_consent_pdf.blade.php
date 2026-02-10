@@ -123,7 +123,9 @@
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                       <b>Student Details</b><br>
                         Name: {{ ucwords($letter->student->student_name) }}<br>
-                        College / University: {{ ucwords($letter->student?->collegeData?->college_display_name ?? 'N/A') }}<br>
+                        College / University: {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}@if(!empty($letter->student?->collegeData?->college_short_name))
+                        ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
+                    @endif<br>
                         Course: {{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }}<br>
                         Mobile No.: {{ ucwords($letter->student->contact) }}<br>
 

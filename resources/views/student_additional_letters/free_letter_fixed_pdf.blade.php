@@ -75,7 +75,9 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                        {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}
+                        {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}@if(!empty($letter->student?->collegeData?->college_short_name))
+                            ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
+                        @endif
                     </td>
                 </tr>
                 

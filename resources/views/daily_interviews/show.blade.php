@@ -32,6 +32,9 @@
                             <strong>Type:</strong> <span class="badge bg-info">{{ $interview->interview_type }}</span>
                         </li>
                         <li class="list-group-item">
+                            <strong>Mode:</strong> <span class="badge bg-info">{{ $interview->interview_type === 'online' ? 'Online' : 'Offline' }}</span>
+                        </li>
+                        <li class="list-group-item">
                             <strong>Status:</strong> 
                             @php
                                 $badgeClass = match($interview->interview_status) {

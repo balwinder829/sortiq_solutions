@@ -7,7 +7,28 @@
      table.dataTable td {
     text-transform: capitalize;
 }
+
+/* 🔴 OVERDUE */
+table.table-striped.dataTable tbody tr.row-overdue > * {
+    background-color: red !important;
+}
+
+/* 🟡 DUE TODAY */
+table.table-striped.dataTable tbody tr.row-due-today > * {
+    background-color: yellow !important;
+}
+
+/* Hover */
+table.table-striped.dataTable tbody tr.row-overdue:hover > * {
+    background-color: red !important;
+}
+
+table.table-striped.dataTable tbody tr.row-due-today:hover > * {
+    background-color: yellow !important;
+}
+
  </style>
+
  @php
     $role = (int) auth()->user()->role;
 @endphp
@@ -192,6 +213,7 @@
         </div>
 
 
+
         <div class="col-md-2 col-12">
             <select name="gender" class="form-control">
                 <option value="">--Gender--</option>
@@ -219,6 +241,23 @@
            value="{{ request('limit') }}"
            oninput="this.value = this.value.replace(/\D/g, '')">
        </div>
+
+       {{-- Amount Range Slider --}}
+<div class="col-md-4 col-12">
+    <label class="form-label fw-bold">Amount Range</label>
+
+    <div id="amountSlider"></div>
+
+    <div class="d-flex justify-content-between mt-2">
+        <span>Min: <strong id="amountMinText"></strong></span>
+        <span>Max: <strong id="amountMaxText"></strong></span>
+    </div>
+
+    {{-- Hidden inputs for GET --}}
+    <input type="hidden" name="amount_min" id="amountMin" value="{{ request('amount_min', 0) }}">
+    <input type="hidden" name="amount_max" id="amountMax" value="{{ request('amount_max', 200000) }}">
+</div>
+
 
         <!-- <div class="col-md-3">
             <div class="form-check d-flex align-items-center">
@@ -290,20 +329,23 @@
         <tbody>
             
             @foreach ($students as $student)
-            @php
-                $today = now()->toDateString();
-                $nextDate = $student->next_due_date 
-                    ? \Carbon\Carbon::parse($student->next_due_date)->toDateString()
-                    : null;
-            @endphp
-            <tr 
-    @if($nextDate && $nextDate < $today)
-        style="background-color:#ffe5e5;" {{-- Overdue --}}
-    @elseif($nextDate && $nextDate == $today)
-        style="background-color:#fff3cd;" {{-- Due Today --}}
-    @endif
->
-                <td><input type="checkbox" class="record_checked" value="{{ $student->id }}" data-email="{{ $student->email_count_confirmation }}"
+           @php
+    $rowClass = '';
+
+    if ($student->next_due_date) {
+        $nextDue = \Carbon\Carbon::createFromFormat('Y-m-d', $student->next_due_date)->startOfDay();
+        $today   = \Carbon\Carbon::today();
+
+        if ($nextDue->lt($today)) {
+            $rowClass = 'row-overdue';
+        } elseif ($nextDue->eq($today)) {
+            $rowClass = 'row-due-today';
+        }
+    }
+@endphp
+
+<tr class="{{ $rowClass }}">
+<td><input type="checkbox" class="record_checked" value="{{ $student->id }}" data-email="{{ $student->email_count_confirmation }}"
        data-receipt="{{ $student->count_receipt_download }}" data-pending_fees="{{ $student->pending_fees }}"></td>
                 <td>{{ $student->sno }}</td>
                 <td>{{ $student->student_name }}</td>
@@ -739,11 +781,73 @@
     </form>
   </div>
 </div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
 
 
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const slider = document.getElementById('amountSlider');
+    const feeFilter = document.querySelector('select[name="fee_filter"]');
+
+    const minInput = document.getElementById('amountMin');
+    const maxInput = document.getElementById('amountMax');
+    const minText  = document.getElementById('amountMinText');
+    const maxText  = document.getElementById('amountMaxText');
+
+    const startMin = Number(minInput.value || 0);
+    const startMax = Number(maxInput.value || 200000);
+
+    noUiSlider.create(slider, {
+        start: [startMin, startMax],
+        connect: true,
+        step: 1,
+        range: {
+            min: 0,
+            max: 200000
+        }
+    });
+
+    slider.noUiSlider.on('update', function (values) {
+        minInput.value = Math.round(values[0]);
+        maxInput.value = Math.round(values[1]);
+
+        minText.textContent = values[0];
+        maxText.textContent = values[1];
+    });
+
+    /**
+     * ✅ Enable slider ONLY for these fee_filter values
+     */
+    const amountEnabledFilters = [
+        'pending_high',
+        'pending_low',
+        'fees_high',
+        'fees_low'
+    ];
+
+    function toggleSlider() {
+        const value = feeFilter.value;
+
+        if (amountEnabledFilters.includes(value)) {
+            slider.noUiSlider.enable();
+            slider.style.opacity = 1;
+        } else {
+            slider.noUiSlider.disable();
+            slider.style.opacity = 0.4;
+        }
+    }
+
+    feeFilter.addEventListener('change', toggleSlider);
+    toggleSlider(); // run on page load
+});
+</script>
+
+
 <script>
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -776,24 +880,24 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
         'pagingType': "full_numbers", 
         "lengthMenu": [10,15,20, 25, 50, 100],
         "scrollX": true,
-        "rowCallback": function(row, data) {
+//         "rowCallback": function(row, data) {
 
-    let nextDueDate = data[14];
-    let today = new Date().toISOString().slice(0,10);
+//     let nextDueDate = data[14];
+//     let today = new Date().toISOString().slice(0,10);
 
-    if (nextDueDate && nextDueDate !== "-") {
+//     if (nextDueDate && nextDueDate !== "-") {
 
-        let parts = nextDueDate.split("-");
-        let mysqlFormat = parts[2] + '-' + parts[1] + '-' + parts[0];
+//         let parts = nextDueDate.split("-");
+//         let mysqlFormat = parts[2] + '-' + parts[1] + '-' + parts[0];
 
-        if (mysqlFormat < today) {
-            $('td', row).css('background-color', '#ffe5e5');  // RED
-        } 
-        else if (mysqlFormat === today) {
-            $('td', row).css('background-color', '#fff3cd');  // YELLOW
-        }
-    }
-}
+//         if (mysqlFormat < today) {
+//             $('td', row).css('background-color', '#ffe5e5');  // RED
+//         } 
+//         else if (mysqlFormat === today) {
+//             $('td', row).css('background-color', '#fff3cd');  // YELLOW
+//         }
+//     }
+// }
 
     });
 

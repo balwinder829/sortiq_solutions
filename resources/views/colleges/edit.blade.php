@@ -22,6 +22,11 @@
         </div>
 
         <div class="mb-3">
+            <label>Short Name</label>
+            <input type="text" name="college_short_name" class="form-control" value="{{ old('college_short_name', $college->college_short_name) }}" required>
+        </div>
+
+        <div class="mb-3">
             <label>State</label>
             <select name="state_id" id="state" class="form-control" required>
                 <option value="">-- Select State --</option>

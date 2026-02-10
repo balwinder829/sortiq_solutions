@@ -94,12 +94,14 @@
                         <i class="fas fa-download"></i>
                     </a>
 
+                    @if($letter->letter_type != 'custom')
                     <form action="{{ route('letters.email', $letter) }}" method="POST" style="display:inline;">
                         @csrf
                         <button class="btn btn-sm">
                             <i class="fas fa-envelope"></i>
                         </button>
                     </form>
+                    @endif
 
                     <form
                         action="{{ route('letters.destroy', $letter) }}"

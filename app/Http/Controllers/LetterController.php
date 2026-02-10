@@ -83,6 +83,32 @@ class LetterController extends Controller
 
     public function store(Request $request)
     {
+         /* =================================================
+       🟢 CUSTOM OFFICE LETTER (NO EMPLOYEE)
+           ================================================= */
+        if ($request->letter_type === 'custom') {
+
+            $data = $request->validate([
+                'letter_type' => 'required|in:custom',
+                'issue_date'  => 'required|date|before_or_equal:today',
+                'bond_terms'  => 'required|string', // textarea content
+            ]);
+
+            Letter::create([
+                'employee_id' => null,              // 👈 no employee
+                'letter_type' => 'custom',
+                'issue_date'  => $data['issue_date'],
+                'bond_terms'  => $data['bond_terms'],
+            ]);
+
+            return redirect()
+                ->route('letters.index')
+                ->with('success', 'Custom office letter created successfully.');
+        }
+
+        /* =================================================
+           🔵 OTHER LETTERS (EMPLOYEE-BASED)
+           ================================================= */
         $validator = Validator::make($request->all(), [
         'employee_id' => 'required|exists:employees,id',
         'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond',
@@ -296,6 +322,7 @@ private function generateLetterPdf(Letter $letter): string
             },
             'custom_bond' => 'letters.pdf-custom_bond',
             'relieving' => 'letters.pdf-relieving',
+            'custom' => 'letters.pdf-custom_letter',
             default => 'letters.pdf-offer',
         };
 
@@ -311,7 +338,8 @@ private function generateLetterPdf(Letter $letter): string
 
             // 3️⃣ Apply empty footer initially
             $mpdf->SetHTMLFooterByName('emptyFooter');
-        }else if ($letter->letter_type === 'custom_bond') {
+        }else if (in_array($letter->letter_type, ['custom_bond', 'custom'])) {
+        // }else if ($letter->letter_type === 'custom_bond') {
 
             // Footer spacing
             $mpdf->SetAutoPageBreak(true, 35);
@@ -357,6 +385,23 @@ private function generateLetterPdf(Letter $letter): string
     {
         $pdfContent = $this->generateLetterPdf($letter);
        
+         /* =================================================
+       🟢 CUSTOM OFFICE LETTER
+       ================================================= */
+        if ($letter->letter_type === 'custom') {
+
+            $date = \Carbon\Carbon::parse($letter->issue_date)->format('Y-m-d');
+
+            $fileName = "CUSTOM_OFFICE_LETTER_{$date}.pdf";
+
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header(
+                    'Content-Disposition',
+                    'attachment; filename="'.$fileName.'"'
+                );
+        }
+
 
           // Clean & format values
        $letterType = strtoupper(
@@ -451,7 +496,31 @@ private function generateLetterPdf(Letter $letter): string
 
     public function update(Request $request, Letter $letter)
     {   
+        /* =================================================
+       🟢 CUSTOM OFFICE LETTER UPDATE
+       ================================================= */
+        if ($request->letter_type === 'custom') {
 
+            $data = $request->validate([
+                'letter_type' => 'required|in:custom',
+                'issue_date'  => 'required|date|before_or_equal:today',
+                'bond_terms'  => 'required|string',
+            ]);
+
+            $letter->update([
+                'letter_type' => 'custom',
+                'issue_date'  => $data['issue_date'],
+                'bond_terms'  => $data['bond_terms'],
+            ]);
+
+            return redirect()
+                ->route('letters.index')
+                ->with('success', 'Custom office letter updated successfully.');
+        }
+
+        /* =================================================
+           🔵 ALL OTHER LETTERS (EMPLOYEE REQUIRED)
+           ================================================= */
 
         $validator = Validator::make($request->all(), [
         'employee_id' => 'required|exists:employees,id',
@@ -569,56 +638,7 @@ private function generateLetterPdf(Letter $letter): string
     $data = $validator->validated();
 
 
-        // $data = $request->validate([
-        //     // do NOT allow employee change on edit
-        //     'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond',
-
-        //     'issue_date'  => 'required|date|before_or_equal:today',
-
-        //     // experience / relieving
-        //     'relieving_date' => 'nullable|date',
-
-        //     // increment
-        //     'new_salary' => 'nullable|numeric|min:0',
-        //     'increment_percentage' => 'nullable|numeric|min:0',
-        //     'effective_date' => 'nullable|date',
-
-        //     // appointment / bond
-        //     'probation_period' => 'nullable|integer|min:0',
-        //     'check_number' => [
-        //         'nullable',
-        //         'numeric',
-        //         'min:0',
-        //         'required_if:letter_type,bond,custom_bond',
-        //     ],
-        //     'bond_period' => 'nullable|numeric|min:0|required_if:letter_type,bond,appointment_with_bond,custom_bond',
-        //    'bond_start_date' => [
-        //         'nullable',
-        //         'date',
-        //         // 'exclude_if:letter_type,appointment',
-        //         'exclude_unless:letter_type,bond,custom,bond,appointment_with_bond',
-
-        //         'required_with:bond_period',
-        //     ],
-
-        //     'bond_end_date' => [
-        //         'nullable',
-        //         'date',
-        //         // 'exclude_if:letter_type,appointment',
-        //         'exclude_unless:letter_type,bond,custom_bond,appointment_with_bond',
-        //         'required_with:bond_period',
-        //         'after_or_equal:bond_start_date',
-        //     ],
-        //     'bond_amount' => 'nullable|numeric|min:0',
-        //     'bond_terms'  => 'nullable|string|required_if:letter_type,custom_bond',
-        // ]);
-
-
-
-
-
-
-
+      
 
         if ($request->letter_type !== 'increment') {
 

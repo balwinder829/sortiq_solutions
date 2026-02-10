@@ -100,48 +100,7 @@ public function store(Request $request)
         ->with('success', 'College saved successfully.');
 }
 
-public function store15dec(Request $request)
-{
-    $data = $request->validate([
-        'college_name' => 'required|string|max:255',
-        'college_display_name' => 'required|string|max:255',
-        'state_id' => 'required|exists:states,id',
-        'district_id' => 'required|exists:districts,id',
-    ]);
-
-    $cleanName = College::clean($request->college_name);
-
-    // Check duplicate using clean_name
-    // if (College::where('clean_name', $cleanName)->withTrashed()->exists()) {
-    //     return back()->withErrors(['college_name' => 'College already exists.'])->withInput();
-    // }
-
-    $exists = College::withTrashed()
-        ->where('clean_name', $cleanName)
-        ->where('state_id', $data['state_id'])
-        ->where('district_id', $data['district_id'])
-        ->exists();
-
-    if ($exists) {
-        return back()
-            ->withErrors([
-                'college_name' => 'This college already exists in the selected state and district.'
-            ])
-            ->withInput();
-    }
-
-    College::create([
-        'college_name' => $request->college_name,
-        'college_display_name' => $request->college_display_name,
-        'clean_name'   => $cleanName,
-        'slug'         => null, // model will generate slug
-        'state_id'  => $request->state_id,
-        'district_id'  => $request->district_id,
-    ]);
-
-    return redirect()->route('colleges.index')->with('success', 'College added successfully.');
-}
-
+ 
 
     public function show(College $college)
     {
@@ -156,21 +115,13 @@ public function store15dec(Request $request)
          return view('colleges.edit', compact('college','states','districts'));
     }
 
-    // public function update(Request $request, College $college)
-    // {
-    //     $request->validate([
-    //         'college_name' => 'required|string|max:255',
-    //     ]);
-
-    //     $college->update($request->all());
-
-    //     return redirect()->route('colleges.index')->with('success', 'College updated successfully.');
-    // }
+   
 public function update(Request $request, $id)
 {
     $data = $request->validate([
         'college_name'          => 'required|string|max:255',
         'college_display_name'  => 'required|string|max:255',
+        'college_short_name'  => 'required|string|max:255',
         'state_id'              => 'required|exists:states,id',
         'district_id'           => 'required|exists:districts,id',
     ]);
@@ -181,7 +132,7 @@ public function update(Request $request, $id)
     $resolver  = app(\App\Services\CollegeResolver::class);
     $cleanName = $resolver->makeCleanName($data['college_name']);
     $slug      = $resolver->makeSlug($data['college_name']);
-
+    $shortname = $data['college_short_name'];
     /** Duplicate check (exclude current college) */
     $exists = College::withTrashed()
         ->where('clean_name', $cleanName)
@@ -204,6 +155,7 @@ public function update(Request $request, $id)
         'college_name'         => $data['college_name'],
         'college_display_name' => $data['college_display_name'], // user-entered
         'clean_name'           => $cleanName,
+        'college_short_name'           => $shortname,
         'slug'                 => $slug,
         'state_id'             => $data['state_id'],
         'district_id'          => $data['district_id'],

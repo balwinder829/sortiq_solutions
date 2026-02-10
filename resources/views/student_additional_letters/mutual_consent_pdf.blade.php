@@ -84,7 +84,9 @@
                  
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       I, <b>{{ ucwords($letter->student->student_name) }}</b>, son/daughter of <b>{{ ucwords($letter->student->father_name_with_title) }}</b>, a student of <b>{{ ucwords($letter->student?->collegeData?->college_display_name ?? 'N/A') }} </b> College / University, hereby voluntarily declare and confirm the following:
+                       I, <b>{{ ucwords($letter->student->student_name) }}</b>, son/daughter of <b>{{ ucwords($letter->student->father_name_with_title) }}</b>, a student of <b>{{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }} @if(!empty($letter->student?->collegeData?->college_short_name))
+    ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
+@endif</b> College / University, hereby voluntarily declare and confirm the following:
                     </td>
                 </tr>
                 <tr>
@@ -127,7 +129,9 @@
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                       Student Details:
                         Name: {{ ucwords($letter->student->student_name) }}<br>
-                        College / University: {{ ucwords($letter->student?->collegeData?->college_display_name ?? 'N/A') }}<br>
+                        College / University: {{ ucwords($letter->student?->collegeData?->college_display_name ?? 'N/A') }}@if(!empty($letter->student?->collegeData?->college_short_name))
+                            ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
+                        @endif<br>
                         Course & Semester: {{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }}<br>
                         Mobile No.: {{ ucwords($letter->student->contact) }}<br>
 

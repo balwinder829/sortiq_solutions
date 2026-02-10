@@ -143,13 +143,13 @@ class CommonFilteredStudentController extends Controller
                         break;
 
                     case 'pending_high':
-                        $query->where('pending_fees', '>', 0)
-                              ->orderBy('pending_fees', 'desc');
+                        // $query->where('pending_fees', '>', 0)
+                              $query->orderBy('pending_fees', 'desc');
                         break;
 
                     case 'pending_low':
-                        $query->where('pending_fees', '>', 0)
-                              ->orderBy('pending_fees', 'asc');
+                        // $query->where('pending_fees', '>', 0)
+                              $query->orderBy('pending_fees', 'asc');
                         break;
 
                     case 'fees_high':
@@ -159,6 +159,39 @@ class CommonFilteredStudentController extends Controller
                     case 'fees_low':
                         $query->orderBy('total_fees', 'asc');
                         break;
+                }
+            }
+
+
+            /* =========================
+               AMOUNT SLIDER FILTER
+               (ONLY for last 4 options)
+               ========================= */
+
+            if (
+                $request->filled('fee_filter') &&
+                in_array($request->fee_filter, [
+                    'pending_high',
+                    'pending_low',
+                    'fees_high',
+                    'fees_low'
+                ])
+            ) {
+
+                $minAmount = $request->amount_min;
+                $maxAmount = $request->amount_max;
+                // dd($request->amount_min, $request->amount_max,$request->fee_filter);
+                // Decide column
+                $amountColumn = in_array($request->fee_filter, ['pending_high', 'pending_low'])
+                    ? 'pending_fees'
+                    : 'total_fees';
+
+                if ($minAmount !== null && $minAmount !== '') {
+                    $query->where($amountColumn, '>=', $minAmount);
+                }
+
+                if ($maxAmount !== null && $maxAmount !== '') {
+                    $query->where($amountColumn, '<=', $maxAmount);
                 }
             }
 

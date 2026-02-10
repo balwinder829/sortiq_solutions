@@ -211,6 +211,22 @@
            oninput="this.value = this.value.replace(/\D/g, '')">
        </div>
 
+          {{-- Amount Range Slider --}}
+        <div class="col-md-4 col-12">
+            <label class="form-label fw-bold">Amount Range</label>
+
+            <div id="amountSlider"></div>
+
+            <div class="d-flex justify-content-between mt-2">
+                <span>Min: <strong id="amountMinText"></strong></span>
+                <span>Max: <strong id="amountMaxText"></strong></span>
+            </div>
+
+            {{-- Hidden inputs for GET --}}
+            <input type="hidden" name="amount_min" id="amountMin" value="{{ request('amount_min', 0) }}">
+            <input type="hidden" name="amount_max" id="amountMax" value="{{ request('amount_max', 200000) }}">
+        </div>
+
          
     </div>
 	{{-- Buttons --}}
@@ -724,11 +740,71 @@
     </form>
   </div>
 </div>
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
 
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const slider = document.getElementById('amountSlider');
+    const feeFilter = document.querySelector('select[name="fee_filter"]');
+
+    const minInput = document.getElementById('amountMin');
+    const maxInput = document.getElementById('amountMax');
+    const minText  = document.getElementById('amountMinText');
+    const maxText  = document.getElementById('amountMaxText');
+
+    const startMin = Number(minInput.value || 0);
+    const startMax = Number(maxInput.value || 200000);
+
+    noUiSlider.create(slider, {
+        start: [startMin, startMax],
+        connect: true,
+        step: 1,
+        range: {
+            min: 0,
+            max: 200000
+        }
+    });
+
+    slider.noUiSlider.on('update', function (values) {
+        minInput.value = Math.round(values[0]);
+        maxInput.value = Math.round(values[1]);
+
+        minText.textContent = values[0];
+        maxText.textContent = values[1];
+    });
+
+    /**
+     * ✅ Enable slider ONLY for these fee_filter values
+     */
+    const amountEnabledFilters = [
+        'pending_high',
+        'pending_low',
+        'fees_high',
+        'fees_low'
+    ];
+
+    function toggleSlider() {
+        const value = feeFilter.value;
+
+        if (amountEnabledFilters.includes(value)) {
+            slider.noUiSlider.enable();
+            slider.style.opacity = 1;
+        } else {
+            slider.noUiSlider.disable();
+            slider.style.opacity = 0.4;
+        }
+    }
+
+    feeFilter.addEventListener('change', toggleSlider);
+    toggleSlider(); // run on page load
+});
+</script>
+
 <script>
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {

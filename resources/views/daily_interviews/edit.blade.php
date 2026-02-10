@@ -186,6 +186,23 @@
                 @enderror
             </div>
 
+             {{-- Interview Status --}}
+            <div class="form-group col-md-6 mb-3">
+                <label for="interview_mode">Interview Mode *</label>
+                <select name="interview_mode"
+                        id="interview_mode"
+                        class="form-control @error('interview_mode') is-invalid @enderror"
+                        required>
+                    @php $currentMode = old('interview_mode', $interview->interview_mode); @endphp
+                    <option value="online" {{ $currentMode === 'online' ? 'selected' : '' }}>Online</option>
+                    <option value="offline" {{ $currentMode === 'offline' ? 'selected' : '' }}>Offline</option>
+                   
+                </select>
+                @error('interview_mode')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
         </div>
 
         <button type="submit" class="btn btn-primary mt-3">Update Interview</button>

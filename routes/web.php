@@ -90,6 +90,7 @@ use App\Http\Controllers\ScannerShareController;
 use App\Http\Controllers\MouController;
 use App\Http\Controllers\FeeStatusController;
 use App\Http\Controllers\CommonFilteredStudentController;
+use App\Http\Controllers\PayrollController;
 
 
 use App\Models\Test;
@@ -674,6 +675,27 @@ Route::delete(
     ->name('admin.')
     ->group(function () {
 
+        Route::get('/payroll/export/{month}/{year}',
+            [PayrollController::class, 'export']
+        )->name('payroll.export');
+
+    //     Route::get('/payroll/process/{year}/{month}', [PayrollController::class, 'process'])
+    // ->name('admin.payroll.process');
+
+    //     Route::post('/payroll/load', [PayrollController::class, 'load'])
+    // ->name('payroll.load');
+
+    Route::post('/payroll/load', [PayrollController::class, 'load'])
+    ->name('payroll.load');
+
+Route::get('/payroll/process/{year}/{month}', [PayrollController::class, 'process'])
+    ->name('payroll.process');
+
+    
+        Route::resource('payroll', PayrollController::class)
+    ->only(['index', 'store']);
+
+
         Route::resource(
             'blocked-numbers',
             BlockedNumberController::class
@@ -687,6 +709,18 @@ Route::delete(
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
+
+
+
+    // Route::get('/payroll', [PayrollController::class, 'index'])
+    // ->name('payroll.index');
+
+    // Route::post('/payroll/load', [PayrollController::class, 'load'])
+    //     ->name('payroll.load');
+
+    // Route::post('/payroll/store', [PayrollController::class, 'store'])
+    //     ->name('payroll.store');
+
 
     Route::resource('sessions', SessionController::class);
     // routes/web.php
@@ -790,6 +824,11 @@ Route::get(
         '/offline-tests/{test}/download-mcq-paper',
         [OfflineTestController::class, 'downloadMcqPaper']
     )->name('offline.tests.download.mcq.paper');
+
+Route::get(
+        '/online-tests/{test}/download-mcq-paper',
+        [TestController::class, 'downloadMcqPaper']
+    )->name('online.tests.download.mcq.paper');
 
 
  Route::get('offline-tests/{test}/results', [OfflineTestController::class,'results'])->name('offline-tests.results');
