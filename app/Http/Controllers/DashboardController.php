@@ -49,7 +49,18 @@ class DashboardController extends Controller
             $activeSessionId = session('admin_session_id');
 
             // $totalStudents = Student::count();
-            $totalStudents = Student::where('session', $activeSessionId)->count();
+            // $totalStudents = Student::where('session', $activeSessionId)->count();
+            $allstudents = Student::where('session', $activeSessionId)
+                ->selectRaw('
+                    COUNT(*) as total_students,
+                    SUM(CASE WHEN is_online = 1 THEN 1 ELSE 0 END) as online_students,
+                    SUM(CASE WHEN is_online = 0 THEN 1 ELSE 0 END) as offline_students
+                ')
+                ->first();
+
+            // $totalStudents = $counts->total_students;
+            // $onlineStudents = $counts->online_students;
+            // $offlineStudents = $counts->offline_students;
             
             $totalBatches  = Batch::where('session_name', $activeSessionId)->count();
             
@@ -167,21 +178,11 @@ class DashboardController extends Controller
                                     ->get();
 
 
-            
-
-            $batchTypestudentCounts = Student::join('batches', 'students_detail.batch_assign', '=', 'batches.id')
-                ->where('students_detail.session', $activeSessionId)
-                ->selectRaw('
-                    COALESCE(SUM(CASE WHEN batches.batch_mode = "online" THEN 1 ELSE 0 END), 0) AS online_count,
-                    COALESCE(SUM(CASE WHEN batches.batch_mode = "offline" THEN 1 ELSE 0 END), 0) AS offline_count
-                ')
-                ->first();
-
             // POPUP DISMISS RECORD (only for today)
             $todayNotification = EventNotification::today();
              /** FINALLY — RETURN VIEW **/
             return view('dashboard_admin', compact(
-                'totalStudents',
+                'allstudents',
                 'totalBatches',
                 'totalColleges',
                 'totalTrainers',
@@ -206,7 +207,6 @@ class DashboardController extends Controller
                 'feecertificateSum',
                 'topCollegeData',
                 'feeSums',
-                'batchTypestudentCounts',
                 'todayNotification'
             ));
         // }

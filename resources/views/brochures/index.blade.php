@@ -162,7 +162,7 @@
                             <form action="{{ route('brochures.destroy', $b->id) }}"
                                   method="POST"
                                   class="d-inline"
-                                  onsubmit="return confirm('Delete this brochure?');">
+                                  data-swal-confirm="Delete this brochure?">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger">
                                     <i class="fa fa-trash"></i>

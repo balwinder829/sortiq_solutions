@@ -47,6 +47,17 @@ body {
 					</td>
 				</tr>
 			</table>
+			@php
+			    $employmentLine = null;
+
+			    if ($letter->employee->work_mode === 'online' && $letter->employee->job_type === 'part_time') {
+			        $employmentLine = "Online, Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
+			    } elseif ($letter->employee->work_mode === 'online') {
+			        $employmentLine = "Online";
+			    } elseif ($letter->employee->job_type === 'part_time') {
+			        $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
+			    }
+			@endphp
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
@@ -63,6 +74,15 @@ body {
 						<strong>Emp Code: </strong> {{ ucwords($letter->employee->emp_code) }}
 					</td>
 				</tr>
+
+				@if($employmentLine)
+				<tr>
+				    <td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
+				        <strong>Employment Type: </strong> {{ $employmentLine }}
+				    </td>
+				</tr>
+				@endif
+
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
 						<strong>Address: </strong> {{ ucwords($letter->employee->address ?? '') }}

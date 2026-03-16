@@ -24,4 +24,12 @@ class Question extends Model
     {
         return $this->hasMany(Option::class);
     }
+
+    // ✅ AUTO DELETE OPTIONS WHEN QUESTION DELETES
+    protected static function booted()
+    {
+        static::deleting(function ($question) {
+            $question->options()->delete();
+        });
+    }
 }

@@ -85,12 +85,40 @@ class PartTimeJobController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'mobile' => 'nullable|string|max:20',
+            // 'mobile' => 'nullable|string|max:20',
+            // 'mobile' => ['required','regex:/^\d{10}(,\d{10})*$/'],
+            // 'mobile' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+            'mobile' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+
+            'email' => [
+                'nullable',
+                'regex:/^[^,\s]+@[^,\s]+\.[^,\s]+(,[^,\s]+@[^,\s]+\.[^,\s]+)*$/'
+            ],
             'status' => 'required|in:active,inactive',
-            'email' => 'nullable|email',
+            // 'email' => 'nullable|email',
+        ],[
+            'mobile.regex' => 'Each phone number must be between 10 to 18 digits and comma separated.',
         ]);
 
-        PartTimeJob::create($request->all());
+         $data = $request->all();
+
+        // normalize phones
+        if (!empty($data['mobile'])) {
+            $data['mobile'] = preg_replace('/[\|\-_;\s]+/', ',', $data['mobile']);
+            $data['mobile'] = preg_replace('/,+/', ',', $data['mobile']);
+            $data['mobile'] = trim($data['mobile'], ',');
+        }
+
+        // normalize emails
+        if (!empty($data['email'])) {
+            $data['email'] = preg_replace('/[\|\-_;\s]+/', ',', $data['email']);
+            $data['email'] = preg_replace('/,+/', ',', $data['email']);
+            $data['email'] = trim($data['email'], ',');
+        }
+
+        PartTimeJob::create($data);
+
+        // PartTimeJob::create($request->all());
 
         return redirect()->route('part-time-jobs.index')
             ->with('success', 'Part-time job added successfully');
@@ -115,12 +143,29 @@ class PartTimeJobController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'mobile' => 'nullable|string|max:20',
+            // 'mobile' => 'nullable|string|max:20',
             'status' => 'required|in:active,inactive',
-            'email' => 'nullable|email',
+            // 'email' => 'nullable|email',
+            // 'mobile' => ['required','regex:/^\d{10}(,\d{10})*$/'],
+            // 'mobile' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+            'mobile' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            'email'  => ['nullable','regex:/^[^,\s]+@[^,\s]+\.[^,\s]+(,[^,\s]+@[^,\s]+\.[^,\s]+)*$/']
+        ],[
+            'mobile.regex' => 'Each phone number must be between 10 to 18 digits and comma separated.',
         ]);
 
-        $job->update($request->all());
+         $data = $request->all();
+
+        $data['mobile'] = !empty($data['mobile'])
+            ? trim(preg_replace('/,+/', ',', preg_replace('/[\|\-_;\s]+/', ',', $data['mobile'])),',')
+            : null;
+
+        $data['email'] = !empty($data['email'])
+            ? trim(preg_replace('/,+/', ',', preg_replace('/[\|\-_;\s]+/', ',', $data['email'])),',')
+            : null;
+
+        $job->update($data);
+        // $job->update($request->all());
 
         return redirect()->route('part-time-jobs.index')
             ->with('success', 'Part-time job updated successfully');

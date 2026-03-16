@@ -9,10 +9,22 @@
         <span class="line"></span>
     </div>
 </div>
+@php
+$link = url('/');
 
+if(auth()->guard('student')->check()){
+    $link = route('students.dashboard');
+}elseif(auth()->guard('trainer')->check()){
+    $link = route('batches.mybatches');
+}elseif(auth()->guard('sales_staff')->check()){
+    $link = route('sales.dashboard');
+}elseif(auth()->guard('employee')->check()){
+    $link = route('attendance.employee');
+}
+@endphp
 
     {{-- LOGO --}}
-    <a href="{{ url('/') }}" class="brand-logo ms-2">
+    <a href="{{ $link }}" class="brand-logo ms-2">
         <img src="{{ asset('images/logo.png') }}" alt="Logo" style="height:40px;">
     </a>
 

@@ -5,6 +5,13 @@
      table.dataTable td {
     text-transform: capitalize;
 }
+
+.event-td-img {
+    width: 100%;
+    height: 80px;       /* same height for all images */
+    object-fit: cover;  /* prevents stretching */
+    display: block;
+}
  </style>
 <div class="container">
     <div class="row mb-4">
@@ -20,23 +27,23 @@
         </div>
     </div>
  
-<form method="GET" class="row mb-3">
+<form method="GET" id="filterForm" class="row mb-3">
 
     <div class="col-md-3">
         <label>From Date</label>
-        <input type="date" name="from_date" class="form-control"
+        <input type="date" name="from_date" class="form-control filterchange"
                value="{{ request('from_date') }}">
     </div>
 
     <div class="col-md-3">
         <label>To Date</label>
-        <input type="date" name="to_date" class="form-control"
+        <input type="date" name="to_date" class="form-control filterchange"
                value="{{ request('to_date') }}">
     </div>
 
     <div class="col-md-3">
         <label>Filter</label>
-        <select name="filter" class="form-control">
+        <select name="filter" class="form-control filterchange">
             <option value="">-- All --</option>
             <option value="upcoming" {{ request('filter')=='upcoming'?'selected':'' }}>Upcoming</option>
             <option value="today" {{ request('filter')=='today'?'selected':'' }}>Today</option>
@@ -45,7 +52,7 @@
     </div>
 
     <div class="col-md-3 d-flex align-items-end gap-2">
-        <button class="btn btn-primary mt-3" style="background-color: #6b51df; color: white;">Apply Filter</button>
+        <!-- <button class="btn btn-primary mt-3" style="background-color: #6b51df; color: white;">Apply Filter</button> -->
         <a class="btn btn-secondary mt-3" href="{{ route('student.events.index') }}">Reset</a>
     </div>
 
@@ -66,9 +73,9 @@
     <tbody>
         @foreach ($events as $event)
         <tr>
-            <td>
+            <td style="width:120px;">
                 @if($event->cover_image)
-                <img src="{{ asset($event->cover_image) }}" height="70">
+                    <img src="{{ asset($event->cover_image) }}" class="event-td-img">
                 @endif
             </td>
 
@@ -85,7 +92,7 @@
                       method="POST"
                       class="d-inline">
                     @csrf @method('DELETE')
-                    <button onclick="return confirm('Delete this event?')" 
+                    <button type="submit" data-swal-confirm="Delete this event?" 
                             class="btn btn-sm">
                         <i class="fa fa-trash"></i>
                     </button>
@@ -106,6 +113,25 @@ $(function(){
         pageLength: 25,
         lengthMenu: [10,25,50,100],
     });
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

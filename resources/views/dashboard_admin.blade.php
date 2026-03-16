@@ -25,48 +25,46 @@
 @endif
 
     {{-- Top summary boxes --}}
+    @hasanyrole('Admin|Manager|HR|Custom')
 <div class="row g-3 mb-4">
     <!-- Row 1 -->
-    @if(in_array($role, [1,2,3,4]))
+    @php
+        $fmt = new \NumberFormatter('en_IN', \NumberFormatter::DECIMAL);
+        $fmt->setAttribute(\NumberFormatter::FRACTION_DIGITS, 2);
+    @endphp
     <div class="col-12 col-md-4">
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Total Students</h6>
-                    <h3 class="fw-bold">{{ $totalStudents }}</h3>
+                    <h3 class="fw-bold">{{ $allstudents->total_students }}</h3>
                 </div>
             </div>
         </a>
     </div>
-    @endif
-
-     @if(in_array($role, [1,2,3,4]))
+    
     <div class="col-12 col-md-4">
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Online Students</h6>
-                    <h3 class="fw-bold">{{ $batchTypestudentCounts->online_count ?? 0 }}</h3>
+                    <h3 class="fw-bold">{{ $allstudents->online_students ?? 0 }}</h3>
                 </div>
             </div>
         </a>
     </div>
-    @endif
-
-     @if(in_array($role, [1,2,3,4]))
+    
     <div class="col-12 col-md-4">
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Offline Students</h6>
-                    <h3 class="fw-bold">{{ $batchTypestudentCounts->offline_count ?? 0 }}</h3>
+                    <h3 class="fw-bold">{{ $allstudents->offline_students ?? 0 }}</h3>
                 </div>
             </div>
         </a>
     </div>
-    @endif
-
-    @if(in_array($role, [1,2,3,4]))
+    
     <div class="col-12 col-md-4">
         <!-- Row 2 -->
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
@@ -78,9 +76,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-    @if(in_array($role, [1,2,3,4]))
+     
     <div class="col-12 col-md-4">
         <!-- Row 3 -->
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
@@ -92,12 +88,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-
-
-
-    @if(in_array($role, [1,2,4]))
+    
     <div class="col-12 col-md-4">
         <a href="{{ route('batches.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -108,9 +99,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-    @if(in_array($role, [1,4]))
+     
     <div class="col-12 col-md-4">
         <a href="{{ route('colleges.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -121,10 +110,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-    <!-- Row 2 -->
-    @if(in_array($role, [1,2,4]))
+     
     <div class="col-12 col-md-4">
         <a href="{{ route('trainers.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -135,9 +121,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-    @if(in_array($role, [1,4]))
+     
     <div class="col-12 col-md-4">
         <a href="{{ route('sessions.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -148,9 +132,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-    @if(in_array($role, [1,4]))
+     
     <div class="col-12 col-md-4">
         <a href="{{ route('courses.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -161,10 +143,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-    <!-- Row 3 - Centered last card -->
-    @if(in_array($role, [1,4]))
+    
     <div class="col-12 col-md-4">
         <a href="{{ route('admin.pendingfees.list') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -175,9 +154,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-    @if(in_array($role, [1,4]))
+     
     <div class="col-12 col-md-4">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -188,9 +165,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-    @if(in_array($role, [1,4]))
+     
     <div class="col-12 col-md-4">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -201,9 +176,7 @@
             </div>
         </a>
     </div>
-    @endif
-
-     @if(in_array($role, [1,4]))
+     
     <div class="col-12 col-md-4">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -214,34 +187,30 @@
             </div>
         </a>
     </div>
-    @endif
-
-@if(in_array($role, [1,4]))
+    
     <div class="col-12 col-md-4">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Total Amount</h6>
                     
-                    <h3 class="fw-bold">{{ $feeSums->total_fees   ?? 0 }}</h3>
+                    <h3 class="fw-bold">Rs. {{ $fmt->format(optional($feeSums)->total_fees ?? 0) }}</h3>
                 </div>
             </div>
         </a>
     </div>
-    @endif
-
-     @if(in_array($role, [1,4]))
+    
     <div class="col-12 col-md-4">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Pending Amount</h6>
-                    <h3 class="fw-bold">{{ $feeSums->pending_fees   ?? 0 }}</h3>
+                    <h3 class="fw-bold">Rs. {{ $fmt->format(optional($feeSums)->pending_fees ?? 0) }}</h3>
                 </div>
             </div>
         </a>
     </div>
-    @endif
+     
      <!-- @if(in_array($role, [1,4]))
     <div class="col-12 col-md-4">
         <a href="#" class="text-decoration-none text-dark">
@@ -270,18 +239,18 @@
     </div>
     @endif -->
 
-    @if(in_array($role, [1,4]))
+    
     <div class="col-12 col-md-4">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Highest Revenue College Wise</h6>
-                    <h3 class="fw-bold">{{ $topCollegeData->total_collected }}- {{ $topCollegeData->college_name_text }}</h3>
+                    <h3 class="fw-bold">Rs. {{ $fmt->format(optional($topCollegeData)->total_collected ?? 0) }} - {{ $topCollegeData->college_name_text }}</h3>
                 </div>
             </div>
         </a>
     </div>
-    @endif
+    
 
 
     <!-- @if(in_array($role, [1,4]))
@@ -297,7 +266,7 @@
     </div>
     @endif -->
 
-    @if(in_array($role, [1,4]))
+     
    <!--  <div class="col-12 col-md-4">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -308,8 +277,9 @@
             </div>
         </a>
     </div> -->
-    @endif
+   
 </div>
+  @endhasanyrole
  
 </div>
 @endsection

@@ -138,6 +138,14 @@
                         @enderror
                     </div>
 
+                     <div class="form-group col-md-6">
+                        <label>Move to Passout?</label>
+                        <select name="is_passout" class="form-control">
+                            <option value="0" {{ $enquiry->is_passout == 0 ? 'selected' : '' }}>No</option>
+                            <option value="1" {{ $enquiry->is_passout == 1 ? 'selected' : '' }}>Yes</option>
+                        </select>
+                    </div>
+
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-2">

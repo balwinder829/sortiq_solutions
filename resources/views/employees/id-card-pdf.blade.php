@@ -25,7 +25,7 @@
 </head>
 <body>
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff; margin-top: 50px; text-align: center;">
-    <div class="certi-body" style="background:url(&quot;{{ public_path('images/employee_id_card_images/id-card-front.jpg') }}&quot;)   no-repeat center; background-size:cover; width:100%; max-width:204px; height:324px; background-color: #fff;display: inline-block;">
+    <div class="certi-body" style="background:url(&quot;{{ public_path('images/employee_id_card_images/id_front.png') }}&quot;)   no-repeat center; background-size:cover; width:100%; max-width:204px; height:324px; background-color: #fff;display: inline-block;">
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" width="100" align="center">
@@ -35,23 +35,32 @@
                     </td>
                 </tr>
             </table>
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:9px;">
-    <tr>
-        <td colspan="2"
-            align="center"
-            height="180"
-            style="height:180px; vertical-align:middle;">
-            
-            <img
-                src="{{ public_path(
-                    $employee->photo
-                        ? 'images/employee_images/' . $employee->photo
-                        : 'images/employee_id_card_images/default-avatar.png'
-                ) }}"
-                style="max-width:170px; max-height:170px; display:block; margin-left:4px;"
-            />
-        </td>
-    </tr>
+           <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:9px;">
+<tr>
+<td colspan="2" align="center" height="180" style="height:185px; vertical-align:middle;">
+
+ <div style="
+    width:130px;
+    height:130px;
+    margin:auto;
+    border:0px solid #ffffff;
+    text-align:center;
+">
+    <img
+        src="{{ public_path(
+            $employee->photo
+                ? 'images/employee_images/' . $employee->photo
+                : 'images/employee_id_card_images/default-avatar.png'
+        ) }}"
+        style="
+            width:127px;
+            height:127px;
+        "
+    />
+</div>
+
+</td>
+</tr>
 </table>
 
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;">
@@ -85,7 +94,7 @@
                         Office Address :
                     </td>
                     <td width="55%" align="left" style="font-size: 10px; line-height: 12px; padding-top: 0px; font-family: 'Inter', sans-serif; padding-bottom: 4px; color: #191616; vertical-align: top;">
-                        E-51, Ground Floor, Industrial Area, Phase 8 Mohali, Punjab - 160072
+                        E-51, Second  Floor , Phase - 8, Industrial Area, S.A.S. Nagar, Mohali, Punjab 160071
                     </td>
                 </tr>
                 <tr>
@@ -93,7 +102,7 @@
                         Emergency : <br>Contact No
                     </td>
                     <td width="55%" align="left" style="font-size: 10px; line-height: 12px; padding-top: 0px; font-family: 'Inter', sans-serif; padding-bottom: 4px; color: #191616; vertical-align: top;">
-                        {{ $employee->user->phone ?? '-' }}
+                        {{ $employee->phone ?? '-' }}
                     </td>
                 </tr>
                 <tr>
@@ -101,7 +110,7 @@
                         Email Address :
                     </td>
                     <td width="55%" align="left" style="font-size: 10px; line-height: 12px; padding-top: 0px; font-family: 'Inter', sans-serif; padding-bottom: 4px; color: #191616; vertical-align: top;">
-                        {{ $employee->user->email ?? '-' }}
+                        {{ $employee->email ?? '-' }}
                     </td>
                 </tr>
                 <tr>

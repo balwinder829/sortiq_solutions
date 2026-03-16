@@ -19,15 +19,23 @@
                     {{ $enquiry->name }}
                 </div>
 
+                @php
+                    $mobile = preg_replace('/\D/', '', $enquiry->mobile); // remove non-digits
+
+                    if (strlen($mobile) == 10) {
+                        $mobile = '91' . $mobile;
+                    }
+                @endphp
+
                 <div class="col-md-4 mb-2">
                     <strong>Mobile:</strong><br>
-                    {{ $enquiry->mobile }}
+                     <span class="fw-bold text-primary">+{{ $mobile }}</span>
 
                     <div class="mt-2">
-                        <a href="tel:{{ $enquiry->mobile }}"
+                        <a href="tel:+{{ $mobile }}"
                            class="btn btn-success btn-sm">📞 Call</a>
 
-                        <a href="https://wa.me/{{ $enquiry->mobile }}"
+                        <a href="https://wa.me/{{ $mobile }}"
                            target="_blank"
                            class="btn btn-info btn-sm text-white">💬 WhatsApp</a>
                     </div>

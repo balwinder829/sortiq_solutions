@@ -16,6 +16,7 @@ class StudentTest extends Model
     // ✅ Allow mass assignment
     protected $fillable = [
         'test_id',
+        'college_id',
         'student_name',
         'student_email',
         'college_name',
@@ -57,5 +58,10 @@ class StudentTest extends Model
     public function answers()
     {
         return $this->hasMany(StudentAnswer::class);
+    }
+
+    public function college()
+    {
+        return $this->belongsTo(College::class);
     }
 }

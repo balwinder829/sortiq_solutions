@@ -8,12 +8,12 @@
         <div class="col-md-6">
             <h1 class="page_heading">Create Test</h1>
         </div>
-        <div class="col-md-6">
+        <!-- <div class="col-md-6">
                 <div class="d-flex justify-content-end">
                     
                 <a href="{{ route('admin.tests.index') }}" class="btn  btn-primary mb-3">Back</a>
             </div>
-        </div>
+        </div> -->
     </div>
 
 
@@ -75,7 +75,7 @@
     {{-- College --}}
     <div class="col-md-6 mb-3">
         <label class="fw-bold">College</label>
-        <select name="college_id" class="form-control" required>
+        <select name="college_ids[]" class="form-control select2" multiple required>
             <option value="">Select College</option>
             @foreach($colleges as $col)
                 <option value="{{ $col->id }}">{{ $col->FullName }}</option>
@@ -177,8 +177,25 @@
 
 </div>
 
-<button class="btn btn-primary mt-3">Save Test</button>
-
+<div class="form-group col-md-6">
+    <button class="btn btn-primary">Save Test</button>
+    <a href="{{ route('admin.tests.index') }}" class="btn btn-secondary ml-2">Back</a>
+</div>
 </form>
 </div>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
 @endsection
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            placeholder: "Search college name",
+            allowClear: true
+        });
+    });
+</script>
+@endpush

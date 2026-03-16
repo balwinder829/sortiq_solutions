@@ -27,6 +27,7 @@ class User extends Authenticatable
         'status',
         'last_login',
         'phone',
+        'plain_pswd',
     ];
 
 

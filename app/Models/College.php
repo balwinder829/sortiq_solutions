@@ -22,6 +22,9 @@ class College extends Model
         'district_id',
         'college_display_name',
         'college_short_name',
+        'college_type',
+        'offer_training',
+        'training_in_year',
     ];
 
     /**
@@ -100,10 +103,22 @@ class College extends Model
     // }
 
 
+    // public function getFullNameAttribute()
+    // {
+    //     return $this->college_display_name;
+    // }
+
     public function getFullNameAttribute()
     {
-        return $this->college_display_name;
+        $name = $this->college_display_name ?? $this->college_name;
+
+        if (!empty($this->college_short_name)) {
+            $name .= ' (' . strtoupper($this->college_short_name) . ')';
+        }
+
+        return $name;
     }
+
 
     public function enquiries()
     {

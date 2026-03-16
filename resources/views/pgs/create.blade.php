@@ -33,16 +33,25 @@
     <input type="text"
            name="contact"
            value="{{ old('contact') }}"
+           required 
            class="form-control @error('contact') is-invalid @enderror"
+            pattern="[0-9,]*"
+            title="Enter a valid 10-digit mobile number"
            inputmode="numeric"
-           minlength="10"
-           pattern="[0-9]{10}"
-           title="Enter a valid 10-digit mobile number"
-           onpaste="handlePaste(event)"
-           oninput="sanitizeContact(this)">
+           oninput="this.value=this.value.replace(/[^0-9,]/g,'')">
     @error('contact')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
+</div>
+
+{{-- EMail --}}
+<div class="form-group col-md-6">
+    <label>Email</label>
+    <input type="text"
+           name="email"
+           
+           value="{{ old('email') }}"
+           class="form-control">
 </div>
 
 

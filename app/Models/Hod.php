@@ -17,6 +17,7 @@ class Hod extends Model
         'tpo_name',
         'tpo_gender',
         'tpo_contact',
+        'description',
     ];
 
     public function college()

@@ -50,10 +50,10 @@ class RechargeController extends Controller
     }
 
 
-    public function __construct()
-    {
-        $this->middleware('auth'); // change if your module has different auth
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth'); // change if your module has different auth
+    // }
 
     public function index(Request $request)
     {
@@ -72,7 +72,8 @@ class RechargeController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $recharges = $query->orderBy('created_at', 'desc')->paginate(100)->withQueryString();
+        $recharges = $query->orderBy('created_at', 'desc')->get();
+        // $recharges = $query->orderBy('created_at', 'desc')->paginate(100)->withQueryString();
 
         return view('recharges.index', compact('recharges'));
     }

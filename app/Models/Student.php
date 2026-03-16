@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
-
-class Student extends Model
+class Student extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $table = 'students_detail';
 
@@ -43,8 +45,22 @@ class Student extends Model
         'send_to_close',
         'enquiry_id',
         'is_placed',
+        'is_intern',
+        'is_married',
+        'is_online',
+        'is_place',
+        'place',
+        'password',
+        'plain_password',
+        'remember_token',
+        'last_login',
     ];
 
+     // Automatically hash password when setting it
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = Hash::make($password);
+    }
     // Relationships
     public function session()
     {
@@ -56,10 +72,10 @@ class Student extends Model
         return $this->belongsTo(College::class, 'college_name', 'college_name');
     }
 
-    public function course()
-    {
-        return $this->belongsTo(Course::class, 'technology', 'course_name');
-    }
+    // public function course()
+    // {
+    //     return $this->belongsTo(Course::class, 'technology', 'course_name');
+    // }
 
     public function departmentRelation()
     {
@@ -76,10 +92,10 @@ class Student extends Model
         return $this->belongsTo(College::class, 'college_name', 'id');
     }
 
-    public function courseData()
-    {
-        return $this->belongsTo(Course::class, 'technology', 'id');
-    }
+    // public function courseData()
+    // {
+    //     return $this->belongsTo(Course::class, 'technology', 'id');
+    // }
 
     public function batchData()
     {
@@ -105,6 +121,51 @@ class Student extends Model
         }
 
         return ucwords($name);
+    }
+
+    // Convert array → comma separated before save
+    public function setTechnologyAttribute($value)
+    {
+        $this->attributes['technology'] = is_array($value)
+            ? implode(',', $value)
+            : $value;
+    }
+
+    // Convert comma separated → array when fetching
+    public function getTechnologyAttribute($value)
+    {
+        return $value ? explode(',', $value) : [];
+    }
+
+    // public function getCoursesAttribute()
+    // {
+    //     return empty($this->technology)
+    //         ? collect()
+    //         : Course::whereIn('course_name', $this->technology)->get();
+    // }
+
+    public function getCoursesAttribute()
+    {
+        return empty($this->technology)
+            ? collect()
+            : Course::whereIn('id', $this->technology)->get();
+    }
+
+    // public function getCourseDataAttribute()
+    // {
+    //     if (empty($this->technology)) {
+    //         return collect();
+    //     }
+
+    //     return Course::whereIn('id', $this->technology)->get();
+    // }
+
+    // DISPLAY accessor (string)
+    public function getCourseNameAttribute()
+    {
+        return $this->courses
+            ->pluck('course_name')
+            ->implode(', ');
     }
 
 

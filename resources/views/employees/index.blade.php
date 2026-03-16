@@ -13,6 +13,32 @@
             </div>
         </div>
     </div>
+
+    <div class="col-md-8 mb-4">
+    <p class="mb-1 fw-bold">Employee Login URL</p>
+
+    <div class="input-group">
+        <a href="{{ route('sale_staff.login') }}"
+           target="_blank"
+           id="loginUrl"
+           class="form-control text-primary text-decoration-none">
+            {{ route('employee.login') }}
+        </a>
+
+        <button class="btn btn-outline-secondary"
+                type="button"
+                 data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Copy Employee Login URL"
+                onclick="copyLoginUrl()">
+            <i class="fa fa-copy"></i>
+        </button>
+    </div>
+
+    <small id="copyMessage" class="text-success d-none">
+        Copied to clipboard!
+    </small>
+</div>
    
 
     @if(session('success'))
@@ -32,71 +58,7 @@
             </tr>
         </thead>
 
-        <tbody>
-            @foreach($employees as $emp)
-            <tr>
-                <td>{{ $emp->emp_code }}</td>
-                <td>{{ $emp->emp_name }}</td>
-                <td>{{ $emp->position }}</td>
-                <td>{{ \Carbon\Carbon::parse($emp->joining_date)->format('d M Y') }}</td>
-                <td>{{ $emp->user->username }}</td>
-
-                <td>
-                    @if($emp->status === 'active')
-                        <span class="badge bg-success">Active</span>
-                    @elseif($emp->status === 'inactive')
-                        <span class="badge bg-warning text-dark">Inactive</span>
-                    @elseif($emp->status === 'resigned')
-                        <span class="badge bg-warning text-dark">Resigned</span>
-                    @else
-                        <span class="badge bg-danger">Terminated</span>
-                    @endif
-                </td>
-
-                <td>
-                    <a href="{{ route('employees.idcard', $emp) }}"
-                       class="btn btn-sm"
-                       data-bs-toggle="tooltip"
-                       title="Download ID Card">
-                       <i class="fas fa-id-card"></i>
-                    </a>
-                    <form method="POST" action="{{ route('employees.idcard.email', $emp) }}" style="display:inline;">
-                    @csrf
-                    <button class="btn btn-sm" title="Email ID Card">
-                    <i class="fas fa-envelope"></i>
-                    </button>
-                    </form>
-                     <a href="{{ route('salary-structure.create', $emp->id) }}"
-                       class="btn btn-sm"
-                       data-bs-toggle="tooltip"
-                       title="Update Salary Amount">
-                       <i class="fas fa-money-bill-wave"></i>
-                    </a>
-                    <!-- Edit -->
-                    <a href="{{ route('employees.edit', $emp) }}"
-                       class="btn btn-sm"
-                       data-bs-toggle="tooltip"
-                       title="Edit Employee">
-                        <i class="fas fa-edit"></i>
-                    </a>
-
-                    <!-- Delete -->
-                    <form action="{{ route('employees.destroy', $emp) }}"
-                          method="POST"
-                          style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-sm"
-                                onclick="return confirm('Delete employee?')"
-                                data-bs-toggle="tooltip"
-                                title="Delete Employee">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
+        <tbody></tbody>
     </table>
 </div>
 @endsection
@@ -114,6 +76,18 @@
 <script>
 $(document).ready(function() {
     $('#employeesTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('employees.data') }}",
+        columns: [
+            { data: 0 },
+            { data: 1 },
+            { data: 2 },
+            { data: 3 },
+            { data: 4 },
+            { data: 5 },
+            { data: 6, orderable: false, searchable: false }
+        ],
         pageLength: 10,
         lengthMenu: [5,10,25,50,100]
     });
@@ -122,5 +96,19 @@ $(document).ready(function() {
         selector: '[data-bs-toggle="tooltip"]'
     });
 });
+</script>
+ <script>
+function copyLoginUrl() {
+    const url = document.getElementById('loginUrl').textContent.trim(); // ✅ removes extra spaces;
+
+    navigator.clipboard.writeText(url).then(function() {
+        const msg = document.getElementById('copyMessage');
+        msg.classList.remove('d-none');
+
+        setTimeout(() => {
+            msg.classList.add('d-none');
+        }, 2000);
+    });
+}
 </script>
 @endpush

@@ -105,7 +105,7 @@
                         @endif
                         <form action="{{ route('leads.destroy', $lead->id) }}" method="POST" style="display:inline-block;">
                             @csrf @method('DELETE')
-                            <button class="btn btn-sm" onclick="return confirm('Delete this lead?')"><i class="fa fa-trash"></i></button>
+                            <button class="btn btn-sm" data-swal-confirm="Delete this lead?"><i class="fa fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>

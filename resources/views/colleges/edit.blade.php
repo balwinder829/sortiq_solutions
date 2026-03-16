@@ -10,23 +10,28 @@
     <form action="{{ route('colleges.update', $college) }}" method="POST">
         @csrf
         @method('PUT')
-
-        <div class="mb-3">
+        <div class="row">
+        <div class="form-group col-md-6">
             <label>Name</label>
-            <input type="text" name="college_name" class="form-control" value="{{ old('college_name', $college->college_name) }}" required>
+            <input type="text" name="college_name"  class="form-control @error('college_name') is-invalid @enderror" value="{{ old('college_name', $college->college_name) }}" required>
+             @error('college_name')
+                <div class="invalid-feedback">
+                    {{ $message }}
+                </div>
+            @enderror
         </div>
 
-        <div class="mb-3">
+        <div class="form-group col-md-6">
             <label>Display Name</label>
             <input type="text" name="college_display_name" class="form-control" value="{{ old('college_display_name', $college->college_display_name) }}" required>
         </div>
 
-        <div class="mb-3">
+        <div class="form-group col-md-6">
             <label>Short Name</label>
             <input type="text" name="college_short_name" class="form-control" value="{{ old('college_short_name', $college->college_short_name) }}" required>
         </div>
 
-        <div class="mb-3">
+        <div class="form-group col-md-6">
             <label>State</label>
             <select name="state_id" id="state" class="form-control" required>
                 <option value="">-- Select State --</option>
@@ -38,7 +43,7 @@
             </select>
         </div>
 
-        <div class="mb-3">
+        <div class="form-group col-md-6">
             <label>District</label>
             <select name="district_id" id="district" class="form-control" required>
                 <option value="">-- Select District --</option>
@@ -49,7 +54,46 @@
                 @endforeach
             </select>
         </div>
+        <div class="form-group col-md-6">
+            <label>College Type</label>
+            <select name="college_type" class="form-control">
+                <option value="0"
+                    {{ old('college_type', $college->college_type ?? '') == 0 ? 'selected' : '' }}>
+                    Degree
+                </option>
+                <option value="1"
+                    {{ old('college_type', $college->college_type ?? '') == 1 ? 'selected' : '' }}>
+                    Diploma
+                </option>
+            </select>
+        </div>
 
+        <div class="form-group col-md-6">
+            <label>Offer Training</label>
+            <select name="offer_training" class="form-control">
+                <option value="0"
+                    {{ old('offer_training', $college->offer_training ?? '') == 0 ? 'selected' : '' }}>
+                    No
+                </option>
+                <option value="1"
+                    {{ old('offer_training', $college->offer_training ?? '') == 1 ? 'selected' : '' }}>
+                    Yes
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group col-md-6">
+            <label>Training Times in Year</label>
+            <select name="training_in_year" class="form-control">
+                @foreach(range(0, 5) as $year)
+                    <option value="{{ $year }}"
+                        {{ old('training_in_year', $college->training_in_year ?? '') == $year ? 'selected' : '' }}>
+                        {{ $year }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
         <button class="btn btn-primary">Update</button>
     </form>
 </div>

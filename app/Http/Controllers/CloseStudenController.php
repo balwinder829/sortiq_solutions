@@ -98,8 +98,15 @@ public function index(Request $request)
         $query->where('status', $request->status);
     }
 
-    if ($request->filled('technology')) {
-        $query->where('technology', $request->technology);
+    // if ($request->filled('technology')) {
+    //     $query->where('technology', $request->technology);
+    // }
+
+     if ($request->filled('technology')) {
+        $query->whereRaw(
+            "FIND_IN_SET(?, technology)",
+            [$request->technology]
+        );
     }
 
     if ($request->filled('department')) {
@@ -120,8 +127,8 @@ public function index(Request $request)
 
     $students    = $query->latest()->get();
     $sessions    = StudentSession::all();
-    $colleges    = \App\Models\College::all();
-    $courses     = \App\Models\Course::all();
+    $colleges = College::orderBy('college_name')->get();
+    $courses = Course::orderBy('course_name')->get();
     $batches     = \App\Models\Batch::all();
     $users       = \App\Models\User::all();
     $departments = \App\Models\Department::all();

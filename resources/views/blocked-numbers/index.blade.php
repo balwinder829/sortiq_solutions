@@ -49,7 +49,7 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm btn-danger"
-                                onclick="return confirm('Unblock this number?')">
+                                data-swal-confirm="Unblock this number?">
                             Unblock
                         </button>
                     </form> -->

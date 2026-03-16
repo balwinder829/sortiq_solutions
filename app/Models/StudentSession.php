@@ -114,7 +114,22 @@ class StudentSession extends Model
         return $count;
     }
 
+//     public function students()
+// {
+//     return $this->hasManyThrough(
+//         Student::class,
+//         Batch::class,
+//         'session_name',   // Foreign key on batches table
+//         'batch_assign',   // Foreign key on students table
+//         'id',             // Local key on sessions table
+//         'id'              // Local key on batches table
+//     );
+// }
 
+    public function students()
+    {
+        return $this->hasMany(Student::class, 'session', 'id');
+    }
 
 
 

@@ -14,6 +14,7 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <link rel="icon" type="image/jpeg" href="{{ asset('certificate_fav.jpeg') }}">
 
     <style>
         .dataTables_length select { min-width: 70px !important; }
@@ -51,15 +52,218 @@
 <script src="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.5/dist/perfect-scrollbar.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/3.0.7/metisMenu.min.js"></script>
 <script src="{{ asset('js/custom.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     $.extend(true, $.fn.dataTable.defaults, {
         pageLength: 50,
         language: { lengthMenu: "Show _MENU_ Entries" }
     });
+
+    // SweetAlert2: global helper for script-based confirm (usage: sweetConfirm('Message?', function() { form.submit(); }))
+    window.sweetConfirm = function(msg, onConfirmed) {
+        Swal.fire({ title: 'Are you sure?', text: msg, icon: 'warning', showCancelButton: true, confirmButtonColor: '#3085d6', cancelButtonColor: '#d33', confirmButtonText: 'Yes' })
+            .then(function(r) { if (r.isConfirmed && onConfirmed) onConfirmed(); });
+    };
+
+    // SweetAlert2: confirm for buttons (submit) and links that have data-swal-confirm
+//     $(document).on('click', '[data-swal-confirm]', function(e) {
+//         e.preventDefault();
+//         var el = $(this);
+//         var msg = el.attr('data-swal-confirm') || 'Are you sure?';
+//         var form = el.closest('form');
+//         Swal.fire({
+//             title: 'Are you sure?',
+//             text: msg,
+//             icon: 'warning',
+//             showCancelButton: true,
+//             confirmButtonColor: '#3085d6',
+//             cancelButtonColor: '#d33',
+//             confirmButtonText: 'Yes'
+//         }).then(function(result) {
+//             if (result.isConfirmed) {
+//                 if (form.length) form.off('submit').submit();
+//                 else if (el.attr('href')) window.location.href = el.attr('href');
+//             }
+//         });
+//         return false;
+//     });
+
+//     // SweetAlert2: confirm for form submit (form has data-swal-confirm)
+//     $(document).on('submit', 'form[data-swal-confirm]', function(e) {
+//         e.preventDefault();
+//         var form = $(this);
+//         var msg = form.attr('data-swal-confirm') || 'Are you sure?';
+//         Swal.fire({
+//             title: 'Are you sure?',
+//             text: msg,
+//             icon: 'warning',
+//             showCancelButton: true,
+//             confirmButtonColor: '#3085d6',
+//             cancelButtonColor: '#d33',
+//             confirmButtonText: 'Yes'
+//         }).then(function(result) {
+//             if (result.isConfirmed) form.off('submit').submit();
+//         });
+//         return false;
+//     });
+ </script>
+
+ <script>
+/*
+|--------------------------------------------------------------------------
+| UNIVERSAL SWEETALERT CONFIRM HANDLER
+|--------------------------------------------------------------------------
+| Supports:
+| - <form data-swal-confirm="...">
+| - <a data-swal-confirm="..." href="...">
+| - <button data-swal-confirm="...">
+| Safe for 100+ pages, datatables, ajax redraws
+|--------------------------------------------------------------------------
+*/
+    $(document).on('click', '[data-swal-delete]', function (e) {
+
+    const el   = $(this);
+    const form = el.closest('form');
+    const msg  = el.data('swal-confirm') || 'Are you sure?';
+    const href = el.attr('href');
+
+    // If element is inside form → handle submit here
+    if (form.length) {
+
+        e.preventDefault();
+
+        // stop double popup
+        if (form.data('swal-processing')) return;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: msg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+
+            if (!result.isConfirmed) return;
+
+            form.data('swal-processing', true);
+
+            // 🔥 FORCE NATIVE SUBMIT (works even without type="submit")
+            form[0].submit();
+        });
+
+        return;
+    }
+
+    // 🔥 LINK CASE
+    if (href) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: msg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes'
+        }).then((result) => {
+            if (result.isConfirmed) window.location.href = href;
+        });
+    }
+
+});
+
+// $(document).on('click', '[data-swal-confirm]', function (e) {
+
+//     const el = $(this);
+//     const form = el.closest('form');
+
+//     // If button inside form → let submit handler manage it
+//     if (form.length && (el.is('button') || el.attr('type') === 'submit')) {
+//         return;
+//     }
+
+//     e.preventDefault();
+
+//     const msg = el.data('swal-confirm') || 'Are you sure?';
+//     const href = el.attr('href');
+
+//     Swal.fire({
+//         title: 'Are you sure?',
+//         text: msg,
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonColor: '#3085d6',
+//         cancelButtonColor: '#d33',
+//         confirmButtonText: 'Yes'
+//     }).then((result) => {
+
+//         if (!result.isConfirmed) return;
+
+//         // 🔥 LINK CASE
+//         if (href) {
+//             window.location.href = href;
+//         }
+
+//     });
+
+// });
+
+
+
+// $(document).on('submit', 'form[data-swal-confirm]', function (e) {
+
+//     const form = $(this);
+
+//     // already confirmed → allow normal submit
+//     if (form.data('swal-confirmed')) {
+//         return true;
+//     }
+
+//     e.preventDefault();
+
+//     const msg = form.data('swal-confirm') || 'Are you sure?';
+
+//     Swal.fire({
+//         title: 'Are you sure?',
+//         text: msg,
+//         icon: 'warning',
+//         showCancelButton: true,
+//         confirmButtonColor: '#3085d6',
+//         cancelButtonColor: '#d33',
+//         confirmButtonText: 'Yes'
+//     }).then((result) => {
+
+//         if (!result.isConfirmed) return;
+
+//         // mark confirmed
+//         form.data('swal-confirmed', true);
+
+//         // 🔥 IMPORTANT: use native submit, NOT jQuery submit
+//         form[0].submit();
+
+//     });
+
+// });
 </script>
 
+
 @stack('scripts')
+
+{{-- SweetAlert2: flash messages (success, error, warning) --}}
+@if(session('success'))
+<!-- <script> document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'success', title: 'Success', text: @json(session('success')) }); }); </script> -->
+@endif
+@if(session('error'))
+<script> document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'error', title: 'Error', text: @json(session('error')) }); }); </script>
+@endif
+@if(session('warning'))
+<script> document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'warning', title: 'Warning', text: @json(session('warning')) }); }); </script>
+@endif
+@if(session('danger'))
+<script> document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'error', title: 'Error', text: @json(session('danger')) }); }); </script>
+@endif
 
 {{-- ================= OTP POPUP (MIDDLEWARE CONTROLLED) ================= --}}
 @if(isset($showOtpPopup) && $showOtpPopup)
@@ -69,8 +273,24 @@
 @endphp
 
 @php
-    $user = auth()->user();
-    $email = $user->email ?? '';
+$user = auth()->user();
+$email = $user->email ?? '';
+
+$adminEmail = null;
+
+// If role is not 1 get responsible admin email
+if ($user->role != 1) {
+    $adminEmail = \App\Models\User::where('username','admin')
+                    ->where('role',1)
+                    ->value('email');
+}
+
+// Decide which email to use
+$displayEmail = $user->role == 1 ? $email : $adminEmail;
+
+
+// Email masking function
+function maskEmail($email) {
 
     if ($email && str_contains($email, '@')) {
 
@@ -78,37 +298,38 @@
         $localLength = strlen($local);
 
         if ($localLength > 6) {
-            // Normal email
             $maskedLocal =
                 substr($local, 0, 4)
                 . str_repeat('*', $localLength - 6)
                 . substr($local, -2);
+
         } elseif ($localLength > 2) {
-            // Short email
+
             $maskedLocal =
                 substr($local, 0, 1)
                 . str_repeat('*', $localLength - 2)
                 . substr($local, -1);
+
         } else {
-            // Very short (1–2 chars)
+
             $maskedLocal = str_repeat('*', $localLength);
         }
 
-        $maskedEmail = $maskedLocal . '@' . $domain;
-
-    } else {
-        // Fallback if email missing or invalid
-        $maskedEmail = '********';
+        return $maskedLocal . '@' . $domain;
     }
 
-    $otpExpiresAt = session('enquiry_otp_expires_at');
-@endphp
+    return '********';
+}
+
+// Mask email for display
+$maskedEmail = maskEmail($displayEmail);
 
 
-@php
-    $otpExpiresAt = session('enquiry_otp_expires_at');
-    $otpExists = session()->has('enquiry_otp_code');
-    $otpValid = $otpExists && $otpExpiresAt && now()->timestamp < $otpExpiresAt;
+// OTP session
+$otpExpiresAt = session('enquiry_otp_expires_at');
+$otpExists = session()->has('enquiry_otp_code');
+$otpValid = $otpExists && $otpExpiresAt && now()->timestamp < $otpExpiresAt;
+
 @endphp
 
 <div id="otpOverlay" class="otp-overlay">

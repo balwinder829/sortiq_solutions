@@ -44,6 +44,27 @@ class PgImport implements
         return $filtered->isEmpty();
     }
 
+    public function prepareForValidation($data, $index)
+    {
+        // -------- CONTACT NORMALIZE --------
+        if (!empty($data['contact'])) {
+
+            $data['contact'] = preg_replace('/[\|\-_;\s]+/', ',', $data['contact']);
+            $data['contact'] = preg_replace('/,+/', ',', $data['contact']);
+            $data['contact'] = trim($data['contact'], ',');
+        }
+
+        // -------- EMAIL NORMALIZE --------
+        if (!empty($data['email'])) {
+
+            $data['email'] = preg_replace('/[\|\-_;\s]+/', ',', $data['email']);
+            $data['email'] = preg_replace('/,+/', ',', $data['email']);
+            $data['email'] = trim($data['email'], ',');
+        }
+
+        return $data;
+    }
+
     /* ================= VALIDATION RULES ================= */
     public function rules(): array
     {
@@ -51,53 +72,60 @@ class PgImport implements
 
             '*.name' => 'required|string',
         
-            '*.contact' => [
+           '*.contact' => [
                 'required',
-                'regex:/^[0-9]+$/',
-                'digits:10'
+                'regex:/^\d{10}(,\d{10})*$/'
             ],
 
-            '*.email' => 'required|email',
+            '*.email' => [
+                'nullable',
+                'regex:/^[^,\s]+@[^,\s]+\.[^,\s]+(,[^,\s]+@[^,\s]+\.[^,\s]+)*$/'
+            ],
+
+
+            // '*.email' => 'required|email',
 
             // Fees required
-            '*.address' => 'required|string',
-            '*.pg_type' => function ($attribute, $value, $fail) {
+            '*.address' => 'nullable|string',
+            // '*.pg_type' => function ($attribute, $value, $fail) {
 
-                if (!$value) {
-                    $fail('PG type is required.');
-                    return;
-                }
+            //     if (!$value) {
+            //         $fail('PG type is required.');
+            //         return;
+            //     }
 
-                // normalize value
-                $pgType = strtolower(trim($value));
+            //     // normalize value
+            //     $pgType = strtolower(trim($value));
 
-                // allowed values
-                $allowed = ['boys', 'girls', 'both'];
+            //     // allowed values
+            //     $allowed = ['boys', 'girls', 'both'];
 
-                if (!in_array($pgType, $allowed, true)) {
-                    $fail('Invalid PG type. Allowed values: boys, girls, both.');
-                }
-            },
-            '*.food_type' => function ($attribute, $value, $fail) {
+            //     if (!in_array($pgType, $allowed, true)) {
+            //         $fail('Invalid PG type. Allowed values: boys, girls, both.');
+            //     }
+            // },
+            // '*.food_type' => function ($attribute, $value, $fail) {
 
-                if (!$value) {
-                    $fail('Food type is required.');
-                    return;
-                }
+            //     if (!$value) {
+            //         $fail('Food type is required.');
+            //         return;
+            //     }
 
-                // normalize value
-                $foodType = strtolower(trim($value));
+            //     // normalize value
+            //     $foodType = strtolower(trim($value));
 
-                // allowed values
-                $allowed = ['food', 'without_food'];
+            //     // allowed values
+            //     $allowed = ['food', 'without_food'];
 
-                if (!in_array($foodType, $allowed, true)) {
-                    $fail('Invalid Food type. Allowed values: food, without_food.');
-                }
-            },
+            //     if (!in_array($foodType, $allowed, true)) {
+            //         $fail('Invalid Food type. Allowed values: food, without_food.');
+            //     }
+            // },
+            '*.pg_type' => 'required|string',
+            '*.food_type' => 'required|string',
 
             // '*.food_type' => 'required|string',
-            '*.rent_estimate' => 'required|numeric',
+            '*.rent_estimate' => 'nullable|numeric',
         ];
     }
 
@@ -106,15 +134,19 @@ class PgImport implements
     {
         return [
             '*.name.required' => 'name is required.',
-            '*.contact_person.required'       => 'Contact person is required.',
+            // '*.contact_person.required'       => 'Contact person is required.',
             '*.contact.required'      => 'Contact number is required.',
-            '*.contact.regex'         => 'Contact number must contain only digits.',
-            '*.email.required'   => 'Email is required.',
-            '*.email.email'   => 'Add valid email address.',
-            '*.address.required'     => 'Address is required.',
+            // '*.contact.regex'         => 'Contact number must contain only digits.',
+            // '*.email.required'   => 'Email is required.',
+            // '*.email.email'   => 'Add valid email address.',
+            // '*.address.required'     => 'Address is required.',
             '*.pg_type.required'     => 'pg type is required.',
             '*.food_type.required'     => 'food type is required.',
-            '*.rent_estimate.required'     => 'rent estimate is required.',
+            // '*.rent_estimate.required'     => 'rent estimate is required.',
+            '*.contact.regex' => 'Each contact number must be exactly 10 digits. Allowed separators: , - | _ space ;',
+
+            '*.email.regex' => 'Enter valid email addresses separated by , - | _ space ;',
+
         ];
     }
 
@@ -140,23 +172,53 @@ class PgImport implements
         /* -------- SESSION -------- */
 
         /* -------- DUPLICATE CONTACT -------- */
-        if (!empty($row['contact']) && Pg::where('contact', $row['contact'])->exists()) {
-            $this->skippedRows++;
-            $this->duplicateContacts[] = "Duplicate contact skipped: {$row['contact']}";
-            return null;
-        }
-        
-        $this->insertedRows++;
+        // if (!empty($row['contact']) && Pg::where('contact', 'LIKE', "%{$row['contact']}%")->exists()) {
+        //     $this->skippedRows++;
+        //     $this->duplicateContacts[] = "Duplicate contact skipped: {$row['contact']}";
+        //     return null;
+        // }
 
+        // if (!empty($row['contact'])) {
+
+        //     foreach (explode(',', $row['contact']) as $phone) {
+
+        //         if (Pg::where('contact', 'LIKE', "%{$phone}%")->exists()) {
+        //             $this->skippedRows++;
+        //             $this->duplicateContacts[] = "Duplicate contact skipped: {$phone}";
+        //             return null;
+        //         }
+        //     }
+        // }
+
+         /* -------- NORMALIZE PG TYPE -------- */
+        $pgType = strtolower($row['pg_type'] ?? '');
+
+        $allowedPgTypes = ['boys', 'girls', 'both'];
+
+        if (!in_array($pgType, $allowedPgTypes, true)) {
+            $pgType = 'both'; // default value
+        }
+
+        /* -------- NORMALIZE FOOD TYPE -------- */
+        $foodType = strtolower($row['food_type'] ?? '');
+
+        $allowedFoodTypes = ['food', 'without_food'];
+
+        if (!in_array($foodType, $allowedFoodTypes, true)) {
+            $foodType = 'food'; // default value
+        }
+
+        $this->insertedRows++;
+        
         return new Pg([
             'name' => strtolower(trim($row['name'])),
-            'email'     => $row['email'],
+            'email'     => $row['email'] ?? null,
             'contact'      => $row['contact'],
             
             'address' => $row['address'],
             'rent_estimate'      => $row['rent_estimate']  ?? null,
-            'pg_type'      => $row['pg_type']  ?? null,
-            'food_type'      => $row['food_type']  ?? null,
+            'pg_type' => $pgType,
+            'food_type' => $foodType,
             'description'   => $row['description'] ?? null,
             'status'   => 'active',
         ]);

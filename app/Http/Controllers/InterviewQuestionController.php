@@ -84,7 +84,10 @@ class InterviewQuestionController extends Controller
 
         InterviewQuestion::create($request->all());
 
-        return redirect()->route('interview-questions.index')
+        // return redirect()->route('interview-questions.index')
+        //     ->with('success', 'Question added successfully');
+
+        return redirect()->back()
             ->with('success', 'Question added successfully');
     }
 

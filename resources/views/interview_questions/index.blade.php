@@ -23,10 +23,10 @@
 
     <div class="row mb-3 align-items-center">
         <div class="col-md-10">
-            <form method="GET" action="{{ route('interview-questions.index') }}" class="row g-2">
+            <form method="GET" id="filterForm" class="row g-2">
 
                 <div class="col-md-3">
-                    <select name="round_type" class="form-control">
+                    <select name="round_type" class="form-control filterchange">
                         <option value="">All Rounds</option>
                         <option value="hr" {{ request('round_type')=='hr'?'selected':'' }}>HR</option>
                         <option value="technical" {{ request('round_type')=='technical'?'selected':'' }}>Technical</option>
@@ -35,7 +35,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <select name="experience_level" class="form-control">
+                    <select name="experience_level" class="form-control filterchange">
                         <option value="">All Experience</option>
                         <option value="fresher">Fresher</option>
                         <option value="1-3">1–3 Years</option>
@@ -45,7 +45,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <select name="technology_id" class="form-control">
+                    <select name="technology_id" class="form-control filterchange">
                         <option value="">All Technologies</option>
                         @foreach($technologies as $tech)
                             <option value="{{ $tech->id }}"
@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-primary">Search</button>
+                    <!-- <button class="btn btn-primary">Search</button> -->
                     <a href="{{ route('interview-questions.index') }}" class="btn btn-secondary">Reset</a>
                 </div>
 
@@ -102,7 +102,7 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm" title="Delete"
-                                onclick="return confirm('Delete this question?')">
+                                data-swal-confirm="Delete this question?">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>
@@ -131,6 +131,25 @@ $(document).ready(function() {
         pageLength: 10,
         lengthMenu: [5,10,25,50,100]
     });
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

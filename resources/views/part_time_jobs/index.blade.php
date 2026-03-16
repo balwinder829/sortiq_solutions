@@ -42,58 +42,60 @@
     @endif
 
     {{-- ================= FILTERS ================= --}}
-    <form method="GET" action="{{ route('part-time-jobs.index') }}" class="mb-4">
+    <form method="GET" id="filterForm" class="mb-4">
         <div class="row align-items-end">
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="fw-bold">Job Type</label>
                 <input type="text"
                        name="job_type"
                        value="{{ request('job_type') }}"
-                       class="form-control"
+                       class="form-control filterchange"
                        placeholder="Job type">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="fw-bold">Shift</label>
                 <input type="text"
                        name="shift"
                        value="{{ request('shift') }}"
-                       class="form-control"
+                       class="form-control filterchange"
                        placeholder="Shift">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="fw-bold">Location</label>
                 <input type="text"
                        name="location"
                        value="{{ request('location') }}"
-                       class="form-control"
+                       class="form-control filterchange"
                        placeholder="Location">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="fw-bold">Status</label>
-                <select name="status" class="form-control">
+                <select name="status" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="active" {{ request('status')=='active' ? 'selected' : '' }}>Active</option>
                     <option value="inactive" {{ request('status')=='inactive' ? 'selected' : '' }}>Inactive</option>
                 </select>
             </div>
 
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-md-12 text-end">
-                <button class="btn btn-primary">
+        
+            <div class="col-md-2">
+                <!-- <button class="btn btn-primary">
                     <i class="fa fa-search"></i> Search
-                </button>
+                </button> -->
 
                 <a href="{{ route('part-time-jobs.index') }}" class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
                 </a>
             </div>
+        
+
         </div>
+
+      
     </form>
     {{-- ================= END FILTERS ================= --}}
 
@@ -145,7 +147,7 @@
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm"
-                                    onclick="return confirm('Are you sure?')"
+                                    data-swal-confirm="Are you sure?"
                                     title="Delete">
                                 <i class="fa fa-trash"></i>
                             </button>
@@ -169,6 +171,21 @@ $(document).ready(function () {
         pageLength: 25,
         order: [[0,'desc']]
     });
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('input change', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

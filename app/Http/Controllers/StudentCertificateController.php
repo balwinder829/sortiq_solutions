@@ -147,10 +147,10 @@ class StudentCertificateController extends Controller
                 'certificateId' => 'required|integer',
             ]);
 
-            // $certificate = Student::with(['collegeData','courseData'])->where('sno', $request->certificateId)->first();
+           
            $certificate = Student::with([
                 'collegeData'  => fn ($q) => $q->withTrashed(),
-                'courseData'   => fn ($q) => $q->withTrashed(),
+               
             ])
             ->where('sno', $request->certificateId)
             ->first();
@@ -169,7 +169,7 @@ class StudentCertificateController extends Controller
                     'first_name' => ucwords($certificate->student_name),
                     'duration'   => $certificate->durationData?->name ?? $certificate->duration,
                     'college'    => ucwords($certificate->collegeData?->college_name) ?? 'N/A',
-                    'technology' => ucwords($certificate->courseData?->course_name) ?? 'N/A',
+                    'technology' => ucwords($certificate?->course_name) ?? 'N/A',
                     'semester'   => $certificate->semester,
                     'stream'     => $certificate->stream,
                     'branch'     => $certificate->branch,

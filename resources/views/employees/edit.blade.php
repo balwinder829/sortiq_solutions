@@ -46,7 +46,7 @@
 
              {{-- Employement type --}}
             <div class="form-group col-md-6">
-               <label>Employee Type</label>
+               <label>Experience Level</label>
                 <select name="employment_type" class="form-control" required>
                     <option value="">Select</option>
                     @foreach(['intern','fresher','junior','senior'] as $bg)
@@ -56,6 +56,61 @@
                         </option>
                     @endforeach
                 </select>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Work Mode</label>
+                <select name="work_mode" class="form-control" required>
+                    @foreach(['offline','online'] as $mode)
+                        <option value="{{ $mode }}"
+                            {{ old('work_mode', $employee->work_mode ?? 'offline') == $mode ? 'selected' : '' }}>
+                            {{ ucfirst($mode) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Employement Type</label>
+                <select name="employment_mode" class="form-control" required>
+                    @foreach(['normal','intern' ,'freelancer'] as $mode)
+                        <option value="{{ $mode }}"
+                            {{ old('employment_mode', $employee->employment_mode ?? 'normal') == $mode ? 'selected' : '' }}>
+                            {{ ucfirst($mode) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Job Type</label>
+                <select name="job_type" id="jobType" class="form-control" required>
+                    @foreach(['full_time','part_time'] as $type)
+                        <option value="{{ $type }}"
+                            {{ old('job_type', $employee->job_type ?? 'full_time') == $type ? 'selected' : '' }}>
+                            {{ str_replace('_', ' ', ucwords($type)) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group col-md-6"
+                 id="workingHoursField"
+                 style="{{ old('job_type', $employee->job_type ?? '') == 'part_time' ? '' : 'display:none;' }}">
+
+                <label>Working Hours Per Day</label>
+
+                <input type="number"
+                       name="working_hours_per_day"
+                       class="form-control"
+                       step="0.5"
+                       min="1"
+                       value="{{ old('working_hours_per_day', $employee->working_hours_per_day ?? '') }}"
+                       placeholder="Enter hours (e.g. 4.5)">
+
+                @error('working_hours_per_day')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
 
             {{-- Joining Date --}}
@@ -92,7 +147,7 @@
                         required>
                     @foreach($roles as $role)
                         <option value="{{ $role->id }}"
-                            {{ old('role', $employee->user->role) == $role->id ? 'selected' : '' }}>
+                            {{ old('role', $employee->role) == $role->id ? 'selected' : '' }}>
                             {{ ucfirst($role->name) }}
                         </option>
                     @endforeach
@@ -108,7 +163,7 @@
                 <input type="text"
                        name="username"
                        class="form-control @error('username') is-invalid @enderror"
-                       value="{{ old('username', $employee->user->username) }}"
+                       value="{{ old('username', $employee->username) }}"
                        required>
                 @error('username')
                     <small class="text-danger">{{ $message }}</small>
@@ -121,7 +176,7 @@
                 <input type="email"
                        name="email"
                        class="form-control @error('email') is-invalid @enderror"
-                       value="{{ old('email', $employee->user->email) }}"
+                       value="{{ old('email', $employee->email) }}"
                        required>
                 @error('email')
                     <small class="text-danger">{{ $message }}</small>
@@ -166,7 +221,7 @@
                 <input type="text"
                        name="phone"
                        class="form-control @error('phone') is-invalid @enderror"
-                       value="{{ old('phone', $employee->user->phone) }}"
+                       value="{{ old('phone', $employee->phone) }}"
                        required
                        minlength="10"
                        maxlength="10"
@@ -322,5 +377,25 @@ function toggleProbation() {
     input.type = input.type === 'password' ? 'text' : 'password';
 } 
 
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const jobType = document.getElementById("jobType");
+    const workingHoursField = document.getElementById("workingHoursField");
+
+    function toggleWorkingHours() {
+        if (jobType.value === "part_time") {
+            workingHoursField.style.display = "block";
+        } else {
+            workingHoursField.style.display = "none";
+        }
+    }
+
+    // Run on page load
+    toggleWorkingHours();
+
+    // Run when changed
+    jobType.addEventListener("change", toggleWorkingHours);
+});
 </script>
 @endpush

@@ -107,8 +107,22 @@ public function index(Request $request)
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('technology')) {
-            $query->where('technology', $request->technology);
+        if ($request->filled('is_intern')) {
+            $query->where('is_intern', $request->is_intern);
+        }
+        if ($request->filled('is_online')) {
+            $query->where('is_online', $request->is_online);
+        }
+
+        // if ($request->filled('technology')) {
+        //     $query->where('technology', $request->technology);
+        // }
+
+         if ($request->filled('technology')) {
+            $query->whereRaw(
+                "FIND_IN_SET(?, technology)",
+                [$request->technology]
+            );
         }
 
         if ($request->filled('part_time_offer')) {
@@ -233,8 +247,10 @@ if (!$request->filled('fee_filter')) {
 
     // $students    = $query->latest()->get();
     $sessions    = StudentSession::all();
-    $colleges    = \App\Models\College::all();
-    $courses     = \App\Models\Course::all();
+    // $colleges    = \App\Models\College::all();
+    // $courses     = \App\Models\Course::all();
+    $colleges = College::orderBy('college_name')->get();
+    $courses = Course::orderBy('course_name')->get();
     $batches     = \App\Models\Batch::all();
     $users       = \App\Models\User::all();
     $departments = \App\Models\Department::all();
@@ -314,11 +330,17 @@ if (!$request->filled('fee_filter')) {
             'email_id'       => 'nullable|email',
             'contact'        => 'required|string|max:15',
             'gender'         => 'required|string',
-            'college_name'   => 'required|string',   // not college_id
-            'technology'     => 'required|string',   // not technology_id
+            // 'college_name'   => 'required|string',   // not college_id
+            // 'technology'     => 'required|string',   // not technology_id
+            'college_name' => 'required_if:is_place,0|nullable|string',
+            'place'        => 'required_if:is_place,1|nullable|string',
+            'is_place'    => 'nullable|boolean',
+            'technology'   => 'nullable|array',
+            'technology.*' => 'string',
             // 'batch_assign'   => 'required|string',   // not batch_id
             'reference'      => 'string',   // not reference_user
             'status'         => 'required|string',
+            'duration'         => 'nullable|string',
             'total_fees'     => 'required|numeric',
             'reg_fees'       => 'required|numeric',
             'paid_fees'       => 'nullable|numeric',
@@ -332,6 +354,9 @@ if (!$request->filled('fee_filter')) {
             'pg_offer'         => 'required|boolean',
             'send_to_close'         => 'required|boolean',
             'is_placed'         => 'required|boolean',
+            'is_intern'         => 'required|boolean',
+            'is_married'         => 'nullable|boolean',
+            'is_online'         => 'nullable|boolean',
         ]);
         // dd('Passed validation', $validates);
          /**
@@ -414,6 +439,8 @@ if (!$request->filled('fee_filter')) {
         // } else {
         //     $validates['certificate_status'] = 2;
         // }
+
+        // dd($validates);
         $student->update($validates);
 
         if ($validates['send_to_close'] == 1) {

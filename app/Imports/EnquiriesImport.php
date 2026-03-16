@@ -12,11 +12,13 @@ use Illuminate\Support\Facades\Validator;
 class EnquiriesImport implements ToCollection
 {
     protected $creator;
+    protected $isPassout;
     public $errors = [];
 
-    public function __construct($creator)
+    public function __construct($creator, $isPassout = 0)
     {
         $this->creator = $creator;
+         $this->isPassout = $isPassout;
     }
 
     public function collection(Collection $rows)
@@ -153,11 +155,12 @@ if (!empty($data['college'])) {
                 'name'       => $data['name'],
                 'mobile'     => $data['mobile'],
                 'email'      => $data['email'],
-                'college'    => $college?->id,
+                'college'    => $collegeId,
                 'study'      => $data['study'],
                 'semester'   => $data['semester'],
                 'created_by' => $this->creator,
                 'source'     => 'excel',
+                'is_passout' => $this->isPassout
             ]);
         }
     }

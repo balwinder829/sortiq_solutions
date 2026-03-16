@@ -24,23 +24,22 @@
             <tr>
                 <th>Name</th>
                 <th>Emp Code</th>
-                <th>Email</th>
+                <!-- <th>Email</th> -->
                 <th>File</th>
-                <th>Actions</th>
+                <th width="150">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach($letters as $letter)
             <tr>
-                <td>{{ $letter->name }}</td>
-                <td>{{ $letter->emp_code ?? '-' }}</td>
-                <td>{{ $letter->email }}</td>
+                <td>{{ $letter->employee->emp_name ?? '-' }}</td>
+                <td>{{ $letter->employee->emp_code ?? '-' }}</td>
                 <td>
                     <span class="badge bg-success">
                         {{ strtoupper(pathinfo($letter->file_path, PATHINFO_EXTENSION)) }}
                     </span>
                 </td>
-                <td>
+                <td class="text-nowrap">
                     <a href="{{ route('accepted-letters.edit', $letter) }}" class="btn btn-sm">
                         <i class="fas fa-edit"></i>
                     </a>
@@ -48,6 +47,21 @@
                     <a href="{{ route('accepted-letters.download', $letter) }}" class="btn btn-sm">
                         <i class="fas fa-download"></i>
                     </a>
+
+
+                    {{-- Delete --}}
+                    <form action="{{ route('accepted-letters.destroy', $letter) }}" 
+                          method="POST" 
+                          style="display:inline-block;"
+                          >
+
+                        @csrf
+                        @method('DELETE')
+
+                        <button type="submit" class="btn btn-sm">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
                 </td>
             </tr>
             @endforeach
@@ -59,8 +73,12 @@
 
 @push('scripts')
 <script>
-$(function () {
-    $('#lettersTable').DataTable();
+$(document).ready(function() {
+    $('#lettersTable').DataTable({
+        pageLength: 100,
+        lengthMenu: [5,10,25,50,100],
+        order:[]
+    });
 });
 </script>
 @endpush

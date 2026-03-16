@@ -12,26 +12,22 @@
 
         <div class="row">
 
-            <div class="form-group col-md-6">
-                <label>Name</label>
-                <input type="text" name="name"
-                       class="form-control"
-                       value="{{ $accepted_letter->name }}" required>
-            </div>
+            <div class="form-group col-md-12">
+            <label>Select Employee</label>
+            <select name="employee_id"
+                    class="form-control @error('employee_id') is-invalid @enderror"
+                    required>
 
-            <div class="form-group col-md-6">
-                <label>Emp Code</label>
-                <input type="text" name="emp_code"
-                       class="form-control"
-                       value="{{ $accepted_letter->emp_code }}">
-            </div>
+                <option value="" disabled>-- Select Employee --</option>
 
-            <div class="form-group col-md-6">
-                <label>Email</label>
-                <input type="email" name="email"
-                       class="form-control"
-                       value="{{ $accepted_letter->email }}" required>
-            </div>
+                @foreach($employees as $emp)
+                    <option value="{{ $emp->id }}"
+                        {{ old('employee_id', $accepted_letter->employee_id ?? '') == $emp->id ? 'selected' : '' }}>
+                        {{ $emp->emp_name }} ({{ $emp->emp_code }})
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
             {{-- File Upload --}}
             <div class="form-group col-md-12">
@@ -50,7 +46,7 @@
             <div class="form-group col-md-12 mt-3">
                 <label>Current File</label>
 
-               <!--  <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-3">
 
                     {{-- Image Thumbnail --}}
                     @if(in_array($extension, ['jpg','jpeg','png']))
@@ -74,7 +70,7 @@
                         </a>
                     </div>
 
-                </div> -->
+                </div> 
             </div>
 
         </div>

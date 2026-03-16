@@ -8,7 +8,7 @@
         </div>
         <div class="card-body">
             <!-- Display Validation Errors -->
-            @if ($errors->any())
+            <!-- @if ($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
                         @foreach ($errors->all() as $error)
@@ -16,7 +16,7 @@
                         @endforeach
                     </ul>
                 </div>
-            @endif
+            @endif -->
 
             <form action="{{ route('courses.update', $course->id) }}" method="POST">
                 @csrf
@@ -32,6 +32,9 @@
                         value="{{ old('course_name', $course->course_name) }}" 
                         required
                     >
+                    @error('course_name')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-2">Update</button>

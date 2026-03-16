@@ -30,6 +30,6 @@ class EnquiryFollowup extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(SalesStaff::class);
     }
 }

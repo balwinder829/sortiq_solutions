@@ -6,10 +6,42 @@
 <div class="content-body">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-12">          
+            <div class="col-12">   
+            <form method="POST" action="{{ route('students.update', $student->id) }}">
+                @csrf
+                @method('PUT')       
                 <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title">Edit Student Detail - SNo- {{ $student->sno }}</h4>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0">Edit Student Detail - SNo- {{ $student->sno }}</h4>
+                          <!-- Married Checkbox (RIGHT SIDE) -->
+                          <div class="form-check ms-3">
+                            <input type="hidden" name="is_place" value="0">
+
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   name="is_place"
+                                   value="1"
+                                   id="is_place"
+                                   {{ old('is_place', $student->is_place) ? 'checked' : '' }}>
+
+                            <label class="form-check-label" for="is_place">
+                                Other Place
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input type="hidden" name="is_married" value="0">
+
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   name="is_married"
+                                   value="1"
+                                   id="is_married"
+                                   {{ old('is_married', $student->is_married) ? 'checked' : '' }}>
+
+                            <label class="form-check-label" for="is_married">
+                                Married Status
+                            </label>
+                        </div>
                     </div>
                     
                     <div class="card-body">
@@ -23,9 +55,7 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('students.update', $student->id) }}">
-                            @csrf
-                            @method('PUT')
+                        
 
                             <div class="form-row">
                                 <!-- Student Name -->
@@ -37,7 +67,7 @@
 
                                 <!-- Father Name -->
                                 <div class="form-group col-md-6">
-                                    <label>Father Name</label>
+                                     <label id="guardianLabel">Father Name</label>
                                     <input type="text" name="f_name" maxlength="55" required class="form-control" 
                                         value="{{ ucwords(old('f_name', preg_match('/^mr\.?/i', $student->f_name) ? $student->f_name : 'Mr. '.$student->f_name) )}}" oninput="handleMrPrefix(this)">
                                 </div>
@@ -49,7 +79,7 @@
                                 <!-- Gender -->
                                 <div class="form-group col-md-6">
                                     <label>Gender</label>
-                                    <select name="gender" class="form-control" required>
+                                    <select name="gender" class="form-control" required  id="genderSelect" >
                                         <option value="" disabled>--Select--</option>
                                         <option value="male" {{ old('gender', $student->gender) == 'male' ? 'selected' : '' }}>Male</option>
                                         <option value="female" {{ old('gender', $student->gender) == 'female' ? 'selected' : '' }}>Female</option>
@@ -60,7 +90,7 @@
                                 <!-- Session -->
                                 
                                 <!-- College -->
-                                <div class="form-group col-md-6">
+                                <!-- <div class="form-group col-md-6">
                                     <label>College</label>
                                     <select name="college_name" required class="form-control select2">
                                         <option value="" disabled>--Choose--</option>
@@ -71,12 +101,41 @@
                                             </option>
                                         @endforeach
                                     </select>
+                                </div> -->
+
+                                <div class="form-group col-md-6" id="collegeWrapper">
+                                    <label>College</label>
+                                    <select name="college_name" id="college_name" class="form-control select2">
+                                        <option value="">--Choose--</option>
+                                        @foreach($colleges as $college)
+                                            <option value="{{ $college->id }}" 
+                                                {{ old('college_name', $student->college_name) == $college->id ? 'selected' : '' }}>
+                                                {{ $college->FullName }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="form-group col-md-6 d-none" id="placeWrapper">
+                                    <label>Place</label>
+                                    <input type="text"
+                                           name="place"
+                                           id="place"
+                                           class="form-control"
+                                           value="{{ old('place', $student->place) }}"
+                                           placeholder="Enter place">
                                 </div>
 
                                 <!-- Contact -->
                                 <div class="form-group col-md-6">
                                     <label>Contact No</label>
                                     <input type="text" name="contact" class="form-control" 
+                                    minlength="10"
+                                   
+                                   pattern="[0-9]{10}"
+                                   title="Enter a valid 10-digit mobile number"
+                                     onpaste="handlePaste(event)"
+           oninput="sanitizeContact(this)"
                                         value="{{ old('contact', $student->contact) }}">
                                 </div>
 
@@ -104,7 +163,7 @@
 
 
                                 <!-- Technology -->
-                                <div class="form-group col-md-6">
+                                <!-- <div class="form-group col-md-6">
                                     <label>Technology</label>
                                     <select name="technology" required class="form-control">
                                         <option value="" disabled>--Choose--</option>
@@ -115,7 +174,20 @@
                                             </option>
                                         @endforeach
                                     </select>
+                                </div> -->
+
+                                <div class="form-group col-md-6">
+                                    <label>Technology</label>
+                                    <select name="technology[]" class="form-control" multiple>
+                                        @foreach($courses as $course)
+                                            <option value="{{ $course->id }}"
+                                                {{ in_array($course->id, old('technology', $student->technology)) ? 'selected' : '' }}>
+                                                {{ $course->course_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
+
 
                                 <!-- Fees -->
                                 <div class="form-group col-md-6">
@@ -157,6 +229,9 @@
                                     <label>Pending Fees Due Date</label>
                                     <input type="date" name="next_due_date" class="form-control"
                                         value="{{ old('next_due_date', $student->next_due_date) }}">
+                                        <small class="text-danger d-none" id="due_date_error">
+                                            Next due date must be after the registered date.
+                                        </small>
                                 </div>
 
                                 
@@ -202,6 +277,30 @@
                                         </small>
                                 </div>
 
+
+                                <div class="form-group col-md-6">
+    <label>Duration</label>
+    <select name="duration" class="form-control" id="duration">
+
+        <option value="" disabled 
+            {{ old('duration', $student->duration ?? '') == '' ? 'selected' : '' }}>
+            --Select--
+        </option>
+
+        @foreach($course_duration as $d)
+            <option value="{{ $d->duration }}"
+                {{ old('duration', $student->duration ?? '') == $d->duration ? 'selected' : '' }}>
+                {{ $d->name }}
+            </option>
+        @endforeach
+
+    </select>
+
+    @error('duration') 
+        <small class="text-danger">{{ $message }}</small> 
+    @enderror
+</div>
+
                                 <!-- Batch -->
                                 <div class="form-group col-md-6">
                                     <label>Batch</label>
@@ -241,7 +340,21 @@
         </select>
     </div>
 
- 
+    <div class="form-group col-md-6">
+        <label>Is Intern?</label>
+        <select name="is_intern" class="form-control">
+            <option value="0" {{ $student->is_intern == 0 ? 'selected' : '' }}>No</option>
+            <option value="1" {{ $student->is_intern == 1 ? 'selected' : '' }}>Yes</option>
+        </select>
+    </div>
+
+     <div class="form-group col-md-6">
+        <label>Study Mode?</label>
+        <select name="is_online" class="form-control">
+            <option value="0" {{ $student->is_online == 0 ? 'selected' : '' }}>Offline</option>
+            <option value="1" {{ $student->is_online == 1 ? 'selected' : '' }}>Online</option>
+        </select>
+    </div>
 
 
                                 <!-- Reference -->
@@ -257,7 +370,40 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                           {{-- Password --}}
+                <div class="form-group col-md-6">
+                    <label>Password</label>
+                    <input type="password"
+                           name="password"
+                           class="form-control @error('password') is-invalid @enderror"
+                           placeholder="Leave blank to keep current password">
+                    @error('password')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+
+
+            {{-- Password --}}
+            <div class="form-group col-md-6">
+                <label>Existing Password</label>
+
+                <div class="input-group">
+                    <input type="password"
+                           id="plain_password"
+                           name="plain_password"
+                           class="form-control @error('plain_password') is-invalid @enderror"
+                           value="{{ old('plain_password', $student->plain_password) }}"
+                           readonly>
+
+                    <span class="input-group-text" style="cursor:pointer"
+                          onclick="toggleVal()">
+                        👁
+                    </span>
+                </div>
+            </div>
                             </div>
+
+                  
 
                             <!-- Buttons -->
                             <button type="submit" class="btn" style="background-color: #6b51df; color: #fff;">Update</button>
@@ -275,8 +421,50 @@
 
 @endsection
 @push('scripts')
+
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    function toggleVal() {
+        const input = document.getElementById('plain_password');
+        input.type = input.type === 'password' ? 'text' : 'password';
+    } 
+    document.addEventListener("DOMContentLoaded", function () {
+
+    const checkbox = document.getElementById("is_place");
+    const college = document.getElementById("college_name");
+    const place = document.getElementById("place");
+
+    function toggleFields() {
+
+        if (checkbox.checked) {
+
+            // hide college
+            $('#collegeWrapper').hide();
+            college.removeAttribute("required");
+            college.disabled = true;
+
+            // show place
+            $('#placeWrapper').removeClass('d-none');
+            place.setAttribute("required", true);
+
+        } else {
+
+            // show college
+            $('#collegeWrapper').show();
+            college.setAttribute("required", true);
+            college.disabled = false;
+
+            // hide place
+            $('#placeWrapper').addClass('d-none');
+            place.removeAttribute("required");
+        }
+    }
+
+    checkbox.addEventListener("change", toggleFields);
+
+    // important for edit page
+    toggleFields();
+});
     $(document).ready(function () {
         $('.select2').select2({
             theme: 'bootstrap-5',
@@ -583,6 +771,48 @@ blockSunday(document.getElementById('end_date'), 'end_error');
         toggleDueDate();
     });
  
+</script>
+<script>
+function validateDueDate() {
+    let joinDate = $('#join_date').val();
+    let dueDate  = $('input[name="next_due_date"]').val();
+
+    if (!joinDate || !dueDate) return;
+
+    if (new Date(dueDate) <= new Date(joinDate)) {
+        $('#due_date_error').removeClass('d-none');
+        $('input[name="next_due_date"]').val('');
+    } else {
+        $('#due_date_error').addClass('d-none');
+    }
+}
+
+// trigger when dates change
+$('#join_date, input[name="next_due_date"]').on('change', function () {
+    validateDueDate();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const genderSelect = document.getElementById("genderSelect");
+    const isMarried = document.getElementById("is_married");
+    const guardianLabel = document.getElementById("guardianLabel");
+
+    function updateLabel() {
+        if (genderSelect.value === "female" && isMarried.checked) {
+            guardianLabel.textContent = "Husband Name";
+        } else {
+            guardianLabel.textContent = "Father Name";
+        }
+    }
+
+    genderSelect.addEventListener("change", updateLabel);
+    isMarried.addEventListener("change", updateLabel);
+
+    updateLabel();
+});
 </script>
 <!-- <script>
    

@@ -49,6 +49,23 @@
                 @enderror
             </div>
 
+            {{-- Mobile No --}}
+            <div class="form-group col-md-6 mb-3">
+                <label for="mou_number">Mobile Number</label>
+                <input type="text"
+                       name="mou_number"
+                       id="mou_number"
+                       class="form-control @error('mou_number') is-invalid @enderror"
+                       value="{{ old('mou_number') }}"
+                    minlength="10"
+                    maxlength="10"
+                    pattern="[0-9]{10}"
+                    title="Enter a valid 10-digit mobile number">
+                @error('mou_number')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
             <div class="form-group col-md-6">
                 <label>Start Date</label>
                 <input type="date"

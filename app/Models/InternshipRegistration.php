@@ -26,11 +26,11 @@ class InternshipRegistration extends Model
 
     public function collegeData()
     {
-        return $this->belongsTo(College::class, 'college', 'id');
+        return $this->belongsTo(College::class, 'college', 'id')->withTrashed();
     }
 
     public function courseData()
     {
-        return $this->belongsTo(Course::class, 'technology', 'id');
+        return $this->belongsTo(Course::class, 'technology', 'id')->withTrashed();
     }
 }

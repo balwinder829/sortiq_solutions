@@ -26,12 +26,12 @@
 
     {{-- Filter Form --}}
     <div class="card mb-3 p-3">
-        <form method="GET" action="{{ route('cvs.index') }}" class="row g-3 align-items-end">
+        <form method="GET" id="filterForm" class="row g-3 align-items-end">
             
             {{-- Technology Filter (Dropdown) --}}
             <div class="col-md-4">
                 <label for="technology_filter" class="form-label">Filter by Technology</label>
-                <select name="technology" id="technology_filter" class="form-select">
+                <select name="technology" id="technology_filter" class="form-select filterchange">
                     <option value="">-- All Technologies --</option>
                     @foreach($available_tech as $tech)
                         <option value="{{ $tech }}" {{ request('technology') == $tech ? 'selected' : '' }}>
@@ -44,7 +44,7 @@
             {{-- Status Filter (Fresher/Exp) --}}
             <div class="col-md-3">
                 <label for="status_filter" class="form-label">Status</label>
-                <select name="status" id="status_filter" class="form-select">
+                <select name="status" id="status_filter" class="form-select filterchange">
                     <option value="">-- All Statuses --</option>
                     @foreach($available_status as $status)
                         <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>
@@ -56,8 +56,8 @@
 
             {{-- Submission Buttons --}}
             <div class="col-md-3 d-flex">
-                <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
-                <a href="{{ route('cvs.index') }}" class="btn btn-secondary">Clear</a>
+                <!-- <button type="submit" class="btn btn-primary me-2">Apply Filters</button> -->
+                <a href="{{ route('cvs.index') }}" class="btn btn-secondary">Reset</a>
             </div>
         </form>
     </div>
@@ -119,7 +119,7 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm"
-                                onclick="return confirm('Delete CV?')"
+                                data-swal-confirm="Delete CV?"
                                 data-bs-toggle="tooltip"
                                 title="Delete">
                             <i class="fas fa-trash"></i>
@@ -164,6 +164,25 @@ $(document).ready(function() {
         selector: '[data-bs-toggle="tooltip"]'
     });
     
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

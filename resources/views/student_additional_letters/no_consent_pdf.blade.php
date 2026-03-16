@@ -87,8 +87,17 @@
                 </tr>
                
                 <tr>
+                    @php
+                        $student = $letter->student;
+                        $gender = strtolower($student->gender ?? '');
+                        $relation = 'son';
+
+                        if ($gender === 'female') {
+                            $relation = $student->is_married ? 'wife' : 'daughter';
+                        }
+                    @endphp
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       <b> I, {{ ucwords($letter->student->student_name) }} son/daughter of {{ $letter->student->father_name_with_title ?? '-' }}, pursuing Industrial Training/Internship from Sortiq Solutions Pvt. Ltd. in {{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }} Technology declare you not to make me appear in the Screening Interviews.
+                       <b> I, {{ ucwords($letter->student->student_name) }} {{ $relation }} of {{ $letter->student->father_name_with_title ?? '-' }}, pursuing Industrial Training/Internship from Sortiq Solutions Pvt. Ltd. in {{ ucwords($letter->student?->course_name ?? 'N/A') }} Technology declare you not to make me appear in the Screening Interviews.
                         My date of joining Sortiq Solutions Pvt. Ltd. is {{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }} </b>
                     </td>
                 </tr>

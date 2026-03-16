@@ -108,7 +108,7 @@
         {{-- Delete --}}
         <form action="{{ route('scanners.destroy', $scanner) }}"
               method="POST"
-              onsubmit="return confirm('Are you sure you want to delete this scanner?');">
+              data-swal-confirm="Are you sure you want to delete this scanner?">
             @csrf
             @method('DELETE')
             <button class="btn btn-sm" title="Delete">

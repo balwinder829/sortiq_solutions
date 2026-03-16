@@ -90,12 +90,13 @@ class LetterController extends Controller
 
             $data = $request->validate([
                 'letter_type' => 'required|in:custom',
+                'employee_id' => 'required|exists:employees,id',
                 'issue_date'  => 'required|date|before_or_equal:today',
                 'bond_terms'  => 'required|string', // textarea content
             ]);
 
             Letter::create([
-                'employee_id' => null,              // 👈 no employee
+                'employee_id' => $data['employee_id'],             // 👈 no employee
                 'letter_type' => 'custom',
                 'issue_date'  => $data['issue_date'],
                 'bond_terms'  => $data['bond_terms'],
@@ -109,9 +110,11 @@ class LetterController extends Controller
         /* =================================================
            🔵 OTHER LETTERS (EMPLOYEE-BASED)
            ================================================= */
+        $plainBondTerms = trim(strip_tags($request->bond_terms));
+
         $validator = Validator::make($request->all(), [
         'employee_id' => 'required|exists:employees,id',
-        'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond',
+        'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond,intern,intern_custom',
         'issue_date'  => 'required|date|before_or_equal:today',
 
          'relieving_date' => [
@@ -149,14 +152,38 @@ class LetterController extends Controller
             'after_or_equal:bond_start_date',
         ],
 
-        'bond_amount' => 'nullable|numeric|min:0',
-        'bond_terms'  => 'nullable|string|required_if:letter_type,custom_bond',
+        // 'bond_amount' => 'nullable|numeric|min:0',
+        'bond_amount' => [
+            'nullable',
+            'numeric',
+            'min:0',
+            'required_if:letter_type,intern',
+        ],
+        // 'bond_terms'  => [
+        //     'nullable',
+        //     'string',
+        //     'required_if:letter_type,custom_bond,intern_custom',
+        // ],
+
+        'bond_terms' => [
+            'nullable',
+            'string',
+            function ($attribute, $value, $fail) use ($request, $plainBondTerms) {
+
+                if (
+                    in_array($request->letter_type, ['custom_bond','intern_custom']) &&
+                    $plainBondTerms === ''
+                ) {
+                    $fail('This is required.');
+                }
+            },
+        ],
 
         'new_salary'           => 'nullable|numeric|min:0|required_if:letter_type,increment',
         'increment_percentage' => 'nullable|numeric|min:0',
         'effective_date'       => 'nullable|date|required_if:letter_type,increment',
     ]);
-
+        // dd('here');
 
         $validator->after(function ($validator) use ($request) {
 
@@ -175,6 +202,10 @@ class LetterController extends Controller
 
         if (empty($employee->joining_date)) {
             $missing[] = 'joining date';
+        }
+
+        if (empty($employee->email)) {
+            $missing[] = 'email';
         }
 
 
@@ -312,6 +343,8 @@ private function generateLetterPdf(Letter $letter): string
             'appointment_with_bond' => 'letters.pdf-appointment_with_bond',
             'increment' => 'letters.pdf-increment',
             'noc' => 'letters.pdf-ndc',
+            'intern' => 'letters.pdf-offer_letter_fixed_internship',
+            'intern_custom' => 'letters.pdf-custom_intern_letter',
             // 'bond' => 'letters.pdf-bond',
             'bond' => match ($letter->employee->employment_type) {
                 'intern'   => 'letters.pdf-bond-intern',
@@ -328,7 +361,7 @@ private function generateLetterPdf(Letter $letter): string
 
         $html = View::make($view, compact('letter'))->render();
 
-        if (in_array($letter->letter_type, ['appointment', 'offer', 'bond','noc','appointment_with_bond'])) {
+        if (in_array($letter->letter_type, ['appointment', 'offer', 'bond','noc','appointment_with_bond','intern','intern_custom'])) {
             $mpdf->SetHTMLHeader('');
             // $mpdf->SetHTMLFooter('');
             $mpdf->DefHTMLFooterByName('emptyFooter', '');
@@ -374,7 +407,7 @@ private function generateLetterPdf(Letter $letter): string
         }
  
         $mpdf->WriteHTML($html);
-        if (in_array($letter->letter_type, ['appointment', 'offer', 'bond','noc','appointment_with_bond'])) {
+        if (in_array($letter->letter_type, ['appointment', 'offer', 'bond','noc','appointment_with_bond','intern','intern_custom'])) {
             $mpdf->SetHTMLFooterByName('bondFooter');
         }
 
@@ -466,12 +499,10 @@ private function generateLetterPdf(Letter $letter): string
         ) . '.pdf';
 
         // ✅ Get email from users table safely
-        $email = optional(optional($letter->employee)->user)->email;
-
+        $email = optional($letter->employee)->email;
         if (!$email) {
-            return back()->withErrors([
-                'email' => 'Employee email address is not available. Please update employee user details.'
-            ]);
+            
+            return back()->with('error', 'Employee email address is not available. Please update employee email address to send email.');
         }
 
         Mail::send([], [], function ($message) use ($email, $letter, $pdfContent, $fileName) {
@@ -503,12 +534,14 @@ private function generateLetterPdf(Letter $letter): string
 
             $data = $request->validate([
                 'letter_type' => 'required|in:custom',
+                'employee_id' => 'required|exists:employees,id',
                 'issue_date'  => 'required|date|before_or_equal:today',
                 'bond_terms'  => 'required|string',
             ]);
 
             $letter->update([
                 'letter_type' => 'custom',
+                'employee_id' => $data['employee_id'],
                 'issue_date'  => $data['issue_date'],
                 'bond_terms'  => $data['bond_terms'],
             ]);
@@ -524,7 +557,7 @@ private function generateLetterPdf(Letter $letter): string
 
         $validator = Validator::make($request->all(), [
         'employee_id' => 'required|exists:employees,id',
-        'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond',
+        'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond,intern,intern_custom',
         'issue_date'  => 'required|date|before_or_equal:today',
 
         // 'relieving_date' => 'nullable|date',
@@ -563,8 +596,20 @@ private function generateLetterPdf(Letter $letter): string
             'after_or_equal:bond_start_date',
         ],
 
-        'bond_amount' => 'nullable|numeric|min:0',
-        'bond_terms'  => 'nullable|string|required_if:letter_type,custom_bond',
+        // 'bond_amount' => 'nullable|numeric|min:0',
+        // 'bond_terms'  => 'nullable|string|required_if:letter_type,custom_bond',
+        'bond_amount' => [
+            'nullable',
+            'numeric',
+            'min:0',
+            'required_if:letter_type,intern',
+        ],
+
+        'bond_terms'  => [
+            'nullable',
+            'string',
+            'required_if:letter_type,custom_bond,intern_custom',
+        ],
 
         'new_salary'           => 'nullable|numeric|min:0|required_if:letter_type,increment',
         'increment_percentage' => 'nullable|numeric|min:0',
@@ -589,6 +634,10 @@ private function generateLetterPdf(Letter $letter): string
 
         if (empty($employee->joining_date)) {
             $missing[] = 'joining date';
+        }
+
+        if (empty($employee->email)) {
+            $missing[] = 'email';
         }
 
         if (empty($employee->position)) {

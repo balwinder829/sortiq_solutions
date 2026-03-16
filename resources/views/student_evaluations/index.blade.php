@@ -37,8 +37,8 @@
         <tbody>
             @foreach($evaluations as $ev)
             <tr>
-                <td>{{ ucwords($ev->student->student_name) }}</td>
-                <td>{{ ucwords($ev->trainer->name) }}</td>
+                <td>{{ ucwords($ev->student?->student_name) }}</td>
+                <td>{{ ucwords($ev->trainer?->name) }}</td>
                 <td>{{ $ev->attendance_percentage }}%</td>
                 <td>{{ $ev->created_at->format('d M Y') }}</td>
                 <td>
@@ -80,7 +80,7 @@
         @csrf
         @method('DELETE')
         <button class="btn btn-sm"
-                onclick="return confirm('Delete evaluation?')"
+                data-swal-confirm="Delete evaluation?"
                 title="Delete">
             <i class="fas fa-trash"></i>
         </button>

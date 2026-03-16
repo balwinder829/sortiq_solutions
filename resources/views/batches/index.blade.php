@@ -40,13 +40,13 @@
 
 
     {{-- ==================== FILTERS ==================== --}}
-    <form method="GET" action="{{ route('batches.index') }}" class="mb-3">
+    <form method="GET" id="filterForm" class="mb-3">
         <div class="row">
 
             {{-- Trainer Filter --}}
             <div class="col-md-3">
                 <label><strong>Mentor</strong></label>
-                <select name="trainer" class="form-control">
+                <select name="trainer" class="form-control filterchange">
                     <option disabled selected value="">All Mentors</option>
                     @foreach($trainers as $trainer)
                         <option value="{{ $trainer->id }}"
@@ -60,7 +60,7 @@
             {{-- Technology Filter --}}
             <div class="col-md-3">
                 <label><strong>Technology</strong></label>
-                <select name="technology" class="form-control">
+                <select name="technology" class="form-control filterchange">
                     <option  disabled selected value="">All Technologies</option>
                     @foreach($courses as $course)
                         <option value="{{ $course->id }}"
@@ -93,7 +93,7 @@
                    id="filter_start_time"
                    name="start_time"
                    value="{{ request('start_time') }}"
-                   class="form-control"
+                   class="form-control filterchangetext"
                    placeholder="hh:mm AM/PM"
                    autocomplete="off">
         </div>
@@ -104,7 +104,7 @@
                    id="filter_end_time"
                    name="end_time"
                    value="{{ request('end_time') }}"
-                   class="form-control"
+                   class="form-control filterchangetext"
                    placeholder="hh:mm AM/PM"
                    autocomplete="off">
         </div>
@@ -113,7 +113,7 @@
             {{-- Status Filter --}}
             <div class="col-md-3">
                 <label><strong>Status</strong></label>
-                <select name="status" class="form-control">
+                <select name="status" class="form-control filterchange">
                     <option  disabled selected value="">All Status</option>
                     <option value="active"    {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
                     <option value="inactive"  {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
@@ -125,10 +125,28 @@
             {{-- Mode Filter --}}
             <div class="col-md-3">
                 <label><strong>Mode</strong></label>
-                <select name="mode" class="form-control">
+                <select name="mode" class="form-control filterchange">
                     <option  disabled selected value="">All Modes</option>
                     <option value="online"  {{ request('mode') == 'online' ? 'selected' : '' }}>Online</option>
                     <option value="offline" {{ request('mode') == 'offline' ? 'selected' : '' }}>Offline</option>
+                </select>
+            </div>
+
+            {{-- Students Count Filter --}}
+            <div class="col-md-3">
+                <label><strong>Total Students</strong></label>
+                <select name="student_sort" class="form-control filterchange">
+                    <option disabled selected value="">Sort By Students</option>
+
+                    <option value="low_to_high"
+                        {{ request('student_sort') == 'low_to_high' ? 'selected' : '' }}>
+                        Low to High
+                    </option>
+
+                    <option value="high_to_low"
+                        {{ request('student_sort') == 'high_to_low' ? 'selected' : '' }}>
+                        High to Low
+                    </option>
                 </select>
             </div>
 
@@ -139,9 +157,9 @@
             <div class="col-md-12 text-end">
 
                 {{-- Search Button --}}
-                <button type="submit" class="btn btn-primary">
+                <!-- <button type="submit" class="btn btn-primary">
                     <i class="fa fa-search"></i> Search
-                </button>
+                </button> -->
 
                 {{-- Reset Button --}}
                 <a href="{{ route('batches.index') }}" class="btn btn-secondary">
@@ -237,7 +255,7 @@
                                         data-bs-toggle="tooltip"
                                         data-bs-placement="top"
                                         title="Delete"
-                                        onclick="return confirm('Are you sure?')">
+                                        data-swal-confirm="Are you sure?">
                                     <i class="fa fa-trash"></i>
                                 </button>
                             </form>
@@ -390,6 +408,24 @@ const filterTimeConfig = {
 flatpickr("#filter_start_time", filterTimeConfig);
 flatpickr("#filter_end_time", filterTimeConfig);
 </script>
+<script>
+$(document).ready(function(){
 
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 700); // waits 500ms after typing stops
+    });
+
+});
+</script>
 
 @endpush

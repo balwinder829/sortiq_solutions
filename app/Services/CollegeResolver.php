@@ -164,31 +164,58 @@ class CollegeResolver
             );
     }
 
-    public function resolveWithLocation(
-        string $collegeName,
-        int $stateId,
-        int $districtId,
-        ?string $displayName = null
-    ): College {
+    // public function resolveWithLocation(
+    //     string $collegeName,
+    //     int $stateId,
+    //     int $districtId,
+    //     ?string $displayName = null
+    // ): College {
 
-        $cleanName = $this->normalizeText($collegeName);
+    //     $cleanName = $this->normalizeText($collegeName);
+    //     $shortName = $this->generateShortName($cleanName);
+    //     // dd($cleanName);
+    //     return College::firstOrCreate(
+    //         [
+    //             'clean_name'  => $cleanName,
+    //             'state_id'    => $stateId,
+    //             'district_id' => $districtId,
+    //         ],
+    //         [
+    //             // canonical name (system)
+    //             'college_name'         => $collegeName,
+    //             'college_short_name'   => $shortName,
+
+    //             // EXACT user input for display
+    //             'college_display_name' => $displayName ?? $collegeName,
+
+    //             'slug'                 => \Str::slug($collegeName),
+    //         ]
+    //     );
+    // }
+
+    public function resolveWithLocation(array $data): College
+    {
+        $cleanName = $this->normalizeText($data['college_name']);
         $shortName = $this->generateShortName($cleanName);
-        // dd($cleanName);
+
         return College::firstOrCreate(
             [
+                // 🔎 Only fields that identify uniqueness
                 'clean_name'  => $cleanName,
-                'state_id'    => $stateId,
-                'district_id' => $districtId,
+                'state_id'    => $data['state_id'],
+                'district_id' => $data['district_id'],
             ],
             [
-                // canonical name (system)
-                'college_name'         => $collegeName,
+                // 🏗 Values used only when creating
+                'college_name'         => $data['college_name'],
                 'college_short_name'   => $shortName,
+                'college_display_name' => $data['college_display_name'] ?? $data['college_name'],
+                'slug'                 => \Str::slug($data['college_name']),
 
-                // EXACT user input for display
-                'college_display_name' => $displayName ?? $collegeName,
-
-                'slug'                 => \Str::slug($collegeName),
+                // ✅ New fields
+                'college_type'         => $data['college_type'],
+                'offer_training'       => $data['offer_training'],
+                'training_in_year'     => $data['training_in_year'],
             ]
         );
     }

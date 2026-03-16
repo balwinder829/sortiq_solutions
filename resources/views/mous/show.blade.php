@@ -98,7 +98,7 @@
                   action="{{ route('mous.sendEmail', $mou) }}">
                 @csrf
                 <button class="btn btn-sm btn-primary"
-                        onclick="return confirm('Send MOU via email?');">
+                        data-swal-confirm="Send MOU via email?">
                     <i class="fas fa-envelope"></i> Send Email
                 </button>
             </form>

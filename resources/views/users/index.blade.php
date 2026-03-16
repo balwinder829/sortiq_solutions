@@ -1,16 +1,48 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+
+.permission-group{
+    cursor:pointer;
+    transition:0.2s ease;
+    margin-right:3px;
+}
+
+.permission-group:hover{
+    background:#6b51df !important;
+    color:#fff !important;
+}
+
+/* 🔥 Modern Popover Style */
+.popover{
+    border-radius:12px;
+    border:none;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    max-width:260px;
+}
+
+.popover-body{
+    font-size:13px;
+    line-height:1.6;
+    padding:10px 14px;
+}
+
+.perm-popover{
+    padding:2px 0;
+}
+
+</style>
 <div class="container">
     <div class="row mb-4">
         <div class="col-md-6">
             <h1 class="page_heading">Users</h1>
         </div>
         <div class="col-md-6">
-               <!--  <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end">
                     
                     <a href="{{ route('users.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add User</a>
-            </div> -->
+            </div>
         </div>
     </div>
     
@@ -31,94 +63,7 @@
             </tr>
         </thead>
 
-        <tbody>
-            @foreach($users as $user)
-            <tr>
-
-                <!-- ID -->
-                <td>{{ $user->id }}</td>
-                <td>{{ ucwords($user->name) }}</td>
-
-                <!-- Username -->
-                <td>
-                    @if($user->trashed())
-                        <span class="text-danger">{{ $user->username }}</span>
-                    @else
-                        {{ $user->username }}
-                    @endif
-                </td>
-
-                <!-- Role -->
-                <td>
-    {{ $user->getRoleNames()->implode(', ') ?:  $user->legacyRole->name }}
-</td>
-
-
-                <!-- Status Column (Active / Inactive / Deleted) -->
-                <td>
-                    @if($user->trashed())
-                        <span class="badge bg-danger">Deleted</span>
-                    @elseif($user->status === 'inactive')
-                        <span class="badge bg-warning text-dark">Inactive</span>
-                    @else
-                        <span class="badge bg-success">Active</span>
-                    @endif
-                </td>
-
-                <!-- Created At -->
-                <td>{{ $user->created_at->format('d M Y') }}</td>
-
-                <!-- Actions -->
-                <td>
-
-                    @if(!$user->trashed())
-
-                    @if($user->role == 4 && auth()->user()->role == 1)
-                        <a href="{{ route('admin.manager.permissions.edit', ['user_id' => $user->id]) }}"
-                           class="btn btn-sm btn-outline-primary"
-                           data-bs-toggle="tooltip"
-                           title="Manage Manager Permissions">
-                            <i class="fas fa-key"></i>
-                        </a>
-                    @endif
-
-                        <!-- Edit -->
-                        <a href="{{ route('users.edit', $user) }}" 
-                           class="btn btn-sm" 
-                           data-bs-toggle="tooltip" 
-                           title="Edit User">
-                            <i class="fas fa-edit"></i>
-                        </a>
-
-                        <!-- Soft Delete -->
-                        <form action="{{ route('users.destroy', $user) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm" 
-                                    onclick="return confirm('Delete user?')" 
-                                    data-bs-toggle="tooltip" 
-                                    title="Delete User">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-
-                    @else
-                        <!-- Restore -->
-                        <form action="{{ route('users.restore', $user->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            <button class="btn btn-sm btn-success" 
-                                    data-bs-toggle="tooltip" 
-                                    title="Restore User">
-                                <i class="fas fa-undo"></i> 
-                            </button>
-                        </form>
-                    @endif
-
-                </td>
-
-            </tr>
-            @endforeach
-        </tbody>
+        <tbody></tbody>
     </table>
 
 
@@ -140,16 +85,41 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-$(document).ready(function() {  
- var table = $('#usersTable').DataTable({
-        "pageLength": 10,
-        "lengthMenu": [5, 10, 25, 50, 100],
-        // "scrollX": true
+$(document).ready(function() {
+    var table = $('#usersTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('users.data') }}",
+        columns: [
+            { data: 0 },
+            { data: 1 },
+            { data: 2 },
+            { data: 3 },
+            { data: 4 },
+            { data: 5 },
+            { data: 6, orderable: false, searchable: false }
+        ],
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50, 100],
+        columnDefs: [
+            {
+                targets: 6,          // ✅ Actions column index
+                width: "150px",
+                orderable: false
+            }
+        ]
     });
-    // Initialize Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
+
+    $('#usersTable').on('draw.dt', function () {
+
+        var popoverTriggerList = [].slice.call(
+            document.querySelectorAll('[data-bs-toggle="popover"]')
+        );
+
+        popoverTriggerList.map(function (el) {
+            return new bootstrap.Popover(el);
+        });
+
     });
 });
 </script>

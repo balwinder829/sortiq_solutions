@@ -46,13 +46,12 @@
                         <input type="text"
                                name="phone"
                                value="{{ old('phone', $company->phone) }}"
-                               class="form-control @error('phone') is-invalid @enderror"
-                                pattern="[0-9]{10}"
-                        title="Enter a valid 10-digit mobile number"
-                        maxlength="10"
-                       inputmode="numeric"
-                       oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                       placeholder="10 digit number">
+                              class="form-control @error('phone') is-invalid @enderror"
+                               pattern="[0-9]{10,18}(,[0-9]{10,18})*"
+                               title="Enter number between 10 and 18 digits (comma separated allowed)"
+                               inputmode="numeric"
+                               oninput="this.value=this.value.replace(/[^0-9,]/g,'')"
+                               placeholder="Enter numbers between 10 and 18 digits (comma separated allowed)">
                         @error('phone')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -61,7 +60,7 @@
                      {{-- Email --}}
                     <div class="form-group col-md-6">
                         <label>Email</label>
-                        <input type="email"
+                        <input type="text"
                                name="email"
                                value="{{ old('email', $company->email) }}"
                                class="form-control @error('email') is-invalid @enderror">
@@ -85,7 +84,7 @@
                         <label>Address</label>
                         <textarea name="address"
                                   rows="2"
-                                  class="form-control @error('address') is-invalid @enderror" required>{{ old('address', $company->address) }}</textarea>
+                                  class="form-control @error('address') is-invalid @enderror">{{ old('address', $company->address) }}</textarea>
                         @error('address')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror

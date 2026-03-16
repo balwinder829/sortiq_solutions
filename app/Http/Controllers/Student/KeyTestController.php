@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 use App\Models\Test;
 use App\Models\StudentTest;
 use App\Models\StudentAnswer;
+use App\Models\TestLink;
 
 class KeyTestController extends Controller
 {
     /* ---------------- ENTRY FORM ---------------- */
 
-    public function studentView($slug)
+    public function studentViewOld($slug)
     {
         $test = Test::where('slug', $slug)->firstOrFail();
 
@@ -21,9 +22,28 @@ class KeyTestController extends Controller
 
     }
 
+    public function studentView($slug)
+    {
+        // NEW SYSTEM (college specific link)
+        $link = TestLink::where('slug', $slug)->first();
+
+        if ($link) {
+            return redirect()->route('student.enter.key', ['slug' => $slug]);
+        }
+
+        // LEGACY SYSTEM
+        $test = Test::where('slug', $slug)->firstOrFail();
+
+        return redirect()->route('student.enter.key', ['slug' => $test->slug]);
+    }
+
     public function showForm(Request $request)
     {
-        // dd($request);
+       
+        $slug = $request->slug;
+
+        // $test = Test::where('slug', $slug)->firstOrFail();
+         // dd($test);
         // if (!request('test_uid')) {
         //     abort(404);
         // }
@@ -45,15 +65,41 @@ class KeyTestController extends Controller
             'student_email'  => 'required|email',
             'gender'   => 'required|string',
             'student_mobile' => 'required|digits:10',
-            'slug'       => 'required|exists:tests,slug',
+            'slug'       => 'required|exists:test_links,slug',
+        ], [
+            'slug.exists' => 'Test link is expired or invalid.',
+            'slug.required' => 'Test link is expired or invalid.'
         ]);
 
         // ✅ Fetch test by SLUG + ACTIVE + PUBLISHED
 
-        $test = Test::where('slug', $request->slug)
-            ->where('status', 'published')
-            ->where('is_active', 1)
-            ->first();
+        // $test = Test::where('slug', $request->slug)
+        //     ->where('status', 'published')
+        //     ->where('is_active', 1)
+        //     ->first();
+
+
+        $link = TestLink::where('slug', $request->slug)->first();
+
+        if ($link) {
+
+            $test = Test::where('id', $link->test_id)
+                ->where('status', 'published')
+                ->where('is_active', 1)
+                ->first();
+
+            $collegeId = $link->college_id;
+
+        } else {
+
+            // LEGACY TEST
+            $test = Test::where('slug', $request->slug)
+                ->where('status', 'published')
+                ->where('is_active', 1)
+                ->first();
+
+            $collegeId = $test?->college_id;
+        }
 
         if (!$test) {
             return redirect()->route('student.test.unavailable');
@@ -72,7 +118,9 @@ class KeyTestController extends Controller
 
         // 🔍 Check existing attempt
         $studentTest = StudentTest::where('test_id', $test->id)
-            ->where('student_email', $request->student_email)
+            ->where('college_id', $collegeId)
+            // ->where('college_id', $test->college_id)
+            ->where('student_mobile', $request->student_mobile)
             ->first();
 
         // ✅ Already submitted
@@ -93,6 +141,8 @@ class KeyTestController extends Controller
         // 🆕 Fresh attempt
         $studentTest = StudentTest::create([
             'test_id'         => $test->id,
+            'college_id'      => $collegeId,
+            // 'college_id'      => $test->college_id,
             'student_name'    => $request->student_name,
             'student_email'   => $request->student_email,
             'gender'           => $request->gender,
@@ -115,11 +165,31 @@ class KeyTestController extends Controller
 
     public function showTest($slug)
     {
-        $test = Test::where('slug', $slug)
-            ->where('status', 'published')
-            ->where('is_active', 1)
-            ->with('questions.options')
-            ->firstOrFail();
+        // $test = Test::where('slug', $slug)
+        //     ->where('status', 'published')
+        //     ->where('is_active', 1)
+        //     ->with('questions.options')
+        //     ->firstOrFail();
+
+
+        $link = TestLink::where('slug', $slug)->first();
+
+        if ($link) {
+
+            $test = Test::where('id', $link->test_id)
+                ->where('status', 'published')
+                ->where('is_active', 1)
+                ->with('questions.options')
+                ->firstOrFail();
+
+        } else {
+
+            $test = Test::where('slug', $slug)
+                ->where('status', 'published')
+                ->where('is_active', 1)
+                ->with('questions.options')
+                ->firstOrFail();
+        }
 
         if (session('current_test_id') != $test->id) {
             abort(403, 'Unauthorized');
@@ -271,15 +341,23 @@ class KeyTestController extends Controller
         $studentTestId = session('current_student_test_id');
         session()->forget(['current_test_id', 'current_student_test_id']);
         // dd($studentTestId);
+        // if (!$studentTestId) {
+        //     abort(400);
+        // }
+
         if (!$studentTestId) {
-            abort(403, 'Unauthorized');
+            return redirect()->route('student.enter.key');
         }
 
         $studentTest = StudentTest::findOrFail($studentTestId);
 
         // Extra safety: session binding
-        if ($studentTest->session_key !== session()->getId()) {
-            abort(403);
+        // if ($studentTest->session_key !== session()->getId()) {
+        //     abort(403);
+        // }
+
+        if (!$studentTestId) {
+            return redirect()->route('student.enter.key');
         }
 
         return view('student.result', compact('studentTest'));

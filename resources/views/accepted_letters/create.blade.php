@@ -3,6 +3,15 @@
 @section('content')
 <div class="container">
     <h4>Add Accepted Letter</h4>
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
     <form method="POST"
           action="{{ route('accepted-letters.store') }}"
@@ -11,47 +20,30 @@
 
         <div class="row">
 
-            {{-- Name --}}
-            <div class="form-group col-md-6">
-                <label>Name</label>
-                <input type="text"
-                       name="name"
-                       class="form-control @error('name') is-invalid @enderror"
-                       value="{{ old('name') }}"
-                       required>
+       {{-- Employee Dropdown --}}
+        <div class="form-group col-md-12">
+            <label>Select Employee</label>
+            <select name="employee_id"
+                    class="form-control @error('employee_id') is-invalid @enderror"
+                    required>
 
-                @error('name')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
+                <option value="" disabled>-- Select Employee --</option>
 
-            {{-- Name --}}
-            <div class="form-group col-md-6">
-                <label>Emp Code</label>
-                <input type="text"
-                       name="emp_code"
-                       class="form-control @error('emp_code') is-invalid @enderror"
-                       value="{{ old('emp_code') }}"
-                       >
+                @foreach($employees as $emp)
+                    <option value="{{ $emp->id }}"
+                        {{ old('employee_id') == $emp->emp_code ? 'selected' : '' }}>
+                        {{ ucwords($emp->emp_name) }} ({{ $emp->emp_code }})
+                    </option>
+                @endforeach
 
-                @error('emp_code')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
+            </select>
 
-            {{-- Email --}}
-            <div class="form-group col-md-6">
-                <label>Email</label>
-                <input type="email"
-                       name="email"
-                       class="form-control @error('email') is-invalid @enderror"
-                       value="{{ old('email') }}"
-                       required>
+            @error('employee_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+ 
 
-                @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
 
             {{-- File --}}
             <div class="form-group col-md-12">

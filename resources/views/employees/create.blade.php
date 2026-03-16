@@ -15,10 +15,10 @@
                 <input type="text"
                        name="emp_code"
                        class="form-control @error('emp_code') is-invalid @enderror"
-                       value="{{ old('emp_code', 'SS-') }}"
+                       value="{{ old('emp_code', $newEmpCode) }}"
                        required
                        oninput="formatEmployeeCode(this)"
-                       onkeydown="lockPrefix(event, this)">
+                       onkeydown="lockPrefix(event, this)" readonly>
                 @error('emp_code')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
@@ -53,7 +53,7 @@
 
              {{-- Employement type --}}
             <div class="form-group col-md-6">
-                <label>Employee Type</label>
+                <label>Experience Level</label>
                 <select name="employment_type" class="form-control" required>
                     <option value="">Select</option>
                     @foreach(['intern','fresher','junior','senior'] as $bg)
@@ -62,6 +62,60 @@
                         </option>
                     @endforeach
                 </select>
+            </div>
+
+           {{-- Employment type --}}
+            <div class="form-group col-md-6">
+                <label>Work Mode</label>
+                <select name="work_mode" class="form-control" required>
+                    @foreach(['offline','online'] as $mode)
+                        <option value="{{ $mode }}"
+                            {{ old('work_mode', 'offline') == $mode ? 'selected' : '' }}>
+                            {{ ucfirst($mode) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+             <div class="form-group col-md-6">
+                <label>>Employement Type</label>
+                <select name="employment_mode" class="form-control" required>
+                    @foreach(['normal','intern' ,'freelancer'] as $emp_mode)
+                        <option value="{{ $emp_mode }}"
+                            {{ old('employment_mode', 'normal') == $emp_mode ? 'selected' : '' }}>
+                            {{ ucfirst($emp_mode) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Job type --}}
+            <div class="form-group col-md-6">
+                <label>Job Type</label>
+                <select name="job_type" id="jobType" class="form-control" required>
+                    @foreach(['full_time','part_time'] as $type)
+                        <option value="{{ $type }}"
+                            {{ old('job_type', 'full_time') == $type ? 'selected' : '' }}>
+                            {{ str_replace('_', ' ', ucwords($type)) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- Working Hours (Only for Part Time) --}}
+            <div class="form-group col-md-6" id="workingHoursField" style="display: none;">
+                <label>Working Hours Per Day</label>
+                <input type="number"
+                       name="working_hours_per_day"
+                       class="form-control"
+                       step="0.5"
+                       min="1"
+                       value="{{ old('working_hours_per_day') }}"
+                       placeholder="Enter hours (e.g. 4.5)">
+
+                @error('working_hours_per_day')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
 
             {{-- Joining Date --}}
@@ -305,5 +359,26 @@ function formatEmployeeCode(input) {
     input.value = 'SS-' + value;
 }
 
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const jobType = document.getElementById("jobType");
+    const workingHoursField = document.getElementById("workingHoursField");
+
+    function toggleWorkingHours() {
+        if (jobType.value === "part_time") {
+            workingHoursField.style.display = "block";
+        } else {
+            workingHoursField.style.display = "none";
+        }
+    }
+
+    // Run on page load
+    toggleWorkingHours();
+
+    // Run when changed
+    jobType.addEventListener("change", toggleWorkingHours);
+});
 </script>
 @endpush

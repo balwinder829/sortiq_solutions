@@ -11,7 +11,7 @@
 </h2>
 
 <h5 class="mb-3 text-muted">
-    College : {{ $test->college_full_name }}
+    Current College : {{ $test->college_full_name }}
 </h5>
 
 
@@ -25,14 +25,30 @@
 
 {{-- FILTER FORM --}}
 <form method="GET"
-      action="{{ route('admin.tests.results', $test->id) }}"
+      id="filterForm"
       class="row g-2 mb-4">
 
+     <div class="col-md-2">
+        <select name="college_id" class="form-select filterchange">
+
+        <option value="">All Colleges</option>
+
+        @foreach($colleges as $college)
+        <option value="{{ $college->id }}"
+           {{ $defaultCollegeId == $college->id ? 'selected' : '' }}>
+
+            {{ $college->full_name }}
+
+        </option>
+        @endforeach
+
+        </select>
+        </div>
     <div class="col-md-2">
         <input type="text"
                name="sno"
                value="{{ request('sno') }}"
-               class="form-control"
+               class="form-control filterchangetext"
                placeholder="S.No">
     </div>
 
@@ -40,7 +56,7 @@
         <input type="text"
                name="name"
                value="{{ request('name') }}"
-               class="form-control"
+               class="form-control filterchangetext"
                placeholder="Student Name">
     </div>
 
@@ -48,7 +64,7 @@
         <input type="text"
                name="email"
                value="{{ request('email') }}"
-               class="form-control"
+               class="form-control filterchangetext"
                placeholder="Email">
     </div>
 
@@ -56,12 +72,12 @@
         <input type="number"
                name="top_n"
                value="{{ request('top_n') }}"
-               class="form-control"
+               class="form-control filterchangetext"
                placeholder="Top N">
     </div>
 
     <div class="col-md-2">
-        <select name="finalized" class="form-select">
+        <select name="finalized" class="form-select filterchange">
             <option value="">All</option>
             <option value="1" {{ request('finalized')==='1'?'selected':'' }}>
                 Selected
@@ -73,7 +89,7 @@
     </div>
 
     <div class="col-md-2">
-        <select name="moved" class="form-select">
+        <select name="moved" class="form-select filterchange">
             <option value="">All</option>
             <option value="1" {{ request('moved')==='1' ? 'selected' : '' }}>
                 Moved to Enquiries
@@ -84,9 +100,9 @@
         </select>
     </div>
 
-    <div class="col-md-1">
-    <button class="btn btn-primary w-100">Go</button>
-</div>
+    <!-- <div class="col-md-1"> -->
+    <!-- <button class="btn btn-primary w-100">Go</button> -->
+<!-- </div> -->
 
 <div class="col-md-1 ms-2">
     <a href="{{ route('admin.tests.results', $test->id) }}"
@@ -102,23 +118,10 @@
 <div class="d-flex gap-2 mb-3">
 
     {{-- FINALIZE SELECTED --}}
-    <form method="POST" action="{{ route('admin.tests.bulk.finalize') }}">
-        @csrf
-        <button class="btn btn-success"
-                onclick="return confirm('Finalize selected students?')">
-            Finalize Selected
-        </button>
-    </form>
+     
 
     {{-- MOVE TO ENQUIRIES --}}
-    <form method="POST"
-          action="{{ route('admin.tests.move.enquiries', $test->id) }}"
-          onsubmit="return confirm('Move finalized students to Enquiries?')">
-        @csrf
-        <button class="btn btn-warning">
-            Move to Enquiries
-        </button>
-    </form>
+    
 
 </div>
 
@@ -140,7 +143,23 @@
 
 
 {{-- RESULTS TABLE --}}
-<form>
+<form method="POST" id="bulkForm">
+    @csrf
+    <div class="d-flex gap-2 mb-3">
+
+<button type="submit"
+        class="btn btn-success"
+        formaction="{{ route('admin.tests.bulk.finalize') }}">
+    Finalize Selected
+</button>
+
+<button type="submit"
+        class="btn btn-warning"
+        formaction="{{ route('admin.tests.move.enquiries', $test->id) }}">
+    Move to Enquiries
+</button>
+
+</div>
 <table class="table table-bordered table-striped">
 <thead>
 <tr>
@@ -149,8 +168,10 @@
     </th>
     <th>Rank</th>
     <th>S.No</th>
+    <th>College</th>
     <th>Name</th>
     <th>Email</th>
+    <th>Mobile</th>
     <th>Gender</th>
     <th>Score</th>
     <th>Status</th>
@@ -171,7 +192,9 @@
 
     <td>{{ $i + 1 }}</td>
     <td>{{ $st->sno }}</td>
+    <td>{{ $st->college->full_name ?? '-' }}</td>
     <td>{{ $st->student_name }}</td>
+    <td>{{ $st->student_mobile }}</td>
     <td>{{ $st->student_email }}</td>
     <td>
         {{ $st->gender ? ucfirst(strtolower($st->gender)) : '-' }}
@@ -200,7 +223,7 @@
 </tr>
 @empty
 <tr>
-    <td colspan="7" class="text-center text-muted">
+    <td colspan="10" class="text-center text-muted">
         No students found
     </td>
 </tr>
@@ -216,6 +239,25 @@
 document.getElementById('selectAll')?.addEventListener('change', function () {
     document.querySelectorAll('.student-checkbox')
         .forEach(cb => cb.checked = this.checked);
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 

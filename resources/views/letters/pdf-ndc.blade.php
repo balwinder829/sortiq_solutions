@@ -76,6 +76,17 @@ li {
                     </td>
                 </tr>
             </table>
+            @php
+                $employmentLine = null;
+
+                if ($letter->employee->work_mode === 'online' && $letter->employee->job_type === 'part_time') {
+                    $employmentLine = "Online, Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
+                } elseif ($letter->employee->work_mode === 'online') {
+                    $employmentLine = "Online";
+                } elseif ($letter->employee->job_type === 'part_time') {
+                    $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
+                }
+            @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
 
                <tr>
@@ -88,6 +99,13 @@ li {
                        <strong>Employee Name: </strong> {{ ucwords($letter->employee->emp_name) }}
                     </td>
                 </tr>
+                 @if($employmentLine)
+                <tr>
+                    <td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
+                        <strong>Employment Type: </strong> {{ $employmentLine }}
+                    </td>
+                </tr>
+                @endif
 
                 <tr>
                     <td colspan="2" align="left" style="font-size: 14px;  padding-bottom:5px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
@@ -185,8 +203,6 @@ li {
 
                                     Company strategies, financials, business plans, and operational methods<br><br>
 
-                                     Internal systems, software, login credentials, IDs, and access permissions<br><br>
-
                                 </td>
                             </tr>
                         </table>
@@ -204,6 +220,8 @@ li {
                             <tr>
                                 <td width="18" valign="top"></td>
                                 <td valign="top">
+                                     Internal systems, software, login credentials, IDs, and access permissions<br><br>
+
                                     Any work, ideas, or outputs produced during employment<br><br>
 
                                     Any information used in the course of employment that is not publicly available
@@ -312,8 +330,6 @@ li {
 
                                     Immediate termination without notice<br><br>
 
-                                     Forfeiture of all dues, salary, and benefits<br><br>
-
                                 </td>
                             </tr>
 
@@ -338,6 +354,9 @@ li {
                             <tr style="margin-top:10px;">
                                 <td  width="18" valign="top" style="padding-top:10px;"></td>
                                 <td valign="top" style="padding-top:10px;">
+                                    
+                                     Forfeiture of all dues, salary, and benefits<br><br>
+
                                      Potential career blacklist or reference restrictions<br><br>
 
                                     Company may file civil and criminal proceedings<br><br>

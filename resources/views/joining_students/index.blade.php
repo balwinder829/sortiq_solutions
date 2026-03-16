@@ -71,8 +71,8 @@
                         <td>{{ $student->student_name }}</td>
                         <td>{{ $student->father_name }}</td>
                         <td>{{ $student->collegeData->FullName ?? '-' }}</td>
-                        <td>{{ $student->courseData->course_name ?? '-' }}</td>
                         <td>{{ $student->durationData->name ?? '-' }}</td>
+                        <td>{{ $student->courseData->course_name ?? '-' }}</td>
                         <td class="no-wrap">
                             {{ \Carbon\Carbon::parse($student->date_of_joining)->format('d M Y') }}
                         </td>
@@ -90,7 +90,7 @@
                             <form action="{{ route('joined_students.destroy', $student->id) }}"
                                   method="POST"
                                   class="d-inline"
-                                  onsubmit="return confirm('Are you sure you want to delete this student?')">
+                                  data-swal-confirm="Are you sure you want to delete this student?">
                                 @csrf
                                 @method('DELETE')
 

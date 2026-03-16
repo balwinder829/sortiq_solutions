@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\Holiday;
 use App\Models\Trainer;
+use App\Models\Employee;
+use App\Models\SalesStaff;
 use Carbon\Carbon;
 use Jenssegers\Agent\Agent;
 use App\Traits\CurrentActorTrait;
@@ -37,8 +39,18 @@ class AttendanceController extends Controller
         //     abort(403);
         // });
 
+        $exceptMethods = [
+            'monthlyDetail',
+            'checkIn',
+            'checkOut',
+            'employeePanel',
+        ];
+
         // ✅ allow only mapped methods
         foreach ($this->permissionMap as $method => $action) {
+            if (in_array($method, $exceptMethods)) {
+                continue;
+            }
             $this->middleware(
                 "permission:{$this->permissionPrefix}.{$action}"
             )->only($method);
@@ -60,6 +72,18 @@ class AttendanceController extends Controller
 
             $attendanceToday = Attendance::where('actor_type', 'trainer')
                 ->where('actor_id', $trainerId)
+                ->whereDate('login_time', today())
+                ->first();
+
+            return view('attendance.employee_index', compact('attendanceToday'));
+        }
+
+        if (Auth::guard('sales_staff')->check()) {
+
+            $guardId = Auth::guard('sales_staff')->id();
+
+            $attendanceToday = Attendance::where('actor_type', 'sales_staff')
+                ->where('actor_id', $guardId)
                 ->whereDate('login_time', today())
                 ->first();
 
@@ -93,6 +117,10 @@ class AttendanceController extends Controller
     if (Auth::guard('trainer')->check()) {
         $actorType = 'trainer';
         $actorId   = Auth::guard('trainer')->id();
+        $employeeId = null;
+    }else if (Auth::guard('sales_staff')->check()) {
+        $actorType = 'sales_staff';
+        $actorId   = Auth::guard('sales_staff')->id();
         $employeeId = null;
     } else {
         $actorType = 'employee';
@@ -172,7 +200,11 @@ class AttendanceController extends Controller
         if (Auth::guard('trainer')->check()) {
             $actorType = 'trainer';
             $actorId   = Auth::guard('trainer')->id();
-        } else {
+        }else if (Auth::guard('sales_staff')->check()) {
+            $actorType = 'sales_staff';
+            $actorId   = Auth::guard('sales_staff')->id();
+            $employeeId = null;
+        }  else {
             $actorType = 'employee';
             $actorId   = Auth::id();
         }
@@ -191,22 +223,7 @@ class AttendanceController extends Controller
         return back()->with('success', 'Checked out');
     }
 
-    public function checkOut27jan()
-    {
-        $attendance = Attendance::where('employee_id', auth()->id())
-            ->whereNull('logout_time')
-            ->first();
-
-        if (!$attendance) {
-            return back()->with('error', 'Please check in first.');
-        }
-
-        $attendance->update([
-            'logout_time' => now(),
-        ]);
-
-        return back()->with('success', 'You have checked out.');
-    }
+     
 
 
     // -----------------------------
@@ -219,23 +236,8 @@ class AttendanceController extends Controller
     | 1️⃣ EMPLOYEES (USERS TABLE)
     |--------------------------------------------------------------------------
     */
-    $employees = User::where('role', '!=', 1)
-
-        ->when($request->name, function ($q) use ($request) {
-            $q->where('name', 'like', '%' . $request->name . '%');
-        })
-
-        ->when($request->start_date || $request->end_date, function ($q) use ($request) {
-            $q->whereHas('attendances', function ($qa) use ($request) {
-
-                if ($request->start_date) {
-                    $qa->whereDate('login_time', '>=', $request->start_date);
-                }
-
-                if ($request->end_date) {
-                    $qa->whereDate('logout_time', '<=', $request->end_date);
-                }
-            });
+    $employees = Employee:: when($request->name, function ($q) use ($request) {
+            $q->where('emp_name', 'like', '%' . $request->name . '%');
         })
 
         ->with(['attendances' => function ($qa) use ($request) {
@@ -249,7 +251,7 @@ class AttendanceController extends Controller
             }
         }])
         ->get();
-
+    
     /*
     |--------------------------------------------------------------------------
     | 2️⃣ TRAINERS (TRAINERS TABLE)
@@ -272,34 +274,17 @@ class AttendanceController extends Controller
         }])
         ->get();
 
-    return view('attendance.admin_index', compact('employees', 'trainers'));
-}
-
-    public function employeeList27jan(Request $request)
-{
-    $employees = User::where('role', '!=', 1)
-
-        // 🔹 filter by name
-        ->when($request->name, function ($q) use ($request) {
+         /*
+    |--------------------------------------------------------------------------
+    | 2️⃣ TRAINERS (TRAINERS TABLE)
+    |--------------------------------------------------------------------------
+    */
+    $sales_staff = SalesStaff::when($request->name, function ($q) use ($request) {
             $q->where('name', 'like', '%' . $request->name . '%');
         })
-
-        // 🔹 filter by attendance login/logout
-        ->when($request->start_date || $request->end_date, function ($q) use ($request) {
-            $q->whereHas('attendances', function ($qa) use ($request) {
-
-                if ($request->start_date) {
-                    $qa->whereDate('login_time', '>=', $request->start_date);
-                }
-
-                if ($request->end_date) {
-                    $qa->whereDate('logout_time', '<=', $request->end_date);
-                }
-            });
-        })
-
-        // 🔹 load filtered attendances
         ->with(['attendances' => function ($qa) use ($request) {
+
+            $qa->where('actor_type', 'sales_staff');
 
             if ($request->start_date) {
                 $qa->whereDate('login_time', '>=', $request->start_date);
@@ -309,20 +294,14 @@ class AttendanceController extends Controller
                 $qa->whereDate('logout_time', '<=', $request->end_date);
             }
         }])
-
         ->get();
 
-    return view('attendance.admin_index', compact('employees'));
+    return view('attendance.admin_index', compact('employees', 'trainers','sales_staff'));
 }
 
-    public function employeeList_old()
-    {
-        $employees = User::whereIn('role', [2, 3])
-                     ->with('attendances')   // load attendance too
-                     ->get();
+     
 
-        return view('attendance.admin_index', compact('employees'));
-    }
+     
 
     public function employeeDetail($id)
     {
@@ -348,6 +327,18 @@ class AttendanceController extends Controller
             $actorType = 'trainer';
             $actorId   = Auth::guard('trainer')->id();
             $actor     = Trainer::findOrFail($actorId);
+
+        }else if (Auth::guard('sales_staff')->check()) {
+            // 🔹 TRAINER VIEWING OWN ATTENDANCE
+            $actorType = 'sales_staff';
+            $actorId   = Auth::guard('sales_staff')->id();
+            $actor     = SalesStaff::findOrFail($actorId);
+
+        }else if (Auth::guard('employee')->check()) {
+            // 🔹 TRAINER VIEWING OWN ATTENDANCE
+            $actorType = 'employee';
+            $actorId   = Auth::guard('employee')->id();
+            $actor     = Employee::findOrFail($actorId);
 
         } else {
             // 🔹 USER (ADMIN / EMPLOYEE)
@@ -389,6 +380,10 @@ class AttendanceController extends Controller
         if ($actorType === 'trainer') {
             $attendanceQuery
                 ->where('actor_type', 'trainer')
+                ->where('actor_id', $actorId);
+        }else if ($actorType === 'sales_staff') {
+            $attendanceQuery
+                ->where('actor_type', 'sales_staff')
                 ->where('actor_id', $actorId);
         } else {
             $attendanceQuery
@@ -501,6 +496,46 @@ class AttendanceController extends Controller
             'isTrainer' => true
         ]);
     }
+
+    public function attendanceDetail(Request $request, $type, $id)
+    {
+        $month = $request->month ?? now()->format('Y-m');
+
+        $startOfMonth = \Carbon\Carbon::parse($month.'-01')->startOfDay();
+        $endOfMonth   = $startOfMonth->copy()->endOfMonth()->endOfDay();
+
+        // 🔹 Resolve Model Dynamically
+        if ($type === 'trainer') {
+            $actor = \App\Models\Trainer::findOrFail($id);
+        } elseif ($type === 'sales_staff') {
+            $actor = \App\Models\SalesStaff::findOrFail($id);
+        } else {
+            abort(404);
+        }
+
+        $attendance = Attendance::where('actor_type', $type)
+            ->where('actor_id', $actor->id)
+            ->whereBetween('login_time', [$startOfMonth, $endOfMonth])
+            ->orderBy('login_time','asc')
+            ->get();
+
+        $holidays = Holiday::whereBetween('holiday_date', [
+            $startOfMonth->toDateString(),
+            $endOfMonth->toDateString()
+        ])->pluck('holiday_date')->toArray();
+
+        return view('attendance.monthly_detail', [
+            'employee'   => $actor,
+            'attendance' => $attendance,
+            'month'      => $month,
+            'holidays'   => $holidays,
+            'actorType'  => $type,
+            'actor'      => $actor,
+            'isTrainer'  => $type === 'trainer',
+            'isSales'    => $type === 'sales_staff',
+        ]);
+    }
+
 
 
 }

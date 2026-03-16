@@ -67,14 +67,17 @@
     <input type="text"
            name="mobile"
            value="{{ old('mobile', $job->mobile) }}"
-           class="form-control"
-            pattern="[0-9]{10}"
-            title="Enter a valid 10-digit mobile number"
-            maxlength="10"
-            required 
-           inputmode="numeric"
-           oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-           placeholder="10 digit number">
+           class="form-control @error('mobile') is-invalid @enderror"
+            pattern="[0-9,]*"
+            pattern="[0-9]{10,18}(,[0-9]{10,18})*"
+            title="Enter number between 10 and 18 digits (comma separated allowed)"
+            inputmode="numeric"
+            oninput="this.value=this.value.replace(/[^0-9,]/g,'')"
+            placeholder="Enter numbers between 10 and 18 digits (comma separated allowed)"
+            required>
+            @error('mobile')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
 </div>
 
 <div class="form-group col-md-6">

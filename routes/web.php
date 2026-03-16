@@ -56,6 +56,10 @@ use App\Http\Controllers\PartTimeJobController;
 use App\Http\Controllers\PgController;
 use App\Http\Controllers\UpcomingEventController;
 use App\Http\Controllers\PantryExpenseController;
+use App\Http\Controllers\TeaPantryExpenseController;
+use App\Http\Controllers\OfficePaperExpenseController;
+use App\Http\Controllers\OfficeCleaningExpenseController;
+use App\Http\Controllers\OfficeAccessoryExpenseController;
 use App\Http\Controllers\EventExpenseController;
 use App\Http\Controllers\TravelExpenseController;
 use App\Http\Controllers\OfficeAssetController;
@@ -64,6 +68,7 @@ use App\Http\Controllers\JoiningStudentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\LetterController;
+use App\Http\Controllers\ManagementsLetterController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TutorialController;
@@ -91,16 +96,109 @@ use App\Http\Controllers\MouController;
 use App\Http\Controllers\FeeStatusController;
 use App\Http\Controllers\CommonFilteredStudentController;
 use App\Http\Controllers\PayrollController;
+use App\Http\Controllers\EmployeeLoginController;
+use App\Http\Controllers\SystemActivityController;
+use App\Http\Controllers\BlockedIpController;
+use App\Http\Controllers\SalesStaffController;
+use App\Http\Controllers\SalesStaffLoginController;
+use App\Http\Controllers\WorkshopController;
+use App\Http\Controllers\StudentsAcceptedLetterController;
+use App\Http\Controllers\StateController;
+use App\Http\Controllers\MentorsLoginController;
+use App\Http\Controllers\StudentsLoginController;
+use App\Http\Controllers\Students\StudentDashboardController;
+use App\Http\Controllers\Helpdesk\HelpdeskTechnologyController;
+use App\Http\Controllers\Helpdesk\HelpdeskArticleController;
+use App\Http\Controllers\Helpdesk\HelpdeskAttachmentController;
+use App\Http\Controllers\Admin\OfficeTestController;
+use App\Http\Controllers\Admin\OfficeQuestionController;
+use App\Http\Controllers\Admin\OfficeResultController;
+use App\Http\Controllers\Student\OfficeOnlineExamController;
+use App\Http\Controllers\PassoutController;
+use App\Http\Controllers\StudentProjectController;
+use App\Http\Controllers\StudentProjectAssignmentController;
+use App\Http\Controllers\StudentProjectSubmissionController;
+use App\Http\Controllers\StudentProjectReviewController;
+use App\Http\Controllers\StudentCvController;
+use App\Http\Controllers\StudentCvTemplateController;
+use App\Http\Controllers\MentorsBatchController;
 
 
 use App\Models\Test;
 use App\Models\StudentTest;
 
+use Spatie\Permission\PermissionRegistrar;
+
+Route::get('/fix-permissions', function () {
+    app()[PermissionRegistrar::class]->forgetCachedPermissions();
+    return "Permission cache cleared!";
+});
 /*
 |--------------------------------------------------------------------------
 | Authentication Routes
 |--------------------------------------------------------------------------
 */
+
+
+Route::prefix('mentors')->group(function () {
+
+    Route::get('/login',[MentorsLoginController::class,'showLoginForm'])->name('mentors.login');
+
+    Route::post('/login',[MentorsLoginController::class,'login'])->name('mentors.login.submit');
+
+});
+
+// Route::prefix('students')->group(function () {
+
+//     Route::get('/login',[StudentsLoginController::class,'showLoginForm'])->name('students.login');
+
+//     Route::post('/login',[StudentsLoginController::class,'login'])->name('students.login.submit');
+
+// });
+
+
+Route::prefix('students')->name('students.')->group(function () {
+
+    // Public routes
+    Route::get('/login',[StudentsLoginController::class,'showLoginForm'])->name('login');
+    Route::post('/login',[StudentsLoginController::class,'login'])->name('login.submit');
+
+    // Protected routes
+    Route::middleware('auth:student')->group(function () {
+
+        Route::get('/dashboard',[StudentDashboardController::class,'index'])->name('dashboard');
+
+        Route::get('/profile',[StudentDashboardController::class,'profile'])->name('profile');
+
+        Route::get('/attendance',[StudentDashboardController::class,'attendance'])->name('attendance');
+
+        Route::get('/assignments',[StudentDashboardController::class,'assignments'])->name('assignments');
+
+        Route::get('/tests',[StudentDashboardController::class,'tests'])->name('tests');
+
+        Route::get('/certificates',[StudentDashboardController::class,'certificates'])->name('certificates');
+
+        Route::get('/assigned_projects',[StudentDashboardController::class,'projects'])->name('projects');
+
+    });
+
+});
+
+Route::prefix('sales')->group(function () {
+
+    Route::get('/login',[SalesStaffLoginController::class,'showLoginForm'])->name('sale_staff.login');
+
+    Route::post('/login',[SalesStaffLoginController::class,'login'])->name('sale_staff.login.submit');
+
+});
+
+Route::prefix('employee')->group(function () {
+
+    Route::get('/login',[EmployeeLoginController::class,'showLoginForm'])->name('employee.login');
+
+    Route::post('/login',[EmployeeLoginController::class,'login'])->name('employee.login.submit');
+
+});
 
 // Frontend
 Route::get('/join', [JoiningStudentController::class, 'create'])->name('joining_student.front');
@@ -115,10 +213,249 @@ Route::get('/scanners/view/{token}', [ScannerShareController::class, 'show'])
 // Route::get('/page/{slug}', [FrontendPageController::class, 'show'])->name('page.show');
 
 // Route::get('/ads-landing-page', [FrontendPageController::class, 'show_ads'])->name('page.show_ads');
+
+Route::prefix('admin/student')
+->middleware(['auth'])
+->group(function(){
+
+    Route::resource('student-projects', StudentProjectController::class);
+
+    Route::resource('student-project-assignments', StudentProjectAssignmentController::class)
+        ->only(['index','create','store','show','destroy']);
+
+    Route::resource('student-project-submissions', StudentProjectSubmissionController::class)
+        ->only(['index','store']);
+
+    Route::resource('student-project-reviews', StudentProjectReviewController::class)
+        ->only(['index','store']);
+
+});
+
+Route::prefix('admin')
+->middleware('auth')
+->name('admin.')
+->group(function(){
+
+    Route::get('student-cv',[StudentCvController::class,'index'])
+    ->name('student.cv.index');
+
+});
+
+Route::prefix('student')
+->name('student.')
+->group(function(){
+
+Route::get('cv/create',[StudentCvController::class,'create'])
+->name('cv.create');
+
+Route::post('cv/store',[StudentCvController::class,'store'])
+->name('cv.store');
+
+Route::get('cv/{id}/preview',[StudentCvController::class,'preview'])
+->name('cv.preview');
+
+Route::get('cv/{id}/download/{template}',
+[StudentCvController::class,'download'])
+->name('cv.download');
+
+});
+Route::prefix('admin/student')
+    ->name('admin.student.')
+    ->middleware('auth')
+    ->group(function(){
+
+    Route::get('cv/create',[StudentCvController::class,'create'])
+    ->name('cv.create');
+
+    Route::post('cv/store',[StudentCvController::class,'store'])
+    ->name('cv.store');
+
+    Route::get('cv/{id}/preview',[StudentCvController::class,'preview'])
+    ->name('cv.preview');
+
+    Route::get('cv/{id}/download/{template}',
+    [StudentCvController::class,'download'])
+    ->name('cv.download');
+
+        Route::resource('cv-templates', StudentCvTemplateController::class);
+
+    });
+
+Route::prefix('office-exam')->name('student.office.')->group(function () {
+
+    /* Result page */
+    Route::get(
+        '/result',
+        [OfficeOnlineExamController::class, 'showResult']
+    )->name('result.show');
+
+    /* Student opens exam link */
+    Route::get(
+        '/{slug}',
+        [OfficeOnlineExamController::class, 'studentView']
+    )->name('view');
+
+
+    /* Student info form */
+    Route::get(
+        '/{slug}/enter',
+        [OfficeOnlineExamController::class, 'showForm']
+    )->name('enter');
+
+
+    /* Submit student info */
+    Route::post(
+        '/access',
+        [OfficeOnlineExamController::class, 'accessTest']
+    )->name('access');
+
+
+    /* Show exam */
+    Route::get(
+        '/{slug}/exam',
+        [OfficeOnlineExamController::class, 'showExam']
+    )->name('exam.show');
+
+
+    /* Autosave answers */
+    Route::post(
+        '/{slug}/autosave',
+        [OfficeOnlineExamController::class, 'autoSave']
+    )->name('autosave');
+
+
+    /* Submit exam */
+    Route::post(
+        '/{slug}/submit',
+        [OfficeOnlineExamController::class, 'submitExam']
+    )->name('submit');
+
+
+});
+
+Route::get('office-exam-closed/{slug}', function ($slug) {
+
+    $test = \App\Models\OfficeTest::where('slug', $slug)
+        ->firstOrFail();
+
+    return view(
+        'student.office_exam.exam_closed',
+        compact('test')
+    );
+
+})->name('student.office.exam.closed');
+
+Route::get('office-exam-already-submitted/{slug}', function ($slug) {
+
+    $test = \App\Models\OfficeTest::where('slug', $slug)
+        ->firstOrFail();
+
+    return view(
+        'student.office_exam.already_submitted',
+        compact('test')
+    );
+
+})->name('student.office.already.submitted');
+
+Route::get('office-exam/unavailable/{slug}', function ($slug) {
+
+    $test = \App\Models\OfficeTest::where('slug', $slug)
+        ->firstOrFail();
+
+    return view(
+        'student.office_exam.exam_unavailable',
+        compact('test')
+    );
+
+})->name('student.office.exam.unavailable');
+
+Route::get(
+    '/admin/office-test/{slug}/download',
+    [OfficeTestController::class,'downloadAnswers']
+)->name('admin.office-test.download');
+
+Route::prefix('admin')
+    ->middleware('auth')
+    ->group(function () {
+
+        Route::resource('passouts', PassoutController::class);
+        Route::post('passouts/import', [PassoutController::class, 'import'])
+            ->name('passouts.import');  
+        Route::get('/passouts-export', [PassoutController::class, 'export'])
+            ->name('passouts.export');
+
+});
+
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware('auth')
+    ->group(function () {
+
+        //Passout Module
+        // Route::resource('passouts', PassoutController::class);
+
+
+        Route::get(
+    'office-tests/{office_test}/download-pdf',
+    [OfficeTestController::class, 'downloadPdf']
+)->name('office-tests.download.pdf');
+        Route::resource('office-tests', OfficeTestController::class);
+
+        Route::resource(
+            'office-tests.office-questions',
+            OfficeQuestionController::class
+        );
+
+        Route::get(
+            'office-tests/{office_test}/results',
+            [OfficeResultController::class,'index']
+        )->name('office-tests.results');
+
+        Route::post(
+            'office-tests/{office_test}/results',
+            [OfficeResultController::class,'store']
+        )->name('office-tests.results.store');
+
+});
+Route::prefix('admin/helpdesk')
+    ->name('admin.helpdesk.')
+    ->middleware('auth')
+    ->group(function(){
+
+    Route::resource('categories', HelpdeskTechnologyController::class);
+    // Route::resource('technologies', HelpdeskTechnologyController::class);
+    Route::resource('articles', HelpdeskArticleController::class);
+    Route::resource('attachments', HelpdeskAttachmentController::class)
+        ->only(['index','create','store','destroy']);
+});
+
+
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
+        Route::get('workshops/export/excel', [WorkshopController::class, 'exportExcel'])->name('workshops.export.excel');
+        Route::get('workshops/data', [WorkshopController::class, 'data'])->name('workshops.data');
+        Route::resource('workshops', WorkshopController::class);
+
+         Route::get('states/data', [StateController::class, 'data'])->name('states.data');
+        Route::resource('states', StateController::class);
+
+        Route::get('districts/data', [DistrictController::class, 'data'])->name('districts.data');
+        Route::resource('districts', DistrictController::class);
+
+        Route::resource('student-accepted-letters', StudentsAcceptedLetterController::class)
+            ->parameters(['student-accepted-letters' => 'letter']);
+
+        Route::get(
+            'student-accepted-letters/{letter}/download',
+            [StudentsAcceptedLetterController::class, 'download']
+        )->name('student-accepted-letters.download');
+
+
         Route::get('filtered-students', [CommonFilteredStudentController::class, 'index'])
             ->name('common_filtered_student');
+        Route::get('/students/export',
+            [CommonFilteredStudentController::class,'export']
+        )->name('students.export');
         Route::resource('pages', AdminPageController::class);
         Route::post('pages/{page}/toggle', [AdminPageController::class, 'toggle'])
             ->name('pages.toggle');
@@ -154,6 +491,7 @@ Route::middleware(['auth'])->group(function () {
         )->name('interview-questions.practice');
 
         Route::resource('interview-questions', InterviewQuestionController::class);
+        Route::get('technologies/data', [TechnologyController::class, 'data'])->name('technologies.data');
         Route::resource('technologies', TechnologyController::class);
         Route::resource('scanners', ScannerController::class);
         Route::resource('student-evaluations', StudentEvaluationController::class);
@@ -184,6 +522,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('mous/{mou}/download', [MouController::class, 'download'])->name('mous.download');
 
         Route::post('/students/copy', [StudentController::class, 'copyStudents'])->name('students.copy');
+        Route::post('/students/make_interns', [StudentController::class, 'makeInterns'])->name('students.make_interns');
 
 
 
@@ -236,7 +575,9 @@ Route::middleware(['auth'])->group(function () {
 
         // Route::resource('interviews', InterviewController::class);
 
-        
+        Route::post('sales_staff/inactive-all', [SalesStaffController::class, 'inactiveAll'])
+    ->name('sales_staff.inactiveAll');
+        Route::resource('sales_staff', SalesStaffController::class);
 
     });
 });
@@ -278,6 +619,18 @@ Route::middleware(['auth'])->group(function () {
         [LetterController::class,'sendEmail']
     )->name('letters.email');
 
+    Route::resource('managements_letters', ManagementsLetterController::class);
+
+    Route::get(
+        'managements_letters/{managements_letter}/download',
+        [ManagementsLetterController::class,'download']
+    )->name('managements_letters.download');
+
+    Route::post(
+        'managements_letters/{managements_letter}/email',
+        [ManagementsLetterController::class,'sendEmail']
+    )->name('managements_letters.email');
+
    
     Route::resource('projects', ProjectController::class);
     Route::resource('tutorials', TutorialController::class);
@@ -289,6 +642,17 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/students/import', [StudentController::class, 'import'])
         ->name('students.import');
+
+    Route::get('/students/importfee', [StudentController::class, 'importFeeForm'])
+        ->name('students.importFeeForm');
+
+    Route::post('/students/importfee', [StudentController::class, 'importFee'])
+        ->name('students.importFee');
+
+    Route::get(
+            '/download-active-session-students',
+            [StudentController::class, 'downloadActiveSessionStudents']
+        )->name('students.download.active.session');
 
     Route::post('/students/bulk-delete', [StudentController::class, 'bulkDelete'])
      ->name('students.bulk.delete');
@@ -410,7 +774,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::prefix('sales')
-    ->middleware(['auth', 'legacy.role:3'])
+    ->middleware(['auth:sales_staff'])
     ->group(function () {
 
         Route::get('/enquiries', [SalesEnquiryController::class, 'index'])
@@ -433,11 +797,7 @@ Route::post('/enquiries/{enquiry}/followup',
 
 });
 
-// Enquiry CRUD (protected with OTP middleware)
-        // Route::middleware(['auth', 'enquiry.otp','role:1'])->group(function () {
-        //     Route::resource('enquiries', EnquiryController::class);
-        // });
-// OTP Screens (no prefix)
+
 Route::get('/enquiry-otp', [EnquiryOtpController::class, 'showOtpPage'])
     ->name('enquiry.otp.page');
 Route::post('/enquiry-otp-send', [EnquiryOtpController::class, 'sendOtp'])
@@ -460,13 +820,14 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
     //Office expenses
     Route::resource('electricity-expenses', OfficeExpenseController::class)->names('office-expenses');
     Route::resource('pantry-expenses', PantryExpenseController::class);
+    Route::resource('tea-pantry-expenses', TeaPantryExpenseController::class);
+    Route::resource('office-paper-expenses', OfficePaperExpenseController::class);
     Route::resource('event-expenses', EventExpenseController::class);
     Route::resource('travel-expenses', TravelExpenseController::class);
     Route::resource('office-assets', OfficeAssetController::class);
-     Route::resource('recharges', RechargeController::class);
-    // quick status update
-    Route::post('recharges/{recharge}/set-status', [RechargeController::class, 'setStatus'])->name('recharges.setStatus');
-
+    Route::resource('office-cleaning-expenses', OfficeCleaningExpenseController::class);
+    Route::resource('office-accessories-expenses', OfficeAccessoryExpenseController::class);
+     
 
 
 
@@ -476,7 +837,10 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
     // ->middleware(['auth','role:1'])   // admin users only
     ->group(function () {
 // Route::middleware(['auth', 'enquiry.otp','role:1'])->group(function () {
-    
+    Route::resource('recharges', RechargeController::class);
+    // quick status update
+    Route::post('recharges/{recharge}/set-status', [RechargeController::class, 'setStatus'])->name('recharges.setStatus');
+
     
     Route::get('/salespersons', [EnquiryController::class, 'salespersons'])->name('salespersons.list');
     Route::get('/salespersons/{id}', [EnquiryController::class, 'salespersonShow'])
@@ -633,7 +997,7 @@ Route::middleware(['auth'])->group(function () {
 //     ->name('dashboard');
 
 // Route::middleware(['auth', 'role:1,2,3'])->group(function () {
-Route::middleware(['auth:web,trainer'])->group(function () {
+Route::middleware(['auth:web,trainer,sales_staff'])->group(function () {
     // List all notifications
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->name('notifications.index');
@@ -700,6 +1064,10 @@ Route::get('/payroll/process/{year}/{month}', [PayrollController::class, 'proces
             'blocked-numbers',
             BlockedNumberController::class
         )->except(['edit', 'update']);
+
+        Route::resource('blocked-ips', BlockedIpController::class)
+            ->only(['index', 'create', 'store', 'destroy'])
+            ->names('blocked-ips');
     });
 
 
@@ -732,7 +1100,7 @@ Route::middleware(['auth'])->group(function () {
         [CourseController::class, 'exportStudentsExcel']
     )->name('courses.students.export.excel');
 
-
+    Route::get('courses/data', [CourseController::class, 'data'])->name('courses.data');
     Route::resource('courses', CourseController::class);
 
     Route::get('/colleges/{college}/students', [CollegeController::class, 'students']);
@@ -740,6 +1108,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('colleges/export/excel', [CollegeController::class, 'exportExcel'])
     ->name('colleges.export.excel');
+    Route::get('colleges/data', [CollegeController::class, 'data'])->name('colleges.data');
     Route::resource('colleges', CollegeController::class);
     // Endpoint to fetch districts by state (AJAX)
     Route::get('districts/by-state/{state}', [DistrictController::class, 'getByState']);
@@ -749,8 +1118,11 @@ Route::middleware(['auth'])->group(function () {
      ->parameters(['certificates' => 'student']);
 
     Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
+    Route::get('users/data', [UserController::class, 'data'])->name('users.data');
     Route::resource('users', UserController::class);
+    Route::get('departments/data', [DepartmentController::class, 'data'])->name('departments.data');
     Route::resource('departments', DepartmentController::class);
+    Route::get('references/data', [ReferenceController::class, 'data'])->name('references.data');
     Route::resource('references', ReferenceController::class);
     Route::resource('student_certificates', StudentCertificateController::class);
     Route::resource('batches', BatchController::class);
@@ -770,9 +1142,25 @@ Route::get('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissio
 
 // Save permissions
 Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissionController::class, 'store']);
+
+
     // Tests module
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('tests', TestController::class);
+        // Regenerate test link
+        Route::post('tests/{test}/regenerate-link',
+            [TestController::class, 'regenerateLink']
+        )->name('tests.regenerate-link');
+
+        Route::post(
+            'tests/links/{link}/regenerate',
+            [TestController::class, 'regenerateCollegeLink']
+        )->name('tests.links.regenerate');
+
+        Route::get('/admin/tests/{test}/links',
+            [TestController::class,'links']
+        )->name('tests.links');
+
          // OFFLINE (new)
         // Route::get('offline-tests', [OfflineTestController::class,'index'])
         //     ->name('offline.tests.index');
@@ -895,7 +1283,7 @@ Route::get(
 
     Route::post('employees/{employee}/id-card-email',
     [EmployeeController::class, 'emailIdCard'])->name('employees.idcard.email');
-    
+    Route::get('employees/data', [EmployeeController::class, 'data'])->name('employees.data');
     Route::resource('employees', EmployeeController::class);
 
 
@@ -912,6 +1300,7 @@ Route::middleware(['auth'])->group(function () {
     // route to download skipped rows: type = txt|csv|xlsx
     Route::get('/trainers/import/skipped/download/{type}', [TrainerController::class, 'downloadSkipped'])
         ->name('trainers.skipped.download');
+    Route::get('/trainers/data', [TrainerController::class, 'data'])->name('trainers.data');
     Route::resource('trainers', TrainerController::class)->except(['show']);
     
 
@@ -953,14 +1342,31 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth:trainer'])->group(function () {
 
     // Trainer can ONLY view the batch from notification
-    Route::get('/batches/{batch}', [BatchController::class, 'show'])
-        ->name('batches.show');
+    Route::get('/mybatches/{batch}', [MentorsBatchController::class, 'show'])
+        ->name('batch.show');
 
 
-    Route::get('/mybatches', [BatchController::class, 'MyBatches'])
+    Route::get('/mybatches', [MentorsBatchController::class, 'MyBatches'])
         ->name('batches.mybatches');
 
+    Route::post('/trainer/send-batch-email',[MentorsBatchController::class, 'sendBatchEmail'])
+    ->name('trainer.sendBatchEmail');
 
+    Route::get('/attendance/{batch}', 
+        [MentorsBatchController::class,'markAttendance']
+    )->name('trainer.attendance.mark');
+
+    Route::post('/attendance/save', 
+        [MentorsBatchController::class,'saveAttendance']
+    )->name('trainer.attendance.save');
+
+    Route::get('/attendance/batch/{batch}',
+    [MentorsBatchController::class,'batchAttendance'])
+    ->name('trainer.attendance.batch');
+
+    Route::get('/attendance/student/{student}',
+    [MentorsBatchController::class,'studentAttendance'])
+    ->name('trainer.attendance.student');
 });
 
 /*
@@ -1018,7 +1424,7 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:web,trainer'])->group(function () {
+Route::middleware(['auth:web,trainer,employee'])->group(function () {
 
     Route::get('profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -1034,7 +1440,7 @@ Route::middleware(['auth:web,trainer'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:web,trainer'])->group(function () {
+Route::middleware(['auth:web,trainer,employee,sales_staff'])->group(function () {
     // Employee section
     Route::get('/attendance', [AttendanceController::class, 'employeePanel'])
         ->name('attendance.employee');
@@ -1090,7 +1496,7 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/colleges-data', [DashboardController::class,'getCollegesData'])->name('colleges.data');
+// Route::get('/colleges-data', [DashboardController::class,'getCollegesData'])->name('colleges.data');
 Route::get('/dashboard/session/{sessionName}/students', [DashboardController::class, 'getSessionStudents']);
 
 
@@ -1215,7 +1621,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/activity', [ActivityController::class, 'index'])->name('admin.activity');
         Route::get('/activity/lead/{lead_id}', [ActivityController::class, 'leadTimeline'])->name('activity.lead');
         Route::get('/activity/user/{user_id}', [ActivityController::class, 'userTimeline'])->name('activity.user');
-
+        Route::get('/system-activity/data', [SystemActivityController::class, 'data'])->name('admin.system-activity.data');
+        Route::get('/system-activity', [SystemActivityController::class, 'index'])->name('admin.system-activity');
         // Route::resource('events', EventController::class);
         Route::prefix('college')->name('college.')->group(function () {
 
@@ -1334,6 +1741,10 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('close_student', CloseStudenController::class)->parameters(['close_student' => 'student']);
         Route::resource('test-categories', TestCategoryController::class);
         Route::get('/attendance/trainer/{trainer}/detail', [AttendanceController::class, 'trainerAttendanceDetail'])->name('attendance.trainerDetail');
+        Route::get('/attendance/{type}/{id}/detail',
+            [AttendanceController::class,'attendanceDetail']
+        )->name('attendance.detail');
+
          Route::get('/employees_attendece', [AttendanceController::class, 'employeeList'])
             ->name('attendance.employees');
 

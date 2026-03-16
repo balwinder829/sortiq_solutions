@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reference;
+use App\Http\DataTables\DataTablesServerSide;
 use Illuminate\Http\Request;
 
 class ReferenceController extends Controller
@@ -13,6 +14,7 @@ class ReferenceController extends Controller
     protected array $permissionMap = [
         'index'        => 'view',
         'show'         => 'view',
+        'data'         => 'view',
         'download'         => 'view',
         'sendEmail'         => 'view',
          
@@ -45,10 +47,33 @@ class ReferenceController extends Controller
         }
     }
 
+    // public function index()
+    // {
+    //     $references = Reference::all();
+    //     return view('references.index', compact('references'));
+    // }
+
     public function index()
     {
-        $references = Reference::all();
-        return view('references.index', compact('references'));
+        return view('references.index');
+    }
+
+    public function data(Request $request)
+    {
+        $query = Reference::query();
+
+        return DataTablesServerSide::response($request, $query, [
+            'orderable'  => ['id', 'name'],
+            'searchable' => ['name'],
+        ], function ($reference, $index, $start) {
+            $actions = '<a href="' . route('references.edit', $reference) . '" class="btn btn-sm" title="Edit Reference"><i class="fas fa-edit"></i></a> ';
+            $actions .= '<form action="' . route('references.destroy', $reference) . '" method="POST" style="display:inline;">' . csrf_field() . method_field('DELETE') . '<button type="submit" class="btn btn-sm" title="Delete Reference" data-swal-confirm="Delete reference?"><i class="fas fa-trash"></i></button></form>';
+            return [
+                $reference->id,
+                e($reference->name),
+                $actions,
+            ];
+        });
     }
 
     public function create()

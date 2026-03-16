@@ -185,7 +185,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="card-title mb-0">Students</h5>
                     <button class="btn btn-success btn-sm"
-                            onclick="return confirm('Finalize selected students?')">
+                            data-swal-confirm="Finalize selected students?">
                         ✔ Finalize Selected
                     </button>
                 </div>
@@ -256,7 +256,7 @@
     <form method="POST"
           action="{{ route('admin.offline.tests.moveToenquiries', $test->id) }}"
           class="mt-3 text-end"
-          onsubmit="return confirm('Move finalized students to enquiries?')">
+          data-swal-confirm="Move finalized students to enquiries?">
         @csrf
         <button class="btn btn-warning">
             ➜ Move to Enquiries

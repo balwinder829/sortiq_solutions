@@ -69,11 +69,40 @@
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
                  
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       I, <b>{{ ucwords($letter->student->student_name) }}</b>, son/daughter of <b>{{ $letter->student->father_name_with_title }}</b>, enrolled in <b>{{ ucwords($letter->student?->collegeData?->college_display_name ?? '-') }}@if(!empty($letter->student?->collegeData?->college_short_name))
-    ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
-@endif,</b>
-                        hereby give my consent and full agreement to the following terms regarding my placement/training with <b>Sortiq Solutions Pvt. Ltd</b>.:
+                   <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+
+                    @php
+                        $student = $letter->student;
+
+                        // relation word
+                        $gender = strtolower($student->gender ?? '');
+                        if ($gender === 'female') {
+                            $relation = $student->is_married ? 'wife' : 'daughter';
+                        } else {
+                            $relation = 'son';
+                        }
+
+                        // college or place
+                        $collegeOrPlace = $student->is_place
+                            ? $student->place
+                            : ($student?->collegeData?->college_display_name ?? '-');
+
+                    @endphp
+
+                    I, <b>{{ ucwords($student->student_name) }}</b>, 
+                    {{ $relation }} of 
+                    <b>{{ $student->father_name_with_title }}</b>, 
+                    enrolled in 
+                    <b>
+                    {{ ucwords($collegeOrPlace) }}
+
+                    @if(!$student->is_place && !empty($student?->collegeData?->college_short_name))
+                        ({{ strtoupper($student?->collegeData?->college_short_name) }})
+                    @endif
+                    </b>,
+                    hereby give my consent and full agreement to the following terms regarding my placement/training with 
+                    <b>Sortiq Solutions Pvt. Ltd</b>.
+
                     </td>
                 </tr>
                 <tr>

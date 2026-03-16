@@ -22,11 +22,11 @@
     <div class="row mb-3 align-items-center">
         <div class="col-md-8">
             <form method="GET"
-                  action="{{ route('student-additional-letters.index') }}"
+                   id="filterForm" 
                   class="row g-2">
 
                 <div class="col-md-6">
-                    <select name="internship_type" class="form-control">
+                    <select name="internship_type" class="form-control filterchange">
                         <option value="">All Internship Types</option>
                         <option value="free" {{ request('internship_type') === 'free' ? 'selected' : '' }}>Free Internship Letter
                         </option>
@@ -35,7 +35,7 @@
                         </option>
                         <option value="offer" {{ request('internship_type') === 'offer' ? 'selected' : '' }}>Offer Letter</option>
                         <option value="custom" {{ request('internship_type') === 'custom' ? 'selected' : '' }}>Custom Type Letter</option>
-                        <option value="noc" {{ request('internship_type') === 'noc' ? 'selected' : '' }}>NOC Letter</option>
+                        <option value="noc" {{ request('internship_type') === 'noc' ? 'selected' : '' }}>Non-Consent Letter</option>
                         <option value="mutual_consent" {{ request('internship_type') === 'mutual_consent' ? 'selected' : '' }}>Mutual Consent Letter</option>
                         <option value="training_consent" {{ request('internship_type') === 'training_consent' ? 'selected' : '' }}>Training Consent Letter</option>
                         <option value="placement" {{ request('internship_type') === 'placement' ? 'selected' : '' }}>Student Placement Letter</option>
@@ -43,9 +43,9 @@
                 </div>
 
                 <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
+                    <!-- <button type="submit" class="btn btn-primary">
                         Search
-                    </button>
+                    </button> -->
                     <a href="{{ route('student-additional-letters.index') }}"
                        class="btn btn-secondary">
                         Reset
@@ -85,10 +85,23 @@
             @foreach($letters as $letter)
             <tr>
                 <td>
-                    <span class="badge bg-info">
-                        {{ ucfirst($letter->internship_type) }}
+                    @php
+                    $types = [
+                        'free' => 'Free Internship Letter',
+                        'stipend' => 'Stipend Internship Letter',
+                        'offer' => 'Offer Letter',
+                        'custom' => 'Custom Type Letter',
+                        'noc' => 'Non-Consent Letter',
+                        'mutual_consent' => 'Mutual Consent Letter',
+                        'training_consent' => 'Training Consent Letter',
+                        'placement' => 'Student Placement Letter'
+                    ];
+                    @endphp
+
+                    <span class="badge bg-success">
+                        {{ $types[$letter->internship_type] ?? ucfirst(str_replace('_',' ',$letter->internship_type)) }}
                     </span>
-                </td>
+                    </td>
                 <td>{{ $letter->student->student_name ?? 'N/A' }}</td>
                 <td>{{ $letter->student->email_id ?? 'N/A' }}</td>
                 <!-- <td>{{ $letter->email }}</td> -->
@@ -118,7 +131,7 @@
 
                     <form action="{{ route('student-additional-letters.destroy', $letter) }}" method="POST" style="display:inline-block;">
                         @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" onclick="return confirm('Do you want to delete this?')">
+                        <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" data-swal-confirm="Do you want to delete this?">
                                     <i class="fa fa-trash"></i>
                     </form>
                 </td>
@@ -143,8 +156,28 @@
 $(document).ready(function() {
     $('#lettersTable').DataTable({
         pageLength: 10,
-        lengthMenu: [5,10,25,50,100]
+        lengthMenu: [5,10,25,50,100],
+        order: []
     });
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

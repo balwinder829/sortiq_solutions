@@ -34,6 +34,27 @@ class PartTimeJobImport implements
     // Warnings
     public $duplicateContacts = [];
 
+    public function prepareForValidation($data, $index)
+    {
+        // -------- CONTACT NORMALIZE --------
+        if (!empty($data['contact'])) {
+
+            $data['contact'] = preg_replace('/[\|\-_;\s]+/', ',', $data['contact']);
+            $data['contact'] = preg_replace('/,+/', ',', $data['contact']);
+            $data['contact'] = trim($data['contact'], ',');
+        }
+
+        // -------- EMAIL NORMALIZE --------
+        if (!empty($data['email'])) {
+
+            $data['email'] = preg_replace('/[\|\-_;\s]+/', ',', $data['email']);
+            $data['email'] = preg_replace('/,+/', ',', $data['email']);
+            $data['email'] = trim($data['email'], ',');
+        }
+
+        return $data;
+    }
+
     /* ================= SKIP EMPTY ROWS ================= */
     public function isEmptyRow(array $row): bool
     {
@@ -50,21 +71,24 @@ class PartTimeJobImport implements
         return [
 
             '*.name' => 'required|string',
-            '*.job_type' => 'required|string',
-            '*.shift' => 'required|string',
-            '*.salary_estimate' => 'required|numeric',
+            '*.job_type' => 'nullable|string',
+            '*.shift' => 'nullable|string',
+            '*.salary_estimate' => 'nullable|numeric',
             // '*.contact_person'       => 'required|string',
 
             '*.contact' => [
                 'required',
-                'regex:/^[0-9]+$/',
-                'digits:10'
+                // 'regex:/^\d{10}(,\d{10})*$/'
+                'regex:/^\d{10,18}(,\d{10,18})*$/'
             ],
 
-            '*.email' => 'required|email',
+            '*.email' => [
+                'nullable',
+                'regex:/^[^,\s]+@[^,\s]+\.[^,\s]+(,[^,\s]+@[^,\s]+\.[^,\s]+)*$/'
+            ],
 
             // Fees required
-            '*.address' => 'required|string',
+            '*.address' => 'nullable|string',
         ];
     }
 
@@ -75,13 +99,17 @@ class PartTimeJobImport implements
             '*.name.required' => 'name is required.',
             // '*.contact_person.required'       => 'Contact person is required.',
             '*.contact.required'      => 'Contact number is required.',
-            '*.contact.regex'         => 'Contact number must contain only digits.',
-            '*.email.required'   => 'Email is required.',
+            // '*.contact.regex'         => 'Contact number must contain only digits.',
+            // '*.email.required'   => 'Email is required.',
             '*.email.email'   => 'Add valid email address.',
-            '*.address.required'     => 'Address is required.',
-            '*.job_type.required'     => 'job type is required.',
-            '*.salary_estimate.required'     => 'salary estimate is required.',
-            '*.shift.required'     => 'shift is required.',
+            // '*.address.required'     => 'Address is required.',
+            // '*.job_type.required'     => 'job type is required.',
+            // '*.salary_estimate.required'     => 'salary estimate is required.',
+            // '*.shift.required'     => 'shift is required.',
+            '*.contact.regex' => 'Each contact number must be between 10 and 18 digits. Allowed separators: , - | _ space ;',
+
+            '*.email.regex' => 'Enter valid email addresses separated by , - | _ space ;',
+
         ];
     }
 
@@ -107,11 +135,24 @@ class PartTimeJobImport implements
         /* -------- SESSION -------- */
 
         /* -------- DUPLICATE CONTACT -------- */
-        if (!empty($row['contact']) && PartTimeJob::where('mobile', $row['contact'])->exists()) {
-            $this->skippedRows++;
-            $this->duplicateContacts[] = "Duplicate contact skipped: {$row['contact']}";
-            return null;
-        }
+        // if (!empty($row['contact']) && PartTimeJob::where('mobile', $row['contact'])->exists()) {
+        //     $this->skippedRows++;
+        //     $this->duplicateContacts[] = "Duplicate contact skipped: {$row['contact']}";
+        //     return null;
+        // }
+        
+        // if (!empty($row['contact'])) {
+
+        //     foreach (explode(',', $row['contact']) as $phone) {
+
+        //         if (PartTimeJob::where('mobile', 'LIKE', "%{$phone}%")->exists()) {
+        //             $this->skippedRows++;
+        //             $this->duplicateContacts[] = "Duplicate contact skipped: {$phone}";
+        //             return null;
+        //         }
+        //     }
+        // }
+
 
 
         // $allowedRef = array(

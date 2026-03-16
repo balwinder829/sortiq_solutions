@@ -19,4 +19,15 @@ class PlacementCompany extends Model
         'remarks',
         'status',
     ];
+
+    public function getPhoneListAttribute()
+    {
+        return $this->phone ? explode(',', $this->phone) : [];
+    }
+
+    public function getEmailListAttribute()
+    {
+        return $this->email ? explode(',', $this->email) : [];
+    }
+
 }

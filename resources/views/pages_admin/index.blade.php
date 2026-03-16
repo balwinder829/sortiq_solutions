@@ -20,12 +20,12 @@
          
         <div class="col-md-10">
            {{-- FILTERS --}}
-            <form method="GET" action="{{ route('internship-registrations.index') }}" class="mb-3">
+            <form method="GET" id="filterForm" class="mb-3">
                 <div class="row g-2">
 
                    {{-- SLUG --}}
                 <div class="col-md-3">
-                    <select name="slug" class="form-select">
+                    <select name="slug" class="form-select filterchange">
                         <option value="">All Slugs</option>
                         @foreach($slugs as $slug)
                             <option value="{{ $slug }}"
@@ -39,15 +39,13 @@
 
                     {{-- COLLEGE --}}
                     <div class="col-md-3">
-                       <select name="college" class="form-select">
+                       <select name="college" class="form-select filterchange">
                             <option value="">All Colleges</option>
                             @foreach($colleges as $college)
                                 <option value="{{ $college->id }}"
                                     {{ request('college') == $college->id ? 'selected' : '' }}>
-                                    {{ $college->college_display_name }}
-                                     @if(!empty($college->college_short_name))
-                                        ({{ $college->college_short_name }})
-                                    @endif
+                                    {{ $college->FullName }}
+                                     
                                 </option>
                             @endforeach
                         </select>
@@ -56,7 +54,7 @@
 
                     {{-- TECHNOLOGY --}}
                     <div class="col-md-3">
-                       <select name="technology" class="form-select">
+                       <select name="technology" class="form-select filterchange">
                             <option value="">All Technologies</option>
                             @foreach($technologies as $tech)
                                 <option value="{{ $tech->id }}"
@@ -71,7 +69,7 @@
 
                    {{-- LIMIT --}}
                 <div class="col-md-2">
-                    <select name="limit" class="form-select">
+                    <select name="limit" class="form-select filterchange">
                         <option value="">All</option>
                         <option value="10" {{ request('limit') == 10 ? 'selected' : '' }}>10</option>
                         <option value="20" {{ request('limit') == 20 ? 'selected' : '' }}>20</option>
@@ -83,7 +81,7 @@
 
                     {{-- BUTTONS --}}
                     <div class="col-md-1 d-flex gap-2">
-                        <button class="btn btn-primary w-100">Filter</button>
+                        <!-- <button class="btn btn-primary w-100">Filter</button> -->
                         <a href="{{ route('internship-registrations.index') }}"
                            class="btn btn-secondary w-100">Reset</a>
                         <a href="{{ route('internship-registrations.export', request()->all()) }}"
@@ -168,5 +166,24 @@
             info: false
         });
     });
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
 </script>
 @endpush

@@ -19,7 +19,7 @@
 <div class="container">
 <div class="row mb-2">
         <div class="col-md-6">
-            <h1 class="page_heading">Online Tests</h1>
+            <h1 class="page_heading">Online Exams</h1>
         </div>
         <div class="col-md-6">
                 <div class="d-flex justify-content-end">
@@ -79,12 +79,12 @@
 
 
 
-<form method="GET" class="p-3 rounded mb-3" style="background:#f1f3f8">
+<form method="GET" id="filterForm" class="p-3 rounded mb-3" style="background:#f1f3f8">
     <div class="row">
 
         <div class="col-md-2 mb-2">
             <label>College</label>
-            <select name="college_id" class="form-select">
+            <select name="college_id" class="form-select filterchange">
                 <option value="">All</option>
                 @foreach($colleges as $col)
                     <option value="{{ $col->id }}"
@@ -97,7 +97,7 @@
 
         <div class="col-md-2 mb-2">
             <label>Course</label>
-            <select name="student_course_id" class="form-select">
+            <select name="student_course_id" class="form-select filterchange">
                 <option value="">All</option>
                 @foreach($courses as $c)
                     <option value="{{ $c->id }}"
@@ -110,7 +110,7 @@
 
         <div class="col-md-2 mb-2">
             <label>Semester</label>
-            <select name="semester_id" class="form-select">
+            <select name="semester_id" class="form-select filterchange">
                 <option value="">All</option>
                 @foreach($semesters as $sem)
                     <option value="{{ $sem->id }}"
@@ -122,7 +122,7 @@
         </div>
         <div class="col-md-2">
             <label>Gender</label>
-            <select name="gender" class="form-select">
+            <select name="gender" class="form-select filterchange">
                 <option value="">All</option>
                 <option value="male" {{ request('gender')=='male' ? 'selected' : '' }}>Male</option>
                 <option value="female" {{ request('gender')=='female' ? 'selected' : '' }}>Female</option>
@@ -131,7 +131,7 @@
 
         <div class="col-md-2 mb-2">
             <label>Category</label>
-            <select name="test_category_id" class="form-select">
+            <select name="test_category_id" class="form-select filterchange">
                 <option value="">All</option>
                 @foreach($categories as $cat)
                     <option value="{{ $cat->id }}"
@@ -144,7 +144,7 @@
 
         <div class="col-md-2 mb-2">
             <label>Status</label>
-            <select name="status" class="form-select">
+            <select name="status" class="form-select filterchange">
                 <option value="">All</option>
                 <option value="draft" {{ request('status')=='draft'?'selected':'' }}>Draft</option>
                 <option value="published" {{ request('status')=='published'?'selected':'' }}>Published</option>
@@ -154,7 +154,7 @@
 
         <div class="col-md-2 mb-2">
             <label>Active</label>
-            <select name="is_active" class="form-select">
+            <select name="is_active" class="form-select filterchange">
                 <option value="">All</option>
                 <option value="1" {{ request('is_active') === '1' ? 'selected' : '' }}>Active</option>
                 <option value="0" {{ request('is_active') === '0' ? 'selected' : '' }}>Inactive</option>
@@ -163,19 +163,19 @@
 
         <div class="col-md-2 mb-2">
             <label>From Date</label>
-            <input type="date" name="from_date" class="form-control"
+            <input type="date" name="from_date" class="form-control filterchange"
                    value="{{ request('from_date') }}">
         </div>
 
         <div class="col-md-2 mb-2">
             <label>To Date</label>
-            <input type="date" name="to_date" class="form-control"
+            <input type="date" name="to_date" class="form-control filterchange"
                    value="{{ request('to_date') }}">
         </div>
 
-        <div class="col-md-2 mb-2 d-flex align-items-end">
+        <!-- <div class="col-md-2 mb-2 d-flex align-items-end">
             <button class="btn btn-primary w-100">Apply</button>
-        </div>
+        </div> -->
 
         <div class="col-md-2 mb-2 d-flex align-items-end">
             <a href="{{ route('admin.tests.index') }}" class="btn btn-secondary w-100">
@@ -198,6 +198,7 @@
     <th>Status</th>
     <th>Active</th>
     <th>Date</th>
+    <th>Total Questions</th>
     <th>Total Students</th>
     <th>Selected</th>
     <th>Marks</th>
@@ -210,12 +211,32 @@
 <tbody>
 @foreach($tests as $test)
 <tr>
+     
     <td>{{ $loop->iteration }}</td>
     <td>{{ $test->title }}</td>
-    <td>{{ $test->category->name }}</td>
-    <td>{{ $test->college_full_name }}</td>
-    <td>{{ $test->course->course_name }}</td>
-    <td>{{ $test->semester->name }}</td>
+    <td>{{ $test->category?->name ?? '-' }}</td>
+    <!-- <td>{{ $test->college_full_name ?? '-' }}</td> -->
+    <td>
+
+        @if($test->links && $test->links->count())
+
+            @foreach($test->links as $link)
+                <span class="badge bg-secondary">
+                    {{ $link->college->full_name ?? '-' }}
+                </span>
+            @endforeach
+
+        @else
+
+            <span class="badge bg-secondary">
+                {{ $test->college_full_name ?? '-' }}
+            </span>
+
+        @endif
+
+        </td>
+    <td>{{ $test->course?->course_name ?? '-' }}</td>
+    <td>{{ $test->semester?->name ?? '-' }}</td>
 
     <td>
         @if($test->status == 'published')
@@ -235,7 +256,25 @@
         @endif
     </td>
 
-    <td>{{ $test->test_date ?? '-' }}</td>
+    <td>
+        {{ $test->test_date 
+            ? \Carbon\Carbon::parse($test->test_date)->format('d M Y') 
+            : '-' 
+        }}
+    </td>
+
+    <td>
+        @if($test->questions_count > 0)
+            <a href="{{ route('admin.tests.show', $test->id) }}"
+               class="badge bg-success text-decoration-none">
+                {{ $test->questions_count }} Questions
+            </a>
+        @else
+            <span class="badge bg-danger">
+                No Questions
+            </span>
+        @endif
+    </td>
 
     <td>
         <span class="badge bg-info">
@@ -269,86 +308,78 @@
     </a>
 </td>
 
-    <td>
-        @if($test->slug)
-            @php
-                $testUrl = route('student.test.slug', $test->slug);
-            @endphp
+    <td class="text-center">
 
-            <a href="{{ $testUrl }}"
-               target="_blank"
-               class="btn btn-sm btn-outline-primary text-nowrap">
-                Open Test Link
-            </a>
+        <a href="{{ route('admin.tests.links', $test->id) }}"
+           class="btn btn-sm btn-outline-primary">
+            View Links
+        </a>
 
-            <button type="button"
-                    class="btn btn-sm btn-outline-secondary text-nowrap"
-                    onclick="copyTestLink('{{ $testUrl }}')">
-                Copy Link
-            </button>
-        @else
-            <span class="text-danger">No Link</span>
-        @endif
     </td>
 
 
   <td class="text-center">
-    <div class="d-flex justify-content-center gap-1">
-         
-            <a href="{{ route('admin.tests.export.all', $test->id) }}"
-               class="btn btn-sm btn-outline-primary"
-               data-bs-toggle="tooltip"
-            title="Download All">
-            <i class="fa fa-download"></i>
-                <!-- Download All -->
-            </a>
+    <div class="d-flex justify-content-center gap-2">
 
-            <a href="{{ route('admin.tests.export.finalized', $test->id) }}"
-               class="btn btn-sm btn-outline-success"
-               data-bs-toggle="tooltip"
-                title="Download Selected">
-                <i class="fa fa-download"></i>
-                <!-- Download Finalized -->
-            </a>
-         
+        {{-- Download Dropdown --}}
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-primary dropdown-toggle"
+                    data-bs-toggle="dropdown">
+                <i class="fa fa-download me-1"></i> Download
+            </button>
+
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item"
+                       href="{{ route('admin.tests.export.all', $test->id) }}">
+                        All Students
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item"
+                       href="{{ route('admin.tests.export.finalized', $test->id) }}">
+                        Selected Students
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item"
+                       href="{{ route('admin.online.tests.download.mcq.paper', $test->id) }}">
+                        Question Paper
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {{-- View --}}
         <a href="{{ route('admin.tests.show', $test->id) }}"
-           class="btn btn-sm btn-outline-primary"
-           data-bs-toggle="tooltip"
+           class="btn btn-sm btn-outline-info"
            title="View Questions">
             <i class="fa fa-eye"></i>
         </a>
 
+        {{-- Add Question --}}
         <a href="{{ route('admin.questions.create', $test->id) }}"
            class="btn btn-sm btn-outline-success"
-           data-bs-toggle="tooltip"
-           title="Add Questions">
+           title="Add Question">
             <i class="fa fa-plus"></i>
         </a>
 
-        <a href="{{ route('admin.online.tests.download.mcq.paper', $test->id) }}"
-           class="btn btn-sm btn-outline-warning"
-           data-bs-toggle="tooltip"
-           title="Download Paper">
-            <i class="fa fa-download"></i>
-        </a>
-
+        {{-- Edit --}}
         <a href="{{ route('admin.tests.edit', $test->id) }}"
-           class="btn btn-sm btn-outline-warning"
-           data-bs-toggle="tooltip"
+           class="btn btn-sm btn-outline-secondary"
            title="Edit">
             <i class="fa fa-edit"></i>
         </a>
 
+        {{-- Delete --}}
         <form action="{{ route('admin.tests.destroy', $test->id) }}"
               method="POST"
               class="d-inline"
-              onsubmit="return confirm('Are you sure you want to delete this test?')">
+              data-swal-confirm="Are you sure you want to delete this test?">
             @csrf
             @method('DELETE')
-
             <button type="submit"
                     class="btn btn-sm btn-outline-danger"
-                    data-bs-toggle="tooltip"
                     title="Delete">
                 <i class="fa fa-trash"></i>
             </button>
@@ -397,18 +428,95 @@ $(document).ready(function () {
 <script>
 $('#marksModal').on('show.bs.modal', function (e) {
     let testId = e.relatedTarget.getAttribute('data-test-id');
-    $('#marksContent').load(`/admin/tests/${testId}/selected-students`);
+    let url = "{{ route('admin.tests.selected.students', ':id') }}";
+    url = url.replace(':id', testId);
+
+    $('#marksContent').load(url);
+    // $('#marksContent').load(`/admin/tests/${testId}/selected-students`);
 });
 </script>
+
+<!-- <script>
+function copyTestLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        Swal.fire({
+            toast: true,
+            icon: 'success',
+            title: 'Test link copied!',
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    }).catch(() => {
+        Swal.fire({
+            toast: true,
+            icon: 'error',
+            title: 'Failed to copy link',
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+        });
+    });
+}
+</script> -->
 
 <script>
 function copyTestLink(url) {
     navigator.clipboard.writeText(url).then(() => {
-        alert('✅ Test link copied to clipboard!');
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied!',
+            text: 'Test link copied to clipboard!',
+            confirmButtonText: 'OK'
+        });
     }).catch(() => {
-        alert('❌ Failed to copy link');
+        Swal.fire({
+            icon: 'error',
+            title: 'Failed',
+            text: 'Failed to copy link',
+            confirmButtonText: 'OK'
+        });
     });
 }
 </script>
+<script>
+function confirmRegenerate(e) {
+    e.preventDefault();
 
+    Swal.fire({
+        title: 'Regenerate Test Link?',
+        text: 'Old link will stop working.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, regenerate'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            e.target.submit();
+        }
+    });
+
+    return false;
+}
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
+</script>
 @endpush

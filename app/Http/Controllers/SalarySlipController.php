@@ -133,7 +133,7 @@ class SalarySlipController extends Controller
     if (
         !$salarySlip->employee ||
         !$salarySlip->employee->user ||
-        empty($salarySlip->employee->user->email)
+        empty($salarySlip->employee->email)
     ) {
         return back()->with('error', 'Please add employee email to send salary slip.');
     }
@@ -157,7 +157,7 @@ class SalarySlipController extends Controller
         $employeeName,
         $monthName
     ) {
-        $message->to($salarySlip->employee->user->email)
+        $message->to($salarySlip->employee->email)
             ->subject("Salary Slip - {$monthName} {$salarySlip->year}")
             ->attachData(
                 $pdfContent,
@@ -382,7 +382,7 @@ public function emailBulk(Request $request)
     foreach ($slips as $employeeId => $employeeSlips) {
 
         $employee = $employeeSlips->first()->employee;
-        $email = $employee->user->email;
+        $email = $employee->email;
 dd($email);
         Mail::send([], [], function ($message) use ($employee, $employeeSlips, $email) {
 

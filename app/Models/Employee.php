@@ -2,17 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Notifications\Notifiable;
 
-class Employee extends Model
+
+class Employee extends Authenticatable
 {
-    use SoftDeletes;
+    use SoftDeletes, Notifiable;
 
        protected $fillable = [
         'user_id',
         'emp_code',
         'emp_name',
+        'username',
+        'email',
+        'phone',
+        'password',
+        'role',
         'position',
         'alternative_phone',
         'joining_date',
@@ -26,7 +34,17 @@ class Employee extends Model
         'photo',
         'probation_period',
         'emp_pswd',
+        'work_mode',
+        'job_type',
+        'working_hours_per_day',
+        'employment_mode',
     ];
+
+     // Automatically hash password when setting it
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = Hash::make($password);
+    }
 
     public function user()
     {
@@ -34,10 +52,10 @@ class Employee extends Model
     }
 
     // Employee.php
-    public function attendances()
-    {
-        return $this->user->attendances();
-    }
+    // public function attendances()
+    // {
+    //     return $this->user->attendances();
+    // }
 
     public function salaryStructure()
     {
@@ -55,5 +73,15 @@ class Employee extends Model
         return $this->hasMany(Letter::class);
     }
 
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'actor_id')
+            ->where('actor_type', 'employee');
+    }
+
+    public function acceptedLetters()
+    {
+        return $this->hasMany(AcceptedLetter::class);
+    }
 
 }

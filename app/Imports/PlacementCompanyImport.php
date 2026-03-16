@@ -14,6 +14,8 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
+// use Maatwebsite\Excel\Concerns\WithPreparationForValidation;
+
 use Throwable;
 
 class PlacementCompanyImport implements
@@ -44,38 +46,90 @@ class PlacementCompanyImport implements
         return $filtered->isEmpty();
     }
 
+    public function prepareForValidation($data, $index)
+    {
+        // -------- CONTACT NORMALIZE --------
+        if (!empty($data['contact'])) {
+
+            $data['contact'] = preg_replace('/[\|\-_;\s]+/', ',', $data['contact']);
+            $data['contact'] = preg_replace('/,+/', ',', $data['contact']);
+            $data['contact'] = trim($data['contact'], ',');
+        }
+
+        // -------- EMAIL NORMALIZE --------
+        if (!empty($data['email'])) {
+
+            $data['email'] = preg_replace('/[\|\-_;\s]+/', ',', $data['email']);
+            $data['email'] = preg_replace('/,+/', ',', $data['email']);
+            $data['email'] = trim($data['email'], ',');
+        }
+
+        return $data;
+    }
+
+
     /* ================= VALIDATION RULES ================= */
+    // public function rules(): array
+    // {
+    //     return [
+
+    //         '*.company_name' => 'required|string',
+    //         '*.contact_person'       => 'required|string',
+
+    //         '*.contact' => [
+    //             'required',
+    //             'regex:/^[0-9]+$/',
+    //             'digits:10'
+    //         ],
+
+    //         '*.email' => 'required|email',
+
+    //         // Fees required
+    //         '*.address' => 'required|string',
+    //     ];
+    // }
+
     public function rules(): array
     {
         return [
 
-            '*.company_name' => 'required|string',
-            '*.contact_person'       => 'required|string',
+            '*.company_name'   => 'required|string',
 
+            '*.contact_person' => 'nullable|string',
+
+            // 🔥 PHONE REQUIRED — EACH 10 DIGIT
             '*.contact' => [
                 'required',
-                'regex:/^[0-9]+$/',
-                'digits:10'
+                // 'regex:/^\d{10}(,\d{10})*$/'
+                'regex:/^\d{10,18}(,\d{10,18})*$/'
             ],
 
-            '*.email' => 'required|email',
+            // 🔥 EMAIL NULLABLE — MULTIPLE EMAILS
+            '*.email' => [
+                'nullable',
+                'regex:/^[^,\s]+@[^,\s]+\.[^,\s]+(,[^,\s]+@[^,\s]+\.[^,\s]+)*$/'
+            ],
 
-            // Fees required
-            '*.address' => 'required|string',
+            '*.address' => 'nullable|string',
         ];
     }
+
 
     /* ================= FRIENDLY MESSAGES ================= */
     public function customValidationMessages()
     {
         return [
             '*.company_name.required' => 'Company name is required.',
-            '*.contact_person.required'       => 'Contact person is required.',
+            // '*.contact_person.required'       => 'Contact person is required.',
             '*.contact.required'      => 'Contact number is required.',
-            '*.contact.regex'         => 'Contact number must contain only digits.',
-            '*.email.required'   => 'Email is required.',
-            '*.email.email'   => 'Add valid email address.',
-            '*.address.required'     => 'Address is required.',
+            // '*.contact.regex'         => 'Contact number must contain only digits.',
+            // '*.contact.regex' => 'Each contact number must be exactly 10 digits. Allowed separators: , - | _ space ;',
+            '*.contact.regex' => 'Each contact number must be between 10 and 18 digits. Allowed separators: , - | _ space ;',
+            // '*.email.required'   => 'Email is required.',
+            // '*.email.email'   => 'Add valid email address.',
+            '*.email.regex' => 'Enter valid email addresses separated by , - | _ space ;',
+
+            // '*.address.required'     => 'Address is required.',
         ];
     }
 
@@ -101,11 +155,23 @@ class PlacementCompanyImport implements
         /* -------- SESSION -------- */
 
         /* -------- DUPLICATE CONTACT -------- */
-        if (!empty($row['contact']) && PlacementCompany::where('phone', $row['contact'])->exists()) {
-            $this->skippedRows++;
-            $this->duplicateContacts[] = "Duplicate contact skipped: {$row['contact']}";
-            return null;
-        }
+        // if (!empty($row['contact']) && PlacementCompany::where('phone', $row['contact'])->exists()) {
+        //     $this->skippedRows++;
+        //     $this->duplicateContacts[] = "Duplicate contact skipped: {$row['contact']}";
+        //     return null;
+        // }
+
+        // if (!empty($row['contact'])) {
+
+        //     foreach (explode(',', $row['contact']) as $phone) {
+
+        //         if (PlacementCompany::where('phone', 'LIKE', "%{$phone}%")->exists()) {
+        //             $this->skippedRows++;
+        //             $this->duplicateContacts[] = "Duplicate contact skipped: {$phone}";
+        //             return null;
+        //         }
+        //     }
+        // }
 
 
         // $allowedRef = array(

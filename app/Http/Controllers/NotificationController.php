@@ -17,6 +17,13 @@ class NotificationController extends Controller
 
             return view('notifications.index', compact('notifications'));
         }
+        // 🔹 TRAINER
+        if (Auth::guard('sales_staff')->check()) {
+            $sales_staff = Auth::guard('sales_staff')->user();
+            $notifications = $sales_staff->notifications()->latest()->paginate(20);
+
+            return view('notifications.index', compact('notifications'));
+        }
 
         if (Auth::check()) {
             if (!in_array(Auth::user()->role, [1, 2, 3])) {
@@ -69,6 +76,19 @@ class NotificationController extends Controller
             return redirect()
                 ->route('daily-interviews.index', ['date_filter' => 'today'])
                 ->with('info', 'Here are today’s scheduled interviews.');
+        }
+
+
+        if ($key === 'workshop.reminder.week') {
+            return redirect()
+                ->route('workshops.index', ['range' => 'upcoming'])
+                ->with('info', 'Here are upcoming workshops.');
+        }
+
+        if ($key === 'workshop.reminder.two_days') {
+            return redirect()
+                ->route('workshops.index', ['range' => 'upcoming'])
+                ->with('info', 'Here are upcoming workshops.');
         }
 
 

@@ -23,27 +23,27 @@
     @endif
 
     {{-- Filter Form --}}
-    <form method="GET" action="{{ route('attendance.employees') }}" class="mb-4">
+    <form method="GET" id="filterForm" class="mb-4">
         <div class="row g-2">
 
             <div class="col-md-3">
-                <input type="text" name="name" class="form-control"
+                <input type="text" name="name" class="form-control filterchange"
                        placeholder="Employee Name" value="{{ request('name') }}">
             </div>
 
             <div class="col-md-3">
-                <input type="date" name="start_date" class="form-control"
+                <input type="date" name="start_date" class="form-control filterchange"
                        value="{{ request('start_date') }}">
             </div>
 
             <div class="col-md-3">
-                <input type="date" name="end_date" class="form-control"
+                <input type="date" name="end_date" class="form-control filterchange"
                        value="{{ request('end_date') }}">
             </div>
 
-            <div class="col-md-2 d-grid">
+            <!-- <div class="col-md-2 d-grid">
                 <button class="btn btn-primary">Search</button>
-            </div>
+            </div> -->
 
             <div class="col-md-1 d-grid">
                 <a href="{{ route('attendance.employees') }}" class="btn btn-secondary">Reset</a>
@@ -80,7 +80,7 @@
 
     <tr>
         <td>{{ $emp->id }}</td>
-        <td>{{ $emp->name }} <span class="badge bg-secondary">Employee</span></td>
+        <td>{{ $emp->emp_name }} <span class="badge bg-secondary">Employee</span></td>
         <td>{{ $emp->email }}</td>
 
         <td>{{ $record ? $record->login_time->format('h:i A') : '—' }}</td>
@@ -137,10 +137,50 @@
         </td>
 
         <td class="text-center">
-           <a href="{{ route('attendance.trainerDetail', $trainer->id) }}"
+           <a href="{{ route('attendance.detail',['type'=>'trainer','id'=>$trainer->id]) }}"
                class="btn btn-sm" title="View Trainer Attendance">
                 <i class="fa fa-eye"></i>
             </a>
+
+        </td>
+    </tr>
+
+@endforeach
+
+{{-- ================= TRAINERS ================= --}}
+@foreach($sales_staff as $staff)
+
+    @php
+        $record = $staff->attendances
+            ->where('login_time', '>=', now()->startOfDay())
+            ->first();
+    @endphp
+
+    <tr>
+        <td>{{ $staff->id }}</td>
+        <td>{{ $staff->name }} <span class="badge bg-primary">Sales</span></td>
+        <td>{{ $staff->email ?? '—' }}</td>
+
+        <td>{{ $record ? $record->login_time->format('h:i A') : '—' }}</td>
+        <td>{{ $record && $record->logout_time ? $record->logout_time->format('h:i A') : '—' }}</td>
+
+        <td>
+            @if($record && $record->logout_time)
+                @php
+                    $mins = $record->login_time->diffInMinutes($record->logout_time);
+                @endphp
+                {{ floor($mins/60) }} hrs {{ $mins % 60 }} mins
+            @else
+                —
+            @endif
+        </td>
+
+        <td class="text-center">
+          <a href="{{ route('attendance.detail',['type'=>'sales_staff','id'=>$staff->id]) }}"
+               class="btn btn-sm" title="View Sale User Attendance">
+            <i class="fa fa-eye"></i>
+        </a>
+
 
         </td>
     </tr>
@@ -165,6 +205,25 @@ $(document).ready(function() {
         "lengthMenu": [5, 10, 25, 50],
         // "scrollX": true
     });
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

@@ -58,7 +58,7 @@
                               class="d-inline">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm"
-                                    onclick="return confirm('Delete this category?')"
+                                    data-swal-confirm="Delete this category?"
                                     title="Delete">
                                 <i class="fa fa-trash"></i>
                             </button>

@@ -70,7 +70,7 @@
                  
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       I, <b>{{ ucwords($letter->student->student_name) }}</b>, hereby declare that I have successfully completed <b>{{ ucwords($letter->student?->sessionData?->session_display_name ?? 'N/A') }} of Training / Internship at Sortiq Solutions Pvt Ltd</b> in the domain of: <b>{{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }}</b> from <b>{{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}</b> to <b>{{ \Carbon\Carbon::parse($letter->student->end_date)->format('d M Y') }}</b>
+                       I, <b>{{ ucwords($letter->student->student_name) }}</b>, hereby declare that I have successfully completed <b>{{ ucwords($letter->student?->sessionData?->session_display_name ?? 'N/A') }} of Training / Internship at Sortiq Solutions Pvt Ltd</b> in the domain of: <b>{{ ucwords($letter->student?->course_name ?? 'N/A') }}</b> from <b>{{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}</b> to <b>{{ \Carbon\Carbon::parse($letter->student->end_date)->format('d M Y') }}</b>
                     </td>
                 </tr>
                 <tr>
@@ -123,10 +123,18 @@
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                       <b>Student Details</b><br>
                         Name: {{ ucwords($letter->student->student_name) }}<br>
-                        College / University: {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}@if(!empty($letter->student?->collegeData?->college_short_name))
-                        ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
-                    @endif<br>
-                        Course: {{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }}<br>
+                       College / University: 
+
+                        @if($letter->student?->is_place)
+                            {{ ucwords($letter->student?->place ?? '') }}
+                        @else
+                            {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}
+                            @if(!empty($letter->student?->collegeData?->college_short_name))
+                                ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
+                            @endif
+                        @endif
+                        <br>
+                        Course: {{ ucwords($letter->student?->course_name ?? 'N/A') }}<br>
                         Mobile No.: {{ ucwords($letter->student->contact) }}<br>
 
                         <b>Signature</b><br>

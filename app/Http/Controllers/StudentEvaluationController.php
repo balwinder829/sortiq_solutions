@@ -51,9 +51,18 @@ class StudentEvaluationController extends Controller
     }
     public function index()
     {
-        $evaluations = StudentEvaluation::with(['student','trainer'])
-            ->latest()
-            ->get();
+        // $evaluations = StudentEvaluation::with(['student','trainer'])
+        //     ->latest()
+        //     ->get();
+
+        $evaluations = StudentEvaluation::with([
+            'student' => function ($query) {
+                $query->withTrashed();
+            },
+            'trainer' => function ($query) {
+                $query->withTrashed();
+            }
+        ])->latest()->get();
 
         return view('student_evaluations.index', compact('evaluations'));
     }

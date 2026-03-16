@@ -81,12 +81,37 @@
                 </table>
                 
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
-                 
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       I, <b>{{ ucwords($letter->student->student_name) }}</b>, son/daughter of <b>{{ ucwords($letter->student->father_name_with_title) }}</b>, a student of <b>{{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }} @if(!empty($letter->student?->collegeData?->college_short_name))
-    ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
-@endif</b> College / University, hereby voluntarily declare and confirm the following:
+
+                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+
+                    @php
+                        $student = $letter->student;
+
+                        $gender = strtolower($student->gender ?? '');
+                        $relation = 'son';
+
+                        if ($gender === 'female') {
+                            $relation = $student->is_married ? 'wife' : 'daughter';
+                        }
+
+                        $collegeOrPlace = $student->is_place
+                            ? $student->place
+                            : ($student?->collegeData?->college_display_name ?? '');
+
+                    @endphp
+
+                    I, <b>{{ ucwords($student->student_name) }}</b>, 
+                    {{ $relation }} of <b>{{ ucwords($student->father_name_with_title) }}</b>, 
+                    a student of 
+                    <b>
+                    {{ ucwords($collegeOrPlace) }}
+
+                    @if(!$student->is_place && !empty($student?->collegeData?->college_short_name))
+                        ({{ strtoupper($student?->collegeData?->college_short_name) }})
+                    @endif
+                    </b> College / University, hereby voluntarily declare and confirm the following:
+
                     </td>
                 </tr>
                 <tr>
@@ -132,7 +157,7 @@
                         College / University: {{ ucwords($letter->student?->collegeData?->college_display_name ?? 'N/A') }}@if(!empty($letter->student?->collegeData?->college_short_name))
                             ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
                         @endif<br>
-                        Course & Semester: {{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }}<br>
+                        Course & Semester: {{ ucwords($letter->student?->course_name ?? 'N/A') }}<br>
                         Mobile No.: {{ ucwords($letter->student->contact) }}<br>
 
                         Student Signature: ___________________________<br>

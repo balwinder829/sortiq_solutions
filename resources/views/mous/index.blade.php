@@ -17,9 +17,9 @@
     </div>
 
     {{-- Filters --}}
-    <form method="GET" class="row mb-3">
+    <form method="GET" class="row mb-3" id="filterForm">
         <div class="col-md-4">
-            <select name="status" class="form-control">
+            <select name="status" id="statusFilter" class="form-control">
                 <option value="">All Status</option>
                 <option value="draft" {{ request('status')=='draft'?'selected':'' }}>Draft</option>
                 <option value="sent" {{ request('status')=='sent'?'selected':'' }}>Sent</option>
@@ -28,7 +28,7 @@
             </select>
         </div>
         <div class="col-md-3">
-            <button class="btn btn-primary">Filter</button>
+            <!-- <button class="btn btn-primary">Filter</button> -->
             <a href="{{ route('mous.index') }}" class="btn btn-secondary">Reset</a>
         </div>
     </form>
@@ -86,7 +86,7 @@
                             @csrf
                             <button class="btn btn-sm"
                                     title="Send Email"
-                                    onclick="return confirm('Send MOU via email?');">
+                                    data-swal-confirm="Send MOU via email?">
                                 <i class="fas fa-envelope"></i>
                             </button>
                         </form>
@@ -101,7 +101,7 @@
 
                         <form method="POST"
                               action="{{ route('mous.destroy', $mou) }}"
-                              onsubmit="return confirm('Delete this MOU?')">
+                              data-swal-confirm="Delete this MOU?">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm">
@@ -122,7 +122,24 @@
 @push('scripts')
 <script>
 $(function () {
-    $('#mouTable').DataTable();
+    $('#mouTable').DataTable({
+        order: []   // ✅ disables default ordering
+    });
 });
+</script>
+
+
+<script>
+
+$(document).ready(function(){
+
+$('#statusFilter').on('change', function(){
+
+$('#filterForm').submit();
+
+});
+
+});
+
 </script>
 @endpush

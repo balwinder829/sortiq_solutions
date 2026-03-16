@@ -212,10 +212,10 @@
 <tr>
     <td>{{ $loop->iteration }}</td>
     <td>{{ $test->title }}</td>
-    <td>{{ $test->category->name }}</td>
-    <td>{{ $test->college_full_name }}</td>
-    <td>{{ $test->course->course_name }}</td>
-    <td>{{ $test->semester->name }}</td>
+    <td>{{ $test->category?->name ?? '-' }}</td>
+    <td>{{ $test->college_full_name ?? '-' }}</td>
+    <td>{{ $test->course?->course_name ?? '-' }}</td>
+    <td>{{ $test->semester?->name ?? '-' }}</td>
 
     <td>
         @if($test->status == 'published')
@@ -320,7 +320,7 @@
         <form action="{{ route('admin.offline-tests.destroy', $test->id) }}"
               method="POST"
               class="d-inline"
-              onsubmit="return confirm('Are you sure you want to delete this test?')">
+              data-swal-confirm="Are you sure you want to delete this test?">
             @csrf
             @method('DELETE')
 

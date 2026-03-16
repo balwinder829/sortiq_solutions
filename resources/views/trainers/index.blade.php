@@ -37,12 +37,12 @@ table.dataTable td {
 
     {{-- MIDDLE: FILTER FORM --}}
     <div class="col-md-8">
-        <form method="GET" action="{{ route('trainers.index') }}" class="row g-2 align-items-end">
+        <form method="GET"id="filterForm" class="row g-2 align-items-end">
 
             {{-- COURSE FILTER --}}
             <div class="col-md-6">
                 <!-- <label class="fw-bold">Course (Technology)</label> -->
-                <select name="course" class="form-control">
+                <select name="course" id="filtercourse" class="form-control filterchange">
                     <option value="">-- All Courses --</option>
 
                     @foreach($courses as $course)
@@ -56,9 +56,9 @@ table.dataTable td {
 
             {{-- BUTTONS WITH SMALL GAP --}}
             <div class="col-md-6 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">
+                <!-- <button type="submit" class="btn btn-primary">
                     Search
-                </button>
+                </button> -->
 
                 <a href="{{ route('trainers.index') }}" class="btn btn-secondary">
                     Reset
@@ -80,7 +80,31 @@ table.dataTable td {
     </div>
 
 </div>
+<div class="col-md-8 mb-4">
+    <p class="mb-1 fw-bold">Mentors Login URL</p>
 
+    <div class="input-group">
+        <a href="{{ route('mentors.login') }}"
+           target="_blank"
+           id="loginUrl"
+           class="form-control text-primary text-decoration-none">
+            {{ route('mentors.login') }}
+        </a>
+
+        <button class="btn btn-outline-secondary"
+                type="button"
+                 data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Copy Mentors Login URL"
+                onclick="copyLoginUrl()">
+            <i class="fa fa-copy"></i>
+        </button>
+    </div>
+
+    <small id="copyMessage" class="text-success d-none">
+        Copied to clipboard!
+    </small>
+</div>
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
@@ -117,95 +141,7 @@ table.dataTable td {
                 </tr>
             </thead>
 
-            <tbody>
-                @foreach($trainers as $trainer)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-
-                        <td>{{ $trainer->username ?? '' }}</td>
-                        <td>{{ ucwords($trainer->name ?? '') }}</td>
-                        <td>{{ ucfirst($trainer->gender ?? '-') }}</td>
-                        <td>{{ $trainer->phone ?? 'N/A' }}</td>
-                        <td>{{ $trainer->email ?? 'N/A' }}</td>
-                        <td>
-                            @php
-                                $techIds = $trainer->technology ? explode(',', $trainer->technology) : [];
-                                $techNames = \App\Models\Course::whereIn('id', $techIds)->pluck('course_name');
-                            @endphp
-
-                            @foreach($techNames as $name)
-                                <span class="badge bg-primary">{{ $name }}</span>
-                            @endforeach
-                        </td>
-
-                        {{-- ================= TOTAL SESSION BATCHES ================= --}}
-                        {{-- ================= TOTAL SESSION BATCHES ================= --}}
-                        <td class="text-center">
-                            <div class="batch-circle batch-link"
-                                 data-id="{{ $trainer->id }}"
-                                 data-name="{{ $trainer->name ?? 'N/A' }}"
-                                 data-type="all"
-                                 title="View All Batches">
-                                {{ $trainer->session_batches_count }}
-                            </div>
-                        </td>
-
-                        {{-- ================= ONLINE BATCHES ================= --}}
-                        <td class="text-center">
-                            <div class="batch-circle"
-                                 style="background:#198754"  {{-- green --}}
-                                 title="Online Batches">
-                                {{ $trainer->online_batches_count }}
-                            </div>
-                        </td>
-
-                        {{-- ================= OFFLINE BATCHES ================= --}}
-                        <td class="text-center">
-                            <div class="batch-circle"
-                                 style="background:#fd7e14"  {{-- orange --}}
-                                 title="Offline Batches">
-                                {{ $trainer->offline_batches_count }}
-                            </div>
-                        </td>
-
-
-                        {{-- ================= REMAINING TODAY BATCHES ================= --}}
-                        <td class="text-center">
-                            <div class="batch-circle batch-link"
-                                 data-id="{{ $trainer->id }}"
-                                 data-name="{{ $trainer->name ?? 'N/A' }}"
-                                 data-type="remaining"   {{-- NEW --}}
-                                 title="View Today's Remaining Batches">
-                                {{ $trainer->today_remaining_batches_count ?? 0 }}
-                            </div>
-                        </td>
-
-                        {{-- Actions --}}
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center align-items-center" style="gap: 6px;">
-
-                                {{-- Edit --}}
-                                <a href="{{ route('trainers.edit', $trainer->id) }}"
-                                   class="btn btn-sm" title="Edit">
-                                    <i class="fa fa-edit"></i>
-                                </a>
-
-                                {{-- Delete --}}
-                               <!--  <form action="{{ route('trainers.destroy', $trainer->id) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-sm"
-                                        onclick="return confirm('Delete this trainer?')">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </form> -->
-
-                            </div>
-                        </td>
-
-                    </tr>
-                @endforeach
-            </tbody>
+            <tbody></tbody>
         </table>
     </div>
 
@@ -236,9 +172,35 @@ table.dataTable td {
 @push('scripts')
 <script>
 $(document).ready(function () {
-    $('#trainers-table').DataTable({
-        "pageLength": 50,
-        "lengthMenu": [5, 10, 25, 50, 100]
+    var params = new URLSearchParams(window.location.search);
+    var table = $('#trainers-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('trainers.data') }}",
+            data: function (d) {
+                d.course =  $('#filtercourse').val();
+            }
+        },
+        columns: [
+            { data: 0 },
+            { data: 1 },
+            { data: 2 },
+            { data: 3 },
+            { data: 4 },
+            { data: 5 },
+            { data: 6 },
+            { data: 7, orderable: false, searchable: false },
+            { data: 8, orderable: false, searchable: false },
+            { data: 9, orderable: false, searchable: false },
+            { data: 10, orderable: false, searchable: false },
+            { data: 11, orderable: false, searchable: false }
+        ],
+        pageLength: 50,
+        lengthMenu: [5, 10, 25, 50, 100]
+    });
+     $('#filtercourse').change(function () {
+        table.ajax.reload();
     });
 });
 </script>
@@ -263,6 +225,20 @@ $(document).on('click', '.batch-link', function () {
         }
     });
 });
+</script>
+ <script>
+function copyLoginUrl() {
+    const url = document.getElementById('loginUrl').textContent.trim(); // ✅ removes extra spaces;
+
+    navigator.clipboard.writeText(url).then(function() {
+        const msg = document.getElementById('copyMessage');
+        msg.classList.remove('d-none');
+
+        setTimeout(() => {
+            msg.classList.add('d-none');
+        }, 2000);
+    });
+}
 </script>
 
 @endpush

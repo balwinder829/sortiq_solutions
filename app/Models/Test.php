@@ -107,21 +107,47 @@ class Test extends Model
     }
 
     // app/Models/Placement.php
+    // public function getCollegeFullNameAttribute()
+    // {
+    //     $college  = $this->college;
+
+    //     if (!$college) {
+    //         return '';
+    //     }
+
+    //     $parts = [
+    //         $college->college_name ?? '',
+    //         $college->district->name ?? '',
+    //         $college->state->name ?? '',
+    //     ];
+
+    //     return implode(', ', array_filter($parts));
+    // }
+
     public function getCollegeFullNameAttribute()
     {
-        $college  = $this->college;
+        return $this->college?->full_name ?? '';
+    }
 
-        if (!$college) {
-            return '';
-        }
+    public function offlineQuestions()
+    {
+        return $this->hasMany(OfflineQuestion::class)
+            ->orderBy('question_order');
+    }
 
-        $parts = [
-            $college->college_name ?? '',
-            $college->district->name ?? '',
-            $college->state->name ?? '',
-        ];
+    public function batch()
+    {
+        return $this->belongsTo(\App\Models\Batch::class);
+    }
 
-        return implode(', ', array_filter($parts));
+    public function trainer()
+    {
+        return $this->belongsTo(\App\Models\Trainer::class);
+    }
+
+    public function links()
+    {
+        return $this->hasMany(TestLink::class);
     }
 }
 

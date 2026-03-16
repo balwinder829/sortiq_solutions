@@ -94,7 +94,7 @@
                         <form action="{{ route('student_certificates.destroy', $cert->id) }}" method="POST" style="display:inline-block;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" title="Delete" onclick="return confirm('Delete this student?')">
+                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" title="Delete" data-swal-confirm="Delete this student?">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </form>

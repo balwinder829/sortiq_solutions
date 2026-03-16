@@ -28,7 +28,7 @@
                     <td>{{ $student->sno ?? '-' }}</td>
                     <td>{{ $student->student_name }}</td>
                     <td>{{ $student->email_id }}</td>
-                    <td>{{ $student->courseData->course_name ?? '-' }}</td>
+                    <td>{{ $student->course_name ?? '-' }}</td>
                     <td>
                         {{ $student->start_date
                             ? \Carbon\Carbon::parse($student->start_date)->format('d M Y')

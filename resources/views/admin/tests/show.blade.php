@@ -30,7 +30,7 @@
                     <form action="{{ route('admin.questions.destroy', $question->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this question?')" title="Delete">
+                        <button class="btn btn-sm btn-danger" data-swal-confirm="Are you sure you want to delete this question?" title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>

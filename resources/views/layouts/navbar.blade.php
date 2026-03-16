@@ -173,12 +173,12 @@ function isParent($routes)
 
 
                 {{-- Colleges --}}
-                <li class="{{ isParent(['colleges*','mous*', 'hods*']) }}">
+                <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fas fa-university"></i>
                         <span class="nav-text">Colleges</span>
                     </a>
-                    <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*']) }}">
+                    <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*','workshops*']) }}">
                        {{-- Colleges --}}
                         <li class="{{ isParent(['colleges*']) }}">
                             <a href="{{ route('colleges.index') }}">
@@ -201,28 +201,72 @@ function isParent($routes)
                                 <!-- <i class="fas fa-bed me-2"></i> -->
                                College Authority
                             </a>
-                        </li>                   
+                        </li>  
+
+                         <li class="{{ isParent(['workshops*']) }}">
+                            <a href="{{ route('workshops.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Workshops</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ isParent(['notifications.byType*']) }}">
+                            <a href="{{ route('notifications.byType', 'workshop.reminder.week') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Workshop Notification</span>
+                            </a>
+                        </li>
+                            
                     </ul>
                 </li>
 
+                {{-- Colleges Locations --}}
+                <li class="{{ isParent(['states*','districts*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                         <i class="fas fa-university"></i>
+                        <span class="nav-text">Colleges Locations</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['states*','districts*']) }}">
+                       {{-- Colleges --}}
+                        <li class="{{ isParent(['states*']) }}">
+                            <a href="{{ route('states.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Colleges States</span>
+                            </a>
+                        </li> 
+                        <li class="{{ isParent(['districts*']) }}">
+                            <a href="{{ route('districts.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Colleges Districts</span>
+                            </a>
+                        </li> 
+                    </ul>
+                </li>
+
+
                  {{-- Leads --}}
-                <li class="{{ isParent(['enquiries*','admin.enquiries.dashboard','salespersons*','admin.enquiries.performance','registrations*','admin.calls']) }}">
+                <li class="{{ isParent(['enquiries*','admin.enquiries.dashboard','salespersons*','admin.enquiries.performance','registrations*','admin.calls','sales_staff*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-database"></i>
                         <span class="nav-text">Sales Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['enquiries*','admin.enquiries.dashboard','salespersons','admin.enquiries.performance','registrations*','admin.calls']) }}">
+                    <ul class="{{ showSubmenu(['enquiries*','admin.enquiries.dashboard','salespersons','admin.enquiries.performance','registrations*','admin.calls','sales_staff*']) }}">
                         <li>
                             <a class="{{ isChildActive('enquiries*') }}"
                                 href="{{ route('enquiries.index') }}">
                                Manage  Sales Data
                             </a>
                         </li>
-
+                        <li>
+                            <a class="{{ isChildActive('sales_staff*') }}"
+                                href="{{ route('sales_staff.index') }}">
+                                Manage Sales Teams
+                            </a>
+                        </li>
                         <li>
                             <a class="{{ isChildActive('salespersons*') }}"
                                 href="{{ route('salespersons.list') }}">
-                                Sales Teams
+                                Sales Teams Assigned Data
                             </a>
                         </li>
 
@@ -260,6 +304,22 @@ function isParent($routes)
                         </li> -->
                     </ul>
                 </li>
+                {{-- Leads --}}
+                <li class="{{ isParent(['passouts*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-database"></i>
+                        <span class="nav-text">Passout Management</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['passouts*']) }}">
+                        <li>
+                            <a class="{{ isChildActive('passouts*') }}"
+                                href="{{ route('passouts.index') }}">
+                               Manage Passout Data
+                            </a>
+                        </li>
+                                                
+                    </ul>
+                </li>
 
                  {{-- Trainers --}}
                 <li class="{{ isParent(['trainers*','batches*']) }}">
@@ -289,12 +349,12 @@ function isParent($routes)
                 </li>
 
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*']) }}">
                         
 
                         
@@ -343,7 +403,23 @@ function isParent($routes)
                                 <i class="fas fa-file-signature"></i>
                                 <span class="nav-text">Student Letters</span>
                             </a>
-                        </li>                      
+                        </li>  
+
+                        <li>
+                            <a class="{{ isChildActive('student-accepted-letters*') }}"
+                                href="{{ route('student-accepted-letters.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Accepted Letters
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('admin.office-tests*') }}"
+                                href="{{ route('admin.office-tests.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Student Office Exams
+                            </a>
+                        </li>                    
                     </ul>
                 </li>
 
@@ -363,12 +439,12 @@ function isParent($routes)
                 </li> -->
 
                 {{-- Attendence --}}
-                <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*']) }}">
+                <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fa-regular fa-file-lines"></i>
                         <span class="nav-text">HR Management </span>
                     </a>
-                    <ul class="{{ showSubmenu(['attendance*','employees*','letters*','salary-slips*','accepted-letters*']) }}">
+                    <ul class="{{ showSubmenu(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*']) }}">
                         <li>
                             <a class="{{ isChildActive('employees*') }}"
                                 href="{{ route('employees.index') }}">
@@ -386,6 +462,13 @@ function isParent($routes)
                             <a class="{{ isChildActive('letters*') }}"
                                 href="{{ route('letters.index') }}">
                                 Emp Official Letters
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('managements_letters*') }}"
+                                href="{{ route('managements_letters.index') }}">
+                                Management Official Letters
                             </a>
                         </li>
                         
@@ -474,10 +557,7 @@ function isParent($routes)
                         <!-- <i class="fa-regular fa-file-lines"></i> -->
                         <span class="nav-text">Social Share Scanners</span>
                     </a>
-                </li>
-
-
-                         
+                </li>                        
                     </ul>
                 </li>
 
@@ -536,12 +616,12 @@ function isParent($routes)
 
 
                {{-- Finance --}}
-                <li class="{{ isParent(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*']) }}">
+                <li class="{{ isParent(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*','office-paper-expenses*','tea-pantry-expenses*','office-cleaning-expenses*','office-accessories-expenses*','office-cleaning-expenses*','office-accessories-expenses*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-coins"></i>
                         <span class="nav-text">Finance Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*']) }}">
+                    <ul class="{{ showSubmenu(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*','office-paper-expenses*','tea-pantry-expenses*','office-cleaning-expenses*','office-accessories-expenses*','office-cleaning-expenses*','office-accessories-expenses*']) }}">
                         <li>
                             <a class="{{ isChildActive('office-expenses*') }}"
                                href="{{ route('office-expenses.index') }}">
@@ -556,6 +636,39 @@ function isParent($routes)
                                 Pantry Expenses
                             </a>
                         </li>
+                         
+                         <li>
+                            <a class="{{ isChildActive('office-paper-expenses*') }}"
+                               href="{{ route('office-paper-expenses.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Office Paper Expenses
+                            </a>
+                        </li>
+                        
+                         <li>
+                            <a class="{{ isChildActive('tea-pantry-expenses*') }}"
+                               href="{{ route('tea-pantry-expenses.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Tea Pantry Expenses
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('office-cleaning-expenses*') }}"
+                               href="{{ route('office-cleaning-expenses.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Office Cleaning Expenses
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('office-accessories-expenses*') }}"
+                               href="{{ route('office-accessories-expenses.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Office Accessories Expenses
+                            </a>
+                        </li>
+                        
 
                          <li>
                             <a class="{{ isChildActive('event-expenses*') }}"
@@ -609,10 +722,10 @@ function isParent($routes)
                  
 
                  {{-- Tests --}}
-                <li class="{{ isParent(['tests.*','admin.offline-tests*','test-categories.*']) }}">
+                <li class="{{ isParent(['tests*','test-categories.*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Student Exams</span>
+                        <span class="nav-text">College Exams</span>
                     </a>
                     <ul class="{{ showSubmenu(['tests*','test-categories.*']) }}">
                         <li>
@@ -622,28 +735,29 @@ function isParent($routes)
                             </a>
                         </li>
                         <li>
-                            <a class="{{ isChildActive('tests.*') }}"
+                            <a class="{{ isChildActive('tests*') }}"
                                 href="{{ route('admin.tests.index') }}">
                                 Online Exams
                             </a>
                         </li>
+                       
 
-                         <li>
+                         <!-- <li>
                             <a class="{{ isChildActive('admin.offline-tests.index') }}"
                                 href="{{ route('admin.offline-tests.index') }}">
                                 Offline Exams
                             </a>
-                        </li>
+                        </li> -->
                     </ul>
                 </li>
 
                  {{-- Joined Students --}}
-                <li class="{{ isParent(['technologies*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
+                <li class="{{ isParent(['technologies.*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
                         <span class="nav-text">Interviews</span>
                     </a>
-                    <ul class="{{ showSubmenu(['technologies*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
+                    <ul class="{{ showSubmenu(['technologies.*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
                         <li>
                             <a class="{{ isChildActive('technologies*') }}"
                                 href="{{ route('technologies.index') }}">
@@ -687,12 +801,12 @@ function isParent($routes)
                 </li>
 
                  {{-- Help Desk --}}
-                <li class="{{ isParent(['projects*','tutorials*']) }}">
+                <li class="{{ request()->routeIs('admin.helpdesk.*') || isParent(['projects*','tutorials*']) ? 'mm-active' : '' }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
                         <span class="nav-text">Student Help Desk</span>
                     </a>
-                    <ul class="{{ showSubmenu(['projects*','tutorials*']) }}">
+                    <ul class="{{ request()->routeIs('admin.helpdesk.*') || showSubmenu(['projects*','tutorials*']) ? 'mm-show' : '' }}">
                          <li>
                             <a class="{{ isChildActive('projects*') }}"
                                href="{{ route('projects.index') }}">
@@ -709,9 +823,83 @@ function isParent($routes)
                             </a>
                         </li>
 
+                        @foreach($helpdeskCategories as $cat)
+
+                        <li class="{{ request()->get('category') == $cat->id ? 'mm-active' : '' }}">
+
+                            <a href="{{ route('admin.helpdesk.articles.index',['category'=>$cat->id]) }}">
+
+                                {{ $cat->name }}
+
+                            </a>
+
+                        </li>
+
+                        @endforeach
+                        <li class="{{ request()->routeIs('admin.helpdesk.categories.index.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.helpdesk.categories.index') }}">
+                                
+                                <span class="nav-text">Helpdesk Categories</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('student-projects.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-projects.index') }}">
+                                <span class="nav-text">Projects</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('student-project-assignments.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-assignments.index') }}">
+                                <span class="nav-text">Projects Assignments</span>
+                            </a>
+                        </li>
+
+                         <li class="{{ request()->routeIs('student-project-submissions.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-submissions.index') }}">
+                                <span class="nav-text">Projects Submissions</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('student-project-reviews.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-reviews.index') }}">
+                                <span class="nav-text">Projects Reviews</span>
+                            </a>
+                        </li>
+
+                         <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.student.cv-templates.index') }}">
+                                <span class="nav-text">CVs Templates</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('admin.student.cv.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.student.cv.index') }}">
+                                <span class="nav-text">Generated CVs</span>
+                            </a>
+                        </li>
+
+                       <!--  <li class="{{ request()->routeIs('admin.helpdesk.categories.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.helpdesk.articles.index') }}">
+                                
+                                <span class="nav-text">Articles</span>
+                            </a>
+                        </li> -->
+
                        
                     </ul>
                 </li>
+
+                {{-- Joined Students --}}
+               <!--  <li class="{{ isParent(['admin.helpdesk.*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Helpdesk</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['admin.helpdesk.*']) }}">
+                        
+                    </ul>
+                </li> -->
 
                 {{-- Joined Students --}}
                 <li class="{{ isParent(['joined_students*']) }}">
@@ -794,6 +982,33 @@ function isParent($routes)
                      
                 </li>
 
+                {{-- Joined Students --}}
+                <li class="{{ isParent(['admin.blocked-ips.*','admin.system-activity*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Security</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['admin.blocked-ips.*','admin.system-activity*']) }}">
+                        <li class="{{ request()->routeIs('admin.blocked-ips.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.blocked-ips.index') }}">
+                                <i class="fas fa-ban"></i>
+                                <span class="nav-text">Blocked IPs</span>
+                            </a>
+                        </li>
+
+                        {{-- System Activity (logins, page views, IP) --}}
+                        <li class="{{ request()->routeIs('admin.system-activity') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.system-activity') }}">
+                                <i class="fas fa-history"></i>
+                                <span class="nav-text">Activity</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+                
+
 
                         {{-- Certificates --}}
                         
@@ -825,7 +1040,7 @@ function isParent($routes)
             @endif
 
              @if(auth()->guard('web')->check())
-                @hasrole('Manager')
+               @hasanyrole('Manager|HR|Custom')
 
                      <li class="nav-label first"></li>
                     @canany(['dashboard.view','analytics.view'])
@@ -879,15 +1094,15 @@ function isParent($routes)
                         @endcan
 
 
-                    @canany(['colleges.view','mous.view','hods.view'])
+                    @canany(['colleges.view','mous.view','hods.view','workshop.view'])
                         {{-- Colleges --}}
 
-                        <li class="{{ isParent(['colleges*','mous*', 'hods*']) }}">
+                        <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*','tests*']) }}">
                             <a class="has-arrow" href="javascript:void(0)">
                                  <i class="fas fa-university"></i>
                                 <span class="nav-text">Colleges</span>
                             </a>
-                            <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*']) }}">
+                            <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*','workshops*','tests*']) }}">
                                {{-- Colleges --}}
                                @can('colleges.view')
                                 <li class="{{ isParent(['colleges*']) }}">
@@ -914,11 +1129,48 @@ function isParent($routes)
                                        College Authority
                                     </a>
                                 </li>
-                                @endcan                   
+                                @endcan  
+                                @can('workshop.view')
+                                <li class="{{ isParent(['workshops*']) }}">
+                                    <a href="{{ route('workshops.index') }}">
+                                        <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                        <span class="nav-text">Workshops</span>
+                                    </a>
+                                </li> 
+                                @endcan                                         
                             </ul>
                         </li>
                         @endcanany
 
+@canany(['districts.view','states.view'])
+
+                        {{-- Colleges Locations --}}
+                <li class="{{ isParent(['states*','districts*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                         <i class="fas fa-university"></i>
+                        <span class="nav-text">Colleges</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['states*','districts*']) }}">
+                       {{-- Colleges --}}
+                       @can('states.view')
+                        <li class="{{ isParent(['states*']) }}">
+                            <a href="{{ route('states.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Colleges States</span>
+                            </a>
+                        </li> 
+                         @endcan  
+                                @can('districts.view')
+                        <li class="{{ isParent(['districts*']) }}">
+                            <a href="{{ route('districts.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Colleges Districts</span>
+                            </a>
+                        </li> 
+                         @endcan 
+                    </ul>
+                </li>
+@endcanany
 
                 @canany(['enquiries.view','salespersons.view','calls.view','registrations.view'])
                  {{-- Leads --}}
@@ -965,6 +1217,25 @@ function isParent($routes)
                 </li>
                 @endcanany
 
+                @canany(['passouts.view'])
+                <li class="{{ isParent(['passouts*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-database"></i>
+                        <span class="nav-text">Passout Management</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['passouts*']) }}">
+                        @can('passouts.view')
+                        <li>
+                            <a class="{{ isChildActive('passouts*') }}"
+                                href="{{ route('passouts.index') }}">
+                               Manage Passout Data
+                            </a>
+                        </li>
+                        @endcan   
+                                                
+                    </ul>
+                </li>
+                @endcanany
 
                 @canany(['mentors.view','batches.view'])
                  {{-- Trainers --}}
@@ -1001,14 +1272,14 @@ function isParent($routes)
 
 
 
-                @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view'])
+                @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view'])
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*']) }}">
                         
 
                         
@@ -1046,7 +1317,7 @@ function isParent($routes)
                          <li class="{{ isParent(['student-evaluations*']) }}">
                             <a href="{{ route('student-evaluations.index') }}">
                                 <i class="fas fa-user-check"></i>
-                                <span class="nav-text">Students Evaluations</span>
+                                <span class="nav-text">Students Report Card</span>
                             </a>
                              
                         </li> 
@@ -1067,7 +1338,16 @@ function isParent($routes)
                                 <span class="nav-text">Student Letters</span>
                             </a>
                         </li>
-                        @endcan                         
+                        @endcan  
+                        @can('students_office_test.view')
+                        <li>
+                            <a class="{{ isChildActive('admin.office-tests*') }}"
+                                href="{{ route('admin.office-tests.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Student Office Exams
+                            </a>
+                        </li>
+                        @endcan                          
                     </ul>
                 </li>   
                 @endcanany
@@ -1287,14 +1567,14 @@ function isParent($routes)
                 
 
 
-@canany(['office_expenses.view','pantry_expenses.view','event_expenses.view','travel_expenses.view','office_assets.view','recharges.view','visiting_cards.view'])
+@canany(['office_expenses.view','pantry_expenses.view','event_expenses.view','travel_expenses.view','office_assets.view','recharges.view','visiting_cards.view','office_paper_expenses.view','tea_pantry_expenses.view'])
                {{-- Finance --}}
-                <li class="{{ isParent(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*']) }}">
+                <li class="{{ isParent(['office-expenses*','pantry-expenses*','tea-pantry-expenses*','office-paper-expenses','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-coins"></i>
                         <span class="nav-text">Finance Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*']) }}">
+                    <ul class="{{ showSubmenu(['office-expenses*','pantry-expenses*','tea-pantry-expenses*','office-paper-expenses','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*']) }}">
 
                          @can('office_expenses.view')
                         <li>
@@ -1314,6 +1594,42 @@ function isParent($routes)
                             </a>
                         </li>
                         @endcan   
+                         @can('office_paper_expenses.view')
+                         <li>
+                            <a class="{{ isChildActive('office-paper-expenses*') }}"
+                               href="{{ route('office-paper-expenses.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Office Paper Expenses
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('tea_pantry_expenses.view')
+                         <li>
+                            <a class="{{ isChildActive('tea-pantry-expenses*') }}"
+                               href="{{ route('tea-pantry-expenses.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Tea Pantry Expenses
+                            </a>
+                        </li>
+                        @endcan  
+                        @can('office_cleaning_expenses.view')
+                        <li>
+                            <a class="{{ isChildActive('office-cleaning-expenses*') }}"
+                               href="{{ route('office-cleaning-expenses.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Office Cleaning Expenses
+                            </a>
+                        </li>
+                        @endcan  
+                        @can('office_accessories_expenses.view')
+                        <li>
+                            <a class="{{ isChildActive('office-accessories-expenses*') }}"
+                               href="{{ route('office-accessories-expenses.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Office Accessories Expenses
+                            </a>
+                        </li> 
+                        @endcan  
                          @can('event_expenses.view')
                          <li>
                             <a class="{{ isChildActive('event-expenses*') }}"
@@ -1380,7 +1696,7 @@ function isParent($routes)
                 <li class="{{ isParent(['tests.*','admin.offline-tests*','test-categories.*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Student Exams</span>
+                        <span class="nav-text">College Exams</span>
                     </a>
                     <ul class="{{ showSubmenu(['tests*','test-categories.*']) }}">
 
@@ -1392,15 +1708,16 @@ function isParent($routes)
                             </a>
                         </li>
                         @endcan   
-                         @can('tests.view')
+                        
+                        @can('tests.view')
                         <li>
                             <a class="{{ isChildActive('tests.*') }}"
                                 href="{{ route('admin.tests.index') }}">
                                 Online Exams
                             </a>
                         </li>
-                        @endcan   
-                         @can('offline_tests.view')
+                        @endcan
+                         <!-- @can('offline_tests.view')
 
                          <li>
                             <a class="{{ isChildActive('admin.offline-tests.index') }}"
@@ -1408,7 +1725,7 @@ function isParent($routes)
                                 Offline Exams
                             </a>
                         </li>
-                        @endcan   
+                        @endcan   --> 
                     </ul>
                 </li>
 @endcanany
@@ -1478,17 +1795,17 @@ function isParent($routes)
 @endcanany
 
 
+        
 
                  {{-- Help Desk --}}
-                @canany(['projects.view','tutorials.view'])
-                <li class="{{ isParent(['projects*','tutorials*']) }}">
+                 @canany(['projects.view','tutorials.view','latest_tech_articles.view','seo_tips.view','interview_preparation_blogs.view','cpanel_explanation.view','hosting.view','faqs_section.view','helpdesk_categories.view','student_projects.view','student_project_assignments.view','student_project_submissions.view','student_project_reviews.view','cv_templates.view','student_cvs.view'])
+                <li class="{{ request()->routeIs('admin.helpdesk.*') || isParent(['projects*','tutorials*']) ? 'mm-active' : '' }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
                         <span class="nav-text">Student Help Desk</span>
                     </a>
-                    <ul class="{{ showSubmenu(['projects*','tutorials*']) }}">
-                        
-                         @can('projects.view')
+                    <ul class="{{ request()->routeIs('admin.helpdesk.*') || showSubmenu(['projects*','tutorials*']) ? 'mm-show' : '' }}">
+                        @can('projects.view')
                          <li>
                             <a class="{{ isChildActive('projects*') }}"
                                href="{{ route('projects.index') }}">
@@ -1496,9 +1813,8 @@ function isParent($routes)
                                 Student Projects
                             </a>
                         </li>
-                        @endcan   
+                         @endcan   
                          @can('tutorials.view')
-
                         <li>
                             <a class="{{ isChildActive('tutorials*') }}"
                                href="{{ route('tutorials.index') }}">
@@ -1506,14 +1822,73 @@ function isParent($routes)
                                Student Tutorials
                             </a>
                         </li>
-@endcan   
-                         
-                       
+                         @endcan  
+                        
+                        @foreach($helpdeskCategories as $cat)
+
+                            @can($cat->slug.'.view')
+                                <li class="{{ request()->get('category') == $cat->id ? 'mm-active' : '' }}">
+                                    <a href="{{ route('admin.helpdesk.articles.index',['category'=>$cat->id]) }}">
+                                        {{ $cat->name }}
+                                    </a>
+                                </li>
+                            @endcan
+
+                        @endforeach
+
+                        @can('helpdesk_categories.view')
+                        <li class="{{ request()->routeIs('admin.helpdesk.categories.index.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.helpdesk.categories.index') }}">
+                                
+                                <span class="nav-text">Helpdesk Categories</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_projects.view')
+                        <li class="{{ request()->routeIs('student-projects.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-projects.index') }}">
+                                <span class="nav-text">Projects</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_project_assignments.view')
+                        <li class="{{ request()->routeIs('student-project-assignments.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-assignments.index') }}">
+                                <span class="nav-text">Projects Assignments</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_project_submissions.view')
+                         <li class="{{ request()->routeIs('student-project-submissions.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-submissions.index') }}">
+                                <span class="nav-text">Projects Submissions</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_project_reviews.view')
+                        <li class="{{ request()->routeIs('student-project-reviews.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-reviews.index') }}">
+                                <span class="nav-text">Projects Reviews</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('cv_templates.view')
+                         <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.student.cv-templates.index') }}">
+                                <span class="nav-text">CVs Templates</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_cvs.view')
+                        <li class="{{ request()->routeIs('admin.student.cv.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.student.cv.index') }}">
+                                <span class="nav-text">Generated CVs</span>
+                            </a>
+                        </li> 
+                        @endcan                      
                     </ul>
                 </li>
-@endcanany
-
-
+                @endcanany
                 {{-- Joined Students --}}
 
                 @canany(['joined_students.view'])
@@ -1669,6 +2044,7 @@ function isParent($routes)
 
             
                 {{-- Batches --}}
+                <li class="nav-label first"></li>
                 <li class="{{ isParent(['batches.mybatches']) }}">
                     <a  href="{{ route('batches.mybatches') }}">
                         <i class="fas fa-layer-group"></i>
@@ -1722,7 +2098,7 @@ function isParent($routes)
             {{-- ========================================================= --}}
             {{-- SALES MENU (role = 3)                                    --}}
             {{-- ========================================================= --}}
-            @if(Auth::check() && Auth::user()->role == 3)
+            @if(Auth::guard('sales_staff')->check())
 
                 
                 {{-- Dashboard --}}
@@ -1730,6 +2106,7 @@ function isParent($routes)
                
 
                 {{-- Leads --}}
+                <li class="nav-label first"></li>
                 <li class="{{ isParent(['sales.enquiries']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-database"></i>
@@ -1751,6 +2128,53 @@ function isParent($routes)
                         </li>
                     </ul>
                 </li>
+
+                {{-- Attendence --}}
+                <li class="{{ isParent(['attendance.employee','attendance.myDetail']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                         <i class="fa-regular fa-file-lines"></i>
+                        <span class="nav-text">Calling Status</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['attendance.employee','attendance.myDetail']) }}">
+                        <li>
+                            <a class="{{ isChildActive('attendance.employee') }}"
+                                href="{{ route('attendance.employee') }}">
+                                Calling Timing
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('attendance.myDetail') }}"
+                                href="{{ route('attendance.myDetail') }}">
+                                Calling History
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                {{-- Logout --}}
+                <li>
+                    <a href="{{ route('logout') }}"
+                       onclick="event.preventDefault(); document.getElementById('sidebar-logout-form').submit();">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="nav-text">Logout</span>
+                    </a>
+
+                    <form id="sidebar-logout-form"
+                          action="{{ route('logout') }}"
+                          method="POST"
+                          class="d-none">
+                        @csrf
+                    </form>
+                </li>
+
+
+            @endif
+
+
+            @if(Auth::guard('employee')->check())
+
+            
+                
 
                 {{-- Attendence --}}
                 <li class="{{ isParent(['attendance.employee','attendance.myDetail']) }}">

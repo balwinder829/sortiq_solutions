@@ -58,7 +58,7 @@
                    class="form-control @error('email') is-invalid @enderror"
                    value="{{ old('email') }}"
                    placeholder="Email" 
-                   required>
+                   >
             @error('email')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
@@ -86,6 +86,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Save</button>
+        <a href="{{ route('users.index') }}" class="btn btn-secondary mt-0">Back</a>
     </form>
 </div>
 @endsection

@@ -14,17 +14,18 @@ class FeeStatusExport implements FromCollection, WithHeadings, ShouldAutoSize
     protected $collegeId;
     protected $courseId;
 
-    public function __construct($collegeId, $courseId)
+    public function __construct($collegeId, $courseId, $percent_range)
     {
         $this->collegeId = $collegeId;
         $this->courseId = $courseId;
+        $this->percent_range = $percent_range;
     }
 
     public function collection()
     {
         $activeSessionNo = session('admin_session_id');
 
-        $query = Student::with(['collegeData', 'courseData'])
+        $query = Student::with(['collegeData'])
             ->where('session', $activeSessionNo);
 
         if ($this->collegeId) {
@@ -32,21 +33,52 @@ class FeeStatusExport implements FromCollection, WithHeadings, ShouldAutoSize
         }
 
         if ($this->courseId) {
-            $query->where('technology', $this->courseId);
+            // $query->where('technology', $this->courseId);
+            $query->whereRaw(
+                "FIND_IN_SET(?, technology)",
+                [$this->courseId]
+            );
         }
 
-        return $query->get()->map(function ($student) {
+        if ($this->percent_range) {
+
+            $expr = '(COALESCE((reg_fees + paid_fees) / NULLIF(total_fees,0),0) * 100)';
+
+            switch ($this->percent_range) {
+
+                case 'upto50':
+                    $query->whereRaw("$expr <= 50");
+                    break;
+
+                case '50to80':
+                    $query->whereRaw("$expr > 50 AND $expr <= 80");
+                    break;
+
+                case '80to99':
+                    $query->whereRaw("$expr > 80 AND $expr < 100");
+                    break;
+
+                case '100':
+                    $query->whereRaw("$expr = 100");
+                    break;
+            }
+        }
+
+        return $query->orderBy('student_name', 'asc')->get()->map(function ($student) {
             $total = $student->total_fees ?? 0;
-            $paid  = $student->reg_fees ?? 0;
+            // $paid  = $student->reg_fees ?? 0;
+            $paid  = ($student->reg_fees ?? 0) + ($student->paid_fees ?? 0);
 
             $paidPercent = $total > 0 ? round(($paid / $total) * 100, 2) : 0;
 
             return [
-                'Student Name'   => $student->student_name,
+                'Student Name'   => ucwords($student->student_name),
+                'SNo'   => $student->sno,
                 'College'        => $student->collegeData->college_name ?? '',
-                'Technology'     => $student->courseData->course_name ?? '',
+                'Contact No'        => $student->contact ?? '',
+                'Technology'     => $student->course_name ?? '',
                 'Total Fees'     => $student->total_fees,
-                'Paid Fees'      => $student->reg_fees,
+                'Paid Fees'      => $paid,
                 'Pending Fees'   => $student->pending_fees,
                 'Paid %'         => $paidPercent,
                 'Status'         => $student->pending_fees == 0
@@ -60,7 +92,9 @@ class FeeStatusExport implements FromCollection, WithHeadings, ShouldAutoSize
     {
         return [
             'Student Name',
+            'SNo',
             'College',
+            'Contact No',
             'Technology',
             'Total Fees',
             'Paid Fees',

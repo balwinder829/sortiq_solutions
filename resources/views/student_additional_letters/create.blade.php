@@ -28,15 +28,33 @@
                 <label>Select Student</label>
                 <select name="student_id" id="student_select" class="form-control" required>
                     <option value="">Select Student</option>
+
                     @foreach($students as $student)
+
+                        @php
+                            $gender = strtolower($student->gender ?? '');
+                            $isMarried = $student->is_married ?? 0;
+
+                            if ($gender === 'female') {
+                                $relation = $isMarried ? 'W/O' : 'D/O';
+                            } else {
+                                $relation = 'S/O';
+                            }
+
+                            $collegeOrPlace = $student->collegeData->FullName ?? $student->place ?? 'N/A';
+                        @endphp
+
                         <option value="{{ $student->id }}"
                             data-name="{{ $student->student_name }}"
                             {{ old('student_id') == $student->id ? 'selected' : '' }}>
+
                             {{ $student->student_name }}
-                            {{ in_array(strtolower($student->gender), ['male','m']) ? 's/o' : 'd/o' }}
+                            {{ $relation }}
                             {{ $student->f_name ?: 'NA' }}
-                            from {{ $student->collegeData->FullName ?? 'N/A' }}
+                            from {{ $collegeOrPlace }}
+
                         </option>
+
                     @endforeach
                 </select>
             </div>
@@ -67,7 +85,7 @@
                     <option value="stipend" {{ old('internship_type') == 'stipend' ? 'selected' : '' }} >Stipend Internship Letter</option>
                     <option value="offer" {{ old('internship_type') == 'offer' ? 'selected' : '' }} >Offer Letter</option>
                     <option value="custom" {{ old('internship_type') == 'custom' ? 'selected' : '' }} >Custom Type Letter</option>
-                    <option value="noc" {{ old('internship_type') == 'noc' ? 'selected' : '' }} >NOC Letter</option>
+                    <option value="noc" {{ old('internship_type') == 'noc' ? 'selected' : '' }} >Non-Consent Letter</option>
                     <option value="mutual_consent" {{ old('internship_type') == 'mutual_consent' ? 'selected' : '' }} >Mutual Consent Letter</option>
                     <option value="training_consent" {{ old('internship_type') == 'training_consent' ? 'selected' : '' }} >Training Consent Letter</option>
                     <option value="placement" {{ old('internship_type') == 'placement' ? 'selected' : '' }} >Student Placement Letter</option>

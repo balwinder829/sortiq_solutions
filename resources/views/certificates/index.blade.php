@@ -30,7 +30,32 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
     background-color: yellow !important;
 }
 
+/* Amount slider base */
+#amountSlider {
+    height: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 10;
+}
+ 
 
+#amountSlider {
+    height: 6px;
+}
+
+#amountSlider .noUi-handle {
+    width: 14px;
+    height: 14px;
+    right: -7px;
+    top: -5px;
+    border-radius: 50%;
+}
+
+#amountSlider .noUi-handle::before,
+#amountSlider .noUi-handle::after {
+    display: none;
+}
  </style>
 <div class="container mt-4">
     {{-- UNIVERSAL POPUP CONTAINER --}}
@@ -54,7 +79,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 
 
     {{-- Search / Filter Form --}}
-<form method="GET" action="{{ route('certificates.index') }}" class="mb-4">
+<form method="GET"  id="filterForm" class="mb-4">
     <div class="row g-2">
         {{-- Student Name --}}
         <!-- <div class="col-md-2">
@@ -98,7 +123,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
  -->
         {{-- College --}}
         <div class="col-md-2">
-            <select name="college_name" class="form-control collegeName" id="txtcollege">
+            <select name="college_name" class="form-control collegeName filterchange" id="txtcollege">
                 <option value="">--College--</option>
                 @foreach($colleges as $college)
                     <option value="{{ $college->id }}"
@@ -117,7 +142,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 
         {{-- Status --}}
         <div class="col-md-2">
-            <select name="status" class="form-control statusData">
+            <select name="status" class="form-control statusData filterchange">
                 <option value="" {{ request('status') == '' ? 'selected' : '' }}>--Status--</option>
 
                 @foreach($student_status as $s)
@@ -132,7 +157,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 
         {{-- Technology / Course --}}
         <div class="col-md-2">
-            <select name="technology" class="form-control technology" id="txttechnology">
+            <select name="technology" class="form-control technology filterchange" id="txttechnology">
                 <option value="">--Technology--</option>
                 @foreach($courses as $course)
                     <option value="{{ $course->id }}"
@@ -145,7 +170,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 
         {{-- Part-Time Offer --}}
         <div class="col-md-2">
-            <select name="part_time_offer" class="form-control">
+            <select name="part_time_offer" class="form-control filterchange">
                 <option value="">--Part-Time Offer--</option>
                 <option value="1" {{ request('part_time_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('part_time_offer') === '0' ? 'selected' : '' }}>No</option>
@@ -154,7 +179,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 
         {{-- Placement Offer --}}
         <div class="col-md-2">
-            <select name="placement_offer" class="form-control">
+            <select name="placement_offer" class="form-control filterchange">
                 <option value="">--Placement Offer--</option>
                 <option value="1" {{ request('placement_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('placement_offer') === '0' ? 'selected' : '' }}>No</option>
@@ -163,10 +188,28 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 
         {{-- PG Offer --}}
         <div class="col-md-2">
-            <select name="pg_offer" class="form-control">
+            <select name="pg_offer" class="form-control filterchange">
                 <option value="">--PG Offer--</option>
                 <option value="1" {{ request('pg_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('pg_offer') === '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+
+         {{-- Is Intern --}}
+        <div class="col-md-2 col-12">
+            <select name="is_intern" class="form-control filterchange">
+                <option value="">--Is Intern--</option>
+                <option value="1" {{ request('is_intern') === '1' ? 'selected' : '' }}>Yes</option>
+                <option value="0" {{ request('is_intern') === '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+
+         {{-- Study Mode --}}
+        <div class="col-md-2 col-12">
+            <select name="is_online" class="form-control filterchange">
+                <option value="">--Study Mode--</option>
+                <option value="0" {{ request('is_online') === '0' ? 'selected' : '' }}>Offline</option>
+                <option value="1" {{ request('is_online') === '1' ? 'selected' : '' }}>Online</option>
             </select>
         </div>
 
@@ -184,7 +227,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
         </div> -->
 
          <div class="col-md-2 col-6">
-            <select name="fee_filter" class="form-control">
+            <select name="fee_filter" class="form-control filterchange">
                 <option value="">-- Fee Related Filter --</option>
 
                 {{-- Fee Status --}}
@@ -222,7 +265,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
         </div>
 
          <div class="col-md-2 col-12">
-            <select name="gender" class="form-control">
+            <select name="gender" class="form-control filterchange">
                 <option value="">--Gender--</option>
 
                 <option value="male"
@@ -255,8 +298,8 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 
 <!-- <div class="row mt-2"> -->
       {{-- Amount Range Slider --}}
-<div class="col-md-4 col-12 mx-4 mt-4">
-    <!-- <label class="form-label fw-bold">Amount Range</label> -->
+<!-- <div class="col-md-4 col-12 mx-4 mt-4">
+    
 
     <div id="amountSlider"></div>
 
@@ -268,17 +311,50 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
     {{-- Hidden inputs for GET --}}
     <input type="hidden" name="amount_min" id="amountMin" value="{{ request('amount_min', 0) }}">
     <input type="hidden" name="amount_max" id="amountMax" value="{{ request('amount_max', 200000) }}">
-</div>
+</div> -->
 <!-- </div> -->
 
+{{-- Amount Range Slider --}}
+<div class="row mt-2">
+<div class="col-md-4 col-12">
+    <label class="form-label fw-bold">Amount Range</label>
 
-        {{-- Buttons --}}
-        <div class="col-md-1 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary">Search</button>
+    <div id="amountSlider" class="mb-2"></div>
+
+    <div class="d-flex gap-2 align-items-center">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">Min</span>
+            <input type="text"
+                   name="amount_min"
+                   id="amountMin"
+                   class="form-control text-end filterchange"
+                   value="{{ request('amount_min', 0) }}">
         </div>
+
+        <span class="fw-bold">–</span>
+
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">Max</span>
+            <input type="text"
+                   name="amount_max"
+                   id="amountMax"
+                   class="form-control text-end filterchange"
+                   value="{{ request('amount_max', 200000) }}">
+        </div>
+    </div>
+</div>
+
+ {{-- Buttons --}}
+        <!-- <div class="col-md-1 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div> -->
        <div class="col-md-1 d-flex align-items-end">
             <a href="{{ route('certificates.index') }}" class="btn btn-secondary">Reset</a>
         </div>
+</div>
+
+
+       
     </div>
 </form>
 
@@ -312,9 +388,9 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
                 <th class="text-center">Email</th>
                 <th class="text-center">Status</th>
                 <th class="text-center">Technology</th>
-                <th class="text-center">Total Fees</th>
-                <th class="text-center">Reg Fees</th>
-                <th class="text-center">Pending Fees</th>
+                <th class="text-center">Total Fees(Rs.)</th>
+                <th class="text-center">Reg Fees(Rs.)</th>
+                <th class="text-center">Pending Fees(Rs.)</th>
                 
                 <th class="text-center" width="100px">Registered Date</th>
                 <th class="text-center">Duration</th>
@@ -323,6 +399,8 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
                  <th class="text-center">Part-Time Job Offer</th>
                 <th class="text-center">Placement Offer</th>
                 <th class="text-center">PG Offer</th>
+                 <th class="text-center">Is Intern</th>
+                <th class="text-center">Study Mode</th>
                 <th class="text-center">Email Count</th>
                 <th class="text-center">Receipt Count</th>
                 <th width="100px" class="text-center">Action</th>
@@ -367,7 +445,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
                 <td><span class="badge bg-{{ $student->status == 'Active' ? 'success' : 'danger' }}">{{ $student->status }}</span></td>
-                <td>{{ $student->courseData->course_name ?? '-' }}</td>
+                <td>{{ $student->course_name ?? '-' }}</td>
                 <td>{{ $student->total_fees }}</td>
                 <td>{{ $student->reg_fees }}</td>
                 <td class="{{ $student->pending_fees > 0 ? 'text-danger fw-bold' : '' }}">{{ $student->pending_fees }}</td>
@@ -395,6 +473,17 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
                         {{ $student->pg_offer ? 'Yes' : 'No' }}
                     </span>
                 </td>
+                <td class="text-center">
+                    <span class="badge bg-{{ $student->is_intern ? 'success' : 'secondary' }}">
+                        {{ $student->is_intern ? 'Yes' : 'No' }}
+                    </span>
+                </td>
+
+                 <td class="text-center">
+                    <span class="badge bg-{{ $student->is_online ? 'success' : 'secondary' }}">
+                        {{ $student->is_online ? 'Online' : 'Offline' }}
+                    </span>
+                </td>
                 <td>{{ $student->email_count_certificate ?? 0 }}</td>
                  <td>{{ $student->count_receipt_download ?? 0 }}</td>
                 <td class="text-center">
@@ -402,7 +491,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
                         {{-- Issue --}}
                        <!--  <form action="{{ route('students.issueCertificate', $student->id) }}" method="POST" style="display:inline-block;">
                             @csrf
-                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" onclick="return confirm('Send certificate to {{ $student->email_id }}?')">
+                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" data-swal-confirm="Send certificate to {{ $student->email_id }}?">
                                 <i class="fa-solid fa-file-lines"></i>
                             </button>
                         </form> -->
@@ -452,7 +541,143 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
-<script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const slider = document.getElementById('amountSlider');
+    const feeFilter = document.querySelector('select[name="fee_filter"]');
+
+    const minInput = document.getElementById('amountMin');
+    const maxInput = document.getElementById('amountMax');
+
+    const MIN = 0;
+    const MAX = 200000;
+
+    const startMin = Number(minInput.value || MIN);
+    const startMax = Number(maxInput.value || MAX);
+
+    /* ----------------------------
+       CREATE SLIDER (NO SNAP)
+    -----------------------------*/
+    noUiSlider.create(slider, {
+        start: [startMin, startMax],
+        connect: true,
+        step: 1,
+        behaviour: 'tap',
+        range: {
+            min: MIN,
+            max: MAX
+        },
+        format: {
+            to: v => Math.round(v),
+            from: v => Number(v)
+        }
+    });
+
+    /* ----------------------------
+       SLIDER → INPUT SYNC
+    -----------------------------*/
+    slider.noUiSlider.on('update', function (values) {
+        minInput.value = values[0];
+        maxInput.value = values[1];
+    });
+
+    /* ----------------------------
+       INPUT SANITIZER
+    -----------------------------*/
+    function sanitize(value) {
+        value = parseInt(String(value).replace(/\D/g, ''), 10);
+        if (isNaN(value)) value = MIN;
+        return Math.min(Math.max(value, MIN), MAX);
+    }
+
+    /* ----------------------------
+       INPUT → SLIDER SYNC
+    -----------------------------*/
+    function syncInputsToSlider() {
+        let min = sanitize(minInput.value);
+        let max = sanitize(maxInput.value);
+
+        if (min > max) min = max;
+
+        minInput.value = min;
+        maxInput.value = max;
+
+        slider.noUiSlider.set([min, max]);
+    }
+
+    /* ----------------------------
+       INPUT EVENTS
+    -----------------------------*/
+    [minInput, maxInput].forEach(input => {
+
+        // allow only digits while typing
+        input.addEventListener('input', () => {
+            input.value = input.value.replace(/\D/g, '');
+        });
+
+        // ENTER → update slider
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                syncInputsToSlider();
+            }
+        });
+
+        // blur → update slider
+        input.addEventListener('blur', syncInputsToSlider);
+    });
+
+    /* ----------------------------
+       ENABLE SLIDER ONLY FOR
+       SPECIFIC FEE FILTERS
+    -----------------------------*/
+    const amountEnabledFilters = [
+        'pending_high',
+        'pending_low',
+        'fees_high',
+        'fees_low'
+    ];
+    
+    function toggleSlider() {
+    const value = feeFilter.value;
+    const enabled = amountEnabledFilters.includes(value);
+
+    if (enabled) {
+        // enable slider
+        slider.noUiSlider.enable();
+        slider.style.opacity = 1;
+        slider.style.pointerEvents = 'auto';
+
+        // enable inputs
+        minInput.disabled = false;
+        maxInput.disabled = false;
+    } else {
+        // disable slider
+        slider.noUiSlider.disable();
+        slider.style.opacity = 0.4;
+        slider.style.pointerEvents = 'none';
+
+        // disable inputs
+        minInput.disabled = true;
+        maxInput.disabled = true;
+
+        // reset values
+        slider.noUiSlider.set([MIN, MAX]);
+        minInput.value = MIN;
+        maxInput.value = MAX;
+    }
+}
+
+     
+
+    feeFilter.addEventListener('change', toggleSlider);
+    toggleSlider(); // run on page load
+
+});
+</script>
+<!-- <script>
 document.addEventListener('DOMContentLoaded', function () {
 
     const slider = document.getElementById('amountSlider');
@@ -509,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function () {
     feeFilter.addEventListener('change', toggleSlider);
     toggleSlider(); // run on page load
 });
-</script>
+</script> -->
 
 
 <script>
@@ -659,34 +884,80 @@ $(document).ready(function () {
     $('#downloadissueSelected').click(function () {
         var ids = getSelectedIds();
 
-        if (ids.length === 0) {
-            alert('Select at least one student');
-            return;
-        }
+        // if (ids.length === 0) {
+        //     alert('Select at least one student');
+        //     return;
+        // }
 
-        if (!confirm('Download confirm letter(s) for selected student(s)?')) {
-            return;
-        }
-
+        // if (!confirm('Download confirm letter(s) for selected student(s)?')) {
+        //     return;
+        // }
+        pageBulkConfirm(ids, 'Download confirm letter(s) for selected student(s)?', function () {
         // Put JSON string of IDs into hidden input and submit form
-        $('#bulkDownloadIds').val(JSON.stringify(ids));
-        $('#bulkDownloadForm').submit();
+            $('#bulkDownloadIds').val(JSON.stringify(ids));
+            $('#bulkDownloadForm').submit();
+        });
     });
 
      $('#deleteSelected').click(function() {
             var ids = getSelectedIds();
 
-            if(ids.length === 0) {
-                alert('Select at least one student');
-                return;
-            }
-
-            if(confirm('Delete selected students?')) {
+            // if(ids.length === 0) {
+            //     alert('Select at least one student');
+            //     return;
+            // }
+             pageBulkConfirm(ids, 'Delete selected students?', function () {
+            // if(confirm('Delete selected students?')) {
                 // $('#deleteIds').val(ids);
                 $('#deleteIds').val(JSON.stringify(ids));
                 $('#bulkDeleteForm').submit();
-            }
+            });
         });
+
+});
+
+// ===============================
+// BULK CONFIRM HELPER (PAGE ONLY)
+// ===============================
+function pageBulkConfirm(ids, message, onConfirm, emptyText = 'Select at least one student') {
+
+    if (!ids || ids.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            text: emptyText
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: message,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes'
+    }).then((result) => {
+        if (result.isConfirmed && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
+}
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
 
 });
 </script>

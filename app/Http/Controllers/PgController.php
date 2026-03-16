@@ -90,12 +90,32 @@ class PgController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'pg_type' => 'required|in:boys,girls,both',
-             'contact' => 'required|digits:10',
+             // 'contact' => 'required|digits:10',
             'food_type' => 'required|in:food,without_food',
             'status' => 'required|in:active,inactive',
+            // 'contact' => ['required','regex:/^\d{10}(,\d{10})*$/'],
+            'contact' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+
+            // 'email' => [
+            //     'nullable',
+            //     'regex:/^[^,\s]+@[^,\s]+\.[^,\s]+(,[^,\s]+@[^,\s]+\.[^,\s]+)*$/'
+            // ],
+
+        ],[
+            'contact.regex' => 'Each phone number must be exactly 10 digits and comma separated.',
         ]);
 
-        Pg::create($request->all());
+         $data = $request->all();
+        $data['contact'] = !empty($data['contact'])
+        ? trim(preg_replace('/,+/', ',', preg_replace('/[\|\-_;\s]+/', ',', $data['contact'])),',')
+        : null;
+
+        $data['email'] = !empty($data['email'])
+        ? trim(preg_replace('/,+/', ',', preg_replace('/[\|\-_;\s]+/', ',', $data['email'])),',')
+        : null;
+
+        Pg::create($data);
+        // Pg::create($request->all());
 
         return redirect()->route('pgs.index')
             ->with('success', 'PG added successfully');
@@ -121,12 +141,26 @@ class PgController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'pg_type' => 'required|in:boys,girls,both',
-             'contact' => 'required|digits:10',
+             // 'contact' => 'required|digits:10',
+            // 'contact' => ['required','regex:/^\d{10}(,\d{10})*$/'],
+            'contact' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
             'food_type' => 'required|in:food,without_food',
             'status' => 'required|in:active,inactive',
+        ],[
+            'contact.regex' => 'Each phone number must be exactly 10 digits and comma separated.',
         ]);
 
-        $pg->update($request->all());
+        $data = $request->all();
+
+        $data['contact'] = !empty($data['contact'])
+        ? trim(preg_replace('/,+/', ',', preg_replace('/[\|\-_;\s]+/', ',', $data['contact'])),',')
+        : null;
+
+        $data['email'] = !empty($data['email'])
+        ? trim(preg_replace('/,+/', ',', preg_replace('/[\|\-_;\s]+/', ',', $data['email'])),',')
+        : null;
+
+        $pg->update($data);
 
         return redirect()->route('pgs.index')
             ->with('success', 'PG updated successfully');

@@ -35,8 +35,15 @@
 	</div>
 
 	@php
-    	$title = strtolower($student->gender ?? '') === 'female' ? 'Miss' : 'Mr';
-    	$relation = strtolower($student->gender ?? '') === 'female' ? 'D/O' : 'S/O';
+    	$gender = strtolower($student->gender ?? '');
+
+		$title = ($gender === 'female')
+		            ? ($student->is_married ? 'Mrs' : 'Miss')
+		            : 'Mr';
+
+		$relation = ($gender === 'female')
+		                ? ($student->is_married ? 'W/O' : 'D/O')
+		                : 'S/O';
     	use Carbon\Carbon;
 
 	    // Safe session values
@@ -53,7 +60,7 @@
 
 		// Safe duration
 		$durationName = optional($student->durationData)->name ?? '';
-		$courseName = optional($student->courseData)->course_name ?? '';
+		$courseName = $student->course_name ?? '';
 		$sessionName = optional($student->sessionData)->session_display_name ?? ''; 
 	@endphp
 	<div class="certi-body" style=" background:url('{{ public_path('images/certificates_images/bg-shape.jpg') }}')  no-repeat center; background-size:860px; padding-top: 60px;">
@@ -80,7 +87,7 @@
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
-						This is to certify that <strong>Mr./Ms</strong> <strong>{{ ucwords($student->student_name) }}</strong> From <strong>{{ $collegename }}</strong>
+						This is to certify that <strong>{{ $title }}</strong> <strong>{{ ucwords($student->student_name) }}</strong> From <strong>{{ $collegename }}</strong>
 						Who has undertaken an internship program of <strong>{{ $courseName }}</strong> under technical department from <strong>{{ $sessionStart }}</strong>
 						to <strong>{{ $sessionEnd }}</strong> in <strong>{{ ucwords($sessionName) }}</strong> from the company <strong>"Sortiq Solutions Pvt. Ltd."</strong>
 					

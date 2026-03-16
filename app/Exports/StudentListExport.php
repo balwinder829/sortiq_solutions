@@ -60,9 +60,18 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
-
+            if ($request->filled('is_intern')) {
+                $query->where('is_intern', $request->is_intern);
+            }
+            if ($request->filled('is_online')) {
+                $query->where('is_online', $request->is_online);
+            }
             if ($request->filled('technology')) {
-                $query->where('technology', $request->technology);
+                // $query->where('technology', $request->technology);
+                $query->whereRaw(
+                    "FIND_IN_SET(?, technology)",
+                    [$request->technology]
+                );
             }
 
             if ($request->filled('start_date')) {
@@ -89,6 +98,14 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                 $query->where('pg_offer', $request->pg_offer);
             }
 
+            if ($request->filled('is_intern')) {
+                $query->where('is_intern', $request->is_intern);
+            }
+
+            if ($request->filled('is_online')) {
+                $query->where('is_online', $request->is_online);
+            }
+
             if ($request->filled('fee_filter')) {
                 switch ($request->fee_filter) {
 
@@ -101,13 +118,13 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                         break;
 
                     case 'pending_high':
-                        $query->where('pending_fees', '>', 0)
-                              ->orderBy('pending_fees', 'desc');
+                        // $query->where('pending_fees', '>', 0)
+                              $query->orderBy('pending_fees', 'desc');
                         break;
 
                     case 'pending_low':
-                        $query->where('pending_fees', '>', 0)
-                              ->orderBy('pending_fees', 'asc');
+                        // $query->where('pending_fees', '>', 0)
+                              $query->orderBy('pending_fees', 'asc');
                         break;
 
                     case 'fees_high':
@@ -117,6 +134,33 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                     case 'fees_low':
                         $query->orderBy('total_fees', 'asc');
                         break;
+                }
+            }
+
+             if (
+                $request->filled('fee_filter') &&
+                in_array($request->fee_filter, [
+                    'pending_high',
+                    'pending_low',
+                    'fees_high',
+                    'fees_low'
+                ])
+            ) {
+
+                $minAmount = $request->amount_min;
+                $maxAmount = $request->amount_max;
+                // dd($request->amount_min, $request->amount_max,$request->fee_filter);
+                // Decide column
+                $amountColumn = in_array($request->fee_filter, ['pending_high', 'pending_low'])
+                    ? 'pending_fees'
+                    : 'total_fees';
+
+                if ($minAmount !== null && $minAmount !== '') {
+                    $query->where($amountColumn, '>=', $minAmount);
+                }
+
+                if ($maxAmount !== null && $maxAmount !== '') {
+                    $query->where($amountColumn, '<=', $maxAmount);
                 }
             }
 
@@ -136,7 +180,6 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             ->with([
                 'sessionData',
                 'collegeData',
-                'courseData',
                 'batchData',
                 'durationData',
             ])
@@ -155,7 +198,6 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
         //     ->with([
         //         'sessionData',
         //         'collegeData',
-        //         'courseData',
         //         'batchData',
         //         'durationData',
         //     ])
@@ -169,7 +211,7 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
         return [
             'S.No',
             'Student Name',
-            'Father Name',
+            'Father/Husband Name',
             'Contact',
             'Email',
             'Gender',
@@ -188,6 +230,8 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             'Placement Offer',
             'Part Time Job Offer',
             'PG Offer',
+            'Study Mode',
+            'Is Intern',
             // 'Pending Fees',
         ];
     }
@@ -203,7 +247,7 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             $student->gender,
             $student->sessionData->session_name ?? '-',
             $student->collegeData->college_display_name ?? '-',
-            $student->courseData->course_name ?? '-',
+            $student->course_name ?? '-',
             $student->status,
             $student->total_fees,
             $student->pending_fees,
@@ -228,6 +272,8 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             $student->placement_offer ? 'Yes' : 'No',
             $student->part_time_offer ? 'Yes' : 'No',
             $student->pg_offer ? 'Yes' : 'No',
+            $student->is_online ? 'Online' : 'Offline',
+            $student->is_intern ? 'Yes' : 'No',
         ];
     }
 

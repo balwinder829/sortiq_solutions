@@ -37,7 +37,7 @@
                 <select name="session_id" class="form-control">
                     <option value="">-- Select Session --</option>
                     @foreach ($sessions as $session)
-                        <option value="{{ $session->id }}">
+                        <option value="{{ $session->id }}"             {{ old('session_id', $sessions->first()->id ?? null) == $session->id ? 'selected' : '' }}>
                             {{ ucwords($session->display_name) }}
                         </option>
                     @endforeach

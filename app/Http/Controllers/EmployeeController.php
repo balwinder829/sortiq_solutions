@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Employee;
 use App\Models\Role;
+use App\Http\DataTables\DataTablesServerSide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Mail;
@@ -24,7 +25,7 @@ class EmployeeController extends Controller
     protected array $permissionMap = [
         'index'        => 'view',
         'show'         => 'view',
-         
+        'data'         => 'view',
 
         'create'       => 'create',
         'store'        => 'create',
@@ -53,16 +54,79 @@ class EmployeeController extends Controller
             )->only($method);
         }
     }
+    // public function index()
+    // {
+    //     $employees = Employee::with('user')->get();
+    //     return view('employees.index', compact('employees'));
+    // }
+
     public function index()
     {
-        $employees = Employee::with('user')->get();
-        return view('employees.index', compact('employees'));
+        return view('employees.index');
+    }
+
+    public function data(Request $request)
+    {
+        $query = Employee::with('user')
+            // ->leftJoin('users', 'employees.user_id', '=', 'users.id')
+        ->orderBy('id', 'desc') // 🔥 Latest first
+            ->select('employees.*');
+
+        return DataTablesServerSide::response($request, $query, [
+            'orderable'  => ['emp_code', 'emp_name', 'position', 'joining_date', 'username', 'status'],
+            'searchable' => function ($q, $search) {
+                $q->where(function ($q2) use ($search) {
+                    $q2->orWhere('employees.emp_code', 'like', '%' . $search . '%')
+                        ->orWhere('employees.emp_name', 'like', '%' . $search . '%')
+                        ->orWhere('employees.position', 'like', '%' . $search . '%')
+                        ->orWhere('employees.username', 'like', '%' . $search . '%');
+                });
+            },
+        ], function ($emp, $index, $start) {
+            $status = $emp->status === 'active'
+                ? '<span class="badge bg-success">Active</span>'
+                : ($emp->status === 'inactive'
+                    ? '<span class="badge bg-warning text-dark">Inactive</span>'
+                    : ($emp->status === 'resigned'
+                        ? '<span class="badge bg-warning text-dark">Resigned</span>'
+                        : '<span class="badge bg-danger">Terminated</span>'));
+            $actions = '<a href="' . route('employees.idcard', $emp) . '" class="btn btn-sm" title="Download ID Card"><i class="fas fa-id-card"></i></a> ';
+            $actions .= '<form method="POST" action="' . route('employees.idcard.email', $emp) . '" style="display:inline;">' . csrf_field() . '<button class="btn btn-sm" title="Email ID Card"><i class="fas fa-envelope"></i></button></form> ';
+            $actions .= '<a href="' . route('salary-structure.create', $emp->id) . '" class="btn btn-sm" title="Update Salary Amount"><i class="fas fa-money-bill-wave"></i></a> ';
+            $actions .= '<a href="' . route('employees.edit', $emp) . '" class="btn btn-sm" title="Edit Employee"><i class="fas fa-edit"></i></a> ';
+            $actions .= '<form action="' . route('employees.destroy', $emp) . '" method="POST" style="display:inline;">' . csrf_field() . method_field('DELETE') . '<button type="submit" class="btn btn-sm" title="Delete Employee" data-swal-confirm="Delete employee?"><i class="fas fa-trash"></i></button></form>';
+            return [
+                e($emp->emp_code),
+                e($emp->emp_name),
+                e($emp->position),
+                \Carbon\Carbon::parse($emp->joining_date)->format('d M Y'),
+                e($emp->username),
+                $status,
+                $actions,
+            ];
+        });
     }
 
     public function create()
     {   
-        $roles = Role::whereNotIn('name', ['Admin', 'Trainer'])->get();
-        return view('employees.create', compact('roles'));
+        // $roles = Role::whereNotIn('name', ['Admin', 'Trainer'])->get();
+        $roles = Role::whereIn('name', ['Hr', 'Employee','Manager'])->orderby('name','desc')->get();
+         // Get last employee
+        $lastEmployee = Employee::orderBy('id', 'desc')->first();
+
+        if ($lastEmployee && $lastEmployee->emp_code) {
+            // Extract number from SS-001
+            $number = (int) str_replace('SS-', '', $lastEmployee->emp_code);
+            $newNumber = $number + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        // Format with leading zeros
+        // $newEmpCode = 'SS-' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        $newEmpCode = 'SS-' . $newNumber; 
+
+        return view('employees.create', compact('roles','newEmpCode'));
         
     }
 
@@ -83,12 +147,16 @@ class EmployeeController extends Controller
         'emp_name'      => 'required|string|max:100',
         'position'      => 'required|string|max:100',
         'employment_type' => 'required',
+        'work_mode' => 'required',
+        'employment_mode' => 'required',
+        'job_type' => 'required',
+        'working_hours_per_day' => 'required_if:job_type,part_time|nullable|numeric|min:1|max:24',
         'joining_date'  => 'required|date',
         'role'          => 'required|exists:roles,id',
 
-        'username'      => 'required|string|max:30|unique:users',
-        'email'         => 'required|email|unique:users',
-        'phone'         => 'required|unique:users',
+        'username'      => 'required|string|max:30|unique:employees',
+        'email'         => 'required|email|unique:employees',
+        'phone'         => 'required|unique:employees',
         'password'      => 'required|min:6',
 
         'dob'           => 'nullable|date|before:today',
@@ -113,36 +181,33 @@ class EmployeeController extends Controller
     }
 
     DB::transaction(function () use ($data, $photoName) {
+          // Lock table rows
+       $lastEmployee = Employee::orderBy('id', 'desc')->lockForUpdate()->first();
 
-        $user = User::create([
-            'name'     => $data['emp_name'],
+        if ($lastEmployee && $lastEmployee->emp_code) {
+            $number = (int) str_replace('SS-', '', $lastEmployee->emp_code);
+            $newNumber = $number + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        $newEmpCode = 'SS-' . $newNumber; // ✅ No padding
+
+        Employee::create([
+            'user_id'      =>null,
+            'emp_code'     => $newEmpCode,
+            'emp_name'     => $data['emp_name'],
             'username' => strtolower(trim($data['username'])),
             'email'    => $data['email'],
             'phone'    => $data['phone'],
             'password' => trim($data['password']),
             'role'     => $data['role'],
-            'status'   => 'active',
-        ]);
-
-
-        // ✅ SPATIE ROLE SYNC (ONLY ADMIN & MANAGER)
-        if (in_array($data['role'], [1, 4])) {
-            $roleName = SpatieRole::where('id', $data['role'])->value('name');
-
-            if ($roleName) {
-                $user->syncRoles([$roleName]); // replaces any old role
-            }
-        } else {
-            // ensure no spatie roles for fixed roles
-            $user->syncRoles([]);
-        }
-
-        Employee::create([
-            'user_id'      => $user->id,
-            'emp_code'     => $data['emp_code'],
-            'emp_name'     => $data['emp_name'],
             'position'     => $data['position'],
             'employment_type'     => $data['employment_type'],
+            'employment_mode'     => $data['employment_mode'],
+            'work_mode'     => $data['work_mode'],
+            'job_type'     => $data['job_type'],
+            'working_hours_per_day'     => $data['working_hours_per_day'],
             'joining_date' => $data['joining_date'],
             'dob'          => $data['dob'] ?? null,
             'blood_group'  => $data['blood_group'] ?? null,
@@ -162,7 +227,8 @@ class EmployeeController extends Controller
      
     public function edit(Employee $employee)
     {   
-        $roles = Role::whereNotIn('name', ['Admin', 'Trainer'])->get();
+        // $roles = Role::whereNotIn('name', ['Admin', 'Trainer'])->get();
+         $roles = Role::whereIn('name', ['Hr', 'Employee','Manager'])->orderby('name','desc')->get();
         return view('employees.edit', compact('employee' ,'roles'));
     }
 
@@ -175,10 +241,10 @@ class EmployeeController extends Controller
     ]);
 
     if ($request->filled('password')) {
-    $request->merge([
-        'password' => $request->password
-    ]);
-}
+        $request->merge([
+            'password' => $request->password
+        ]);
+    }
 
     $data = $request->validate([
         // Employee fields
@@ -186,13 +252,17 @@ class EmployeeController extends Controller
         'position'     => 'required|string|max:100',
         'probation_period' => 'required',
         'employment_type' => 'required',
+        'employment_mode' => 'required',
         'joining_date' => 'required|date',
         'status'       => 'required|in:active,inactive,terminated',
+        'work_mode' => 'required',
+        'job_type' => 'required',
+        'working_hours_per_day' => 'required_if:job_type,part_time|nullable|numeric|min:1|max:24',
 
         // User fields
-        'username' => 'required|string|max:20|regex:/^[a-zA-Z0-9._-]+$/|unique:users,username,' . $employee->user_id,
-        'email'    => 'required|email|unique:users,email,' . $employee->user_id,
-        'phone'    => 'required|digits:10|unique:users,phone,' . $employee->user_id,
+        'username' => 'required|string|max:20|regex:/^[a-zA-Z0-9._-]+$/|unique:employees,username,' . $employee->id,
+        'email'    => 'required|email|unique:employees,email,' . $employee->id,
+        'phone'    => 'required|digits:10|unique:employees,phone,' . $employee->id,
         'role'     => 'required|exists:roles,id',
 
         'dob'          => 'nullable|date|before:today',
@@ -205,10 +275,10 @@ class EmployeeController extends Controller
 
 
     // 🔐 Prevent admin / trainer role assignment
-    $role = \App\Models\Role::findOrFail($data['role']);
-    if (in_array(strtolower($role->name), ['admin', 'trainer'])) {
-        abort(403, 'This role cannot be assigned.');
-    }
+    // $role = \App\Models\Role::findOrFail($data['role']);
+    // if (in_array(strtolower($role->name), ['admin', 'trainer'])) {
+    //     abort(403, 'This role cannot be assigned.');
+    // }
 
     // 🔄 Map employee status → user status
     $userStatus = $data['status'] === 'active' ? 'active' : 'inactive';
@@ -238,10 +308,19 @@ class EmployeeController extends Controller
             'emp_name'     => $data['emp_name'],
             'position'     => $data['position'],
             'employment_type'     => $data['employment_type'],
+            'employment_mode'     => $data['employment_mode'],
+            'work_mode'     => $data['work_mode'],
+            'job_type'     => $data['job_type'],
+            'working_hours_per_day'     => $data['working_hours_per_day'],
+             'username' => strtolower(trim($data['username'])),
+            'email'    => $data['email'],
+            'phone'    => $data['phone'],
+            'password' => trim($data['password']),
+            'role'     => $data['role'],
             'alternative_phone'     => $data['alternative_phone'],
             'probation_period'     => $data['probation_period'],
             'joining_date' => $data['joining_date'],
-            'status'       => $data['status'],
+            'status'       => $userStatus,
             'dob'          => $data['dob'],
             'blood_group'  => $data['blood_group'],
             'address'      => $data['address'],
@@ -249,39 +328,39 @@ class EmployeeController extends Controller
         ];
 
         if ($request->filled('password')) {
-            $empData['emp_pswd'] = $request->password;
+            $empData['emp_pswd'] = $empData['password'] = $request->password;
         }
 
         $employee->update($empData);
 
         // UPDATE User table
-        $userData = [
-            'username' => $data['username'],
-            'email'    => $data['email'],
-            'phone'    => $data['phone'],
-            'role'     => $data['role'],
-            'status'   => $userStatus,
-        ];
+        // $userData = [
+        //     'username' => $data['username'],
+        //     'email'    => $data['email'],
+        //     'phone'    => $data['phone'],
+        //     'role'     => $data['role'],
+        //     'status'   => $userStatus,
+        // ];
 
-        if ($request->filled('password')) {
-            $userData['password'] = $request->password;
-        }
+        // if ($request->filled('password')) {
+        //     $userData['password'] = $request->password;
+        // }
 
-        $employee->user->update($userData);
+        // $employee->user->update($userData);
 
          // 🔁 SPATIE ROLE SYNC (ONLY ADMIN & MANAGER)
-        if (in_array($data['role'], [1, 4])) {
+        // if (in_array($data['role'], [1, 4])) {
 
-            $roleName = SpatieRole::where('id', $data['role'])->value('name');
+        //     $roleName = SpatieRole::where('id', $data['role'])->value('name');
 
-            if ($roleName) {
-                $employee->user->syncRoles([$roleName]);
-            }
+        //     if ($roleName) {
+        //         $employee->user->syncRoles([$roleName]);
+        //     }
 
-        } else {
-            // Remove spatie roles for fixed-role users
-            $employee->user->syncRoles([]);
-        }
+        // } else {
+        //     // Remove spatie roles for fixed-role users
+        //     $employee->user->syncRoles([]);
+        // }
 
 
     });
@@ -363,7 +442,7 @@ class EmployeeController extends Controller
     public function destroy(Employee $employee)
     {
         $employee->update(['status' => 'terminated']);
-        $employee->user->update(['status' => 'inactive']);
+        // $employee->user->update(['status' => 'inactive']);
 
         $employee->delete(); // soft delete
 
@@ -439,7 +518,7 @@ class EmployeeController extends Controller
         $pdf = $this->generateIdCard($employee);
 
         Mail::send([], [], function ($message) use ($employee, $pdf) {
-            $message->to($employee->user->email)
+            $message->to($employee->email)
                 ->subject('Employee ID Card')
                 ->attachData($pdf, 'ID_CARD_'.$employee->emp_code.'.pdf');
         });

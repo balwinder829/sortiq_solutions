@@ -9,6 +9,7 @@ use App\Models\College;
 use App\Models\Registration;
 use App\Models\EnquiryFollowup;
 use App\Models\EnquiryActivity;
+use App\Models\SalesStaff;
 use Illuminate\Http\Request;
 use Auth;
 use Maatwebsite\Excel\Facades\Excel;
@@ -166,14 +167,14 @@ public function __construct()
     // LIST WITH FILTER (ADMIN INDEX)
 public function index(Request $request)
 {
-    $query = Enquiry::query();
+    $query = Enquiry::enquiries();
 
     // =========================
     // ROLE BASED ACCESS
     // =========================
-    if (!auth()->user()->isAdmin()) {
-        $query->where('assigned_to', auth()->id());
-    }
+    // if (!auth()->user()->isAdmin()) {
+    //     $query->where('assigned_to', auth()->id());
+    // }
 
     // ADMIN: Filter by salesperson
     if (auth()->user()->isAdmin() && $request->filled('salesperson_id')) {
@@ -194,6 +195,20 @@ public function index(Request $request)
 
     if ($request->filled('semester')) {
         $query->where('semester', $request->semester);
+    }
+
+    if ($request->filled('assigned_status')) {
+
+        if ($request->assigned_status === 'assigned') {
+            $query->whereNotNull('assigned_to');
+        }
+
+        if ($request->assigned_status === 'unassigned') {
+            $query->where(function($q) {
+                $q->whereNull('assigned_to')
+                  ->orWhere('assigned_to', '');
+            });
+        }
     }
 
 
@@ -301,17 +316,36 @@ public function index(Request $request)
     }
 
     // =========================
+// COUNTS (BASED ON FILTERS)
+// =========================
+
+    $totalLeads = (clone $query)->count();
+
+    $assignedLeads = (clone $query)
+                    ->whereNotNull('assigned_to')
+                    ->count();
+
+    $unassignedLeads = (clone $query)
+                    ->where(function($q){
+                        $q->whereNull('assigned_to')
+                          ->orWhere('assigned_to','');
+                    })
+                    ->count();
+    // =========================
     // DATA
     // =========================
     $enquiries = $query->paginate(20)->appends($request->all());
 
-    $sales    = User::where('role', 3)->get();
+    $sales    = SalesStaff::where('status', 'active')->get();
     $colleges = College::orderBy('college_name')->get();
 
     return view('enquiries.index', compact(
         'enquiries',
         'sales',
-        'colleges'
+        'colleges',
+        'totalLeads',
+        'assignedLeads',
+        'unassignedLeads'
     ));
 }
 
@@ -360,7 +394,7 @@ public function index(Request $request)
     {
         $enquiry = Enquiry::findOrFail($id);
         $colleges = College::all();
-         $sales = User::where('role', 3)->get();
+         $sales = SalesStaff::where('status', 'active')->get();
 
         return view('enquiries.edit', compact('enquiry', 'colleges','sales'));
     }
@@ -374,11 +408,12 @@ public function index(Request $request)
             'college' => 'nullable',
             'study' => 'nullable',
             'semester' => 'nullable',
+            'is_passout' => 'nullable',
         ]);
 
         $enquiry = Enquiry::findOrFail($id);
          if ($enquiry->assigned_to != $request->assigned_to) {
-            $salesUser = User::find($request->assigned_to);
+            $salesUser = SalesStaff::find($request->assigned_to);
              $salesUser->notify(new LeadAssignedNotification($enquiry));
 
               \DB::table('enquiry_assignments')->insert([
@@ -405,7 +440,7 @@ public function index(Request $request)
             'file' => 'required|file|mimes:csv,xlsx,xls'
         ]);
 
-        $import = new EnquiriesImport(auth()->id());
+        $import = new EnquiriesImport(auth()->id(), 0);
         Excel::import($import, $request->file('file'));
         // dd($import->errors);
         if (!empty($import->errors)) {
@@ -486,7 +521,7 @@ public function index(Request $request)
         ]);
 
          // Get the sales user who will receive notifications
-        $salesUser = User::find($request->salesperson_id);
+        $salesUser = SalesStaff::find($request->salesperson_id);
 
         foreach ($request->enquiry_ids as $id) {
 
@@ -513,7 +548,8 @@ public function index(Request $request)
             ]);
         }
         // ⭐ SEND NOTIFICATION (only for NEW assignments)
-        $salesUser->notify(new LeadAssignedNotification($enquiry));
+        $salesUserassign = SalesStaff::find($request->salesperson_id);
+        $salesUserassign->notify(new LeadAssignedNotification($enquiry));
         return response()->json(['message' => 'Assigned']);
     }
 
@@ -586,7 +622,7 @@ public function index(Request $request)
 
     public function performance()
     {
-        $employees = User::where('role', 3)->get(); // role 3: sales
+        $employees = SalesStaff::where('status', 'active')->get();
 
         foreach ($employees as $emp) {
             $emp->followups = EnquiryActivity::where('user_id', $emp->id)
@@ -636,7 +672,7 @@ public function index(Request $request)
 
 public function salespersonShow(Request $request, $id)
 {
-    $salesperson = User::findOrFail($id);
+    $salesperson = SalesStaff::findOrFail($id);
 
     // Base query
     $leadsQuery = Enquiry::where('assigned_to', $id);
@@ -707,8 +743,7 @@ public function salespersons(Request $request)
     $sortBy  = $request->get('sort', 'name');
     $sortDir = $request->get('dir', 'asc');
 
-    $salespersons = User::where('role', 3)
-        ->withCount([
+    $salespersons = SalesStaff::withCount([
             'enquiriesAssigned as total_leads',
             'activities as total_followups' => function ($q) {
                 $q->where('type', 'followup');
@@ -735,69 +770,21 @@ public function salespersons(Request $request)
     ]);
 }
 
-    public function salespersons17dec()
-{   
-    $salespersons = User::where('role', 3)
-        ->withCount([
-            // Total leads assigned to salesperson
-            'enquiriesAssigned as total_leads',
-
-            // Leads assigned today
-            'enquiriesAssigned as today_leads' => function($q) {
-                $q->whereDate('assigned_at', today());
-            },
-
-            // Follow-ups done today
-            'activities as today_followups' => function($q) {
-                $q->where('type', 'followup')
-                  ->whereDate('created_at', today());
-            },
-
-            // Total follow-ups done
-            'activities as total_followups' => function($q) {
-                $q->where('type', 'followup');
-            },
-        ])
-        ->get();
-
-    return view('enquiries.salespersons', compact('salespersons'));
-}
-
-
-    public function salespersonShow12dec($id)
-    {
-        $salesperson = User::findOrFail($id);
-
-        // Leads assigned to this salesperson
-        $leads = Enquiry::where('assigned_to', $id)
-            ->latest()
-            ->paginate(20);
-
-        // Today’s work (followups)
-        $todayWork = EnquiryActivity::with('enquiry')
-            ->where('user_id', $id)
-            ->whereDate('created_at', today())
-            ->latest()
-            ->get();
-
-        return view('enquiries.show_salesperson', compact('salesperson', 'leads', 'todayWork'));
-    }
-
     public function assignmentReport(Request $request)
 {
-    $salespersons = User::where('role', 3)->get();
+    $salespersons = SalesStaff::where('status', 'active')->get();
     $colleges = College::all();
 
     $query = \DB::table('enquiry_assignments')
         ->join('enquiries', 'enquiries.id', '=', 'enquiry_assignments.enquiry_id')
-        ->join('users', 'users.id', '=', 'enquiry_assignments.assigned_to')
+        ->join('sales_staff', 'sales_staff.id', '=', 'enquiry_assignments.assigned_to')
         ->leftJoin('colleges', 'colleges.id', '=', 'enquiries.college')
         ->select(
             'enquiries.name as enquiry_name',
             'enquiries.mobile',
              'colleges.college_name as college_name', 
-            'users.name as salesperson',
-             'users.id as salesperson_id', 
+            'sales_staff.name as salesperson',
+             'sales_staff.id as salesperson_id', 
             'enquiry_assignments.created_at'
         );
 
@@ -876,8 +863,8 @@ public function salespersons(Request $request)
         // List with filters
         $query = \DB::table('enquiry_assignments')
             ->join('enquiries', 'enquiries.id', '=', 'enquiry_assignments.enquiry_id')
-            ->join('users', 'users.id', '=', 'enquiry_assignments.assigned_to')
-            ->select('enquiries.name', 'enquiries.mobile', 'users.name as sales_name', 'enquiry_assignments.created_at');
+            ->join('sales_staff', 'sales_staff.id', '=', 'enquiry_assignments.assigned_to')
+            ->select('enquiries.name', 'enquiries.mobile', 'sales_staff.name as sales_name', 'enquiry_assignments.created_at');
 
         // Filters
         if ($request->filled('date')) {
@@ -890,7 +877,7 @@ public function salespersons(Request $request)
 
         $records = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        $salespersons = User::where('role', 3)->get();
+        $salespersons = SalesStaff::where('status', 'active')->get();
 
         return view('enquiries.assignments', compact(
             'assignedToday',
@@ -941,7 +928,7 @@ public function pendingFollowups(Request $request)
         ->paginate(25)
         ->appends($request->all());
 
-    $sales = User::where('role', 3)->get();
+    $sales = SalesStaff::where('status', 'active')->get();
 
     // Summary cards
     $summary = [
@@ -1021,7 +1008,7 @@ public function callDashboard(Request $request)
         ->paginate(25)
         ->appends($request->all());
 
-    $sales = User::where('role', 3)->get();
+    $sales = SalesStaff::where('status', 'active')->get();
 
     return view('enquiries.call_dashboard', compact(
         'totalCalls',
@@ -1058,7 +1045,7 @@ public function registeredIndex(Request $request)
         ->latest('registered_at')
         ->get();
 
-    $salesUsers = User::where('role', '3')->get();
+    $salesUsers = SalesStaff::where('status', 'active')->get();
 
     return view('enquiries.registered-list', compact(
         'allRegistrations',
@@ -1107,9 +1094,11 @@ private function createStudentFromEnquiry(\App\Models\Enquiry $enquiry, $amountP
     ]);
 
     // ✅ Notify assigned sales user
+    
     $salesUser = $enquiry->assignedTo;
-    if ($salesUser) {
-        $salesUser->notify(
+    $salesUserassign = SalesStaff::find($enquiry->assignedTo);
+    if ($salesUserassign) {
+        $salesUserassign->notify(
             new \App\Notifications\StudentRegisteredSalesNotification($student)
         );
     }
@@ -1209,8 +1198,9 @@ public function bulkConvertl(Request $request)
 
             //Notify assigned sales user
             $salesUser = $enquiry->assignedTo;
-            if ($salesUser) {
-                $salesUser->notify(
+            $salesUserassign = SalesStaff::find($enquiry->assignedTo);
+            if ($salesUserassign) {
+                $salesUserassign->notify(
                     new \App\Notifications\StudentRegisteredSalesNotification($student)
                 );
             }
@@ -1252,7 +1242,7 @@ public function bulkConvertl(Request $request)
     public function export(Request $request)
     {
         return Excel::download(
-            new EnquiriesExport($request->all()),
+            new EnquiriesExport($request->all(), 0),
             'filtered-enquiries.xlsx'
         );
     }

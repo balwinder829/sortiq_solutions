@@ -33,7 +33,7 @@
             <button type="submit"
                     formaction="{{ route('salary-slips.download.bulk') }}"
                     class="btn btn-success"
-                    onclick="return confirm('Download selected salary slips?')">
+                   data-swal-confirm="Download selected salary slips?">
                 Download Selected
             </button>
 
@@ -41,7 +41,7 @@
             <!-- <button type="submit"
                     formaction="{{ route('salary-slips.email.bulk') }}"
                     class="btn btn-primary"
-                    onclick="return confirm('Email selected salary slips?')">
+                    data-swal-confirm="Email selected salary slips?">
                 Email Selected
             </button> -->
         </div>
@@ -56,7 +56,7 @@
                     <th>Name</th>
                     <th>Month</th>
                     <th>Year</th>
-                    <th>Net Salary</th>
+                    <th>Net Salary(Rs.)</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -74,7 +74,7 @@
                     <td>{{ $slip->emp_name }}</td>
                     <td>{{ date('F', mktime(0,0,0,$slip->month,1)) }}</td>
                     <td>{{ $slip->year }}</td>
-                    <td>₹ {{ number_format($slip->net_salary, 2) }}</td>
+                    <td>{{ number_format($slip->net_salary, 2) }}</td>
                     <td class="d-flex gap-1">
 
                         {{-- SINGLE DOWNLOAD --}}

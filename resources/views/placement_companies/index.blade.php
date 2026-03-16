@@ -51,7 +51,7 @@
                     <th>Company Name</th>
                     <!-- <th>Contact Person</th> -->
                     <th>Address</th>
-                    <!-- <th>Phone</th> -->
+                    <th>Phone</th>
                     <th>Status</th>
                     <th class="text-center">Actions</th>
                 </tr>
@@ -64,7 +64,7 @@
                     <td>{{ $company->name }}</td>
                     <!-- <td>{{ $company->contact_person ?? '-' }}</td> -->
                     <td>{{ $company->address ?? '-' }}</td>
-                    <!-- <td>{{ $company->phone ?? '-' }}</td> -->
+                    <td>{{ $company->phone ?? '-' }}</td>
                     <td>
                         <span class="badge {{ $company->status == 'active' ? 'bg-success' : 'bg-secondary' }}">
                             {{ ucfirst($company->status) }}
@@ -89,7 +89,7 @@
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm"
-                                    onclick="return confirm('Are you sure?')"
+                                    data-swal-confirm="Are you sure?"
                                     title="Delete">
                                 <i class="fa fa-trash"></i>
                             </button>

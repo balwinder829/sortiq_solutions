@@ -26,12 +26,12 @@
 
     {{-- Filter Form (UPDATED) --}}
     <div class="card mb-3 p-3">
-        <form method="GET" action="{{ route('daily-interviews.index') }}" class="row g-3 align-items-end">
+        <form method="GET" id="filterForm" class="row g-3 align-items-end">
             
             {{-- Technology Filter --}}
             <div class="col-md-3">
                 <label for="technology_filter" class="form-label">Filter by Technology</label>
-                <select name="technology" id="technology_filter" class="form-select">
+                <select name="technology" id="technology_filter" class="form-select filterchange">
                     <option value="">-- All Technologies --</option>
                     @foreach($available_tech as $tech)
                         <option value="{{ $tech }}" {{ request('technology') == $tech ? 'selected' : '' }}>
@@ -44,7 +44,7 @@
             {{-- Status Filter --}}
             <div class="col-md-3">
                 <label for="status_filter" class="form-label">Filter by Status</label>
-                <select name="status" id="status_filter" class="form-select">
+                <select name="status" id="status_filter" class="form-select filterchange">
                     <option value="">-- All Statuses --</option>
                     @foreach($available_status as $status)
                         <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>
@@ -57,7 +57,7 @@
             {{-- Interview Type Filter --}}
             <div class="col-md-3">
                 <label for="type_filter" class="form-label">Filter by Type</label>
-                <select name="type" id="type_filter" class="form-select">
+                <select name="type" id="type_filter" class="form-select filterchange">
                     <option value="">-- All Types --</option>
                     @foreach($available_type as $type)
                         <option value="{{ $type }}" {{ request('type') == $type ? 'selected' : '' }}>
@@ -70,12 +70,12 @@
              {{-- Interview Type Filter --}}
             <div class="col-md-3">
                 <label for="type_filter" class="form-label">Filter by Mode</label>
-                <select name="type" id="type_filter" class="form-select">
+                <select name="mode" id="mode_filter" class="form-select filterchange">
                     <option value="">-- All Types --</option>
-                     <option value="online" {{ request('type') == 'online' ? 'selected' : '' }}>
+                     <option value="online" {{ request('mode') == 'online' ? 'selected' : '' }}>
                             Online</option>
 
-                    <option value="offline" {{ request('type') == 'offline' ? 'selected' : '' }}>
+                    <option value="offline" {{ request('mode') == 'offline' ? 'selected' : '' }}>
                             Offline</option>
                     
                 </select>
@@ -84,7 +84,7 @@
             {{-- Date Quick Select Filter (New) --}}
             <div class="col-md-3">
                 <label for="date_filter" class="form-label">Date Quick Select</label>
-                <select name="date_filter" id="date_filter" class="form-select">
+                <select name="date_filter" id="date_filter" class="form-select filterchange">
                     <option value="">-- Custom Date Range --</option>
                     @foreach($date_options as $key => $label)
                         <option value="{{ $key }}" {{ request('date_filter', 'upcoming') == $key ? 'selected' : '' }}>
@@ -97,19 +97,19 @@
             {{-- Date Range Start (New) --}}
             <div class="col-md-3">
                 <label for="start_date" class="form-label">Start Date</label>
-                <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request('start_date') }}">
+                <input type="date" name="start_date" id="start_date" class="form-control filterchange" value="{{ request('start_date') }}">
             </div>
 
             {{-- Date Range End (New) --}}
             <div class="col-md-3">
                 <label for="end_date" class="form-label">End Date</label>
-                <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request('end_date') }}">
+                <input type="date" name="end_date" id="end_date" class="form-control filterchange" value="{{ request('end_date') }}">
             </div>
 
             {{-- Submission Buttons --}}
             <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
-                <a href="{{ route('daily-interviews.index') }}" class="btn btn-secondary">Clear</a>
+                <!-- <button type="submit" class="btn btn-primary me-2">Apply Filters</button> -->
+                <a href="{{ route('daily-interviews.index') }}" class="btn btn-secondary">Reset</a>
             </div>
         </form>
     </div>
@@ -179,7 +179,7 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm"
-                                onclick="return confirm('Delete Interview Record?')"
+                                data-swal-confirm="Delete Interview Record?"
                                 data-bs-toggle="tooltip"
                                 title="Delete">
                             <i class="fas fa-trash"></i>
@@ -210,6 +210,25 @@ $(document).ready(function() {
     new bootstrap.Tooltip(document.body, {
         selector: '[data-bs-toggle="tooltip"]'
     });
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

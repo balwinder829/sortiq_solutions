@@ -144,10 +144,25 @@ $iconMap = [
     // 🔥 YOUR NEW TYPES
     'student.registered.sales'   => ['icon' => 'mdi-account-check', 'color' => 'text-success'],
     'upcoming.event'             => ['icon' => 'mdi-calendar', 'color' => 'text-primary'],
+    'admin.interviews.today' => ['icon'  => 'mdi-calendar-check', 'color' => 'text-info'],
 ];
 
 // These variables now come from View Composer
  
+ 
+$categoryMap = [
+    'student.registered.sales'   => 'Registered Students',
+    'student.registered.summary' => 'Registered Students',
+    'batch.assigned'             => 'Batch Assigned',
+    'sales.followups.today'      => 'Sales Followups',
+    'sales.followups.missed'     => 'Sales Followups',
+    'fee.pending.summary'        => 'Fees',
+    'upcoming.event'             => 'Events',
+    'bin.ready.summary'          => 'BIN Ready',
+    'sales.leads.low.percent'       => 'Low Leads',
+    'sales.leads.low.percent.admin' => 'Low Leads',
+    'admin.interviews.today' => 'Interviews',
+];
 @endphp
 
 {{-- 🔔 NOTIFICATION BELL --}}
@@ -172,11 +187,24 @@ $iconMap = [
             @if($unreadCount > 0)
                 <a href="{{ route('notifications.clearAll') }}"
                    class="text-danger small"
-                   onclick="return confirm('Clear all notifications?')">
+                   data-swal-confirm="Clear all notifications?">
                     Clear All
                 </a>
             @endif
         </li>
+        <li class="px-2 pb-2">
+    <select id="notificationFilter" class="form-select form-select-sm">
+        <option value="all">All</option>
+        <option value="Registered Students">Registered Students</option>
+        <option value="Batch Assigned">Batch Assigned</option>
+        <option value="Sales Followups">Sales Followups</option>
+        <option value="Fees">Fees</option>
+        <option value="Events">Events</option>
+        <option value="BIN Ready">BIN Ready</option>
+        <option value="Low Leads">Low Leads</option>
+        <option value="Interviews">Interviews</option>
+    </select>
+</li>
 
         <li><hr class="dropdown-divider m-0"></li>
 
@@ -199,7 +227,11 @@ $iconMap = [
     @endphp
 
 
-            <li>
+            @php
+$category = $categoryMap[$key] ?? 'Other';
+@endphp
+
+<li class="notification-item" data-category="{{ $category }}">
                 <div class="dropdown-item d-flex justify-content-between align-items-start fw-bold">
 
                     <div class="d-flex">
@@ -241,7 +273,7 @@ $iconMap = [
                     {{-- ❌ CLEAR ALL OF THIS TEMPLATE --}}
                     <form action="{{ route('notifications.clearByTemplate', $key) }}"
                           method="POST"
-                          onsubmit="return confirm('Clear all notifications of this type?')">
+                          data-swal-confirm="Clear all notifications of this type?">
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm text-danger p-0 ms-2">
@@ -339,3 +371,22 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script>
+document.addEventListener('change', function(e){
+
+    if(e.target.id !== 'notificationFilter') return;
+
+    let val = e.target.value;
+
+    document.querySelectorAll('.notification-item').forEach(function(item){
+
+        if(val === 'all'){
+            item.style.display = '';
+            return;
+        }
+
+        item.style.display =
+            item.dataset.category === val ? '' : 'none';
+    });
+});
+</script>

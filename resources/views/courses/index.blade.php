@@ -36,6 +36,13 @@
         </div>
          
         <div class="col-md-10">
+            <div class="col-md-3">
+        <select id="student_filter" class="form-select">
+            <option value="">All Technologies</option>
+            <option value="asc">Low to High</option>
+            <option value="desc">High to Low</option>
+        </select>
+    </div>
             <div class="d-flex justify-content-end">
                 <a href="{{ route('courses.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">Add Technology</a>
             </div>
@@ -56,48 +63,7 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
-            @foreach($courses as $course)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $course->course_name }}</td>
-                    {{-- Student Count --}}
-                    <!-- <td class="text-center">
-                        <span class="student-count view-students badge-style"
-                              data-course-id="{{ $course->id }}"
-                              data-course-name="{{ $course->course_name }}">
-                            {{ $course->students_count }}
-                        </span>
-                    </td> -->
-                    <td>
-                        <a href="{{ route('common_filtered_student', [
-                            'technology' => $course->id
-                        ]) }}"
-                           class="text-decoration-none">
-                            <span class="badge bg-success">
-                                {{ $course->students_count }}
-                            </span>
-                        </a>
-                    </td>
-
-
-
-                    <!-- <td>{{ optional($course->created_at)->format('Y-m-d') }}</td> -->
-                    <td class="text-center">
-                        <div class="mb-2">
-                        <a href="{{ route('courses.edit', $course->id) }}" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i class="fa fa-edit"></i></a>
-
-                        <form action="{{ route('courses.destroy', $course->id) }}" method="POST" style="display:inline-block;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" onclick="return confirm('Are you sure?')">
-                                        <i class="fa fa-trash"></i>
-                        </form>
-                        </div>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
+        <tbody></tbody>
     </table>
 </div>
   
@@ -154,10 +120,28 @@
 @push('scripts')
 <script>
     $(document).ready(function () {
-        $('#course_table').DataTable({
-            "pageLength": 10,
-            "lengthMenu": [10, 15, 20, 25, 50, 100],
-             // "scrollX": true // <-- Add this
+        var table = $('#course_table').DataTable({
+            processing: true,
+            serverSide: true,
+            // ajax: "{{ route('courses.data') }}",
+            ajax: {
+                url: "{{ route('courses.data') }}",
+                data: function (d) {
+                    d.student_filter = $('#student_filter').val(); // 🔥 send filter
+                }
+            },
+            columns: [
+                { data: 0 },
+                { data: 1 },
+                { data: 2 },
+                { data: 3, orderable: false, searchable: false }
+            ],
+            pageLength: 10,
+            lengthMenu: [10, 15, 20, 25, 50, 100]
+        });
+        // 🔥 reload when filter changes
+        $('#student_filter').change(function () {
+            table.ajax.reload();
         });
     });
 </script>

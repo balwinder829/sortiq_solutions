@@ -9,7 +9,7 @@ body{
     background:#f4f6f8;
 }
 .container{
-    width:95%;
+    width:97%;
     margin:20px auto;
     background:#fff;
     padding:20px;
@@ -25,7 +25,7 @@ table{
 }
 th,td{
     border:1px solid #ccc;
-    padding:3px 8px;
+    padding:7px 8px;
     text-align:center;
 }
 th{
@@ -56,13 +56,39 @@ th{
     vertical-align: middle;
 }
 
+.checkbox {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border: 1px solid #000;
+    text-align: center;
+    line-height: 10px;
+    font-size: 10px;
+    font-weight: bold;
+    vertical-align: middle;
+}
+
+.checkbox.empty {
+    border: 1px solid #000;
+}
+
+.checkbox {
+    display:inline-block;
+    width:12px;
+    height:12px;
+    border:1px solid #000;
+    text-align:center;
+    line-height:11px;
+    font-size:11px;
+    vertical-align:middle;
+}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-<h2>Student Performance Evaluation (Checkbox Marking)</h2>
+<h2>Student Performance Evaluation</h2>
 
 <table>
 <thead>
@@ -90,15 +116,25 @@ th{
 <td style="vertical-align:top; text-align:left;">
     <table style="border:0; width:100%;">
         <tr>
-            <td style="border:0; width:20px; vertical-align:middle;">
+           <!--  <td style="border:0; width:20px; vertical-align:middle;">
                 {!! $mode === 'full' && $evaluation->behavior === 'good' ? '☑' : '☐' !!}
-            </td>
+            </td> -->
+            <td style="border:0; width:20px; vertical-align:middle;">
+    <span class="checkbox">
+         {!! $mode === 'full' && $evaluation->behavior === 'good' ? '&#10004;' : '' !!}
+    </span>
+</td>
             <td style="border:0; vertical-align:middle;">Good</td>
         </tr>
         <tr>
-            <td style="border:0; vertical-align:middle;">
+           <!--  <td style="border:0; vertical-align:middle;">
                     {!! $mode === 'full' && $evaluation->behavior === 'avg' ? '☑' : '☐' !!}
-            </td>
+            </td> -->
+            <td style="border:0; width:20px; vertical-align:middle;">
+    <span class="checkbox">
+         {!! $mode === 'full' && $evaluation->behavior === 'avg' ? '&#10004;' : '' !!}
+    </span>
+</td>
             <td style="border:0; vertical-align:middle;">Avg</td>
         </tr>
         <tr>

@@ -93,7 +93,7 @@
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
                 <td><span class="badge bg-{{ $student->status == 'Active' ? 'success' : 'danger' }}">{{ $student->status }}</span></td>
-                 <td>{{ $student->courseData->course_name ?? '-' }}</td>
+                 <td>{{ $student->course_name ?? '-' }}</td>
                 <td>{{ $student->total_fees }}</td>
                 <td>{{ $student->reg_fees }}</td>
                 <td>{{ $student->pending_fees }}</td>
@@ -137,7 +137,7 @@
         {{-- Delete --}}
         <form action="{{ route('students.destroy',$student->id) }}" method="POST" style="display:inline-block;">
             @csrf @method('DELETE')
-            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" onclick="return confirm('Delete this student?')">
+            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" data-swal-confirm="Delete this student?">
                 <i class="fa fa-trash"></i>
             </button>
         </form>

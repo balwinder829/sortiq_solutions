@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container my-5">
+
     <h2 class="mb-4">Edit Question</h2>
 
     <!-- Back Button -->
@@ -13,57 +14,57 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <!-- Edit Form -->
     <form action="{{ route('admin.questions.update', $question->id) }}" method="POST">
         @csrf
         @method('PUT')
 
-        <!-- Question Text -->
+        <!-- Question -->
         <div class="mb-3">
             <label class="form-label">Question</label>
-            <textarea name="question_text" class="form-control" rows="3" required>{{ old('question_text', $question->question_text) }}</textarea>
+            <textarea name="question" class="form-control" rows="3" required>{{ old('question', $question->question) }}</textarea>
         </div>
 
-        <!-- Options -->
-        <div class="mb-3">
-            <label class="form-label">Option A</label>
-            <input type="text" name="option_a" class="form-control" 
-                   value="{{ old('option_a', $question->option_a) }}" required>
+        <hr>
+
+        <h5>Options</h5>
+
+        @foreach($question->options as $index => $option)
+
+        <div class="mb-3 p-3 border rounded">
+
+            <label class="form-label">
+                Option {{ chr(65+$index) }}
+            </label>
+
+            <input type="text"
+                   name="options[{{ $option->id }}][text]"
+                   class="form-control mb-2"
+                   value="{{ old('options.'.$option->id.'.text', $option->option_text) }}"
+                   required>
+
+            <div class="form-check">
+                <input class="form-check-input"
+                       type="radio"
+                       name="correct_answer"
+                       value="{{ $option->id }}"
+                       {{ $option->is_correct ? 'checked' : '' }}>
+
+                <label class="form-check-label">
+                    Correct Answer
+                </label>
+            </div>
+
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Option B</label>
-            <input type="text" name="option_b" class="form-control" 
-                   value="{{ old('option_b', $question->option_b) }}" required>
-        </div>
+        @endforeach
 
-        <div class="mb-3">
-            <label class="form-label">Option C</label>
-            <input type="text" name="option_c" class="form-control" 
-                   value="{{ old('option_c', $question->option_c) }}" required>
-        </div>
 
-        <div class="mb-3">
-            <label class="form-label">Option D</label>
-            <input type="text" name="option_d" class="form-control" 
-                   value="{{ old('option_d', $question->option_d) }}" required>
-        </div>
+        <button type="submit" class="btn btn-primary"
+                style="background:#593bdb;border:none;">
+            Update Question
+        </button>
 
-        <!-- Correct Answer -->
-        <div class="mb-3">
-            <label class="form-label">Correct Answer</label>
-            <select name="correct_answer" class="form-select" required>
-                <option value="">-- Select Correct Option --</option>
-                <option value="A" {{ old('correct_answer', $question->correct_answer) == 'A' ? 'selected' : '' }}>A</option>
-                <option value="B" {{ old('correct_answer', $question->correct_answer) == 'B' ? 'selected' : '' }}>B</option>
-                <option value="C" {{ old('correct_answer', $question->correct_answer) == 'C' ? 'selected' : '' }}>C</option>
-                <option value="D" {{ old('correct_answer', $question->correct_answer) == 'D' ? 'selected' : '' }}>D</option>
-            </select>
-        </div>
-
-        <!-- Save Button -->
-        <button type="submit" class="btn btn-primary" 
-                style="background-color: #593bdb; border: none;">Update Question</button>
     </form>
+
 </div>
 @endsection

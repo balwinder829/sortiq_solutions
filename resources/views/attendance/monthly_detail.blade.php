@@ -8,9 +8,14 @@
     <div class="row mb-2">
     <div class="col-md-6">
         
-        <h1 class="page_heading">
+        <!-- <h1 class="page_heading">
             Attendance Detail –
             {{ $actorType === 'trainer' ? $actor->name : $actor->name }}
+        </h1> -->
+
+        <h1 class="page_heading">
+            {{ auth()->guard('sales_staff')->check() ? 'Calling Detail' : 'Attendance Detail' }} –
+            {{ $actor->name }}
         </h1>
     </div>
 
@@ -63,7 +68,7 @@
             <div class="row mb-2 align-items-center">
                 <div class="col-md-6">
                     <h1 class="page_heading mb-0">
-                        Attendance for {{ \Carbon\Carbon::parse($month)->format('F Y') }}
+                        Monthly Record - {{ \Carbon\Carbon::parse($month)->format('F Y') }}
                     </h1>
                 </div>
 

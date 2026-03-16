@@ -31,42 +31,7 @@
             </tr>
         </thead>
 
-        <tbody>
-            @foreach($technologies as $tech)
-            <tr>
-                <td>{{ $tech->name }}</td>
-                <td>
-                    <span class="badge bg-info">
-                        {{ ucfirst($tech->category) }}
-                    </span>
-                </td>
-                <td>
-                    @if($tech->is_active)
-                        <span class="badge bg-success">Active</span>
-                    @else
-                        <span class="badge bg-secondary">Inactive</span>
-                    @endif
-                </td>
-                <td>
-                    <a href="{{ route('technologies.edit', $tech) }}"
-                       class="btn btn-sm" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </a>
-
-                    <form action="{{ route('technologies.destroy', $tech) }}"
-                          method="POST" style="display:inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-sm"
-                                title="Delete"
-                                onclick="return confirm('Delete this technology?')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
+        <tbody></tbody>
     </table>
 
 </div>
@@ -85,6 +50,15 @@
 <script>
 $(document).ready(function() {
     $('#techTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('technologies.data') }}",
+        columns: [
+            { data: 0 },
+            { data: 1 },
+            { data: 2 },
+            { data: 3, orderable: false, searchable: false }
+        ],
         pageLength: 10,
         lengthMenu: [5,10,25,50,100]
     });

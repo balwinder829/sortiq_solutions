@@ -219,7 +219,7 @@ function previewFiles(files){
 
 /* =================== AJAX DELETE IMAGE =================== */
 function deleteImage(id){
-    if(confirm("Delete this image?")){
+    sweetConfirm("Delete this image?", function(){
         fetch(`/admin/event-image/${id}`, {
             method:"POST",
             headers:{
@@ -233,7 +233,7 @@ function deleteImage(id){
 
 /* =================== AJAX DELETE VIDEO =================== */
 function deleteVideo(id){
-    if(confirm("Delete this video?")){
+    sweetConfirm("Delete this video?", function(){
         fetch(`/admin/event-video/${id}`, {
             method:"POST",
             headers:{

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Gate; // add at top with other uses
+use App\Models\Helpdesk\HelpdeskTechnology;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -160,9 +161,18 @@ class AppServiceProvider extends ServiceProvider
             $currentSession = \App\Models\StudentSession::find(session('admin_session_id'));
         }
 
+        // 🔥 HELP DESK CATEGORIES
+        $helpdeskCategories = HelpdeskTechnology::all();
+
         // share with all views
-        $view->with('sessions', $sessions)
-             ->with('currentSession', $currentSession);
+        $view->with([
+            'sessions' => $sessions,
+            'currentSession' => $currentSession,
+            'helpdeskCategories' => $helpdeskCategories
+        ]);
+        // share with all views
+        // $view->with('sessions', $sessions)
+        //      ->with('currentSession', $currentSession);
     });
 
     /*
@@ -170,7 +180,8 @@ class AppServiceProvider extends ServiceProvider
     | HEADER NOTIFICATION COMPOSER (NEW)
     |--------------------------------------------------------------------------
     */
-    View::composer('layouts.header', function ($view) {
+    // View::composer('layouts.header', function ($view) {
+    View::composer(['layouts.header','layouts.students.header'], function ($view) {
 
     $notifications = collect();
     $unreadCount = 0;
@@ -205,65 +216,8 @@ class AppServiceProvider extends ServiceProvider
 });
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | MANAGER PERMISSION BLADE DIRECTIVE
-    |--------------------------------------------------------------------------
-    */
-    Blade::if('canperm', function ($permission) {
-        $user = auth()->user();
+   
 
-        // Admin: full access
-        if ($user && $user->role == 1) {
-            return true;
-        }
-
-        // Only manager is permission-based
-        if (!$user || $user->role != 4) {
-            return false;
-        }
-
-        $permissionId = \App\Models\Permission::where('name', $permission)->value('id');
-
-        if (!$permissionId) {
-            return false;
-        }
-
-        return \App\Models\RolePermission::where('role', 4)
-            ->where('permission_id', $permissionId)
-            ->exists();
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | MANAGER MULTI-PERMISSION BLADE DIRECTIVE
-    |--------------------------------------------------------------------------
-    */
-    Blade::if('cananyperm', function (...$permissions) {
-        $user = auth()->user();
-
-        if ($user && $user->role == 1) {
-            return true;
-        }
-
-        if (!$user || $user->role != 4) {
-            return false;
-        }
-
-        foreach ($permissions as $permission) {
-            $permissionId = \App\Models\Permission::where('name', $permission)->value('id');
-
-            if ($permissionId &&
-                \App\Models\RolePermission::where('role', 4)
-                    ->where('permission_id', $permissionId)
-                    ->exists()
-            ) {
-                return true;
-            }
-        }
-
-        return false;
-    });
 }
 
 

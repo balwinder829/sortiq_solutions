@@ -18,51 +18,12 @@
     @endif
 
     {{-- Search / Filter Form --}}
-<form method="GET" action="{{ route('close_student.index') }}" class="mb-4">
+<form method="GET" id="filterForm" class="mb-4">
     <div class="row g-2">
-        {{-- Student Name --}}
-        <!-- <div class="col-md-2">
-            <input type="text" name="student_name" class="form-control"
-                   placeholder="Student Name" value="{{ request('student_name') }}">
-        </div> -->
-
-        {{-- Father Name --}}
-       <!--  <div class="col-md-2">
-            <input type="text" name="f_name" class="form-control"
-                   placeholder="Father Name" value="{{ request('f_name') }}">
-        </div> -->
-
-        {{-- Gender --}}
-        <!-- <div class="col-md-1">
-            <select name="gender" class="form-control">
-                <option value="">Gender</option>
-                <option value="Male" {{ request('gender')=='Male' ? 'selected' : '' }}>Male</option>
-                <option value="Female" {{ request('gender')=='Female' ? 'selected' : '' }}>Female</option>
-            </select>
-        </div> -->
-
-        {{-- S no. --}}
-       <!--  <div class="col-md-2">
-            <input type="text" name="sno" class="form-control"
-                   placeholder="S. No" value="{{ request('sno') }}">
-        </div>
- -->
-        {{-- Session --}}
-       <!--  <div class="col-md-2">
-            <select name="session" class="form-control session" id="ddl_session">
-                <option value="">--Session Name--</option>
-                @foreach($sessions as $session)
-                    <option value="{{ $session->id }}"
-                        {{ request('session') == $session->id ? 'selected' : '' }}>
-                        {{ $session->session_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div> -->
 
         {{-- College --}}
         <div class="col-md-2">
-            <select name="college_name" class="form-control collegeName" id="txtcollege">
+            <select name="college_name" class="form-control collegeName filterchange" id="txtcollege">
                 <option value="">--College--</option>
                 @foreach($colleges as $college)
                     <option value="{{ $college->id }}"
@@ -81,7 +42,7 @@
 
         {{-- Status --}}
         <div class="col-md-2">
-            <select name="status" class="form-control statusData">
+            <select name="status" class="form-control statusData filterchange">
                 <option value="" {{ request('status') == '' ? 'selected' : '' }}>--Status--</option>
 
                 @foreach($student_status as $s)
@@ -96,7 +57,7 @@
 
         {{-- Technology / Course --}}
         <div class="col-md-2">
-            <select name="technology" class="form-control technology" id="txttechnology">
+            <select name="technology" class="form-control technology filterchange" id="txttechnology">
                 <option value="">--Technology--</option>
                 @foreach($courses as $course)
                     <option value="{{ $course->id }}"
@@ -109,7 +70,7 @@
 
          {{-- Part-Time Offer --}}
         <div class="col-md-2">
-            <select name="part_time_offer" class="form-control">
+            <select name="part_time_offer" class="form-control filterchange">
                 <option value="">--Part-Time Offer--</option>
                 <option value="1" {{ request('part_time_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('part_time_offer') === '0' ? 'selected' : '' }}>No</option>
@@ -118,7 +79,7 @@
 
         {{-- Placement Offer --}}
         <div class="col-md-2">
-            <select name="placement_offer" class="form-control">
+            <select name="placement_offer" class="form-control filterchange">
                 <option value="">--Placement Offer--</option>
                 <option value="1" {{ request('placement_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('placement_offer') === '0' ? 'selected' : '' }}>No</option>
@@ -127,7 +88,7 @@
 
         {{-- PG Offer --}}
         <div class="col-md-2">
-            <select name="pg_offer" class="form-control">
+            <select name="pg_offer" class="form-control filterchange">
                 <option value="">--PG Offer--</option>
                 <option value="1" {{ request('pg_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('pg_offer') === '0' ? 'selected' : '' }}>No</option>
@@ -135,7 +96,7 @@
         </div>
 
          <div class="col-md-2 col-12">
-            <select name="gender" class="form-control">
+            <select name="gender" class="form-control filterchange">
                 <option value="">--Gender--</option>
 
                 <option value="male"
@@ -150,23 +111,11 @@
             </select>
         </div>
 
-        {{-- Department --}}
-      <!--   <div class="col-md-2">
-            <select name="department" class="form-control" id="txtdepartment">
-                <option value="">--Department--</option>
-                @foreach($departments as $department)
-                    <option value="{{ $department->name }}"
-                        {{ request('department') == $department->name ? 'selected' : '' }}>
-                        {{ $department->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div> -->
-
+        
         {{-- Buttons --}}
-        <div class="col-md-1 d-grid">
+        <!-- <div class="col-md-1 d-grid">
             <button type="submit" class="btn btn-primary">Search</button>
-        </div>
+        </div> -->
         <div class="col-md-1 d-grid">
             <a href="{{ route('close_student.index') }}" class="btn btn-secondary">Reset</a>
         </div>
@@ -190,9 +139,9 @@
                 <th class="text-center">Email</th>
                 <!-- <th class="text-center">Status</th> -->
                 <!-- <th class="text-center">Technology</th> -->
-                <th class="text-center">Total Fees</th>
-                <th class="text-center">Reg Fees</th>
-                <th class="text-center">Pending Fees</th>
+                <th class="text-center">Total Fees(Rs.)</th>
+                <th class="text-center">Reg Fees(Rs.)</th>
+                <th class="text-center">Pending Fees(Rs.)</th>
                 
                 <th class="text-center" width="100px">Date of Joining</th>
                 <th class="text-center">Duration</th>
@@ -254,7 +203,7 @@
                         {{-- Issue --}}
                         <form action="{{ route('students.issueCertificate', $student->id) }}" method="POST" style="display:inline-block;">
                             @csrf
-                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" onclick="return confirm('Send certificate to {{ $student->email_id }}?')">
+                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" data-swal-confirm="Send certificate to {{ $student->email_id }}?">
                                 <i class="fa-solid fa-file-lines"></i>
                             </button>
                         </form>
@@ -352,6 +301,25 @@ $(document).ready(function () {
         // Put IDs as JSON into hidden input and submit the form
         $('#bulkIds').val(JSON.stringify(ids));
         $('#bulkIssueForm').submit(); // normal submit -> page reload
+    });
+
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
     });
 
 });

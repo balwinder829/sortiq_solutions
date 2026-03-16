@@ -20,10 +20,10 @@
          
         <div class="col-md-10">
            {{-- FILTERS --}}
-            <form method="GET" action="{{ route('services-registrations.index') }}" class="mb-3">
+            <form method="GET" id="filterForm" class="mb-3">
                 <div class="row g-2">
                     <div class="col-md-3">
-                        <select name="slug" class="form-select">
+                        <select name="slug" class="form-select filterchange">
                             <option value="">All Slugs</option>
                             @foreach($slugs as $slug)
                                 <option value="{{ $slug }}"
@@ -37,7 +37,7 @@
 
                     {{-- TECHNOLOGY --}}
                     <div class="col-md-4">
-                       <select name="technology" class="form-select">
+                       <select name="technology" class="form-select filterchange">
                             <option value="">All Technologies</option>
                             @foreach($technologies as $tech)
                                 <option value="{{ $tech->id }}"
@@ -50,7 +50,7 @@
 
                      {{-- EXPORT LIMIT --}}
                       <div class="col-md-2">
-                            <select name="limit" class="form-select">
+                            <select name="limit" class="form-select filterchange">
                                 <option value="" >All</option>
                                 <option value="20" {{ request('limit') == 20 ? 'selected' : '' }}>20</option>
                                 <option value="30" {{ request('limit') == 30 ? 'selected' : '' }}>30</option>
@@ -61,7 +61,7 @@
 
                     {{-- BUTTONS --}}
                     <div class="col-md-1 d-flex gap-2">
-                        <button class="btn btn-primary w-100">Filter</button>
+                        <!-- <button class="btn btn-primary w-100">Filter</button> -->
                         <a href="{{ route('services-registrations.index') }}"
                            class="btn btn-secondary w-100">Reset</a>
                           {{-- EXPORT --}}
@@ -141,5 +141,24 @@
             info: false
         });
     });
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
 </script>
 @endpush

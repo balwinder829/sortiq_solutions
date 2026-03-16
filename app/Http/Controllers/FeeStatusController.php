@@ -42,14 +42,17 @@ class FeeStatusController extends Controller
         $activeSessionNo = session('admin_session_id');
 
         // Base query with relationships
-        $query = Student::with(['collegeData', 'courseData'])
+        $query = Student::with(['collegeData'])
             ->select(
                 'id',
                 'student_name',
+                'sno',
+                'contact',
                 'college_name',
                 'technology',
                 'total_fees',
                 'reg_fees',
+                'paid_fees',
                 'pending_fees'
             )
             ->where('session', $activeSessionNo);
@@ -60,8 +63,72 @@ class FeeStatusController extends Controller
         }
 
         if ($request->filled('course_id')) {
-            $query->where('technology', $request->course_id);
+            $query->whereRaw(
+                "FIND_IN_SET(?, technology)",
+                [$request->course_id]
+            );
+            // $query->where('technology', $request->course_id);
         }
+
+        // 🔥 Percentage Filter
+        // if ($request->filled('percent_range')) {
+
+        //     switch ($request->percent_range) {
+
+        //         case 'upto50':
+        //             $query->whereRaw(
+        //                 '(CASE WHEN total_fees > 0 THEN (reg_fees / total_fees) * 100 ELSE 0 END) <= 50'
+        //             );
+        //             break;
+
+        //         case '50to80':
+        //             $query->whereRaw(
+        //                 '(CASE WHEN total_fees > 0 THEN (reg_fees / total_fees) * 100 ELSE 0 END) > 50
+        //                  AND (CASE WHEN total_fees > 0 THEN (reg_fees / total_fees) * 100 ELSE 0 END) <= 80'
+        //             );
+        //             break;
+
+        //         case '80to99':
+        //             $query->whereRaw(
+        //                 '(CASE WHEN total_fees > 0 THEN (reg_fees / total_fees) * 100 ELSE 0 END) > 80
+        //                  AND (CASE WHEN total_fees > 0 THEN (reg_fees / total_fees) * 100 ELSE 0 END) < 100'
+        //             );
+        //             break;
+
+        //         case '100':
+        //             $query->whereRaw(
+        //                 '(CASE WHEN total_fees > 0 THEN (reg_fees / total_fees) * 100 ELSE 0 END) = 100'
+        //             );
+        //             break;
+        //     }
+        // }
+            // 🔥 Percentage Filter (SAFE — no divide by zero)
+        // 🔥 Percentage Filter (reg_fees + paid_fees)
+if ($request->filled('percent_range')) {
+
+    $expr = '(COALESCE((reg_fees + paid_fees) / NULLIF(total_fees,0),0) * 100)';
+
+    switch ($request->percent_range) {
+
+        case 'upto50':
+            $query->whereRaw("$expr <= 50");
+            break;
+
+        case '50to80':
+            $query->whereRaw("$expr > 50 AND $expr <= 80");
+            break;
+
+        case '80to99':
+            $query->whereRaw("$expr > 80 AND $expr < 100");
+            break;
+
+        case '100':
+            $query->whereRaw("$expr = 100");
+            break;
+    }
+}
+
+
 
         $students = $query->get();
 
@@ -70,7 +137,10 @@ class FeeStatusController extends Controller
         =============================== */
 
         $totalFee    = $students->sum('total_fees');
-        $paidFee     = $students->sum('reg_fees');
+        // $paidFee     = $students->sum('reg_fees');
+        $paidFee = $students->sum(function($s){
+            return ($s->reg_fees ?? 0) + ($s->paid_fees ?? 0);
+        });
         $pendingFee  = $students->sum('pending_fees');
 
         $paidPercent = $totalFee > 0 ? round(($paidFee / $totalFee) * 100, 2) : 0;
@@ -79,7 +149,8 @@ class FeeStatusController extends Controller
         // Add row-level percentages
         $students = $students->map(function ($student) {
             $total = $student->total_fees ?? 0;
-            $paid  = $student->reg_fees ?? 0;
+            // $paid  = $student->reg_fees ?? 0;
+            $student->paid = $paid  = ($student->reg_fees ?? 0) + ($student->paid_fees ?? 0);
 
             $student->paid_percentage = $total > 0
                 ? round(($paid / $total) * 100, 2)
@@ -91,6 +162,8 @@ class FeeStatusController extends Controller
 
             return $student;
         });
+
+        // dd($students);
 
         // Dropdown data (from master tables)
         // $colleges = College::select('id', 'college_name')->get();
@@ -120,7 +193,8 @@ class FeeStatusController extends Controller
         return Excel::download(
             new FeeStatusExport(
                 $request->college_id,
-                $request->course_id
+                $request->course_id,
+                $request->percent_range
             ),
             'fee-status.xlsx'
         );

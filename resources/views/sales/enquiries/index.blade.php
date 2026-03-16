@@ -109,6 +109,7 @@
                         <th>Contact</th>
                         <th>College</th>
                         <th>Lead Status</th>
+                        <th>Type</th>
                         <th>Next Follow-up</th>
                         <th class="text-center">Action</th>
                     </tr>
@@ -122,23 +123,31 @@
                             {{ $e->name }}
                         </td>
 
-                        {{-- CONTACT --}}
-                        <td>
-                            {{ $e->mobile }}
+                       {{-- CONTACT --}}
+                    @php
+                        $mobile = preg_replace('/\D/', '', $e->mobile); // remove non-digits
 
-                            <div class="mt-2 d-flex gap-2">
-                                <a href="tel:{{ $e->mobile }}"
-                                   class="btn btn-success btn-sm">
-                                    📞 Call
-                                </a>
+                        if(strlen($mobile) == 10){
+                            $mobile = '91'.$mobile;
+                        }
+                    @endphp
 
-                                <a href="https://wa.me/{{ $e->mobile }}"
-                                   target="_blank"
-                                   class="btn btn-info btn-sm text-white">
-                                    💬 WhatsApp
-                                </a>
-                            </div>
-                        </td>
+                    <td>
+                        <span class="fw-bold text-primary">+{{ $mobile }}</span>
+
+                        <div class="mt-2 d-flex gap-2">
+                            <a href="tel:+{{ $mobile }}"
+                               class="btn btn-success btn-sm">
+                                📞 Call
+                            </a>
+
+                            <a href="https://wa.me/{{ $mobile }}"
+                               target="_blank"
+                               class="btn btn-info btn-sm text-white">
+                                💬 WhatsApp
+                            </a>
+                        </div>
+                    </td>
 
                         <td>
                             {{ $e->collegeData->FullName ?? '—' }}
@@ -149,6 +158,11 @@
                             <span class="badge bg-info">
                                 {{ ucfirst($e->lead_status) }}
                             </span>
+                        </td>
+                        <td>
+                             <span class="badge bg-success">
+                            {{ $e->is_passout ? 'Passout' : 'Enquiry' }}
+                        </span>
                         </td>
 
                         {{-- FOLLOW-UP --}}

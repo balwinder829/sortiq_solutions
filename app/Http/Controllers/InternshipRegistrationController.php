@@ -81,7 +81,16 @@ class InternshipRegistrationController extends Controller
 
    public function index(Request $request)
 {
-    $query = InternshipRegistration::with(['collegeData', 'courseData']);
+    // $query = InternshipRegistration::with(['collegeData', 'courseData']);
+
+    $query = InternshipRegistration::with([
+        'collegeData' => function ($q) {
+            $q->withTrashed();
+        },
+        'courseData' => function ($q) {
+            $q->withTrashed();
+        }
+    ]);
 
 
     if ($request->filled('college')) {
@@ -107,7 +116,9 @@ class InternshipRegistrationController extends Controller
 
     $colleges = College::orderBy('college_display_name')->get([
         'id',
-        'college_display_name'
+        'college_display_name',
+        'college_name',
+        'college_short_name',
     ]);
 
     $technologies = Course::orderBy('course_name')->get([

@@ -1,0 +1,239 @@
+<?php
+
+namespace App\Exports;
+
+use App\Models\Student;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+
+class CommonFilteredStudentExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
+{
+    protected $request;
+
+    public function __construct(Request $request)
+    {
+        $this->request = $request;
+    }
+
+    public function collection()
+    {
+        $request = $this->request;
+
+        $query = Student::query();
+
+        /* ------------------------
+           SAME FILTERS AS INDEX
+        -------------------------*/
+
+        if ($request->filled('student_name')) {
+            $query->where('student_name','like','%'.$request->student_name.'%');
+        }
+
+        if ($request->filled('f_name')) {
+            $query->where('f_name','like','%'.$request->f_name.'%');
+        }
+
+        if ($request->filled('sno')) {
+            $query->where('sno',$request->sno);
+        }
+
+        if ($request->filled('gender')) {
+            $query->where('gender',$request->gender);
+        }
+
+        if ($request->filled('college_name')) {
+            $query->where('college_name',$request->college_name);
+        }
+
+        if ($request->filled('email_id')) {
+            $query->where('email_id','like','%'.$request->email_id.'%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status',$request->status);
+        }
+
+        if ($request->filled('technology')) {
+            $query->whereRaw("FIND_IN_SET(?, technology)", [$request->technology]);
+        }
+
+        if ($request->filled('batch_assign')) {
+            $query->where('batch_assign',$request->batch_assign);
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('start_date','>=',$request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('end_date','<=',$request->end_date);
+        }
+
+        if ($request->filled('part_time_offer')) {
+            $query->where('part_time_offer',$request->part_time_offer);
+        }
+
+        if ($request->filled('placement_offer')) {
+            $query->where('placement_offer',$request->placement_offer);
+        }
+
+        if ($request->filled('pg_offer')) {
+            $query->where('pg_offer',$request->pg_offer);
+        }
+
+        /* ------------------------
+           FEE FILTER
+        -------------------------*/
+
+        if ($request->filled('fee_filter')) {
+
+            switch ($request->fee_filter) {
+
+                case 'completed':
+                    $query->where('pending_fees',0);
+                    break;
+
+                case 'pending':
+                    $query->where('pending_fees','>',0);
+                    break;
+
+                case 'pending_high':
+                    $query->orderBy('pending_fees','desc');
+                    break;
+
+                case 'pending_low':
+                    $query->orderBy('pending_fees','asc');
+                    break;
+
+                case 'fees_high':
+                    $query->orderBy('total_fees','desc');
+                    break;
+
+                case 'fees_low':
+                    $query->orderBy('total_fees','asc');
+                    break;
+            }
+        }
+
+        /* ------------------------
+           AMOUNT RANGE
+        -------------------------*/
+
+        if (
+            $request->filled('fee_filter') &&
+            in_array($request->fee_filter,[
+                'pending_high',
+                'pending_low',
+                'fees_high',
+                'fees_low'
+            ])
+        ) {
+
+            $amountColumn = in_array($request->fee_filter,['pending_high','pending_low'])
+                ? 'pending_fees'
+                : 'total_fees';
+
+            if ($request->filled('amount_min')) {
+                $query->where($amountColumn,'>=',$request->amount_min);
+            }
+
+            if ($request->filled('amount_max')) {
+                $query->where($amountColumn,'<=',$request->amount_max);
+            }
+        }
+
+        /* ------------------------
+           SESSION FILTER
+        -------------------------*/
+
+        $query->where('session',session('admin_session_id'));
+
+        /* ------------------------
+           LIMIT
+        -------------------------*/
+
+        if ($request->filled('limit')) {
+            $query->limit((int)$request->limit);
+        }
+
+        return $query
+            ->with(['sessionData','collegeData','batchData','durationData'])
+            ->orderBy('id','desc')
+            ->get();
+    }
+
+    public function headings(): array
+    {
+        return [
+            'S.No',
+            'Student Name',
+            'Father/Husband Name',
+            'Contact',
+            'Email',
+            'Gender',
+            'Session',
+            'College',
+            'Technology',
+            'Status',
+            'Total Fees',
+            'Pending Fees',
+            'Registration Fees',
+            'Paid Fees',
+            'Next Due Date',
+            'Joining Date',
+            'Start Date',
+            'End Date',
+            'Placement Offer',
+            'Part Time Offer',
+            'PG Offer',
+            'Study Mode',
+            'Is Intern',
+        ];
+    }
+
+    public function map($student): array
+    {
+        return [
+
+            $student->sno,
+            $student->student_name,
+            $student->f_name,
+            $student->contact,
+            $student->email_id,
+            $student->gender,
+            $student->sessionData->session_name ?? '-',
+            $student->collegeData->FullName ?? '-',
+            $student->course_name ?? '-',
+            $student->status,
+            $student->total_fees,
+            $student->pending_fees,
+            $student->reg_fees,
+            $student->paid_fees,
+
+            $student->next_due_date
+                ? \Carbon\Carbon::parse($student->next_due_date)->format('d M Y')
+                : '-',
+
+            $student->join_date
+                ? \Carbon\Carbon::parse($student->join_date)->format('d M Y')
+                : '-',
+
+            $student->start_date
+                ? \Carbon\Carbon::parse($student->start_date)->format('d M Y')
+                : '-',
+
+            $student->end_date
+                ? \Carbon\Carbon::parse($student->end_date)->format('d M Y')
+                : '-',
+
+            $student->placement_offer ? 'Yes' : 'No',
+            $student->part_time_offer ? 'Yes' : 'No',
+            $student->pg_offer ? 'Yes' : 'No',
+            $student->is_online ? 'Online' : 'Offline',
+            $student->is_intern ? 'Yes' : 'No',
+        ];
+    }
+}

@@ -31,8 +31,15 @@
             </div>
          </div>
          @php
-         $title = strtolower($student->gender ?? '') === 'female' ? 'Miss' : 'Mr';
-         $relation = strtolower($student->gender ?? '') === 'female' ? 'D/O' : 'S/O';
+         $gender = strtolower($student->gender ?? '');
+
+         $title = ($gender === 'female')
+                     ? ($student->is_married ? 'Mrs' : 'Miss')
+                     : 'Mr';
+
+         $relation = ($gender === 'female')
+                         ? ($student->is_married ? 'W/O' : 'D/O')
+                         : 'S/O';
          use Carbon\Carbon;
          // Safe session values
          $sessionStart = optional($student->sessionData)->start_date 

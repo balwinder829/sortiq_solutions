@@ -78,24 +78,24 @@
         </div>
     @endif
 
-    <form method="GET" action="{{ route('registrations.index') }}" class="mb-3">
+    <form method="GET" id="filterForm" class="mb-3">
     <div class="row">
 
         <div class="col-md-3">
             <label><strong>From Date</strong></label>
-            <input type="date" name="from_date" class="form-control"
+            <input type="date" name="from_date" class="form-control filterchange"
                    value="{{ request('from_date') }}">
         </div>
 
         <div class="col-md-3">
             <label><strong>To Date</strong></label>
-            <input type="date" name="to_date" class="form-control"
+            <input type="date" name="to_date" class="form-control filterchange"
                    value="{{ request('to_date') }}">
         </div>
 
         <div class="col-md-3">
             <label><strong>Collected By</strong></label>
-            <select name="salesperson_id" class="form-control">
+            <select name="salesperson_id" class="form-control filterchange">
                 <option value="">All</option>
                 @foreach($salesUsers as $user)
                     <option value="{{ $user->id }}"
@@ -107,7 +107,7 @@
         </div>
 
         <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-primary me-2">Search</button>
+            <!-- <button class="btn btn-primary me-2">Search</button> -->
             <a href="{{ route('registrations.index') }}" class="btn btn-secondary">
                 Reset
             </a>
@@ -225,7 +225,7 @@
                                 <td>
                                     <form method="POST"
                                           action="{{ route('convert.to.student', $reg->enquiry_id) }}"
-                                          onsubmit="return confirm('Convert this registration to student?')">
+                                          data-swal-confirm="Convert this registration to student?">
                                         @csrf
                                         <button class="btn btn-success btn-sm">
                                             Convert
@@ -290,6 +290,25 @@ $('#bulkConvertBtn').on('click', function () {
     })
     .then(res => res.json())
     .then(data => location.reload());
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

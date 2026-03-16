@@ -59,7 +59,7 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm"
-                                onclick="return confirm('Delete Project?')"
+                                data-swal-confirm="Delete Project?"
                                 data-bs-toggle="tooltip"
                                 title="Delete">
                             <i class="fas fa-trash"></i>

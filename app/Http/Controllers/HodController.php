@@ -40,27 +40,43 @@ class HodController extends Controller
         }
     }
 	 
-    public function index(Request $request)
-    {
-        $states = State::all();
+     public function index(Request $request)
+{
+    $states = State::all();
 
-        $colleges = College::with(['state', 'district', 'hod'])
-            ->when($request->state, function ($q) use ($request) {
-                $q->whereHas('state', function ($s) use ($request) {
-                    $s->where('name', $request->state);
-                });
-            })
-            ->when($request->hod_status === 'yes', function ($q) {
-                $q->whereHas('hod');
-            })
-            ->when($request->hod_status === 'no', function ($q) {
-                $q->whereDoesntHave('hod');
-            })
-            ->orderBy('college_name')
-            ->get();
+    $hods = Hod::with(['college.state', 'college.district'])
+        ->when($request->state, function ($q) use ($request) {
+            $q->whereHas('college.state', function ($s) use ($request) {
+                $s->where('name', $request->state);
+            });
+        })
+        // ->orderBy('hod_name')
+        ->latest()
+        ->get();
 
-        return view('hods.index', compact('colleges', 'states'));
-    }
+    return view('hods.index', compact('hods', 'states'));
+}
+    // public function index(Request $request)
+    // {
+    //     $states = State::all();
+
+    //     $colleges = College::with(['state', 'district', 'hod'])
+    //         ->when($request->state, function ($q) use ($request) {
+    //             $q->whereHas('state', function ($s) use ($request) {
+    //                 $s->where('name', $request->state);
+    //             });
+    //         })
+    //         ->when($request->hod_status === 'yes', function ($q) {
+    //             $q->whereHas('hod');
+    //         })
+    //         ->when($request->hod_status === 'no', function ($q) {
+    //             $q->whereDoesntHave('hod');
+    //         })
+    //         ->orderBy('college_name')
+    //         ->get();
+
+    //     return view('hods.index', compact('colleges', 'states'));
+    // }
 
 
      
@@ -102,6 +118,7 @@ class HodController extends Controller
         'tpo_emails'  => 'required_with:tpo_name|array|min:1',
         'tpo_emails.*'=> 'email',
         'tpo_primary' => 'nullable|integer',
+        'description' => 'nullable',
     ]);
 
     // 4️⃣ Save main record
@@ -109,6 +126,7 @@ class HodController extends Controller
         'college_id',
         'hod_name','hod_gender','hod_contact',
         'tpo_name','tpo_gender','tpo_contact',
+        'description',
     ]));
 
     // 5️⃣ Save HOD emails
@@ -177,6 +195,7 @@ class HodController extends Controller
             'tpo_emails'  => 'required_with:tpo_name|array|min:1',
             'tpo_emails.*'=> 'email',
             'tpo_primary' => 'nullable|integer',
+            'description' => 'nullable',
         ]);
 
         // 4️⃣ Update main
@@ -184,6 +203,7 @@ class HodController extends Controller
             'college_id',
             'hod_name','hod_gender','hod_contact',
             'tpo_name','tpo_gender','tpo_contact',
+            'description',
         ]));
 
         // 5️⃣ Replace emails

@@ -22,6 +22,6 @@ class ServicesRegistration extends Model
 
     public function courseData()
     {
-        return $this->belongsTo(Course::class, 'technology', 'id');
+        return $this->belongsTo(Course::class, 'technology', 'id')->withTrashed();
     }
 }

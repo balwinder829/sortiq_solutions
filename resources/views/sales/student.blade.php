@@ -192,7 +192,7 @@
         {{-- Delete --}}
         <form action="{{ route('students.destroy',$student->id) }}" method="POST" style="display:inline-block;">
             @csrf @method('DELETE')
-            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" onclick="return confirm('Delete this student?')">
+            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" data-swal-confirm="Delete this student?">
                 <i class="fa fa-trash"></i>
             </button>
         </form>    

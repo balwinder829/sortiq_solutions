@@ -134,7 +134,7 @@
                             <form action="{{ route('company_profile.destroy', $cp->id) }}"
                                   method="POST"
                                   class="d-inline"
-                                  onsubmit="return confirm('Delete this company profile?');">
+                                  data-swal-confirm="Delete this company profile?">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger">

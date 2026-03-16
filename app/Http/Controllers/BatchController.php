@@ -64,8 +64,8 @@ class BatchController extends Controller
                 $q->where('session', $currentSession);
             }
         ])
-        ->where('session_name', $currentSession)
-        ->latest();
+        ->where('session_name', $currentSession);
+        // ->latest();
 
     // Trainer filter
     if ($request->trainer) {
@@ -106,7 +106,18 @@ class BatchController extends Controller
         $query->where('batch_mode', $request->mode);
     }
 
+    // Students Count Sorting
+    if ($request->student_sort == 'low_to_high') {
+        $query->orderBy('students_count', 'asc');
+    } elseif ($request->student_sort == 'high_to_low') {
+        $query->orderBy('students_count', 'desc');
+    } else {
+        // Default order when no student_sort selected
+        $query->latest();
+    }
+
     $batches  = $query->get();
+    // dd($batches);
     // $trainers = Trainer::with('user')->get();
     $trainers = Trainer::where('status', 'active')->orderBy('name', 'asc')->get();
     // dd($trainers->user);

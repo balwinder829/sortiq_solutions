@@ -26,7 +26,7 @@ use ZipArchive;
 use Mpdf\Mpdf;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
-use App\Exports\StudentListExport;
+use App\Exports\CommonFilteredStudentExport;
 use Illuminate\Support\Str;
 
 
@@ -99,8 +99,15 @@ class CommonFilteredStudentController extends Controller
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
+            // if ($request->filled('technology')) {
+            //     $query->where('technology', $request->technology);
+            // }
+            
             if ($request->filled('technology')) {
-                $query->where('technology', $request->technology);
+                $query->whereRaw(
+                    "FIND_IN_SET(?, technology)",
+                    [$request->technology]
+                );
             }
             if ($request->filled('batch_assign')) {
                 $query->where('batch_assign', $request->batch_assign);
@@ -240,5 +247,13 @@ class CommonFilteredStudentController extends Controller
         
 
         return view('common_listing_students.index', compact('students','sessions','colleges','courses','batches','references','departments','users','student_status','pendingStudents'));
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new CommonFilteredStudentExport($request),
+            'filtered_students.xlsx'
+        );
     }
 }

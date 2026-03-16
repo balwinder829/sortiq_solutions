@@ -32,12 +32,12 @@
     @endif
 
     {{-- FILTERS (DROPDOWNS + INPUTS) --}}
-    <form method="GET" action="{{ route('placements.index') }}" class="mb-3">
+    <form method="GET" id="filterForm" class="mb-3">
         <div class="row g-2">
 
             {{-- COLLEGE --}}
             <div class="col-md-2">
-                <select name="college_id" class="form-select">
+                <select name="college_id" class="form-select filterchange">
                     <option value="">All Colleges</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->id }}"
@@ -50,7 +50,7 @@
 
             {{-- STATE --}}
             <div class="col-md-2">
-                <select name="state_id" class="form-select">
+                <select name="state_id" class="form-select filterchange">
                     <option value="">All States</option>
                     @foreach($states as $state)
                         <option value="{{ $state->id }}"
@@ -66,13 +66,13 @@
                 <input type="text"
                        name="location"
                        value="{{ request('location') }}"
-                       class="form-control"
+                       class="form-control filterchangetext"
                        placeholder="Location">
             </div>
 
             {{-- TECH --}}
             <div class="col-md-2">
-                <select name="tech" class="form-select">
+                <select name="tech" class="form-select filterchange">
                     <option value="">All Technology</option>
                     @foreach($courses as $course)
                         <option value="{{ $course->id }}"
@@ -85,7 +85,7 @@
 
             {{-- SESSION --}}
             <div class="col-md-2">
-                <select name="session_id" class="form-select">
+                <select name="session_id" class="form-select filterchange">
                     <option value="">All Sessions</option>
                     @foreach($sessions as $session)
                         <option value="{{ $session->id }}"
@@ -98,7 +98,7 @@
 
             {{-- BUTTONS --}}
             <div class="col-md-2 d-flex gap-2">
-                <button class="btn btn-primary w-100">Filter</button>
+                <!-- <button class="btn btn-primary w-100">Filter</button> -->
                 <a href="{{ route('placements.index') }}"
                    class="btn btn-secondary w-100">
                     Reset
@@ -170,7 +170,7 @@
                             @csrf @method('DELETE')
                             <button type="submit"
                                     class="btn btn-sm"
-                                    onclick="return confirm('Delete this placement?')">
+                                    data-swal-confirm="Delete this placement?">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </form>
@@ -202,5 +202,24 @@
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
 </script>
 @endpush

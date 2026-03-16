@@ -15,9 +15,6 @@
 </div>
 @endif
 
-<a href="{{ route('placements.index') }}" class="btn mb-3"
-   style="background-color:#343957;color:white;">Back</a>
-
 <form method="POST"
       action="{{ route('placements.update', $placement->id) }}"
       enctype="multipart/form-data">
@@ -36,7 +33,7 @@
     {{-- COLLEGE --}}
     <div class="mb-3">
         <label>College</label>
-        <select name="college_name" class="form-select" required>
+        <select name="college_name" class="form-select">
             <option value="">Select College</option>
             @foreach($colleges as $college)
                 <option value="{{ $college->id }}"
@@ -51,7 +48,7 @@
     <div class="mb-3">
         <label>State</label>
         <select name="state_id" class="form-select" required>
-            <option value="">Select State</option>
+            <option value="" disabled readonly >Select State</option>
             @foreach($states as $state)
                 <option value="{{ $state->id }}"
                     {{ old('state_id', $placement->state_id) == $state->id ? 'selected' : '' }}>
@@ -64,7 +61,7 @@
     {{-- LOCATION --}}
     <div class="mb-3">
         <label>Location</label>
-        <input type="text" name="location"
+        <input type="text" name="location" required 
                class="form-control"
                value="{{ old('location', $placement->location) }}">
     </div>
@@ -73,7 +70,7 @@
     <div class="mb-3">
         <label>Course</label>
         <select name="tech" class="form-select">
-            <option value="">Select Technology</option>
+            <option value="" disabled readonly >Select Technology</option>
             @foreach($courses as $course)
                 <option value="{{ $course->id }}"
                     {{ old('tech', $placement->tech) == $course->id ? 'selected' : '' }}>
@@ -87,7 +84,7 @@
     <div class="mb-3">
         <label>Session</label>
         <select name="session_id" class="form-select" required>
-            <option value="">Select Session</option>
+            <option value="" disabled readonly >Select Session</option>
             @foreach($sessions as $session)
                 <option value="{{ $session->id }}"
                     {{ old('session_id', $placement->session_id) == $session->id ? 'selected' : '' }}>
@@ -109,7 +106,7 @@
     <div class="mb-3">
         <label>Company</label>
         <select name="company" class="form-select" required>
-            <option value="">Select Company</option>
+            <option value="" disabled readonly >Select Company</option>
             @foreach($companies as $company)
                 <option value="{{ $company->id }}"
                     {{ old('company', $placement->company) == $company->id ? 'selected' : '' }}>
@@ -134,6 +131,26 @@
            required>
 </div>
 
+     <div class="mb-3">
+        <label>Youtube Link</label>
+        <input type="text" name="youtube_link"
+               class="form-control"
+               value="{{ old('youtube_link', $placement->youtube_link) }}">
+    </div>
+
+     <div class="mb-3">
+        <label>Google Drive Link</label>
+        <input type="text" name="gdrive"
+               class="form-control"
+               value="{{ old('gdrive', $placement->gdrive) }}">
+    </div>
+
+     <div class="mb-3">
+        <label>Versal Link</label>
+        <input type="text" name="versal"
+               class="form-control"
+               value="{{ old('versal', $placement->versal) }}">
+    </div>
 
     {{-- DESCRIPTION --}}
     <div class="mb-3">
@@ -208,9 +225,11 @@
     {{-- PREVIEW --}}
     <div id="previewArea" class="row"></div>
 
-    <button class="btn mt-3" style="background-color:#343957;color:white;">
+    <button class="btn btn-primary mt-3">
         Update Placement
     </button>
+    <a href="{{ route('placements.index') }}" class="btn mt-3"
+   style="background-color:#343957;color:white;">Back</a>
 
 </form>
 
@@ -267,8 +286,7 @@ function previewFiles(files){
 
 /* AJAX Delete Image */
 function deleteImage(id){
-    if(!confirm("Delete this image?")) return;
-
+    sweetConfirm("Delete this image?", function() {
     fetch("{{ route('placements.media.image.delete', ':id') }}".replace(':id', id), {
         method: "POST",
         headers:{
@@ -276,12 +294,12 @@ function deleteImage(id){
             "X-HTTP-Method-Override": "DELETE"
         }
     }).then(()=>location.reload());
+    });
 }
 
 /* AJAX Delete Video */
 function deleteVideo(id){
-    if(!confirm("Delete this video?")) return;
-
+    sweetConfirm("Delete this video?", function() {
     fetch("{{ route('placements.media.video.delete', ':id') }}".replace(':id', id), {
         method: "POST",
         headers:{
@@ -289,6 +307,7 @@ function deleteVideo(id){
             "X-HTTP-Method-Override": "DELETE"
         }
     }).then(()=>location.reload());
+    });
 }
 
 /* AJAX Set Cover */

@@ -40,21 +40,21 @@
     @endif
 
     {{-- ================= FILTERS ================= --}}
-    <form method="GET" action="{{ route('pgs.index') }}" class="mb-4">
+    <form method="GET" id="filterForm" class="mb-4">
         <div class="row align-items-end">
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="fw-bold">PG Type</label>
-                <select name="pg_type" class="form-control">
+                <select name="pg_type" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="boys" {{ request('pg_type')=='boys' ? 'selected' : '' }}>Boys</option>
                     <option value="girls" {{ request('pg_type')=='girls' ? 'selected' : '' }}>Girls</option>
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="fw-bold">Food Type</label>
-                <select name="food_type" class="form-control">
+                <select name="food_type" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="food" {{ request('food_type')=='food' ? 'selected' : '' }}>Food</option>
                     <option value="without_food" {{ request('food_type')=='without_food' ? 'selected' : '' }}>
@@ -63,9 +63,9 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="fw-bold">Status</label>
-                <select name="status" class="form-control">
+                <select name="status" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="active" {{ request('status')=='active' ? 'selected' : '' }}>Active</option>
                     <option value="inactive" {{ request('status')=='inactive' ? 'selected' : '' }}>Inactive</option>
@@ -77,23 +77,25 @@
                 <input type="text"
                        name="address"
                        value="{{ request('address') }}"
-                       class="form-control"
+                       class="form-control filterchange"
                        placeholder="Search address">
             </div>
 
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-md-12 text-end">
-                <button class="btn btn-primary">
+        
+            <div class="col-md-2">
+                <!-- <button class="btn btn-primary">
                     <i class="fa fa-search"></i> Search
-                </button>
+                </button> -->
 
                 <a href="{{ route('pgs.index') }}" class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
                 </a>
             </div>
+        
+
         </div>
+
+       
     </form>
     {{-- ================= END FILTERS ================= --}}
 
@@ -141,7 +143,7 @@
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm"
-                                    onclick="return confirm('Are you sure?')"
+                                    data-swal-confirm="Are you sure?"
                                     title="Delete">
                                 <i class="fa fa-trash"></i>
                             </button>
@@ -165,6 +167,21 @@ $(document).ready(function () {
         pageLength: 25,
         order: [[0,'desc']]
     });
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('input change', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 300); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

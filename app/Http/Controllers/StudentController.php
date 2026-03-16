@@ -28,6 +28,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Exports\StudentListExport;
 use Illuminate\Support\Str;
+use App\Imports\StudentsFeeImport;
+use App\Exports\StudentsFeeTemplateExport;
 
 
 class StudentController extends Controller
@@ -117,9 +119,23 @@ class StudentController extends Controller
             if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
-            if ($request->filled('technology')) {
-                $query->where('technology', $request->technology);
+            if ($request->filled('is_intern')) {
+                $query->where('is_intern', $request->is_intern);
             }
+            if ($request->filled('is_online')) {
+                $query->where('is_online', $request->is_online);
+            }
+            // if ($request->filled('technology')) {
+            //     $query->where('technology', $request->technology);
+            // }
+
+            if ($request->filled('technology')) {
+                $query->whereRaw(
+                    "FIND_IN_SET(?, technology)",
+                    [$request->technology]
+                );
+            }
+
             // if ($request->filled('department')) {
             //     $query->where('department', $request->department);
             // }
@@ -228,6 +244,9 @@ class StudentController extends Controller
                 $query->orderBy('id', 'desc');
             }
 
+            if ($request->filled('limit')) {
+                $query->limit($request->limit);
+            }
             $students = $query->get();
             //dd($request->all());
             // $students = $query->orderBy('id', 'desc')->get();
@@ -235,8 +254,10 @@ class StudentController extends Controller
             // $students = $query->paginate(10);
 
         $sessions = StudentSession::all();
-        $colleges = College::all();
-        $courses = Course::all();
+        // $colleges = College::all();
+        $colleges = College::orderBy('college_name')->get();
+        $courses = Course::orderBy('course_name')->get();
+        // $courses = Course::all();
         $batches = Batch::all();
         $references = Reference::all();
         $departments = Department::all();
@@ -323,15 +344,21 @@ class StudentController extends Controller
             'contact'        => 'nullable|string|max:15',
 
             'gender'         => 'required|string',
-            'college_name'   => 'required|string',
+            // 'college_name'   => 'required|string',
+            'college_name' => 'required_if:is_place,0|nullable|string',
+            'place'        => 'required_if:is_place,1|nullable|string',
+            'is_place'    => 'nullable',
             'status'         => 'nullable',
-            'technology'     => 'nullable|string',
+            // 'technology'     => 'nullable|string',
+            'technology'   => 'nullable|array',
+            'technology.*' => 'string',
+
             'total_fees'     => 'required|numeric',
             'reg_fees'       => 'required|numeric',
             'paid_fees'       => 'required|numeric',
             'next_due_date'  => 'nullable|date',
             'join_date'      => 'nullable|date',
-            // 'duration'       => 'required',
+            'duration'       => 'nullable',
             'batch_assign'   => 'nullable|string',
             'reference'      => 'string',
             'start_date'     => 'required|date',
@@ -339,6 +366,8 @@ class StudentController extends Controller
             'part_time_offer'  => 'nullable|boolean',
             'placement_offer'  => 'nullable|boolean',
             'pg_offer'         => 'nullable|boolean',
+            'is_married'         => 'nullable|boolean',
+            'is_online'         => 'nullable|boolean',
         ]);
 
         if (($validate['reg_fees'] + $validate['paid_fees']) > $validate['total_fees']) {
@@ -385,7 +414,7 @@ class StudentController extends Controller
         $validate['f_name']       = Str::of($validate['f_name'])->trim()->lower();
 
         if (!empty($validate['contact'])) {
-            $contactExists = Student::withTrashed()
+            $contactExists = Student::query()
                 ->where('student_name', $validate['student_name'])
                 ->where('f_name', $validate['f_name'])
                 ->where('contact', $validate['contact'])
@@ -470,6 +499,12 @@ class StudentController extends Controller
                 trim(preg_replace('/^(mr\.?\s*)+/i', '', $request->f_name))
             )
         ]);
+
+        if ($request->filled('password')) {
+            $request->merge([
+                'password' => $request->password
+            ]);
+        }
         
         $validates = $request->validate([
             'student_name'   => 'required|string|max:255',
@@ -492,12 +527,19 @@ class StudentController extends Controller
             'email_id'       => 'nullable',
             'contact'        => 'required|string|max:15',
             'gender'         => 'required|string',
-            'college_name'   => 'required|string',   // not college_id
+            // 'college_name'   => 'required|string',   // not college_id
             // 'session'        => 'required|string',   // not session_id
-            'technology'     => 'required|string',   // not technology_id
+            // 'technology'     => 'required|string',   // not technology_id
+            'college_name' => 'required_if:is_place,0|nullable|string',
+            'place'        => 'required_if:is_place,1|nullable|string',
+            'is_place'    => 'nullable',
+            'technology'   => 'required|array',
+            'technology.*' => 'string',
+
             'batch_assign'   => 'required|string',   // not batch_id
             'reference'      => 'nullable|string',   // not reference_user
             'status'         => 'required|string',
+            'duration'         => 'nullable|string',
             'total_fees'     => 'required|numeric',
             'reg_fees'       => 'required|numeric',
             'paid_fees'       => 'nullable|numeric',
@@ -510,6 +552,10 @@ class StudentController extends Controller
             'part_time_offer'  => 'required|boolean',
             'placement_offer'  => 'required|boolean',
             'pg_offer'         => 'required|boolean',
+            'is_intern'         => 'required|boolean',
+            'is_married'         => 'nullable|boolean',
+            'is_online'         => 'nullable|boolean',
+            'password' => 'nullable|min:6',
         ]);
         // dd('Passed validation', $validates);
 
@@ -528,7 +574,7 @@ class StudentController extends Controller
 
         $activeSessionId = session('admin_session_id');
         if (!empty($validates['contact'])) {
-            $contactExists = Student::withTrashed()
+            $contactExists = Student::query()
                 ->where('student_name', $validates['student_name'])
                 ->where('f_name', $validates['f_name'])
                 ->where('contact', $validates['contact'])
@@ -554,6 +600,9 @@ class StudentController extends Controller
             0
         );
 
+        if ($request->filled('password')) {
+            $validates['plain_password'] = $validates['password'] = trim($request->password);
+        }
         $student->update($validates);
 
         return redirect()->route('students.index')
@@ -1244,7 +1293,7 @@ public function import(Request $request)
     public function issueCertificate($id)
     {
         // $student = Student::findOrFail($id);
-        $student = Student::with(['sessionData', 'durationData','collegeData','courseData'])->find($id);
+        $student = Student::with(['sessionData', 'durationData','collegeData'])->find($id);
 
         // 🔥 1. Check if pending fees exists
         if ($student->pending_fees > 0) {
@@ -1295,7 +1344,7 @@ public function import(Request $request)
         // Validate all selected students exist and pending fees = 0
         foreach ($ids as $studentId) {
             // $student = Student::find($studentId);
-            $student = Student::with(['sessionData', 'durationData','collegeData','courseData'])->find($studentId);
+            $student = Student::with(['sessionData', 'durationData','collegeData'])->find($studentId);
             if (!$student) {
                 return back()->with('error', "Student (ID: {$studentId}) not found.");
             }
@@ -1345,7 +1394,11 @@ public function import(Request $request)
         // $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
         $studentName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->student_name));
         $fatherName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->f_name));
-        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+        // $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+        $collegeOrPlace = optional($student->CollegeData)->FullName ?: $student->place;
+
+        // sanitize
+        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($collegeOrPlace));
 
         $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
 
@@ -1483,7 +1536,11 @@ private function generatePdf($student)
         // $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
         $studentName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->student_name));
         $fatherName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->f_name));
-        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+        // $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+        $collegeOrPlace = optional($student->CollegeData)->FullName ?: $student->place;
+
+        // sanitize
+        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($collegeOrPlace));
 
         $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
 
@@ -1604,7 +1661,11 @@ private function generatePdf($student)
         
         $studentName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->student_name));
         $fatherName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->f_name));
-        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+        // $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+        $collegeOrPlace = optional($student->CollegeData)->FullName ?: $student->place;
+
+        // sanitize
+        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($collegeOrPlace));
 
         $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
 
@@ -1737,9 +1798,17 @@ private function generatePdf($student)
             $query->where('status', $request->status);
         }
 
+        // if ($request->filled('technology')) {
+        //     $query->where('technology', $request->technology);
+        // }
+
         if ($request->filled('technology')) {
-            $query->where('technology', $request->technology);
+            $query->whereRaw(
+                "FIND_IN_SET(?, technology)",
+                [$request->technology]
+            );
         }
+
 
         // if ($request->filled('department')) {
         //     $query->where('department', $request->department);
@@ -1805,9 +1874,17 @@ private function generatePdf($student)
             $query->where('status', $request->status);
         }
 
+        // if ($request->filled('technology')) {
+        //     $query->where('technology', $request->technology);
+        // }
+
         if ($request->filled('technology')) {
-            $query->where('technology', $request->technology);
+            $query->whereRaw(
+                "FIND_IN_SET(?, technology)",
+                [$request->technology]
+            );
         }
+
 
         // if ($request->filled('department')) {
         //     $query->where('department', $request->department);
@@ -1969,9 +2046,37 @@ private function generatePdf($student)
 
     public function exportExcel(Request $request)
     {
+         // Check if any filters exist in request
+        // $isFiltered = !empty(array_filter($request->all()));
+        
+        // // Set filename based on condition
+        // $fileName = $isFiltered 
+        //     ? 'Students_Filtered_Data.xlsx' 
+        //     : 'Students_Data.xlsx';
+
+         // date format → 16_feb_2026
+        $date = strtolower(now()->format('d_M_Y'));
+
+        // default filename
+        $fileName = 'students_list_' . $date;
+        if ($request->filled('technology')) {
+
+            $fileName = 'students_technology_' . $date;
+        }
+        if ($request->filled('gender')) {
+
+            $fileName = 'students_' . $request->gender . '_' . $date;
+        }
+        // change filename based on fee filter
+        if ($request->filled('fee_filter')) {
+
+            $fileName = 'students_' . $request->fee_filter . '_' . $date;
+        }
+
+
         return Excel::download(
             new StudentListExport($request),
-            'students_filtered.xlsx'
+             $fileName . '.xlsx'
         );
     }
 
@@ -2010,4 +2115,125 @@ private function generatePdf($student)
         return redirect()->back()->with('success', 'Students copied successfully.');
     }
 
+    public function makeInterns(Request $request)
+    {
+        // dd($request);
+        $request->validate([
+            'ids' => 'required'
+        ]);
+
+        // Decode safely
+        $ids = json_decode($request->ids, true);
+        // dd($ids);
+        // If empty / invalid JSON
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Get only existing IDs
+        $validIds = Student::whereIn('id', $ids)->pluck('id')->toArray();
+
+        // If no valid students found
+        if (empty($validIds)) {
+            return back()->with('error', 'Selected students do not exist.');
+        }
+
+        // Update interns
+        Student::whereIn('id', $validIds)->update([
+            'is_intern' => 1
+        ]);
+
+        return back()->with('success', 'Students marked as intern successfully.');
+    }
+
+
+    public function importFeeForm()
+    {
+        return view('students.import_fee');
+    }
+
+    public function importFee(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+
+        \DB::beginTransaction();
+
+        try {
+
+            $importer = new \App\Imports\StudentsFeeImport();
+            \Maatwebsite\Excel\Facades\Excel::import($importer, $file);
+
+            // Validation failures
+            $failures = $importer->failures();
+            if ($failures->isNotEmpty()) {
+
+                \DB::rollBack();
+
+                $messages = [];
+
+                foreach ($failures as $failure) {
+                    $messages[] =
+                        "Row {$failure->row()} – {$failure->attribute()} – " .
+                        implode(', ', $failure->errors());
+                }
+
+                return back()->withErrors($messages);
+            }
+
+            \DB::commit();
+
+            // Final counts
+            $total    = $importer->totalRows;
+            $inserted = $importer->insertedRows;
+            $skipped  = $importer->skippedRows;
+
+            $message = "From {$total} records: {$inserted} records updated successfully, {$skipped} skipped.";
+
+            // Warnings
+            $warnings = $importer->duplicateContacts;
+
+            if (!empty($warnings)) {
+                return back()
+                    ->with('success', $message)
+                    ->withErrors($warnings);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Throwable $e) {
+            dd($e);
+            \DB::rollBack();
+
+            return back()->withErrors([
+                'Import failed: Something went wrong while importing the file.'
+            ]);
+        }
+    }
+
+    // public function downloadActiveSessionStudents()
+    // {
+    //     $activeSessionNo = session('admin_session_id');
+
+    //     return Excel::download(
+    //         new ActiveSessionStudentsExport($activeSessionNo),
+    //         'active_session_students_fee_upload.xlsx'
+    //     );
+    // }
+    public function downloadActiveSessionStudents()
+    {
+        $activeSessionNo = session('admin_session_id');
+
+        if (!$activeSessionNo) {
+            abort(403, 'Active session not found.');
+        }
+
+        return Excel::download(
+            new StudentsFeeTemplateExport($activeSessionNo),
+            'active_session_students_fee_upload.xlsx'
+        );
+    }
 }

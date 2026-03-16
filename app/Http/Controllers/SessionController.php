@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+// dd(__FILE__);
 use Illuminate\Http\Request;
 use App\Models\StudentSession;
 use App\Models\Course;
@@ -18,77 +18,32 @@ class SessionController extends Controller
         $this->middleware('permission:sessions.edit')->only(['edit','update']);
         $this->middleware('permission:sessions.delete')->only('destroy');
     }
-//    public function index()
-// {
-//     $sessions = StudentSession::with(['batches.students'])
-//         ->withCount('batches')
-//         ->latest()
-//         ->get();
-
-//     foreach ($sessions as $session) {
-
-//         $onlineCount  = 0;
-//         $offlineCount = 0;
-
-//         foreach ($session->batches as $batch) {
-
-//             if ($batch->batch_mode === 'online') {
-//                 $onlineCount += $batch->students->count();
-//             }
-
-//             if ($batch->batch_mode === 'offline') {
-//                 $offlineCount += $batch->students->count();
-//             }
-//         }
-
-//         // attach dynamic values
-//         $session->online_students  = $onlineCount;
-//         $session->offline_students = $offlineCount;
-//     }
-//     // dd($sessions);
-//     return view('sessions.index', compact('sessions'));
-// }
-public function index()
+ 
+    public function index()
 {
     $activeSessionId = session('admin_session_id');
-    $sessions = StudentSession::with(['batches.students'])
-        // ->withCount('batches')
+
+    $sessionsList = StudentSession::with(['batches.students'])
+        ->withCount([
+            'students',
+            'students as online_students_count' => function ($query) {
+                $query->where('is_online', 1);
+            },
+            'students as offline_students_count' => function ($query) {
+                $query->where('is_online', 0);
+            }
+        ])
         ->latest()
         ->get();
 
-    return view('sessions.index', compact('sessions','activeSessionId'));
+    // dd($sessionsList);
+    return view('sessions.index', compact('sessionsList','activeSessionId'));
 }
+ 
 
-    public function i12312ndex()
-{
-    $sessions = StudentSession::with(['batches.students'])
-        ->withCount('batches')
-        ->latest()
-        ->get();
+    
 
-    foreach ($sessions as $session) {
-
-        $onlineCount  = 0;
-        $offlineCount = 0;
-
-        foreach ($session->batches as $batch) {
-
-            if ($batch->batch_mode === 'online') {
-                $onlineCount += $batch->students->count();
-            }
-
-            if ($batch->batch_mode === 'offline') {
-                $offlineCount += $batch->students->count();
-            }
-        }
-
-        // 🔥 PROPERLY ATTACH ATTRIBUTES
-        $session->setAttribute('online_students', $onlineCount);
-        $session->setAttribute('offline_students', $offlineCount);
-    }
-
-    return view('sessions.index', compact('sessions'));
-}
+   
 
 
 

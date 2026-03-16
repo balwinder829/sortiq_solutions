@@ -66,7 +66,7 @@
         <form method="POST"
               action="{{ route('upcoming-events.dismiss', $event) }}"
               class="d-inline"
-              onsubmit="return confirm('Dismiss notifications for this event?')">
+              data-swal-confirm="Dismiss notifications for this event?">
             @csrf
             <button class="btn btn-sm btn-outline-danger"
                     title="Dismiss Notifications">
@@ -80,7 +80,7 @@
         <form method="POST"
               action="{{ route('upcoming-events.enable', $event) }}"
               class="d-inline"
-              onsubmit="return confirm('Re-enable notifications for this event?')">
+              data-swal-confirm="Re-enable notifications for this event?">
             @csrf
             <button class="btn btn-sm btn-outline-success"
                     title="Re-enable Notifications">
@@ -93,7 +93,7 @@
     <form method="POST"
           action="{{ route('upcoming-events.destroy', $event) }}"
           class="d-inline"
-          onsubmit="return confirm('Are you sure you want to delete this event? This action cannot be undone.')">
+          data-swal-confirm="Are you sure you want to delete this event? This action cannot be undone.">
         @csrf
         @method('DELETE')
         <button class="btn btn-sm btn-outline-dark"

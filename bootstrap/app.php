@@ -13,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prependToGroup('web', \App\Http\Middleware\BlockBlockedIp::class);
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\LogSystemActivity::class,
+        ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'enquiry.otp' => \App\Http\Middleware\EnquiryOtpCheck::class,

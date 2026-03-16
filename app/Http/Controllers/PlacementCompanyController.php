@@ -65,13 +65,28 @@ class PlacementCompanyController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string|max:20',
+            // email optional
+            'email'   => ['nullable','string'],
+            // 'phone' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+            'phone' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
             'website' => 'nullable|url',
             'status' => 'required',
+        ],[
+            'phone.regex' => 'Each phone number must be between 10 to 18 digits and comma separated.',
         ]);
 
-        PlacementCompany::create($request->all());
+        $data = $request->all();
+
+        $data['phone'] = isset($data['phone'])
+            ? implode(',', array_map('trim', explode(',', $data['phone'])))
+            : null;
+
+        $data['email'] = isset($data['email'])
+            ? implode(',', array_map('trim', explode(',', $data['email'])))
+            : null;
+
+        // PlacementCompany::create($request->all());
+        PlacementCompany::create($data);
 
         return redirect()->route('placement-companies.index')
             ->with('success', 'Company added successfully');
@@ -89,13 +104,30 @@ class PlacementCompanyController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string|max:20',
+             'email'   => ['nullable','string'],
+            // 'phone' => ['nullable','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+            'phone' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            
             'website' => 'nullable|url',
             'status' => 'required',
+        ],[
+            'phone.regex' => 'Each phone number must be between 10 t 18 digits and comma separated.',
         ]);
 
-        $company->update($request->all());
+        $data = $request->all();
+
+        // ✅ Clean phone values
+        $data['phone'] = isset($data['phone'])
+            ? implode(',', array_map('trim', explode(',', $data['phone'])))
+            : null;
+
+        // ✅ Clean email values
+        $data['email'] = isset($data['email'])
+            ? implode(',', array_map('trim', explode(',', $data['email'])))
+            : null;
+
+        $company->update($data);
+        // $company->update($request->all());
 
         return redirect()->route('placement-companies.index')
             ->with('success', 'Company updated successfully');

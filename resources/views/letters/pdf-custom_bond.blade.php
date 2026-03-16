@@ -109,6 +109,17 @@ tr {
                     </td>
                 </tr>
             </table>
+            @php
+                $employmentLine = null;
+
+                if ($letter->employee->work_mode === 'online' && $letter->employee->job_type === 'part_time') {
+                    $employmentLine = "Online, Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
+                } elseif ($letter->employee->work_mode === 'online') {
+                    $employmentLine = "Online";
+                } elseif ($letter->employee->job_type === 'part_time') {
+                    $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
+                }
+            @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
 
                <tr>
@@ -121,6 +132,13 @@ tr {
                        <strong>Mr./Ms: </strong> {{ ucwords($letter->employee->emp_name) }}
                     </td>
                 </tr>
+                 @if($employmentLine)
+                <tr>
+                    <td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
+                        <strong>Employment Type: </strong> {{ $employmentLine }}
+                    </td>
+                </tr>
+                @endif
                 <tr>
                     <td align="left" style="font-size: 14px; line-height: 24px; text-align:left;  padding-bottom:10px; font-family: 'Inter', sans-serif;">
                         <strong>Starting Date: </strong> {{ \Carbon\Carbon::parse(

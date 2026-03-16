@@ -23,6 +23,9 @@ class Placement extends Model
         'cover_image',
         'session_id',
         'state_id',
+        'youtube_link',
+        'gdrive',
+        'versal',
         'location',
     ];
 
@@ -66,21 +69,26 @@ class Placement extends Model
 
 
     // app/Models/Placement.php
+    // public function getCollegeFullNameAttribute()
+    // {
+    //     $college  = $this->college;
+
+    //     if (!$college) {
+    //         return '';
+    //     }
+
+    //     $parts = [
+    //         $college->college_name ?? '',
+    //         $college->district->name ?? '',
+    //         $college->state->name ?? '',
+    //     ];
+
+    //     return implode(', ', array_filter($parts));
+    // }
+
     public function getCollegeFullNameAttribute()
     {
-        $college  = $this->college;
-
-        if (!$college) {
-            return '';
-        }
-
-        $parts = [
-            $college->college_name ?? '',
-            $college->district->name ?? '',
-            $college->state->name ?? '',
-        ];
-
-        return implode(', ', array_filter($parts));
+        return $this->college?->full_name ?? '';
     }
 
 

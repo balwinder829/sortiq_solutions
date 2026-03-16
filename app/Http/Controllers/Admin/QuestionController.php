@@ -43,23 +43,49 @@ class QuestionController extends Controller
             ]);
         }
 
+        return redirect()->back()
+            ->with('success', 'Question added successfully');
         // Redirect back to tests index
-         return redirect()
-            ->route(
-                $test->test_mode === 'offline'
-                    ? 'admin.offline-tests.index'
-                    : 'admin.tests.index'
-            )
-            ->with('success', 'Question Added');
+         // return redirect()
+         //    ->route(
+         //        $test->test_mode === 'offline'
+         //            ? 'admin.offline-tests.index'
+         //            : 'admin.tests.index'
+         //    )
+         //    ->with('success', 'Question Added');
         // return redirect()->route('admin.tests.index')->with('success','Question Added');
     }
     public function edit($id)
     {
-        $question = Question::findOrFail($id);
+        // $question = Question::findOrFail($id);
+         $question = Question::with('options')->findOrFail($id);
+        // dd($question);
         return view('admin.questions.edit', compact('question'));
     }
 
     public function update(Request $request, $id)
+    {
+        $question = Question::findOrFail($id);
+
+        $question->update([
+            'question' => $request->question
+        ]);
+
+        foreach ($request->options as $optionId => $optionData) {
+
+            $option = Option::find($optionId);
+
+            $option->update([
+                'option_text' => $optionData['text'],
+                'is_correct' => $optionId == $request->correct_answer ? 1 : 0
+            ]);
+        }
+
+        return redirect()->route('admin.tests.show', $question->test_id)
+            ->with('success','Question updated successfully!');
+    }
+    
+    public function updateold(Request $request, $id)
     {
         $request->validate([
             'question_text' => 'required|string',
@@ -75,6 +101,15 @@ class QuestionController extends Controller
 
         return redirect()->route('admin.tests.show', $question->test_id)
                         ->with('success', 'Question updated successfully!');
+    }
+
+    public function destroy(Question $question)
+    {
+        $question->delete();
+
+         return back()->with('success', 'Question deleted successfully.');
+        // return redirect()->route('questions.index')
+        //                  ->with('success', 'Question deleted successfully.');
     }
 
 }

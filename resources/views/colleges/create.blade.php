@@ -16,17 +16,24 @@
     <form action="{{ route('colleges.store') }}" method="POST">
         @csrf
 
-        <div class="mb-3">
+        <div class="row">
+        <div class="form-group col-md-6">
             <label><strong>Name</strong></label>
-            <input type="text" name="college_name" class="form-control" value="{{ old('college_name') }}" required>
+            <input type="text" name="college_name"  class="form-control @error('college_name') is-invalid @enderror" value="{{ old('college_name') }}" required>
+             @error('college_name')
+                <div class="invalid-feedback">
+                    {{ $message }}
+                </div>
+            @enderror
+
         </div>
 
-        <div class="mb-3">
+        <div class="form-group col-md-6">
             <label><strong>Display Name</strong></label>
             <input type="text" name="college_display_name" class="form-control" value="{{ old('college_display_name') }}" required>
         </div>
 
-        <div class="mb-3">
+        <div class="form-group col-md-6">
             <label><strong>State</strong></label>
             <select name="state_id" id="state" class="form-control" required>
                 <option value="">-- Select State --</option>
@@ -38,13 +45,41 @@
             </select>
         </div>
 
-        <div class="mb-3">
+        <div class="form-group col-md-6">
             <label><strong>District</strong></label>
             <select name="district_id" id="district" class="form-control" required disabled>
                 <option value="">-- Select District --</option>
             </select>
         </div>
 
+         <div class="form-group col-md-6">
+            <label>College Type</label>
+            <select name="college_type" class="form-control">
+                <option value="0">Degree</option>
+                <option value="1">Diploma</option>
+            </select>
+        </div>
+
+         <div class="form-group col-md-6">
+            <label>Offer Training</label>
+            <select name="offer_training" class="form-control">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+            </select>
+        </div>
+
+        <div class="form-group col-md-6">
+            <label>Training Times in Year</label>
+            <select name="training_in_year" class="form-control">
+                @foreach(range(0, 5) as $year)
+                    <option value="{{ $year }}"
+                        {{ old('training_in_year', $college->training_in_year ?? '') == $year ? 'selected' : '' }}>
+                        {{ $year }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
         <button class="btn btn-success">Add</button>
     </form>
 </div>

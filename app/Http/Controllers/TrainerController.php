@@ -6,6 +6,8 @@ use App\Models\Trainer;
 use App\Models\StudentSession;
 use App\Models\User;
 use App\Models\Batch;
+use App\Models\Course;
+use App\Http\DataTables\DataTablesServerSide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
@@ -45,55 +47,120 @@ class TrainerController extends Controller
         }
     }
 
+//     public function index(Request $request)
+// {
+//     $currentSession = session('admin_session_id');
+//     $today = now()->toDateString();
+//     $currentTime = now()->format('H:i:s');
+
+//     // 🔵 Get all courses for filter dropdown
+//     $courses = \App\Models\Course::orderBy('course_name')->get();
+
+
+//     $trainersQuery = Trainer:: withCount([
+
+//             // TOTAL batches
+//             'batches as session_batches_count' => function($q) use ($currentSession) {
+//                 $q->where('session_name', $currentSession);
+//             },
+
+//             // ONLINE batches
+//             'batches as online_batches_count' => function($q) use ($currentSession) {
+//                 $q->where('session_name', $currentSession)
+//                   ->where('batch_mode', 'online');
+//             },
+
+//             // OFFLINE batches
+//             'batches as offline_batches_count' => function($q) use ($currentSession) {
+//                 $q->where('session_name', $currentSession)
+//                   ->where('batch_mode', 'offline');
+//             },
+
+//             // TODAY remaining
+//             'batches as today_remaining_batches_count' => function($q) use ($today, $currentTime) {
+//                 $q->whereDate('start_time', $today)
+//                   ->where('end_time', '>', $currentTime);
+//             },
+
+//         ]);
+
+//     // 🔴 APPLY TECHNOLOGY FILTER (Course)
+//     if ($request->filled('course')) {
+//         $courseId = $request->course;
+
+//         // FIND trainers where this course id exists in comma separated technology
+//         $trainersQuery->whereRaw("FIND_IN_SET(?, technology)", [$courseId]);
+//     }
+
+//     $trainers = $trainersQuery->latest()->get();
+
+//     return view('trainers.index', compact('trainers', 'courses'));
+// }
+
+
     public function index(Request $request)
-{
-    $currentSession = session('admin_session_id');
-    $today = now()->toDateString();
-    $currentTime = now()->format('H:i:s');
-
-    // 🔵 Get all courses for filter dropdown
-    $courses = \App\Models\Course::orderBy('course_name')->get();
-
-
-    $trainersQuery = Trainer:: withCount([
-
-            // TOTAL batches
-            'batches as session_batches_count' => function($q) use ($currentSession) {
-                $q->where('session_name', $currentSession);
-            },
-
-            // ONLINE batches
-            'batches as online_batches_count' => function($q) use ($currentSession) {
-                $q->where('session_name', $currentSession)
-                  ->where('batch_mode', 'online');
-            },
-
-            // OFFLINE batches
-            'batches as offline_batches_count' => function($q) use ($currentSession) {
-                $q->where('session_name', $currentSession)
-                  ->where('batch_mode', 'offline');
-            },
-
-            // TODAY remaining
-            'batches as today_remaining_batches_count' => function($q) use ($today, $currentTime) {
-                $q->whereDate('start_time', $today)
-                  ->where('end_time', '>', $currentTime);
-            },
-
-        ]);
-
-    // 🔴 APPLY TECHNOLOGY FILTER (Course)
-    if ($request->filled('course')) {
-        $courseId = $request->course;
-
-        // FIND trainers where this course id exists in comma separated technology
-        $trainersQuery->whereRaw("FIND_IN_SET(?, technology)", [$courseId]);
+    {
+        $courses = Course::orderBy('course_name')->get();
+        return view('trainers.index', compact('courses'));
     }
 
-    $trainers = $trainersQuery->latest()->get();
+    public function data(Request $request)
+    {
+        $currentSession = session('admin_session_id');
+        $today = now()->toDateString();
+        $currentTime = now()->format('H:i:s');
 
-    return view('trainers.index', compact('trainers', 'courses'));
-}
+        $trainersQuery = Trainer::withCount([
+            'batches as session_batches_count' => function ($q) use ($currentSession) {
+                $q->where('session_name', $currentSession);
+            },
+            'batches as online_batches_count' => function ($q) use ($currentSession) {
+                $q->where('session_name', $currentSession)->where('batch_mode', 'online');
+            },
+            'batches as offline_batches_count' => function ($q) use ($currentSession) {
+                $q->where('session_name', $currentSession)->where('batch_mode', 'offline');
+            },
+            'batches as today_remaining_batches_count' => function ($q) use ($today, $currentTime) {
+                $q->whereDate('start_time', $today)->where('end_time', '>', $currentTime);
+            },
+        ]);
+
+        if ($request->filled('course')) {
+            $trainersQuery->whereRaw('FIND_IN_SET(?, technology)', [$request->course]);
+        }
+
+        return DataTablesServerSide::response($request, $trainersQuery, [
+            'orderable'  => ['id', 'username', 'name', 'gender', 'phone', 'email', 'technology'],
+            'searchable' => ['username', 'name', 'email', 'phone'],
+        ], function ($trainer, $index, $start) {
+            $techIds = $trainer->technology ? explode(',', $trainer->technology) : [];
+            $techNames = Course::whereIn('id', $techIds)->pluck('course_name');
+            $techHtml = '';
+            foreach ($techNames as $name) {
+                $techHtml .= '<span class="badge bg-primary">' . e($name) . '</span> ';
+            }
+            $totalBat = '<div class="batch-circle batch-link" data-id="' . $trainer->id . '" data-name="' . e($trainer->name ?? 'N/A') . '" data-type="all" title="View All Batches">' . (int) ($trainer->session_batches_count ?? 0) . '</div>';
+            $onlineBat = '<div class="batch-circle" style="background:#198754" title="Online Batches">' . (int) ($trainer->online_batches_count ?? 0) . '</div>';
+            $offlineBat = '<div class="batch-circle" style="background:#fd7e14" title="Offline Batches">' . (int) ($trainer->offline_batches_count ?? 0) . '</div>';
+            $todayBat = '<div class="batch-circle batch-link" data-id="' . $trainer->id . '" data-name="' . e($trainer->name ?? 'N/A') . '" data-type="remaining" title="View Today\'s Remaining Batches">' . (int) ($trainer->today_remaining_batches_count ?? 0) . '</div>';
+            $actions = '<a href="' . route('trainers.edit', $trainer->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a>';
+            return [
+                $trainer->id,
+                e($trainer->username ?? ''),
+                ucwords($trainer->name ?? ''),
+                ucfirst($trainer->gender ?? '-'),
+                e($trainer->phone ?? 'N/A'),
+                e($trainer->email ?? 'N/A'),
+                $techHtml,
+                $totalBat,
+                $onlineBat,
+                $offlineBat,
+                $todayBat,
+                $actions,
+            ];
+        });
+    }
+
 
     public function index2()
 {

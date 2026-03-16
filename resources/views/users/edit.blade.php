@@ -19,7 +19,7 @@
 
             <div class="form-group col-md-6">
                 <label>Name</label>
-                <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" readonly disabled>
+                <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}">
                 @error('name')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
@@ -27,7 +27,7 @@
 
             <div class="form-group col-md-6">
                 <label>Email</label>
-                <input type="text" name="email" class="form-control" value="{{ old('email', $user->email) }}" readonly disabled>
+                <input type="text" name="email" class="form-control" value="{{ old('email', $user->email) }}">
                 @error('email')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
@@ -35,12 +35,12 @@
 
             <div class="form-group col-md-6">
                 <label>Phone</label>
-                <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}" readonly disabled>
+                <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}" >
                 @error('phone')
                     <span class="text-danger">{{ $message }}</span>
                 @enderror
             </div>
-
+            
            
             <div class="form-group col-md-6">
     <label>Role</label>
@@ -89,10 +89,39 @@
                 @enderror
             </div>
 
+             {{-- Password --}}
+            <div class="form-group col-md-6">
+                <label>Existing Password</label>
+
+                <div class="input-group">
+                    <input type="password"
+                           id="plain_pswd"
+                           name="plain_pswd"
+                           class="form-control @error('plain_pswd') is-invalid @enderror"
+                           value="{{ old('plain_pswd', $user->plain_pswd) }}"
+                           readonly>
+
+                    <span class="input-group-text" style="cursor:pointer"
+                          onclick="togglePswd()">
+                        👁
+                    </span>
+                </div>
+            </div>
 
         </div>
 
         <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{{ route('users.index') }}" class="btn btn-secondary mt-0">Back</a>
     </form>
 </div>
 @endsection
+@push('scripts')
+<script>
+    
+    function togglePswd() {
+    const input = document.getElementById('plain_pswd');
+    input.type = input.type === 'password' ? 'text' : 'password';
+} 
+
+</script>
+@endpush

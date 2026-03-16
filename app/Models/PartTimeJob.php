@@ -20,4 +20,14 @@ class PartTimeJob extends Model
         'email',
         'status'
     ];
+
+    public function getPhoneListAttribute()
+    {
+        return $this->mobile ? explode(',', $this->mobile) : [];
+    }
+
+    public function getEmailListAttribute()
+    {
+        return $this->email ? explode(',', $this->email) : [];
+    }
 }

@@ -13,11 +13,11 @@
     <div class="row mb-3 align-items-center">
         <div class="col-md-12">
             <form method="GET"
-                  action="{{ route('interview-questions.practice') }}"
+                  id="filterForm"
                   class="row g-2">
 
                 <div class="col-md-3">
-                    <select name="round_type" class="form-control">
+                    <select name="round_type" class="form-control filterchange">
                         <option value="">All Rounds</option>
                         <option value="hr" {{ request('round_type')=='hr'?'selected':'' }}>
                             HR
@@ -32,7 +32,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <select name="experience_level" class="form-control">
+                    <select name="experience_level" class="form-control filterchange">
                         <option value="">All Experience</option>
                         <option value="fresher" {{ request('experience_level')=='fresher'?'selected':'' }}>Fresher</option>
                         <option value="1-3" {{ request('experience_level')=='1-3'?'selected':'' }}>1–3 Years</option>
@@ -42,7 +42,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <select name="technology_id" class="form-control">
+                    <select name="technology_id" class="form-control filterchange">
                         <option value="">All Technologies</option>
                         @foreach($technologies as $tech)
                             <option value="{{ $tech->id }}"
@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-primary">Search</button>
+                    <!-- <button class="btn btn-primary">Search</button> -->
                     <a href="{{ route('interview-questions.practice') }}"
                        class="btn btn-secondary">
                         Reset
@@ -70,7 +70,7 @@
         <div class="card mb-3">
             <div class="card-body">
 
-                <div class="mb-2">
+                <!-- <div class="mb-2">
                     <span class="badge bg-info">
                         {{ strtoupper($q->round_type) }}
                     </span>
@@ -84,7 +84,38 @@
                     <span class="badge bg-success">
                         {{ $q->experience_level }}
                     </span>
+                </div> -->
+
+                <div class="mb-2 d-flex justify-content-between align-items-start">
+
+                    <div>
+                        <span class="badge bg-info">
+                            {{ strtoupper($q->round_type) }}
+                        </span>
+
+                        @if($q->technology)
+                            <span class="badge bg-secondary">
+                                {{ $q->technology->name }}
+                            </span>
+                        @endif
+
+                        <span class="badge bg-success">
+                            {{ $q->experience_level }}
+                        </span>
+                    </div>
+
+                    {{-- EDIT ICON --}}
+                    <a href="{{ route('interview-questions.edit',$q->id) }}"
+                       class="text-primary"
+                       title="Edit Question">
+
+                        <i class="fa fa-edit"></i>
+                        {{-- or Bootstrap icon --}}
+                        {{-- <i class="bi bi-pencil-square"></i> --}}
+                    </a>
+
                 </div>
+
 
                 <h6 class="fw-bold">
                     Q. {{ $q->question }}
@@ -103,4 +134,24 @@
     @endforelse
 
 </div>
+
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
+</script>
 @endsection

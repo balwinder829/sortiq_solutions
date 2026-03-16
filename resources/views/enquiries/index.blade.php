@@ -17,6 +17,7 @@
         <div class="col-md-6">
             <h1 class="page_heading">Manage Data</h1>
         </div>
+
         <div class="col-md-6">
                 <div class="d-flex justify-content-end">
                     
@@ -24,6 +25,36 @@
             </div>
         </div>
     </div>
+    <div class="row mb-3">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <h6>Total Leads</h6>
+                <h3 class="text-primary">{{ $totalLeads }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <h6>Assigned Leads</h6>
+                <h3 class="text-success">{{ $assignedLeads }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <h6>Unassigned Leads</h6>
+                <h3 class="text-danger">{{ $unassignedLeads }}</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
 
     {{-- Flash Messages --}}
     @if(session('success'))
@@ -41,12 +72,12 @@
     @endif
 
     {{-- ======================== FILTERS ======================== --}}
-    <form method="GET" action="{{ route('enquiries.index') }}" class="mb-3">
+    <form method="GET" id="filterForm" class="mb-3">
         <div class="row">
 
             <div class="col-md-3 mb-2">
                 <label><strong>College</strong></label>
-                <select name="college" class="form-control">
+                <select name="college" class="form-control filterchange">
                     <option value="">All</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->id }}"
@@ -61,7 +92,7 @@
             @if(auth()->user()->isAdmin())
             <div class="col-md-3 mb-2">
                 <label><strong>Salesperson</strong></label>
-                <select name="salesperson_id" class="form-control">
+                <select name="salesperson_id" class="form-control filterchange">
                     <option value="">All</option>
                     @foreach($sales as $s)
                         <option value="{{ $s->id }}"
@@ -76,19 +107,19 @@
 
             <div class="col-md-3 mb-2">
                 <label><strong>Study</strong></label>
-                <input type="text" name="study" class="form-control"
+                <input type="text" name="study" class="form-control filterchangetext"
                        value="{{ request('study') }}">
             </div>
 
             <div class="col-md-3 mb-2">
                 <label><strong>Semester</strong></label>
-                <input type="text" name="semester" class="form-control"
+                <input type="text" name="semester" class="form-control filterchangetext"
                        value="{{ request('semester') }}">
             </div>
 
             <div class="col-md-3 mb-2">
                 <label><strong>Lead Status</strong></label>
-                <select name="lead_status" class="form-control">
+                <select name="lead_status" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="new" {{ request('lead_status')=='new' ? 'selected' : '' }}>New</option>
                     <option value="followup" {{ request('lead_status')=='followup' ? 'selected' : '' }}>Follow-up</option>
@@ -100,7 +131,7 @@
             
             <div class="col-md-3 mb-2">
                 <label><strong>Source</strong></label>
-                <select name="source_type" class="form-control">
+                <select name="source_type" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="excel" {{ request('source_type')=='excel' ? 'selected' : '' }}>Excel</option>
                     <option value="manual" {{ request('source_type')=='manual' ? 'selected' : '' }}>Manual</option>
@@ -111,7 +142,7 @@
 
             <div class="col-md-3 mb-2">
                 <label><strong>Registered</strong></label>
-                <select name="registered" class="form-control">
+                <select name="registered" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="yes" {{ request('registered')=='yes' ? 'selected' : '' }}>Yes</option>
                     <option value="no" {{ request('registered')=='no' ? 'selected' : '' }}>No</option>
@@ -120,7 +151,7 @@
 
             <div class="col-md-3 mb-2">
                 <label><strong>Quick Date</strong></label>
-                <select name="quick_date" class="form-control">
+                <select name="quick_date" class="form-control filterchange">
                     <option value="">Select</option>
                     <option value="today" {{ request('quick_date')=='today' ? 'selected' : '' }}>Today</option>
                     <option value="yesterday" {{ request('quick_date')=='yesterday' ? 'selected' : '' }}>Yesterday</option>
@@ -133,19 +164,19 @@
 
             <div class="col-md-3 mb-2">
                 <label><strong>From Date</strong></label>
-                <input type="date" name="from_date" class="form-control"
+                <input type="date" name="from_date" class="form-control filterchange"
                        value="{{ request('from_date') }}">
             </div>
 
             <div class="col-md-3 mb-2">
                 <label><strong>To Date</strong></label>
-                <input type="date" name="to_date" class="form-control"
+                <input type="date" name="to_date" class="form-control filterchange"
                        value="{{ request('to_date') }}">
             </div>
 
             <div class="col-md-3">
                 <label><strong>Follow-up Status</strong></label>
-                <select name="followup_filter" class="form-control">
+                <select name="followup_filter" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="today" {{ request('followup_filter')=='today' ? 'selected' : '' }}>
                         Due Today
@@ -162,14 +193,31 @@
                 </select>
             </div>
 
+            @if(auth()->user()->isAdmin())
+            <div class="col-md-3">
+                <label><strong>Assigned Status</strong></label>
+                <select name="assigned_status" class="form-control filterchange">
+                    <option value="">All</option>
+
+                    <option value="assigned" {{ request('assigned_status')=='assigned' ? 'selected' : '' }}>
+                        Assigned
+                    </option>
+
+                    <option value="unassigned" {{ request('assigned_status')=='unassigned' ? 'selected' : '' }}>
+                        Unassigned
+                    </option>
+                </select>
+            </div>
+            @endif
+
 
         </div>
 
         <div class="row mt-3">
             <div class="col-md-12 text-end">
-                <button type="submit" class="btn btn-primary">
+                <!-- <button type="submit" class="btn btn-primary">
                     <i class="fa fa-search"></i> Search
-                </button>
+                </button> -->
                 <a href="{{ route('enquiries.index') }}" class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
                 </a>
@@ -342,72 +390,176 @@
     </div>
 
 </div>
-
+@endsection
 {{-- ======================== SCRIPTS ======================== --}}
 @push('scripts')
 
 <script>
+
+let selectedEnquiries = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+
+/* ================================
+   DATATABLE
+================================ */
 $(document).ready(function () {
+
     $('#enquiriesTable').DataTable({
         paging: false,
         info: false,
-        ordering: false,   // 🔒 STOP ROW SHUFFLING
-    searching: false,  // 🔒 PREVENT REDRAW
-        pageLength: 50
-    });
-});
-</script>
-
-<script>
-$('#selectAll').on('change', function() {
-    $('.rowCheck:enabled').prop('checked', this.checked);
-});
-</script>
-
-<script>
-$('#assignBtn').on('click', function () {
-
-    let ids = [];
-    $('.rowCheck:checked').each(function () {
-        ids.push($(this).val());
+        ordering: false,
+        searching: false,
+        pageLength: 50,
+        order:[]
     });
 
+    restoreCheckedBoxes();
+
+});
+
+/* ================================
+   RESTORE CHECKBOXES WHEN PAGE LOAD
+================================ */
+function restoreCheckedBoxes(){
+
+    $('.rowCheck').each(function(){
+
+        let id = $(this).val();
+
+        if(selectedEnquiries.includes(id)){
+            $(this).prop('checked', true);
+        }
+
+    });
+
+}
+
+/* ================================
+   SINGLE CHECKBOX SELECT
+================================ */
+$(document).on('change','.rowCheck',function(){
+
+    let id = $(this).val();
+
+    if($(this).is(':checked')){
+
+        if(!selectedEnquiries.includes(id)){
+            selectedEnquiries.push(id);
+        }
+
+    }else{
+
+        selectedEnquiries = selectedEnquiries.filter(e => e != id);
+
+    }
+
+    localStorage.setItem('selected_enquiries',JSON.stringify(selectedEnquiries));
+
+});
+
+/* ================================
+   SELECT ALL (CURRENT PAGE)
+================================ */
+$('#selectAll').on('change',function(){
+
+    $('.rowCheck:enabled').each(function(){
+
+        let id = $(this).val();
+
+        if($('#selectAll').is(':checked')){
+
+            $(this).prop('checked',true);
+
+            if(!selectedEnquiries.includes(id)){
+                selectedEnquiries.push(id);
+            }
+
+        }else{
+
+            $(this).prop('checked',false);
+            selectedEnquiries = selectedEnquiries.filter(e => e != id);
+
+        }
+
+    });
+
+    localStorage.setItem('selected_enquiries',JSON.stringify(selectedEnquiries));
+
+});
+
+/* ================================
+   ASSIGN BUTTON
+================================ */
+$('#assignBtn').on('click',function(){
+
+    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
     let salesId = $('#salesperson').val();
 
-    if (ids.length === 0) {
-        showPopup('Please select at least one unassigned enquiry.');
+    if(ids.length === 0){
+        showPopup('Please select at least one enquiry.');
         return;
     }
 
-    if (!salesId) {
+    if(!salesId){
         showPopup('Please select a salesperson.');
         return;
     }
 
-    fetch("{{ route('enquiries.assign') }}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+    fetch("{{ route('enquiries.assign') }}",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json",
+            "X-CSRF-TOKEN":"{{ csrf_token() }}"
         },
-        body: JSON.stringify({
-            enquiry_ids: ids,
-            salesperson_id: salesId
+        body:JSON.stringify({
+            enquiry_ids:ids,
+            salesperson_id:salesId
         })
     })
-    .then(res => res.json())
-    .then(data => {
-        if (data.message) location.reload();
+    .then(res=>res.json())
+    .then(data=>{
+
+        localStorage.removeItem('selected_enquiries');
+
+        if(data.message){
+            location.reload();
+        }
+
     });
+
 });
 
-function showPopup(message) {
+/* ================================
+   POPUP FUNCTION
+================================ */
+function showPopup(message){
+
     document.getElementById('popupMessage').innerHTML = message;
     var popup = new bootstrap.Modal(document.getElementById('popupModal'));
     popup.show();
-}
-</script>
 
+}
+
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
+</script>
 @endpush
 
-@endsection
+
+

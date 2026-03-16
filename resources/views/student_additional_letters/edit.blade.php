@@ -68,7 +68,7 @@
                     </option>
                     <option value="noc"
                         {{ $letter->internship_type == 'noc' ? 'selected' : '' }}>
-                        NOC Letter
+                        Non-Consent Letter
                     </option>
                     <option value="mutual_consent"
                         {{ $letter->internship_type == 'mutual_consent' ? 'selected' : '' }}>

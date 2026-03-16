@@ -33,7 +33,7 @@
                 <th>Mobile Number</th>
                 <th>Employee Name</th>
                 <th>Operator</th>
-                <th>Amount</th>
+                <th>Amount(Rs.)</th>
                 <th>Rechagre Date</th>
                 <th>Actions</th>
             </tr>
@@ -64,7 +64,7 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm"
-                                onclick="return confirm('Delete?')"
+                                data-swal-confirm="Delete?"
                                 data-bs-toggle="tooltip"
                                 title="Delete">
                             <i class="fas fa-trash"></i>
@@ -75,7 +75,7 @@
             @endforeach
         </tbody>
     </table>
-    {{ $recharges->links('pagination::bootstrap-5') }}
+    
 </div>
 @endsection
 
@@ -94,9 +94,10 @@ $(document).ready(function() {
     $('#rechargesTable').DataTable({
         pageLength: 10,
         lengthMenu: [5,10,25,50,100],
-        paging: false,       
-        info: false,           
-        lengthChange: false    
+        order:[]
+        // paging: false,       
+        // info: false,           
+        // lengthChange: false    
     });
 
     new bootstrap.Tooltip(document.body, {

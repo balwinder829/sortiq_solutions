@@ -70,7 +70,7 @@
                         @csrf
                         @method('DELETE')
                         <button class="btn btn-sm"
-                                onclick="return confirm('Delete Tutorial?')"
+                                data-swal-confirm="Delete Tutorial?"
                                 data-bs-toggle="tooltip"
                                 title="Delete">
                             <i class="fas fa-trash"></i>

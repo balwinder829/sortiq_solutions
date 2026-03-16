@@ -75,9 +75,16 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                        {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}@if(!empty($letter->student?->collegeData?->college_short_name))
-                            ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
+    
+                        @if($letter->student?->is_place)
+                            {{ ucwords($letter->student?->place ?? '') }}
+                        @else
+                            {{ ucwords($letter->student?->collegeData?->college_display_name ?? '') }}
+                            @if(!empty($letter->student?->collegeData?->college_short_name))
+                                ({{ strtoupper($letter->student?->collegeData?->college_short_name) }})
+                            @endif
                         @endif
+
                     </td>
                 </tr>
                 
@@ -106,7 +113,7 @@
                                 <td style="font-size: 14px; line-height: 24px;">
                                      <strong style="margin-left: 20px;">Duration:</strong> 6 Months<br>
                                     <strong style="margin-left: 20px;">Type:</strong> Free Internship<br>
-                                    <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($letter->student?->courseData?->course_name ?? 'N/A') }}<br>
+                                    <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($letter->student?->course_name ?? 'N/A') }}<br>
                                     <strong style="margin-left: 20px;">Location:</strong> Mohali / Remote (based on project requirement)<br>
                                     <strong style="margin-left: 20px;">Start Date:</strong> {{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}<br>
                                     

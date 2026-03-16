@@ -216,8 +216,7 @@ function previewFiles(files){
 
 /* =================== AJAX – DELETE EXISTING IMAGE =================== */
 function deleteImage(id){
-    if(!confirm("Delete this image?")) return;
-
+    sweetConfirm("Delete this image?", function() {
     let url = "{{ route($routePrefix.'.event-image.delete', ['image' => '__ID__']) }}"
                 .replace('__ID__', id);
 
@@ -233,8 +232,7 @@ function deleteImage(id){
 
 /* =================== AJAX – DELETE EXISTING VIDEO =================== */
 function deleteVideo(id){
-    if(!confirm("Delete this video?")) return;
-
+    sweetConfirm("Delete this video?", function() {
     let url = "{{ route($routePrefix.'.event-video.delete', ['video' => '__ID__']) }}"
                 .replace('__ID__', id);
 
@@ -245,6 +243,7 @@ function deleteVideo(id){
             "X-HTTP-Method-Override":"DELETE"
         }
     }).then(()=>location.reload());
+    });
 }
 
 

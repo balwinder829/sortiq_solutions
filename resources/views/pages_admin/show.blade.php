@@ -105,7 +105,7 @@
 
                <!--  <form method="POST"
                       action="{{ route('internship-registrations.destroy', $internship_registration) }}"
-                      onsubmit="return confirm('Are you sure you want to delete this registration?')">
+                      data-swal-confirm="Are you sure you want to delete this registration?">
                     @csrf
                     @method('DELETE')
 

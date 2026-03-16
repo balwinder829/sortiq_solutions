@@ -82,6 +82,9 @@ class DailyInterviewController extends Controller
         if ($request->filled('type')) {
             $query->where('interview_type', $request->input('type'));
         }
+        if ($request->filled('mode')) {
+            $query->where('interview_mode', $request->input('mode'));
+        }
 
         // 2. Date Range Filters (New Logic)
         

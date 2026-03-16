@@ -20,4 +20,14 @@ class Pg extends Model
         'food_type',
         'status'
     ];
+
+    public function getPhoneListAttribute()
+    {
+        return $this->contact ? explode(',', $this->contact) : [];
+    }
+
+    public function getEmailListAttribute()
+    {
+        return $this->email ? explode(',', $this->email) : [];
+    }
 }

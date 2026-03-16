@@ -115,7 +115,7 @@
             <input type="email" 
                     name="email"
                    class="form-control"
-                   value="{{ $trainer->user->email ?? $trainer->email }}">
+                   value="{{ old('email', $trainer->email ?? '') }}">
             @error('email')
                 <small class="text-danger">{{ $message }}</small>
             @enderror

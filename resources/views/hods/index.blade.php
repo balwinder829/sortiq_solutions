@@ -6,9 +6,9 @@
     <h1 class="page_heading mb-3">Authority Management</h1>
 
     {{-- FILTER FORM --}}
-    <form method="GET" action="{{ route('hods.index') }}" class="row mb-3">
-        <div class="col-md-3">
-            <select name="state" class="form-control">
+    <form method="GET" id="filterForm" class="row mb-3">
+        <div class="col-md-4">
+            <select name="state" id="stateFilter" class="form-control">
                 <option value="">All States</option>
                 @foreach($states as $state)
                     <option value="{{ $state->name }}"
@@ -19,28 +19,18 @@
             </select>
         </div>
 
-        <div class="col-md-3">
-            <select name="hod_status" class="form-control">
-                <option value="">All Colleges</option>
-                <option value="yes" {{ request('hod_status') == 'yes' ? 'selected' : '' }}>
-                    With HOD
-                </option>
-                <option value="no" {{ request('hod_status') == 'no' ? 'selected' : '' }}>
-                    Without HOD
-                </option>
-            </select>
-        </div>
+        
 
-        <div class="col-md-3">
-            <button class="btn btn-primary">Filter</button>
+        <div class="col-md-4">
+            <!-- <button class="btn btn-primary">Filter</button> -->
             <a href="{{ route('hods.index') }}" class="btn btn-secondary">
                 Reset
             </a>
         </div>
 
-        <div class="col-md-3 text-end">
+        <div class="col-md-4 text-end">
             <a href="{{ route('hods.create') }}" class="btn btn-primary">
-                Add HOD
+                Add Authority
             </a>
         </div>
     </form>
@@ -57,38 +47,64 @@
                 <th>College</th>
                 <th>State</th>
                 <th>District</th>
-                <th>HOD Details</th>
+                <th>TPO</th>
+                <th>Contact</th>
+                <th>HOD</th>
                 <th>Contact</th>
                 <th width="120">Action</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($colleges as $college)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $college->college_name }}</td>
-                    <td>{{ $college->state->name ?? '-' }}</td>
-                    <td>{{ $college->district->name ?? '-' }}</td>
-                    <td>
-                        @if($college->hod)
-                            <strong>{{ $college->hod->name }}</strong><br>
-                            {{ $college->hod->designation }} ({{ $college->hod->position }})
-                        @else
-                            <span class="text-danger">No HOD</span>
-                        @endif
-                    </td>
-                    <td>{{ $college->hod->contact_no ?? '-' }}</td>
-                    <td class="text-center">
-                        @if($college->hod)
-                            <a href="{{ route('hods.edit', $college->hod->id) }}"
-                               class="btn btn-sm"><i class="fas fa-edit"></i></a>
-                        @else
-                            —
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
+@foreach($hods as $hod)
+<tr>
+    <td>{{ $loop->iteration }}</td>
+
+    <td>{{ $hod->college->college_name ?? '-' }}</td>
+    <td>{{ $hod->college->state->name ?? '-' }}</td>
+    <td>{{ $hod->college->district->name ?? '-' }}</td>
+
+    <td>
+        <strong></strong> {{ $hod->tpo_name ?? '-' }} <br>
+        <small>{{ $hod->tpo_gender ?? '' }}</small>
+    </td>
+
+    <td>
+        {{ $hod->tpo_contact ?? '-' }}
+    </td>
+
+    <td>
+        <strong></strong> {{ $hod->hod_name ?? '-' }} <br>
+        <small>{{ $hod->hod_gender ?? '' }}</small>
+    </td>
+
+    <td>
+        {{ $hod->hod_contact ?? '-' }}
+    </td>
+
+    <td class="text-center">
+        <a href="{{ route('hods.edit', $hod->id) }}"
+           class="btn btn-sm">
+           <i class="fas fa-edit"></i>
+        </a>
+
+          {{-- Delete Button --}}
+        <form action="{{ route('hods.destroy', $hod->id) }}"
+              method="POST"
+              style="display:inline-block;"
+              data-swal-confirm="Are you sure you want to delete this record?">
+
+            @csrf
+            @method('DELETE')
+
+            <button type="submit" class="btn btn-sm">
+                <i class="fas fa-trash"></i>
+            </button>
+        </form>
+    </td>
+</tr>
+
+@endforeach
+</tbody>
     </table>
 
 </div>
@@ -107,8 +123,23 @@
 $(document).ready(function() {
     $('#hodtable').DataTable({
         pageLength: 100,
-        lengthMenu: [5,10,25,50,100]
+        lengthMenu: [5,10,25,50,100],
+        orders: []
     });
 });
+</script>
+
+<script>
+
+$(document).ready(function(){
+
+$('#stateFilter').on('change', function(){
+
+$('#filterForm').submit();
+
+});
+
+});
+
 </script>
 @endpush

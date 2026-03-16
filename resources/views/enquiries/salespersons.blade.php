@@ -23,13 +23,13 @@
         </div>
 
         <div class="card-body">
-            <form method="GET">
+            <form method="GET" id="filterForm">
                 <div class="row g-3 align-items-end">
 
                     {{-- Quick Date --}}
                     <div class="col-md-3">
                         <label class="form-label fw-semibold">Period</label>
-                        <select name="period" class="form-control">
+                        <select name="period" class="form-control filterchange">
                             <option value="">Overall</option>
                             <option value="today" {{ request('period')=='today'?'selected':'' }}>Today</option>
                             <option value="month" {{ request('period')=='month'?'selected':'' }}>This Month</option>
@@ -49,10 +49,13 @@
 
                     {{-- Buttons --}}
                     <div class="col-md-3">
-                        <label class="form-label d-block">&nbsp;</label>
+                       <!--  <label class="form-label d-block">&nbsp;</label>
                         <button class="btn btn-primary w-100">
                             <i class="fa fa-search me-1"></i> Apply
-                        </button>
+                        </button> -->
+                        <a href="{{ route('salespersons.list') }}" class="btn btn-secondary">
+                            Reset
+                        </a>
                     </div>
 
                 </div>
@@ -193,4 +196,19 @@
     </div>
 
 </div>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('input change', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 100); // waits 500ms after typing stops
+    });
+
+});
+</script>
 @endsection

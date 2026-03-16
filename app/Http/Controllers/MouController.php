@@ -319,5 +319,12 @@ class MouController extends Controller
 	    return back()->with('success', 'MOU email sent successfully.');
 	}
 
+    public function destroy(Mou $mou)
+    {
+        $mou->delete();
+
+        return redirect()->route('mous.index')
+                         ->with('success', 'Mou deleted successfully.');
+    }
 
 }

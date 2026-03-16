@@ -38,6 +38,10 @@
     <div class="col-md-4 fw-bold">Mobile</div>
     <div class="col-md-8">{{ $job->mobile ?? '-' }}</div>
 </div>
+<div class="row mb-2">
+    <div class="col-md-4 fw-bold">Email</div>
+    <div class="col-md-8">{{ $job->email ?? '-' }}</div>
+</div>
 
 <div class="row mb-3">
     <div class="col-md-4 fw-bold">Address</div>

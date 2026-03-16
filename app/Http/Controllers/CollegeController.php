@@ -13,6 +13,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Services\CollegeResolver;
 use App\Imports\CollegesImport;
 use App\Exports\CollegeStudentsExport;
+use Illuminate\Validation\Rule;
+
 
 class CollegeController extends Controller
 {
@@ -22,10 +24,10 @@ class CollegeController extends Controller
         $this->middleware('permission:colleges.create')->only(['create','store']);
         $this->middleware('permission:colleges.edit')->only(['edit','update']);
         $this->middleware('permission:colleges.delete')->only('destroy');
-        $this->middleware('permission:colleges.import')->only('showImport');
+        $this->middleware('permission:colleges.import')->only('import');
     }
 
-    public function index()
+    public function index14fev()
     {
         // $colleges = College::all();
         // $colleges = College::with(['state','district'])->get();
@@ -75,26 +77,209 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
     //                      ->with('success', 'College created successfully.');
     // }
 
+ public function index()
+    {
+        $states = State::orderBy('name')->get();
 
+        $districtsGrouped = District::select('districts.id', 'districts.name', 'districts.state_id', 'states.name as state_name')
+            ->join('states', 'states.id', '=', 'districts.state_id')
+            ->orderBy('districts.name')
+            ->get()
+            ->groupBy('state_id');
+
+        return view('colleges.index', compact('states', 'districtsGrouped'));
+    }
+
+    /**
+     * Server-side DataTables: returns only the current page of rows (no full load).
+     */
+    public function data(Request $request)
+    {
+        $activeSessionId = session('admin_session_id');
+
+        $query = College::query()
+            ->with(['state', 'district'])
+            ->withCount([
+                'students as students_count' => function ($q) use ($activeSessionId) {
+                    $q->where('session', $activeSessionId);
+                }
+            ]);
+
+        // State filter (by state name from dropdown)
+        if ($request->filled('state_name')) {
+            $query->whereHas('state', fn ($q) => $q->where('name', $request->state_name));
+        }
+        if ($request->filled('district_name')) {
+            $query->whereHas('district', fn ($q) => $q->where('name', $request->district_name));
+        }
+
+        // College Type filter
+        if ($request->filled('college_type')) {
+            $query->where('college_type', $request->college_type);
+        }
+
+        // Training filter
+        if ($request->filled('offer_training')) {
+            $query->where('offer_training', $request->offer_training);
+        }
+
+        // 👇 ADD HERE
+        if ($request->filled('student_filter')) {
+
+            if ($request->student_filter == 'zero') {
+                $query->having('students_count', '=', 0);
+            }
+
+            if ($request->student_filter == 'more') {
+                $query->having('students_count', '>', 0);
+            }
+        }
+
+        $total = $query->count();
+
+        // DataTables search (global)
+        if ($request->filled('search.value')) {
+            $term = $request->input('search.value');
+            $query->where(function ($q) use ($term) {
+                $q->where('colleges.college_name', 'like', '%' . $term . '%')
+                    ->orWhereHas('state', fn ($sq) => $sq->where('name', 'like', '%' . $term . '%'))
+                    ->orWhereHas('district', fn ($sq) => $sq->where('name', 'like', '%' . $term . '%'));
+            });
+        }
+
+        $filteredTotal = $query->count();
+
+       
+
+        /* ================= ORDERING SECTION ================= */
+
+        $orderCol = $request->input('order.0.column');
+        $orderDir = $request->input('order.0.dir') === 'asc' ? 'asc' : 'desc';
+
+        $orderable = [
+            0 => 'id',
+            1 => 'college_name',
+            2 => 'state',
+            3 => 'district',
+            4 => 'students_count',
+            5 => 'college_type',
+            6 => 'offer_training',
+            7 => 'training_in_year'
+        ];
+
+        $orderField = $orderable[$orderCol] ?? null;
+
+        /*
+        Priority:
+        1. student_filter (asc/desc)
+        2. DataTables column sorting
+        3. Default = students_count DESC (High → Low)
+        */
+
+        if ($request->filled('student_filter') && in_array($request->student_filter, ['asc', 'desc'])) {
+
+            $query->orderBy('students_count', $request->student_filter);
+
+        } elseif ($orderField) {
+
+            if ($orderField === 'college_name' || $orderField === 'id') {
+                $query->orderBy('colleges.' . $orderField, $orderDir);
+
+            } elseif ($orderField === 'students_count') {
+                $query->orderBy('students_count', $orderDir);
+
+            } elseif ($orderField === 'state') {
+                $query->orderByRaw('(SELECT name FROM states WHERE states.id = colleges.state_id) ' . $orderDir);
+
+            } elseif ($orderField === 'district') {
+                $query->orderByRaw('(SELECT name FROM districts WHERE districts.id = colleges.district_id) ' . $orderDir);
+            }elseif ($orderField === 'college_type') {
+                $query->orderBy('colleges.college_type', $orderDir);
+
+            } elseif ($orderField === 'offer_training') {
+                $query->orderBy('colleges.offer_training', $orderDir);
+            }
+            elseif ($orderField === 'training_in_year') {
+                $query->orderBy('colleges.training_in_year', $orderDir);
+            }
+
+        } else {
+
+            // 🔥 DEFAULT ORDER WHEN PAGE LOADS
+            $query->orderBy('students_count', 'desc');
+        }
+
+        $start = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 50);
+        if ($length < 1 || $length > 100) {
+            $length = 50;
+        }
+
+        $colleges = $query->skip($start)->take($length)->get();
+
+        $data = [];
+        foreach ($colleges as $index => $college) {
+            $rowNum = $start + $index + 1;
+            $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
+            $training = $college->offer_training == 1 ? 'Yes' : 'No';
+            $data[] = [
+                $rowNum,
+                $college->college_name,
+                $college->state->name ?? '-',
+                $college->district->name ?? '-',
+                '<a href="' . route('common_filtered_student', ['college_name' => $college->id]) . '" class="text-decoration-none"><span class="badge bg-success">' . $college->students_count . '</span></a>',
+                $collegeType,
+                $training,
+                $college->training_in_year,
+                '<div class="mb-2">' .
+                    '<a href="' . route('colleges.edit', $college->id) . '" class="btn btn-sm" data-bs-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a> ' .
+                    '<form action="' . route('colleges.destroy', $college->id) . '" method="POST" style="display:inline;">' .
+                    csrf_field() . method_field('DELETE') .
+                    '<button type="submit" class="btn btn-sm" data-swal-confirm="Are you sure?" data-bs-toggle="tooltip" title="Delete"><i class="fa fa-trash"></i></button>' .
+                    '</form></div>',
+            ];
+        }
+
+        return response()->json([
+            'draw'            => (int) $request->input('draw', 1),
+            'recordsTotal'    => $total,
+            'recordsFiltered' => $filteredTotal,
+            'data'            => $data,
+        ]);
+    }
 public function store(Request $request)
 {
     $data = $request->validate([
-        'college_name'         => 'required|string|max:255',
+        'college_name' => [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('colleges')->where(function ($query) use ($request) {
+                return $query->where('state_id', $request->state_id)
+                             ->where('district_id', $request->district_id);
+            }),
+        ],
         'college_display_name' => 'nullable|string|max:255',
         'state_id'             => 'required|exists:states,id',
         'district_id'          => 'required|exists:districts,id',
+        'college_type'          => 'required',
+        'offer_training'          => 'required',
+        'training_in_year'          => 'required',
+    ], [
+        'college_name.unique' => 'This college already exists in the selected district.'
     ]);
 
     /** ---------------------------------
      * Centralized college handling
      * --------------------------------- */
-     $college = app(CollegeResolver::class)->resolveWithLocation(
-        $data['college_name'],
-        $data['state_id'],
-        $data['district_id'],
-        $data['college_display_name'] // 👈 user-entered
-    );
+    //  $college = app(CollegeResolver::class)->resolveWithLocation(
+    //     $data['college_name'],
+    //     $data['state_id'],
+    //     $data['district_id'],
+    //     $data['college_display_name'] // 👈 user-entered
+    // );
 
+    $college = app(CollegeResolver::class)->resolveWithLocation($data);
     return redirect()
         ->route('colleges.index')
         ->with('success', 'College saved successfully.');
@@ -119,11 +304,26 @@ public function store(Request $request)
 public function update(Request $request, $id)
 {
     $data = $request->validate([
-        'college_name'          => 'required|string|max:255',
+        'college_name' => [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('colleges')
+                ->where(function ($query) use ($request) {
+                    return $query->where('state_id', $request->state_id)
+                                 ->where('district_id', $request->district_id);
+                })
+                ->ignore($id),
+        ],
         'college_display_name'  => 'required|string|max:255',
         'college_short_name'  => 'required|string|max:255',
         'state_id'              => 'required|exists:states,id',
         'district_id'           => 'required|exists:districts,id',
+        'college_type'          => 'required',
+        'offer_training'          => 'required',
+        'training_in_year'          => 'required',
+    ], [
+        'college_name.unique' => 'This college already exists in the selected district.'
     ]);
 
     $college = College::findOrFail($id);
@@ -159,6 +359,9 @@ public function update(Request $request, $id)
         'slug'                 => $slug,
         'state_id'             => $data['state_id'],
         'district_id'          => $data['district_id'],
+        'college_type'          => $data['college_type'],
+        'offer_training'          => $data['offer_training'],
+        'training_in_year'          => $data['training_in_year'],
     ]);
 // dd($college);
     return redirect()
@@ -229,9 +432,23 @@ public function update(Request $request, $id)
                          ->with('success', 'College deleted successfully.');
     }
 
-    public function exportExcel()
+    // public function exportExcel()
+    // {
+    //     return Excel::download(new CollegesExport, 'colleges.xlsx');
+    // }
+
+    public function exportExcel(Request $request)
     {
-        return Excel::download(new CollegesExport, 'colleges.xlsx');
+        return Excel::download(
+            new CollegesExport(
+                $request->state_name,
+                $request->district_name,
+                $request->student_filter,
+                $request->college_type,
+                $request->offer_training
+            ),
+            'colleges.xlsx'
+        );
     }
 
     public function importColleges(Request $request, CollegeResolver $resolver)

@@ -166,6 +166,21 @@
 <button type="button" class="btn btn-sm btn-secondary" onclick="addTpoEmail()">+ Add More</button>
 </div>
 
+
+
+<div class="form-group col-md-12">
+    <label>Description</label>
+
+    <textarea name="description"
+              rows="4"
+              class="form-control @error('description') is-invalid @enderror"
+              placeholder="Enter Description...">{{ old('description') }}</textarea>
+
+    @error('description')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
+</div>
+
 </div>
 
 <button class="btn btn-primary mt-3">Save</button>

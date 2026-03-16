@@ -35,12 +35,12 @@
     @endif
 
     {{-- FILTERS --}}
-    <form method="GET" action="{{ route('pantry-expenses.index') }}" class="mb-4">
+    <form method="GET" id="filterForm" class="mb-4">
         <div class="row align-items-end">
 
             <div class="col-md-3">
                 <label class="fw-bold">Date Range</label>
-                <select name="quick" class="form-control">
+                <select name="quick" class="form-control filterchange">
                     <option value="">All</option>
                     <option value="today" {{ request('quick')=='today'?'selected':'' }}>Today</option>
                     <option value="yesterday" {{ request('quick')=='yesterday'?'selected':'' }}>Yesterday</option>
@@ -54,7 +54,7 @@
                 <input type="date" name="from_date"
                        value="{{ request('from_date') }}"
                        max="{{ now()->format('Y-m-d') }}"
-                       class="form-control">
+                       class="form-control filterchange">
             </div>
 
             <div class="col-md-3">
@@ -62,23 +62,23 @@
                 <input type="date" name="to_date"
                        value="{{ request('to_date') }}"
                        max="{{ now()->format('Y-m-d') }}"
-                       class="form-control">
+                       class="form-control filterchange">
             </div>
 
             <div class="col-md-3">
                 <label class="fw-bold">Title</label>
                 <input type="text" name="title"
                        value="{{ request('title') }}"
-                       class="form-control"
+                       class="form-control filterchangetext"
                        placeholder="Item / Purpose">
             </div>
         </div>
 
         <div class="row mt-3">
             <div class="col-md-12 text-end">
-                <button class="btn btn-primary">
+               <!--  <button class="btn btn-primary">
                     <i class="fa fa-search"></i> Search
-                </button>
+                </button> -->
                 <a href="{{ route('pantry-expenses.index') }}"
                    class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
@@ -95,7 +95,7 @@
                     <th>#</th>
                     <th>Date</th>
                     <th>Title</th>
-                    <th>Amount</th>
+                    <th>Amount(Rs.)</th>
                     <th class="text-center">Actions</th>
                 </tr>
             </thead>
@@ -125,7 +125,7 @@
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm"
-                                    onclick="return confirm('Are you sure?')"
+                                    data-swal-confirm="Are you sure?"
                                     title="Delete">
                                 <i class="fa fa-trash"></i>
                             </button>
@@ -149,6 +149,25 @@ $(document).ready(function () {
         pageLength: 25,
         order: [[1,'desc']]
     });
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 300); // waits 500ms after typing stops
+    });
+
 });
 </script>
 @endpush

@@ -17,19 +17,19 @@
 </div>
 
 {{-- FILTERS --}}
-<form method="GET" action="{{ route('interviews.index') }}">
+<form method="GET" id="filterForm">
 <div class="row mb-3">
 
     <div class="col-md-3">
         <input type="text"
                name="experience"
-               class="form-control"
+               class="form-control filterchangetext"
                placeholder="Experience (e.g. 2, 3-5)"
                value="{{ request('experience') }}">
     </div>
 
     <div class="col-md-3">
-        <select name="technology_id" class="form-control">
+        <select name="technology_id" class="form-control filterchange">
             <option value="">All Technologies</option>
             @foreach($technologies as $tech)
                 <option value="{{ $tech->id }}"
@@ -41,7 +41,7 @@
     </div>
 
     <div class="col-md-3">
-        <select name="rating" class="form-control">
+        <select name="rating" class="form-control filterchange">
             <option value="">Min Rating</option>
             @for($i=1;$i<=10;$i++)
                 <option value="{{ $i }}"
@@ -53,7 +53,7 @@
     </div>
 
     <div class="col-md-3 d-flex gap-2">
-        <button class="btn btn-primary">Filter</button>
+        <!-- <button class="btn btn-primary">Filter</button> -->
         <a href="{{ route('interviews.index') }}" class="btn btn-secondary">
             Reset
         </a>
@@ -128,4 +128,24 @@
 </table>
 
 </div>
+
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
+</script>
 @endsection

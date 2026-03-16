@@ -11,9 +11,12 @@ class AcceptedLetter extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'emp_code',
-        'email',
         'file_path',
+        'employee_id',
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
 }

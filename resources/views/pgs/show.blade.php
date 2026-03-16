@@ -15,6 +15,16 @@
 </div>
 
 <div class="row mb-2">
+    <div class="col-md-4 fw-bold">Mobile/div>
+    <div class="col-md-8">{{ $pg->contact ?? '-' }}</div>
+</div>
+
+<div class="row mb-2">
+    <div class="col-md-4 fw-bold">Email</div>
+    <div class="col-md-8">{{ $pg->email ?? '-' }}</div>
+</div>
+
+<div class="row mb-2">
     <div class="col-md-4 fw-bold">Rent Estimate</div>
     <div class="col-md-8">{{ $pg->rent_estimate ?? '-' }}</div>
 </div>

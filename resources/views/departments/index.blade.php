@@ -17,27 +17,7 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
-            @foreach($departments as $department)
-            <tr>
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ $department->name }}</td>
-                 <td>{{ optional($department->created_at)->format('Y-m-d') }}</td>
-                 <td class="text-center">
-                        <div class="mb-2">
-                        <a href="{{ route('departments.edit', $department->id) }}" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i class="fa fa-edit"></i></a>
-
-                        <form action="{{ route('departments.destroy', $department->id) }}" method="POST" style="display:inline-block;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" onclick="return confirm('Are you sure?')">
-                                        <i class="fa fa-trash"></i>
-                        </form>
-                        </div>
-                    </td>
-            </tr>
-            @endforeach
-        </tbody>
+        <tbody></tbody>
     </table>
 </div>
 @endsection
@@ -53,8 +33,17 @@
 <script>
  $(document).ready(function () {
         $('#departments-table').DataTable({
-            "pageLength": 25,
-            "lengthMenu": [5, 10, 25, 50, 100],
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('departments.data') }}",
+            columns: [
+                { data: 0 },
+                { data: 1 },
+                { data: 2 },
+                { data: 3, orderable: false, searchable: false }
+            ],
+            pageLength: 25,
+            lengthMenu: [5, 10, 25, 50, 100]
         });
     });
 </script>

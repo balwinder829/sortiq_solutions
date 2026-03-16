@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Models\StudentSession;
 use App\Models\Trainer;
+use App\Http\Middleware\LogSystemActivity;
+use App\Mail\LoginNotificationMail;
  
 
 class AuthController extends Controller
@@ -21,10 +24,6 @@ class AuthController extends Controller
             if ($user->role == 1) {
 
                 return redirect()->route('dashboard');
-            } elseif ($user->role == 3) {
-                return redirect()->route('sales.dashboard');
-            } elseif ($user->role == 2) {
-                return redirect()->route('batches.mybatches');
             } else {
                 return redirect()->route('attendance.employee');
             }
@@ -34,6 +33,16 @@ class AuthController extends Controller
         if (Auth::guard('trainer')->check()) {
             return redirect()->route('attendance.employee');
         }
+
+        if (Auth::guard('sales_staff')->check()) {
+            return redirect()->route('sales.dashboard');
+        }
+
+        if (Auth::guard('employee')->check()) {
+            return redirect()->route('attendance.employee');
+        }
+
+
 
         // 🔹 Show login page
         $sessions = StudentSession::orderBy('start_date', 'desc')->get();
@@ -130,7 +139,9 @@ class AuthController extends Controller
             }
 
             // session validation for admin & role 4
-            if (in_array($user->role, [1, 4])) {
+            $dashboardRoles = ['Admin','Manager','HR','Custom'];
+            // if (in_array($user->role, [1, 4])) {
+             if ($user->hasAnyRole($dashboardRoles)) {
                 if (!$request->session_id || !StudentSession::where('id', $request->session_id)->exists()) {
                     return back()->with('error', 'Please choose a valid session');
                 }
@@ -138,6 +149,15 @@ class AuthController extends Controller
             }
 
             Auth::guard('web')->login($user);
+            if ($user->role != 1) {
+                LogSystemActivity::log($request, 'login', $user->id, 'web');
+
+                $this->sendLoginNotification(
+                    $user->name ?? $user->username,
+                    LogSystemActivity::getClientIp($request),
+                    'web'
+                );
+            }
 
             // 🔥 SYNC OLD ROLE → SPATIE ROLE (SAFE)
             $this->syncSpatieRole($user);
@@ -145,16 +165,21 @@ class AuthController extends Controller
             $user->update(['last_login' => now()]);
             $request->session()->regenerate();
 
-            // redirects (UNCHANGED)
-            if ($user->role == 3) {
-                return redirect()->route('sales.dashboard');
-            } elseif ($user->role == 2) {
-                // return redirect()->route('batches.mybatches');
-            } elseif (in_array($user->role, [1, 4])) {
+            if ($user->hasAnyRole($dashboardRoles)) {
                 return redirect()->route('dashboard');
-            } else {
-                return redirect()->route('attendance.employee');
             }
+            // redirects (UNCHANGED)
+            // if ($user->role == 3) {
+            //     return redirect()->route('sales.dashboard');
+            // } elseif ($user->role == 2) {
+            //     // return redirect()->route('batches.mybatches');
+            // } elseif (in_array($user->role, [1, 4])) {
+            //     return redirect()->route('dashboard');
+            // } else {
+            //     return redirect()->route('attendance.employee');
+            // }
+        }else{
+            return back()->with('error', 'Invalid username or password');
         }
 
         /*
@@ -162,28 +187,57 @@ class AuthController extends Controller
         | 2️⃣ TRY TRAINER (TRAINERS TABLE)
         |--------------------------------------------------------------------------
         */
-        $trainer = Trainer::where('username', $request->username)->first();
-        // dd($trainer);
-        if (!$trainer) {
-            return back()->with('error', 'Invalid username or password');
-        }
+        // $trainer = Trainer::where('username', $request->username)->first();
+        // // dd($trainer);
+        // if (!$trainer) {
+        //     return back()->with('error', 'Invalid username or password');
+        // }
 
-        if ($trainer->status === 'inactive') {
-            return back()->with('error', 'Your trainer account is inactive. Contact administration.');
-        }
+        // if ($trainer->status === 'inactive') {
+        //     return back()->with('error', 'Your trainer account is inactive. Contact administration.');
+        // }
 
-        if (!Hash::check($request->password, $trainer->password)) {
-            return back()->with('error', 'Invalid username or password');
-        }
+        // if (!Hash::check($request->password, $trainer->password)) {
+        //     return back()->with('error', 'Invalid username or password');
+        // }
         // dd($trainer);
         // Trainer login
-        Auth::guard('trainer')->login($trainer);
-        $request->session()->regenerate();
+        // Auth::guard('trainer')->login($trainer);
+        // LogSystemActivity::log($request, 'login', null, 'trainer', $trainer->id);
+
+        // $this->sendLoginNotification(
+        //     $trainer->name ?? $trainer->username,
+        //     LogSystemActivity::getClientIp($request),
+        //     'trainer'
+        // );
+        // $request->session()->regenerate();
 
         // Trainer redirect (attendance or trainer dashboard)
-        return redirect()->route('batches.mybatches');
+        // return redirect()->route('batches.mybatches');
         // return redirect()->route('attendance.employee')
             // ->with('success', 'Login successful');
+    }
+
+    private function sendLoginNotification(string $actorName, string $ipAddress, string $guard): void
+    {
+        try {
+            $to = config('mail.login_notification_to');
+            if (empty($to)) {
+                $adminEmail = User::where('role', 1)->value('email');
+                if (empty($adminEmail)) {
+                    return;
+                }
+                $to = [$adminEmail];
+            }
+            Mail::to($to)->send(new LoginNotificationMail(
+                $actorName,
+                $ipAddress,
+                now()->format('d M Y H:i:s'),
+                $guard
+            ));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function syncSpatieRole($user)
@@ -195,6 +249,7 @@ class AuthController extends Controller
             4 => 'Manager',
             5 => 'HR',
             6 => 'Employee',
+            8 => 'Custom',
         ];
 
         if (isset($map[$user->role])) {
@@ -299,12 +354,54 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+
+        $user = $request->user();
+        $trainer = Auth::guard('trainer')->user();
+        if ($user) {
+            LogSystemActivity::log($request, 'logout', $user->getAuthIdentifier(), 'web');
+        } elseif ($trainer) {
+            LogSystemActivity::log($request, 'logout', null, 'trainer', $trainer->getAuthIdentifier());
+        }
         // clear OTP/session stuff (unchanged)
         $request->session()->forget([
             'enquiry_otp_verified',
             'enquiry_otp_code',
             'enquiry_otp_expires_at'
         ]);
+
+         // Employee logout
+        if (Auth::guard('employee')->check()) {
+            Auth::guard('employee')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('employee.login');
+        }
+
+         // Employee logout
+        if (Auth::guard('sales_staff')->check()) {
+            Auth::guard('sales_staff')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('sale_staff.login');
+        }
+
+        if (Auth::guard('trainer')->check()) {
+            Auth::guard('trainer')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('mentors.login');
+        }
+
+        if (Auth::guard('student')->check()) {
+            Auth::guard('student')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('students.login');
+        }
 
         // logout both guards safely
         Auth::guard('web')->logout();

@@ -1,0 +1,113 @@
+@extends('layouts.app')
+
+@section('content')
+
+<div class="container">
+
+<div class="row mb-2 align-items-center">
+
+<div class="col-md-8">
+<h1 class="page_heading">CV Templates</h1>
+</div>
+
+<div class="col-md-4">
+<div class="d-flex justify-content-end gap-2">
+
+<a href="{{ route('admin.student.cv-templates.create') }}"
+class="btn"
+style="background-color:#6b51df;color:#fff;">
+Add Template
+</a>
+
+</div>
+</div>
+
+</div>
+
+@if(session('success'))
+<div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+<table class="table table-bordered table-striped">
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Sample CV</th>
+<th>Status</th>
+<th width="120">Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+@foreach($templates as $template)
+
+<tr>
+
+<td>{{ $template->id }}</td>
+
+<td>{{ $template->name }}</td>
+
+<td>
+
+@if($template->sample_cv)
+
+<a href="{{ asset('uploads/cv-samples/'.$template->sample_cv) }}"
+target="_blank">
+
+Download Sample
+
+</a>
+
+@endif
+
+</td>
+
+<td>
+
+@if($template->status)
+<span class="badge bg-success">Active</span>
+@else
+<span class="badge bg-danger">Inactive</span>
+@endif
+
+</td>
+
+<td>
+
+<a href="{{ route('admin.student.cv-templates.edit',$template->id) }}"
+class="btn btn-sm">
+<i class="fa fa-edit"></i>
+</a>
+
+<form method="POST"
+action="{{ route('admin.student.cv-templates.destroy',$template->id) }}"
+style="display:inline-block">
+
+@csrf
+@method('DELETE')
+
+<button class="btn btn-sm"
+onclick="return confirm('Delete template?')">
+
+<i class="fa fa-trash"></i>
+
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+@endforeach
+
+</tbody>
+
+</table>
+
+</div>
+
+@endsection

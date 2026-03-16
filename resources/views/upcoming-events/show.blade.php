@@ -48,7 +48,7 @@
                 @if(!$event->event_date->isPast() && !$event->dismissed)
                     <form method="POST"
                           action="{{ route('upcoming-events.dismiss', $event) }}"
-                          onsubmit="return confirm('Dismiss notifications for this event?')">
+                          data-swal-confirm="Dismiss notifications for this event?">
                         @csrf
                         <button class="btn btn-danger">
                             Dismiss Notifications
@@ -60,7 +60,7 @@
                 @if(!$event->event_date->isPast() && $event->dismissed)
                     <form method="POST"
                           action="{{ route('upcoming-events.enable', $event) }}"
-                          onsubmit="return confirm('Re-enable notifications for this event?')">
+                          data-swal-confirm="Re-enable notifications for this event?">
                         @csrf
                         <button class="btn btn-success">
                             Re-enable Notifications

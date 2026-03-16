@@ -45,6 +45,22 @@ return [
             'driver' => 'session',
             'provider' => 'trainers',
         ],
+
+        'employee' => [
+            'driver' => 'session',
+            'provider' => 'employees',
+        ],
+
+        'sales_staff' => [
+            'driver' => 'session',
+            'provider' => 'sales_staff',
+        ],
+
+        'student' => [
+            'driver' => 'session',
+            'provider' => 'students',
+        ],
+
     ],
 
     /*
@@ -75,6 +91,21 @@ return [
             'model' => App\Models\Trainer::class,
         ],
 
+        
+        'employees' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Employee::class,
+        ],
+
+        'sales_staff' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\SalesStaff::class,
+        ],
+
+        'students' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Student::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',

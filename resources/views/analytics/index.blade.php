@@ -109,7 +109,7 @@ new Chart(document.getElementById('collegeRevenueChart'), {
         labels: {!! json_encode(
     $collegeCounts->map(fn($c) => $c->collegeData->FullName ?? 'Unknown')->toArray()) !!},
         datasets: [{
-            label: 'Revenue (₹)',
+            label: 'Revenue (Rs.)',
             backgroundColor: '#1cc88a',
             data: {!! json_encode($collegeRevenue->pluck('total_revenue')->toArray()) !!}
         }]

@@ -79,14 +79,14 @@
     </div>
 
     <div class="card-body">
-        <form method="GET" id="filterForm">
+        <form method="GET"  id="filterForm">
 
             <div class="row g-3 align-items-end">
 
                 {{-- Quick Date --}}
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Quick Date</label>
-                    <select name="quick_date" id="quickDate" class="form-control">
+                    <select name="quick_date" id="quickDate" class="form-control filterchange">
                         <option value="">Select</option>
                         <option value="today" {{ request('quick_date')=='today'?'selected':'' }}>Today</option>
                         <option value="yesterday" {{ request('quick_date')=='yesterday'?'selected':'' }}>Yesterday</option>
@@ -97,7 +97,7 @@
                 {{-- Salesperson --}}
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Sales Person</label>
-                    <select name="salesperson_id" class="form-control">
+                    <select name="salesperson_id" class="form-control filterchange">
                         <option value="">All Sales Persons</option>
                         @foreach($sales as $s)
                             <option value="{{ $s->id }}"
@@ -112,7 +112,7 @@
                 <div class="col-md-2">
                     <label class="form-label fw-semibold">From</label>
                     <input type="date" name="from_date" id="fromDate"
-                           class="form-control"
+                           class="form-control filterchange"
                            value="{{ request('from_date') }}">
                 </div>
 
@@ -120,7 +120,7 @@
                 <div class="col-md-2">
                     <label class="form-label fw-semibold">To</label>
                     <input type="date" name="to_date" id="toDate"
-                           class="form-control"
+                           class="form-control filterchange"
                            value="{{ request('to_date') }}">
                 </div>
 
@@ -128,12 +128,12 @@
               <div class="col-md-2">
     <label class="form-label fw-semibold d-block">&nbsp;</label>
     <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+        <!-- <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
             <i class="fa fa-search me-1"></i> Apply
-        </button>
+        </button> -->
 
         <a href="{{ route('admin.calls') }}"
-           class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center">
+           class="btn btn-secondary w-100 d-flex align-items-center justify-content-center">
             Reset
         </a>
     </div>
@@ -255,4 +255,24 @@
     </div>
 
 </div>
+
+<script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
+</script>
 @endsection

@@ -85,7 +85,7 @@
                         <strong>Program</strong>
                     </td>
                     <td width="60%" align="left" style="font-size: 13px; line-height: 16px; padding-top: 0px; font-family: 'Inter', sans-serif; padding-bottom: 5px; color: #191616;">
-                        {{ ucwords($student->courseData->course_name) ?? '-' }}
+                        {{ ucwords($student->course_name) ?? '-' }}
                     </td>
                 </tr>
                 <tr>

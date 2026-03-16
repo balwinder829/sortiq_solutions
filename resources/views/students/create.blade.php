@@ -3,15 +3,46 @@
 @section('content')
  
 <div class="container">
-    <div class="row mb-2">
-        <div class="col-md-8">
-            <h1 class="page_heading">Add Student - SNo- {{ $nextSno }}</h1>
-        </div>  
-    </div>
-
     <form method="POST" action="{{ route('students.store') }}">
         @csrf
 
+    <div class="row mb-2 align-items-center">
+        <div class="col-md-8">
+            <h1 class="page_heading">Add Student - SNo- {{ $nextSno }}</h1>
+        </div>  
+
+        <div class="col-md-4 text-end">
+            <div class="form-check d-inline-block ms-3">
+                <input type="hidden" name="is_place" value="0">
+
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="is_place"
+                       value="1"
+                       id="is_place">
+
+                <label class="form-check-label" for="is_place">
+                    Other Place
+                </label>
+            </div>
+            <div class="form-check d-inline-block">
+                <input type="hidden" name="is_married" value="0">
+                
+                <input class="form-check-input"
+                       type="checkbox"
+                       name="is_married"
+                       value="1"
+                       id="is_married"
+                       {{ old('is_married') ? 'checked' : '' }}>
+
+                <label class="form-check-label" for="is_married">
+                    Married Status
+                </label>
+            </div>
+        </div>
+    </div>
+
+    
         <div class="form-row">
             
             <div class="form-group col-md-6">
@@ -22,8 +53,8 @@
             </div>
 
             <div class="form-group col-md-6">
-                <label>Father Name</label>
-                <input type="text" maxlength="55" required class="form-control" 
+                <label  id="guardianLabel">Father Name</label>
+                <input type="text" maxlength="55" required class="form-control"
                        name="f_name" value="{{ old('f_name', 'Mr. ') }}" oninput="handleMrPrefix(this)">
                 @error('f_name') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
@@ -37,7 +68,7 @@
 
             <div class="form-group col-md-6">
                 <label>Gender</label>
-                <select name="gender" class="form-control" required>
+                <select name="gender" id="genderSelect" class="form-control" required>
                     <option value="" disabled {{ old('gender') ? '' : 'selected' }}>--Select--</option>
                     <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Male</option>
                     <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Female</option>
@@ -62,9 +93,9 @@
             </div>
 
 
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-6"  id="collegeWrapper">
                 <label>College Name</label>
-                <select name="college_name" required class="form-control select2">
+                <select name="college_name" id="college_name"  required class="form-control select2">
                     <option value="" disabled {{ old('college_name') ? '' : 'selected' }}>Choose one</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->id }}" 
@@ -74,6 +105,15 @@
                     @endforeach
                 </select>
                 @error('college_name') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6 d-none" id="placeWrapper">
+                <label>Place</label>
+                <input type="text"
+                       name="place"
+                       id="place"
+                       class="form-control"
+                       placeholder="Enter place">
             </div>
 
             <div class="form-group col-md-6">
@@ -117,7 +157,7 @@
 
 
 
-            <div class="form-group col-md-6">
+            <!-- <div class="form-group col-md-6">
                 <label>Technology</label>
                 <select name="technology" class="form-control">
                     <option value="" disabled {{ old('technology') ? '' : 'selected' }}>Choose one</option>
@@ -129,7 +169,20 @@
                     @endforeach
                 </select>
                 @error('technology') <small class="text-danger">{{ $message }}</small> @enderror
+            </div> -->
+
+            <div class="form-group col-md-6">
+                <label>Technology</label>
+                <select name="technology[]" class="form-control" multiple>
+                    @foreach($courses as $course)
+                        <option value="{{ $course->id }}"
+                            {{ in_array($course->course_name, old('technology', [])) ? 'selected' : '' }}>
+                            {{ $course->course_name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
+
 
             <div class="form-group col-md-6">
                 <label>Total Fees</label>
@@ -151,7 +204,7 @@
             <div class="form-group col-md-6"  id="paidFeesWrapper">
                 <label>Paid Fees</label>
                 <input type="text" name="paid_fees" required class="form-control" id="paid_fees" 
-                       value="{{ old('paid_fees') }}" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                       value="{{ old('paid_fees',0) }}" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                 @error('paid_fees') <small class="text-danger">{{ $message }}</small> @enderror
                  <small id="fee_warning" class="text-danger d-none">
                     Registration fees + Paid fees cannot be greater than Total fees.
@@ -175,6 +228,9 @@
             <div class="form-group col-md-6" id="pending_next_due_date">
                 <label>Pending Fees Due Date</label>
                 <input type="date" name="next_due_date" class="form-control" value="{{ old('next_due_date') }}">
+                <small class="text-danger d-none" id="due_date_error">
+                    Next due date must be after the registered date.
+                </small>
             </div>
 
 
@@ -188,25 +244,7 @@
                 @error('join_date') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
 
-         <!--   <div class="form-group col-md-6">
-                <label>Duration</label>
-                <select name="duration" class="form-control" required id="duration" >
-                    <option value="" disabled {{ old('duration') ? '' : 'selected' }}>--Select--</option>
-
-                    @foreach($course_duration as $d)
-                        <option value="{{ $d->duration }}" 
-                            {{ old('duration') == $d->duration ? 'selected' : '' }}>
-                            {{ $d->name }}
-                        </option>
-                    @endforeach
-                </select>
-
-                @error('duration') 
-                    <small class="text-danger">{{ $message }}</small> 
-                @enderror
-            </div> -->
-
-
+        
             <div class="form-group col-md-6">
                 <label>Start Date</label>
                 <input type="date" name="start_date" class="form-control"
@@ -245,6 +283,23 @@
                  @error('end_date') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
 
+            <div class="form-group col-md-6">
+                <label>Duration</label>
+                <select name="duration" class="form-control" id="duration" >
+                    <option value="" disabled {{ old('duration') ? '' : 'selected' }}>--Select--</option>
+
+                    @foreach($course_duration as $d)
+                        <option value="{{ $d->duration }}" 
+                            {{ old('duration') == $d->duration ? 'selected' : '' }}>
+                            {{ $d->name }}
+                        </option>
+                    @endforeach
+                </select>
+
+                @error('duration') 
+                    <small class="text-danger">{{ $message }}</small> 
+                @enderror
+            </div>
 
             <div class="form-group col-md-6">
                 <label>Batch Assign</label>
@@ -286,6 +341,14 @@
                 </select>
             </div>
 
+            <div class="form-group col-md-6">
+                <label>Study Mode?</label>
+                <select name="is_online" class="form-control">
+                    <option value="0">Offline</option>
+                    <option value="1">Online</option>
+                </select>
+            </div>
+
 
 
 
@@ -315,7 +378,50 @@
 @endsection
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+    const checkbox = document.getElementById("is_place");
+    const college = document.getElementById("college_name");
+    const place = document.getElementById("place");
+
+    function toggleFields() {
+
+        if (checkbox.checked) {
+
+            // hide college select + select2 UI
+            $('#collegeWrapper').hide();
+
+            // remove validation
+            college.removeAttribute("required");
+            college.disabled = true;
+
+            // show place field
+            $('#placeWrapper').removeClass('d-none');
+            place.setAttribute("required", true);
+
+        } else {
+
+            // show college
+            $('#collegeWrapper').show();
+
+            // enable validation
+            college.setAttribute("required", true);
+            college.disabled = false;
+
+            // hide place
+            $('#placeWrapper').addClass('d-none');
+            place.removeAttribute("required");
+            place.value = "";
+        }
+    }
+
+    checkbox.addEventListener("change", toggleFields);
+
+    // run on page load
+    toggleFields();
+});
     $(document).ready(function () {
         $('.select2').select2({
             theme: 'bootstrap-5',
@@ -618,5 +724,48 @@ function toggleDueDate() {
         // Set final value
         input.value = prefix + value;
     }
+</script>
+<script>
+function validateDueDate() {
+    let joinDate = $('#join_date').val();
+    let dueDate  = $('input[name="next_due_date"]').val();
+
+    if (!joinDate || !dueDate) return;
+
+    if (new Date(dueDate) <= new Date(joinDate)) {
+        $('#due_date_error').removeClass('d-none');
+        $('input[name="next_due_date"]').val('');
+    } else {
+        $('#due_date_error').addClass('d-none');
+    }
+}
+
+// trigger when dates change
+$('#join_date, input[name="next_due_date"]').on('change', function () {
+    validateDueDate();
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const genderSelect = document.getElementById("genderSelect");
+    const isMarried = document.getElementById("is_married");
+    const guardianLabel = document.getElementById("guardianLabel");
+
+    function updateLabel() {
+        if (!guardianLabel) return;
+
+        if (genderSelect.value === "female" && isMarried.checked) {
+            guardianLabel.textContent = "Husband Name";
+        } else {
+            guardianLabel.textContent = "Father Name";
+        }
+    }
+
+    genderSelect.addEventListener("change", updateLabel);
+    isMarried.addEventListener("change", updateLabel);
+
+    updateLabel();
+});
 </script>
 @endpush

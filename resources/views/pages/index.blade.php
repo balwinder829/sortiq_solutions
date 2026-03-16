@@ -59,7 +59,7 @@
                     <form action="{{ route('pages.destroy', $page) }}"
                           method="POST"
                           style="display:inline-block;"
-                          onsubmit="return confirm('Are you sure you want to delete this?')">
+                          data-swal-confirm="Are you sure you want to delete this?">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm">

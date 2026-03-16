@@ -51,7 +51,7 @@
         <tbody>
             
 
-            @foreach($sessions as $session)
+            @foreach($sessionsList as $session)
             <tr>
                 <td>{{ $loop->iteration }}</td>
                 <td style="
@@ -85,35 +85,34 @@
         {{ $session->total_students }}
     </span>
 </td> -->
-<td>
+ <td>
     @if($session->id == $activeSessionId)
         <a href="{{ route('common_filtered_student', [
             'session' => $session->id
         ]) }}"
        class="text-decoration-none">
         <span class="badge bg-success">
-            {{ $session->total_students }}
+            {{ $session->students_count }}
         </span>
     </a>
     @else
         <span class="badge bg-success">
-            {{ $session->total_students }}
+            {{ $session->students_count }}
         </span>
     @endif
-</td>
-
+</td>  
 
  {{-- ONLINE --}}
     <td>
         <span class="badge bg-primary">
-            {{ $session->online_students ?? 0 }}
+            {{ $session->online_students_count ?? 0 }}
         </span>
     </td>
 
     {{-- OFFLINE --}}
     <td>
         <span class="badge bg-secondary">
-            {{ $session->offline_students ?? 0 }}
+            {{ $session->offline_students_count ?? 0 }}
         </span>
     </td>
 
@@ -122,7 +121,7 @@
                         <a href="{{ route('sessions.edit', $session->id) }}" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i class="fa fa-edit"></i></a>
                         <form action="{{ route('sessions.destroy', $session->id) }}" method="POST" style="display:inline-block;">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" onclick="return confirm('Delete this Session?')">
+                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" data-swal-confirm="Delete this Session?">
                                         <i class="fa fa-trash"></i>
                         </form>
                     </div>
@@ -141,6 +140,7 @@
         $('#sessions-table').DataTable({
             "pageLength": 50,
             "lengthMenu": [5, 10, 25, 50, 100],
+            "order": []
              // "scrollX": true // <-- Add this
         });
     });
@@ -153,35 +153,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 </script>
 @endpush
 
-<!-- Batch List Modal -->
-<div class="modal fade" id="batchesModal" tabindex="-1" aria-labelledby="batchesModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg ">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title" id="batchesModalLabel">Batch List</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-
-      <div class="modal-body">
-          <table class="table table-bordered table-hover">
-              <thead class="table-light">
-                  <tr>
-                      <th>#</th>
-                      <th>Batch Name</th>
-                      <th>Technology</th>
-                      <th>Trainer</th>
-                      <th>Start Time</th>
-                      <th>End Time</th>
-                  </tr>
-              </thead>
-              <tbody id="batchList">
-                  <!-- AJAX -->
-              </tbody>
-          </table>
-      </div>
-    </div>
-  </div>
-</div>
+ 
 
 
 <script>
@@ -196,41 +168,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
         return `${hour}:${minute} ${ampm}`;
     }
-
-$(document).on('click', '.view-batches', function() {
-    let sessionId = $(this).data('id');
-
-    $('#batchList').html(
-        '<tr><td colspan="6" class="text-center">Loading...</td></tr>'
-    );
-
-    $.ajax({
-        url: '/sessions/' + sessionId + '/batches',
-        type: 'GET',
-        success: function(batches) {
-            let html = '';
-
-            if(batches.length === 0) {
-                html = '<tr><td colspan="6" class="text-center text-danger">No Batches Found</td></tr>';
-            } else {
-                $.each(batches, function(i, batch) {
-                    html += `
-                        <tr>
-                            <td>${i + 1}</td>
-                            <td>${batch.batch_name}</td>
-                            <td>${batch.course_data ? batch.course_data.course_name : '-'}</td>
-                            <td>${batch.trainer_data ? batch.trainer_data.name : '-'}</td>
-                            <td>${formatTime12Hour(batch.start_time)}</td>
-                            <td>${formatTime12Hour(batch.end_time)}</td>
-                        </tr>`;
-                });
-            }
-
-            $('#batchList').html(html);
-            $('#batchesModal').modal('show');
-        }
-    });
-});
+ 
 </script>
 
 

@@ -129,7 +129,7 @@ class PlacementController extends Controller
         'student_name'   => 'required|string|max:255',
         'tech'           => 'required|string|max:255',
         'placement_date' => 'required|date',
-        'college_name'   => 'required|max:255',
+        'college_name'   => 'nullable|max:255',
         'phone_no'       => 'required|string|max:20',
         // 'address'        => 'nullable|string',
         'company'        => 'required|string|max:255',
@@ -138,6 +138,9 @@ class PlacementController extends Controller
         'session_id'        => 'required|max:255',
 
         'description'    => 'nullable|string',
+        'youtube_link'    => 'nullable|string',
+        'gdrive'    => 'nullable|string',
+        'versal'    => 'nullable|string',
         'media'          => 'required',
         'media.*'        => 'file|mimes:jpg,jpeg,png,webp,gif,mp4,mov,avi',
         'cover_image'    => 'required'
@@ -158,6 +161,9 @@ class PlacementController extends Controller
         'state_id'    => $request->state_id,
         'location'    => $request->location,
         'session_id'    => $request->session_id,
+        'youtube_link'    => $request->youtube_link,
+        'gdrive'    => $request->gdrive,
+        'versal'    => $request->versal,
     ]);
 
     /* ---------------------------------------------------------
@@ -198,59 +204,7 @@ class PlacementController extends Controller
                      ->with('success', 'Placement created successfully!');
 }
 
-    public function storeold(Request $request)
-    {
-        $request->validate([
-            'name'        => 'required|string',
-            'description' => 'nullable|string',
-            'media'       => 'required',
-            'media.*'     => 'file|mimes:jpg,jpeg,png,webp,gif,mp4,mov,avi',
-            'cover_image' => 'required'
-        ]);
-
-        $placement = Placement::create([
-            'name'        => $request->name,
-            'description' => $request->description
-        ]);
-
-        /* ---------------------------------------------------------
-           Upload Media
-        --------------------------------------------------------- */
-        foreach ($request->file('media') as $file) {
-
-            $filename = time() . "_" . $file->getClientOriginalName();
-            $ext = strtolower($file->getClientOriginalExtension());
-
-            if (in_array($ext, ['jpg','jpeg','png','gif','webp'])) {
-
-                $file->move(public_path('placement/images'), $filename);
-
-                $img = PlacementImage::create([
-                    'placement_id' => $placement->id,
-                    'path'         => 'placement/images/' . $filename
-                ]);
-
-                // SET COVER IMAGE
-                if ($request->cover_image == $file->getClientOriginalName()) {
-                    $placement->update([
-                        'cover_image' => $img->path
-                    ]);
-                }
-
-            } else {
-
-                $file->move(public_path('placement/videos'), $filename);
-
-                PlacementVideo::create([
-                    'placement_id' => $placement->id,
-                    'path'         => 'placement/videos/' . $filename
-                ]);
-            }
-        }
-
-        return redirect()->route('placements.index')
-                         ->with('success', 'Placement created successfully!');
-    }
+     
 
     /* ============================================================
        EDIT
@@ -283,7 +237,7 @@ class PlacementController extends Controller
         'student_name'   => 'required|string|max:255',
         'tech'           => 'required|string|max:255',
         'placement_date' => 'required|date',
-        'college_name'   => 'required|max:255',
+        'college_name'   => 'nullable|max:255',
         'phone_no'       => 'required|string|max:20',
         // 'address'        => 'nullable|string',
         'company'        => 'required|string|max:255',
@@ -292,6 +246,9 @@ class PlacementController extends Controller
         'session_id'        => 'required|max:255',
 
         'description'    => 'nullable|string',
+        'youtube_link'    => 'nullable|string',
+        'gdrive'    => 'nullable|string',
+        'versal'    => 'nullable|string',
     ]);
 
     /* ---------------------------------------------------------
@@ -309,6 +266,9 @@ class PlacementController extends Controller
         'location'    => $request->location,
         'session_id'    => $request->session_id,
         'description'    => $request->description,
+        'youtube_link'    => $request->youtube_link,
+        'gdrive'    => $request->gdrive,
+        'versal'    => $request->versal,
     ]);
 
     /* ---------------------------------------------------------

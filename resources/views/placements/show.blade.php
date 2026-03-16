@@ -19,7 +19,7 @@
         </p>
 
         <span class="badge bg-primary me-1">
-            {{ $placement->course->course_name }}
+            {{ $placement->course->course_name ?? '' }}
         </span>
 
         <span class="badge bg-secondary">

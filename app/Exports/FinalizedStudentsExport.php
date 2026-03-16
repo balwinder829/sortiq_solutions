@@ -22,6 +22,7 @@ class FinalizedStudentsExport implements FromCollection, WithHeadings
             ->select(
                 'student_name',
                 'student_email',
+                'student_mobile',
                 'score'
             )
             ->orderByDesc('score')
@@ -33,6 +34,7 @@ class FinalizedStudentsExport implements FromCollection, WithHeadings
         return [
             'Student Name',
             'Student Email',
+            'Student Mobile',
             'Score'
         ];
     }

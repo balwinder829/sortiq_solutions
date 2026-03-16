@@ -7,6 +7,33 @@
      table.dataTable td {
     text-transform: capitalize;
 }
+/* Amount slider base */
+#amountSlider {
+    height: 6px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 10;
+}
+ 
+
+#amountSlider {
+    height: 6px;
+}
+
+#amountSlider .noUi-handle {
+    width: 14px;
+    height: 14px;
+    right: -7px;
+    top: -5px;
+    border-radius: 50%;
+}
+
+#amountSlider .noUi-handle::before,
+#amountSlider .noUi-handle::after {
+    display: none;
+}
+
  </style>
  @php
     $role = (int) auth()->user()->role;
@@ -212,7 +239,7 @@
        </div>
 
           {{-- Amount Range Slider --}}
-        <div class="col-md-4 col-12">
+       <!--  <div class="col-md-4 col-12">
             <label class="form-label fw-bold">Amount Range</label>
 
             <div id="amountSlider"></div>
@@ -226,17 +253,45 @@
             <input type="hidden" name="amount_min" id="amountMin" value="{{ request('amount_min', 0) }}">
             <input type="hidden" name="amount_max" id="amountMax" value="{{ request('amount_max', 200000) }}">
         </div>
-
+ -->
          
+         {{-- Amount Range Slider --}}
+<div class="col-md-4 col-12">
+    <label class="form-label fw-bold">Amount Range</label>
+
+    <div id="amountSlider" class="mb-2"></div>
+
+    <div class="d-flex gap-2 align-items-center">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">Min</span>
+            <input type="text"
+                   name="amount_min"
+                   id="amountMin"
+                   class="form-control text-end"
+                   value="{{ request('amount_min', 0) }}">
+        </div>
+
+        <span class="fw-bold">–</span>
+
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">Max</span>
+            <input type="text"
+                   name="amount_max"
+                   id="amountMax"
+                   class="form-control text-end"
+                   value="{{ request('amount_max', 200000) }}">
+        </div>
+    </div>
+</div>
     </div>
 	{{-- Buttons --}}
 	<div class="mt-2 tble-bts">
 		<button type="submit" class="btn" style="background-color: #6b51df; color: #fff;">Search</button>
 		<a href="{{ route('students.index') }}" class="btn btn-secondary">Reset</a>
-        <!-- <a href="{{ route('students.export.excel', request()->query()) }}"
+        <a href="{{ route('students.export', request()->query()) }}"
            class="btn btn-primary">
              </i> Download Excel
-        </a> -->
+        </a>
         
 	</div>
 </form>
@@ -283,6 +338,8 @@
                 <th class="text-center">Part-Time Job Offer</th>
                 <th class="text-center">Placement Offer</th>
                 <th class="text-center">PG Offer</th>
+                 <th class="text-center">Is Intern</th>
+                <th class="text-center">Study Mode</th>
                 <th class="text-center">Email Count</th>
                 <th class="text-center">Receipt Count</th>
                 <th width="180px" class="text-center">Action</th>
@@ -315,7 +372,7 @@
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
                 <td><span class="badge bg-{{ $student->status == 'Active' ? 'success' : 'danger' }}">{{ $student->status }}</span></td>
-                 <td>{{ $student->courseData->course_name ?? '-' }}</td>
+                 <td>{{ $student->course_name ?? '-' }}</td>
                 <td>{{ $student->total_fees }}</td>
                 <td>{{ $student->reg_fees }}</td>
                 <td>{{ $student->pending_fees }}</td>
@@ -347,6 +404,16 @@
                         {{ $student->pg_offer ? 'Yes' : 'No' }}
                     </span>
                 </td>
+                 <td class="text-center">
+                    <span class="badge bg-{{ $student->is_intern ? 'success' : 'secondary' }}">
+                        {{ $student->is_intern ? 'Yes' : 'No' }}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="badge bg-{{ $student->is_online ? 'success' : 'secondary' }}">
+                        {{ $student->is_online ? 'Online' : 'Offline' }}
+                    </span>
+                </td>
 
                 <td>{{ $student->email_count_confirmation ?? 0 }}</td>
                 <td>{{ $student->count_receipt_download ?? 0 }}</td>
@@ -364,7 +431,7 @@
             @csrf
             <input type="hidden" name="is_internship" class="isInternshipHiddenSingle">
             <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate"
-                onclick="return confirm('Send certificate to {{ $student->email_id }}?')">
+               data-swal-confirm="Send certificate to {{ $student->email_id }}?">
                 <i class="fa-solid fa-file-lines"></i>
             </button>
         </form>
@@ -379,7 +446,7 @@
         {{-- Delete --}}
         <form action="{{ route('students.destroy',$student->id) }}" method="POST" style="display:inline-block;">
             @csrf @method('DELETE')
-            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" onclick="return confirm('Delete this student?')">
+            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Student" data-swal-confirm="Delete this student?">
                 <i class="fa fa-trash"></i>
             </button>
         </form>
@@ -754,64 +821,133 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const minInput = document.getElementById('amountMin');
     const maxInput = document.getElementById('amountMax');
-    const minText  = document.getElementById('amountMinText');
-    const maxText  = document.getElementById('amountMaxText');
 
-    const startMin = Number(minInput.value || 0);
-    const startMax = Number(maxInput.value || 200000);
+    const MIN = 0;
+    const MAX = 200000;
 
+    const startMin = Number(minInput.value || MIN);
+    const startMax = Number(maxInput.value || MAX);
+
+    /* ----------------------------
+       CREATE SLIDER (NO SNAP)
+    -----------------------------*/
     noUiSlider.create(slider, {
         start: [startMin, startMax],
         connect: true,
         step: 1,
+        behaviour: 'tap',
         range: {
-            min: 0,
-            max: 200000
+            min: MIN,
+            max: MAX
+        },
+        format: {
+            to: v => Math.round(v),
+            from: v => Number(v)
         }
     });
 
+    /* ----------------------------
+       SLIDER → INPUT SYNC
+    -----------------------------*/
     slider.noUiSlider.on('update', function (values) {
-        minInput.value = Math.round(values[0]);
-        maxInput.value = Math.round(values[1]);
-
-        minText.textContent = values[0];
-        maxText.textContent = values[1];
+        minInput.value = values[0];
+        maxInput.value = values[1];
     });
 
-    /**
-     * ✅ Enable slider ONLY for these fee_filter values
-     */
+    /* ----------------------------
+       INPUT SANITIZER
+    -----------------------------*/
+    function sanitize(value) {
+        value = parseInt(String(value).replace(/\D/g, ''), 10);
+        if (isNaN(value)) value = MIN;
+        return Math.min(Math.max(value, MIN), MAX);
+    }
+
+    /* ----------------------------
+       INPUT → SLIDER SYNC
+    -----------------------------*/
+    function syncInputsToSlider() {
+        let min = sanitize(minInput.value);
+        let max = sanitize(maxInput.value);
+
+        if (min > max) min = max;
+
+        minInput.value = min;
+        maxInput.value = max;
+
+        slider.noUiSlider.set([min, max]);
+    }
+
+    /* ----------------------------
+       INPUT EVENTS
+    -----------------------------*/
+    [minInput, maxInput].forEach(input => {
+
+        // allow only digits while typing
+        input.addEventListener('input', () => {
+            input.value = input.value.replace(/\D/g, '');
+        });
+
+        // ENTER → update slider
+        input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                syncInputsToSlider();
+            }
+        });
+
+        // blur → update slider
+        input.addEventListener('blur', syncInputsToSlider);
+    });
+
+    /* ----------------------------
+       ENABLE SLIDER ONLY FOR
+       SPECIFIC FEE FILTERS
+    -----------------------------*/
     const amountEnabledFilters = [
         'pending_high',
         'pending_low',
         'fees_high',
         'fees_low'
     ];
-
+    
     function toggleSlider() {
-        const value = feeFilter.value;
+    const value = feeFilter.value;
+    const enabled = amountEnabledFilters.includes(value);
 
-        if (amountEnabledFilters.includes(value)) {
-            slider.noUiSlider.enable();
-            slider.style.opacity = 1;
-        } else {
-            slider.noUiSlider.disable();
-            slider.style.opacity = 0.4;
-        }
+    if (enabled) {
+        // enable slider
+        slider.noUiSlider.enable();
+        slider.style.opacity = 1;
+        slider.style.pointerEvents = 'auto';
+
+        // enable inputs
+        minInput.disabled = false;
+        maxInput.disabled = false;
+    } else {
+        // disable slider
+        slider.noUiSlider.disable();
+        slider.style.opacity = 0.4;
+        slider.style.pointerEvents = 'none';
+
+        // disable inputs
+        minInput.disabled = true;
+        maxInput.disabled = true;
+
+        // reset values
+        slider.noUiSlider.set([MIN, MAX]);
+        minInput.value = MIN;
+        maxInput.value = MAX;
     }
+}
+
+     
 
     feeFilter.addEventListener('change', toggleSlider);
     toggleSlider(); // run on page load
+
 });
 </script>
-
-<script>
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl)
-})
-</script>
-
 <script>
 $(document).ready(function () {
     $('.confirm-single-form').on('submit', function () {

@@ -232,7 +232,7 @@ class StudentAdditionalLetterController extends Controller
     ]);
 
     // $letter->load('student.collegeData');
-    $letter->load('student.collegeData','student.collegeData.district', 'student.collegeData.state','student.courseData');
+    $letter->load('student.collegeData','student.collegeData.district', 'student.collegeData.state');
 
      $view = match ($letter->internship_type) {
             'free' => 'student_additional_letters.free_letter_fixed_pdf',
@@ -324,14 +324,16 @@ public function sendEmail($id)
 {
     // $letter = StudentAdditionalLetter::findOrFail($id);
      $letter = StudentAdditionalLetter::with('student')->findOrFail($id);
-    // dd($letter);
+    
      if (!$letter->student || empty($letter->student->email_id)) {
         return back()->with('error', 'No email found for this user.');
     }
+
+    // dd($letter);
     $pdf = $this->pdf($letter);
 
     Mail::send([], [], function ($message) use ($letter, $pdf) {
-        $message->to($letter->email)
+        $message->to($letter->student->email_id)
             ->subject('Student Letter')
             ->html('Please find your letter attached.')
             ->attachData($pdf, 'student-letter.pdf', [

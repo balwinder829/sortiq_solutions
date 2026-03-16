@@ -57,7 +57,7 @@ class Enquiry extends Model
 
     public function assignedTo()
     {
-        return $this->belongsTo(User::class, 'assigned_to');
+        return $this->belongsTo(SalesStaff::class, 'assigned_to');
     }
 
      public function student()
@@ -68,5 +68,15 @@ class Enquiry extends Model
     public function collegeData()
     {
         return $this->belongsTo(College::class,'college','id');
+    }
+
+    public function scopeEnquiries($query)
+    {
+        return $query->where('is_passout', 0);
+    }
+
+    public function scopePassouts($query)
+    {
+        return $query->where('is_passout', 1);
     }
 }
