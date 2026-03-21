@@ -85,6 +85,14 @@ class WorkshopController extends Controller
             $query->where('status',$request->status);
         }
 
+        if ($request->type) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->event_type) {
+            $query->where('event_type', $request->event_type);
+        }
+
         if($request->date){
             $query->whereDate('date',$request->date);
         }
@@ -122,13 +130,23 @@ class WorkshopController extends Controller
                         </button>
                         </form>';
 
+            $typeBadge = '<span class="badge bg-info">'.e(ucfirst($workshop->type)).'</span>';
+
+            $eventBadge = '<span class="badge bg-info">'
+                . e(ucwords(str_replace('_', ' ', $workshop->event_type)))
+                . '</span>';
+
             return [
                 $workshop->id,                                // ID
                 e($workshop->title),                          // Title (using name column)
                 e(optional($workshop->college)->FullName),   // College
                 $workshop->date?->format('d M Y'),
                 $statusBadge,                                // Status
-                e($workshop->type),                          // Title (using name column)
+                 // e(ucfirst($workshop->type)),                    // Title (using name column)
+                 // e(ucwords(str_replace('_', ' ', $workshop->event_type))),
+
+                $typeBadge,
+                $eventBadge,
                 $actions,                                    // Actions
             ];
         });

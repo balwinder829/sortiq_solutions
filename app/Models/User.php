@@ -37,8 +37,10 @@ class User extends Authenticatable
 
     // Automatically hash password when setting it
     public function setPasswordAttribute($password)
-    {
-        $this->attributes['password'] = Hash::make($password);
+    {   
+        if (!empty($password)) {
+            $this->attributes['password'] = Hash::make($password);
+        }
     }
 
     // public function roles()

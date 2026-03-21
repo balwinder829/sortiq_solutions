@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+
 @section('content')
 <div class="container">
     <div class="row mb-2">
@@ -52,11 +53,17 @@
             </select>
         </div>
 
-         <div class="form-group col-md-6">
+        <div class="form-group col-md-6">
             <label>College Type</label>
             <select name="college_type" class="form-control">
-                <option value="0">Degree</option>
-                <option value="1">Diploma</option>
+                <option value="">Select College Type</option>
+
+                @foreach(\App\Models\College::TYPES as $key => $value)
+                    <option value="{{ $key }}">
+                        {{ $value }}
+                    </option>
+                @endforeach
+
             </select>
         </div>
 
@@ -81,6 +88,9 @@
         </div>
     </div>
         <button class="btn btn-success">Add</button>
+        <a href="{{ route('colleges.index') }}" class="btn btn-secondary">
+            Back
+        </a>
     </form>
 </div>
 

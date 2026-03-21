@@ -27,33 +27,37 @@ class Hod extends Model
 
     
     public function emails()
-{
-    return $this->hasMany(HodEmail::class, 'hod_id', 'id');
-}
+    {
+        return $this->hasMany(HodEmail::class, 'hod_id', 'id');
+    }
 
-public function hodEmails()
-{
-    return $this->hasMany(HodEmail::class, 'hod_id', 'id')
-                ->where('type', 'hod');
-}
+    public function hodEmails()
+    {
+        return $this->hasMany(HodEmail::class, 'hod_id', 'id')
+                    ->where('type', 'hod');
+    }
 
-public function tpoEmails()
-{
-    return $this->hasMany(HodEmail::class, 'hod_id', 'id')
-                ->where('type', 'tpo');
-}
+    public function tpoEmails()
+    {
+        return $this->hasMany(HodEmail::class, 'hod_id', 'id')
+                    ->where('type', 'tpo');
+    }
 
-public function primaryHodEmail()
-{
-    return $this->hasOne(HodEmail::class, 'hod_id', 'id')
-                ->where('type', 'hod')
-                ->where('is_primary', true);
-}
+    public function primaryHodEmail()
+    {
+        return $this->hasOne(HodEmail::class, 'hod_id', 'id')
+                    ->where('type', 'hod')
+                    ->where('is_primary', true);
+    }
 
-public function primaryTpoEmail()
-{
-    return $this->hasOne(HodEmail::class, 'hod_id', 'id')
-                ->where('type', 'tpo')
-                ->where('is_primary', true);
-}
+    public function primaryTpoEmail()
+    {
+        return $this->hasOne(HodEmail::class, 'hod_id', 'id')
+                    ->where('type', 'tpo')
+                    ->where('is_primary', true);
+    }
+    public function emailRecipients()
+    {
+        return $this->hasMany(EmailRecipient::class, 'hod_id');
+    }
 }

@@ -203,4 +203,25 @@ class StudentDashboardController extends Controller
         );
     }
 
+    public function fees()
+    {
+        $student = Auth::guard('student')->user();
+
+        $totalFees = $student->total_fees ?? 0;
+
+        // ✅ FIXED
+        $paidFees = ($student->paid_fees ?? 0) + ($student->reg_fees ?? 0);
+
+        $pendingFees = $totalFees - $paidFees;
+
+        $nextDueDate = $student->next_due_date;
+
+        return view('students_dashboard.fees', compact(
+            'totalFees',
+            'paidFees',
+            'pendingFees',
+            'nextDueDate'
+        ));
+    }
+
 }

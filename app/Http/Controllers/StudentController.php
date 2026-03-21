@@ -457,6 +457,10 @@ class StudentController extends Controller
             0
         );
 
+        $name = strtolower(trim($validate['student_name']));
+        $name = preg_replace('/\s+/', '_', $name);
+
+        $validate['plain_password'] = $validate['password'] = $name . $newSno;
         $validate['session'] = $activeSessionId;
 
         Student::create($validate);
@@ -591,7 +595,7 @@ class StudentController extends Controller
             }
         }
 
-
+        
         $validates['paid_fees'] = $validates['paid_fees'] ?? 0;
         $validates['reg_fees'] = $validates['reg_fees'] ?? 0;
 
@@ -599,10 +603,11 @@ class StudentController extends Controller
             $validates['total_fees'] - $validates['reg_fees'] - $validates['paid_fees'],
             0
         );
-
+        unset($validates['password']);
         if ($request->filled('password')) {
             $validates['plain_password'] = $validates['password'] = trim($request->password);
         }
+        // dd($validates);
         $student->update($validates);
 
         return redirect()->route('students.index')

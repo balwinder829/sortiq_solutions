@@ -106,12 +106,15 @@ class SalesStaffController extends Controller
             'password' => 'nullable|min:6',
         ]);
 
-        // ✅ remove password if empty
-        if (empty($validated['password'])) {
-            unset($validated['password']);
-        } else {
-            $validated['plain_pswd'] = $validated['password'];
+        if ($request->filled('password')) {
+            $validated['plain_pswd'] = $validated['password'] = $request->password;
         }
+        // ✅ remove password if empty
+        // if (empty($validated['password'])) {
+        //     unset($validated['password']);
+        // } else {
+        //     $validated['plain_pswd'] = $validated['password'];
+        // }
 
         $sales_staff->update($validated);
 

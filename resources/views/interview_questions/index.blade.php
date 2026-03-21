@@ -13,7 +13,7 @@
                    class="btn" style="background-color:#6b51df;color:#fff;">
                     View Q&As
                 </a>
-                 <a href="{{ route('interview-questions.create') }}"
+                <a href="{{ route('interview-questions.create') }}?{{ http_build_query(request()->query()) }}"
                    class="btn" style="background-color:#6b51df;color:#fff;">
                     Add Question
                 </a>
@@ -37,10 +37,10 @@
                 <div class="col-md-3">
                     <select name="experience_level" class="form-control filterchange">
                         <option value="">All Experience</option>
-                        <option value="fresher">Fresher</option>
-                        <option value="1-3">1–3 Years</option>
-                        <option value="3-5">3–5 Years</option>
-                        <option value="5+">5+ Years</option>
+                        <option value="fresher" {{ request('experience_level')=='fresher'?'selected':'' }}>Fresher</option>
+                        <option value="1-3" {{ request('experience_level')=='1-3'?'selected':'' }}>1–3 Years</option>
+                        <option value="3-5" {{ request('experience_level')=='3-5'?'selected':'' }}>3–5 Years</option>
+                        <option value="5+" {{ request('experience_level')=='5+'?'selected':'' }}>5+ Years</option>
                     </select>
                 </div>
 
@@ -92,7 +92,12 @@
                 <td>{{ $q->experience_level }}</td>
                 <td>{{ $q->technology->name ?? '-' }}</td>
                 <td>
-                    <a href="{{ route('interview-questions.edit', $q) }}"
+                    <!-- <a href="{{ route('interview-questions.edit', $q) }}"
+                       class="btn btn-sm" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </a> -->
+
+                    <a href="{{ route('interview-questions.edit', $q) }}?{{ http_build_query(request()->query()) }}"
                        class="btn btn-sm" title="Edit">
                         <i class="fas fa-edit"></i>
                     </a>

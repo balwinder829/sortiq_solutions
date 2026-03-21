@@ -18,38 +18,74 @@
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
-<form method="POST" action="{{ route('interview-questions.store') }}">
+<form method="POST" action="{{ route('interview-questions.store') }}?{{ http_build_query(request()->query()) }}">
 @csrf
 
 <div class="row">
+
+    @php
+        $rounds = [
+            'hr' => 'HR',
+            'technical' => 'Technical',
+            'machine' => 'Machine',
+        ];
+
+        $selectedRound = old('round_type', request('round_type'));
+    @endphp
 
     <div class="form-group col-md-6">
         <label>Round Type</label>
         <select name="round_type" class="form-control" required>
             <option value="">Select Round</option>
-            <option value="hr">HR</option>
-            <option value="technical">Technical</option>
-            <option value="machine">Machine</option>
+
+            @foreach($rounds as $key => $label)
+                <option value="{{ $key }}"
+                    {{ $selectedRound == $key ? 'selected' : '' }}>
+                    {{ $label }}
+                </option>
+            @endforeach
         </select>
     </div>
+
+   @php
+        $experiences = [
+            'fresher' => 'Fresher',
+            '1-3' => '1–3 Years',
+            '3-5' => '3–5 Years',
+            '5+' => '5+ Years',
+        ];
+
+        $selectedExp = old('experience_level', request('experience_level'));
+    @endphp
 
     <div class="form-group col-md-6">
         <label>Experience Level</label>
         <select name="experience_level" class="form-control" required>
             <option value="">Select Experience</option>
-            <option value="fresher">Fresher</option>
-            <option value="1-3">1–3 Years</option>
-            <option value="3-5">3–5 Years</option>
-            <option value="5+">5+ Years</option>
+
+            @foreach($experiences as $key => $label)
+                <option value="{{ $key }}"
+                    {{ $selectedExp == $key ? 'selected' : '' }}>
+                    {{ $label }}
+                </option>
+            @endforeach
         </select>
     </div>
+
+    @php
+        $selectedTech = old('technology_id', request('technology_id'));
+    @endphp
 
     <div class="form-group col-md-6">
         <label>Technology</label>
         <select name="technology_id" class="form-control">
             <option value="">-- Optional --</option>
+
             @foreach($technologies as $tech)
-                <option value="{{ $tech->id }}">{{ $tech->name }}</option>
+                <option value="{{ $tech->id }}"
+                    {{ $selectedTech == $tech->id ? 'selected' : '' }}>
+                    {{ $tech->name }}
+                </option>
             @endforeach
         </select>
     </div>
@@ -68,8 +104,9 @@
 </div>
 
 <button class="btn btn-primary mt-3">Save</button>
-<a href="{{ route('interview-questions.index') }}"
-   class="btn btn-secondary mt-3">Back</a>
+<a href="{{ route('interview-questions.index', request()->query()) }}" class="btn btn-secondary mt-3">
+    Back
+</a>
 
 </form>
 </div>

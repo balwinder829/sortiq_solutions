@@ -15,7 +15,7 @@
 @endif
 
 <form method="POST"
-      action="{{ route('interview-questions.update', $interview_question) }}">
+      action="{{ route('interview-questions.update', $interview_question) }}?{{ http_build_query(request()->query()) }}">
 @csrf
 @method('PUT')
 
@@ -70,8 +70,12 @@
 </div>
 
 <button class="btn btn-primary mt-3">Update</button>
-<a href="{{ route('interview-questions.index') }}"
+<!-- <a href="{{ route('interview-questions.index') }}"
    class="btn btn-secondary mt-3">Back</a>
+ -->
+<a href="{{ route('interview-questions.index', request()->query()) }}" class="btn btn-secondary mt-3">
+    Back
+</a>
 
 </form>
 </div>

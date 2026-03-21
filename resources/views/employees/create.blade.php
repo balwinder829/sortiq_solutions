@@ -78,7 +78,7 @@
             </div>
 
              <div class="form-group col-md-6">
-                <label>>Employement Type</label>
+                <label>Employement Type</label>
                 <select name="employment_mode" class="form-control" required>
                     @foreach(['normal','intern' ,'freelancer'] as $emp_mode)
                         <option value="{{ $emp_mode }}"

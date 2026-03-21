@@ -152,6 +152,14 @@ function isParent($routes)
                     </a>
                 </li>
 
+                {{-- Fee Status --}}
+                <li class="{{ isParent(['students.fee_status']) }}">
+                    <a href="{{ route('students.fee_status') }}">
+                         <i class="fa-regular fa-file-lines"></i>
+                        <span class="nav-text">Fee Status</span>
+                    </a>
+                </li>
+
                 {{-- Logout --}}
                 <li>
                     <a href="{{ route('logout') }}"

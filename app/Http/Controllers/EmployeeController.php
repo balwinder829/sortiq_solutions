@@ -315,7 +315,7 @@ class EmployeeController extends Controller
              'username' => strtolower(trim($data['username'])),
             'email'    => $data['email'],
             'phone'    => $data['phone'],
-            'password' => trim($data['password']),
+            // 'password' => trim($data['password']),
             'role'     => $data['role'],
             'alternative_phone'     => $data['alternative_phone'],
             'probation_period'     => $data['probation_period'],

@@ -55,9 +55,25 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    $.extend(true, $.fn.dataTable.defaults, {
-        pageLength: 50,
-        language: { lengthMenu: "Show _MENU_ Entries" }
+    
+    $(document).ready(function () {
+        $.extend(true, $.fn.dataTable.defaults, {
+            pageLength: 50,
+            language: { lengthMenu: "Show _MENU_ Entries" },
+            stateSave: true,
+            stateDuration: -1, // keep forever
+            stateSaveCallback: function (settings, data) {
+                localStorage.setItem(
+                    'DT_' + window.location.pathname,
+                    JSON.stringify(data)
+                );
+            },
+            stateLoadCallback: function (settings) {
+                return JSON.parse(
+                    localStorage.getItem('DT_' + window.location.pathname)
+                );
+            }
+        });
     });
 
     // SweetAlert2: global helper for script-based confirm (usage: sweetConfirm('Message?', function() { form.submit(); }))

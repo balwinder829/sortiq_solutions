@@ -61,7 +61,7 @@ class InterviewQuestionController extends Controller
             ->when($request->technology_id, fn ($q) =>
                 $q->where('technology_id', $request->technology_id)
             )
-            ->orderByDesc('id')
+            ->orderByDesc('updated_at')
             ->get();
 
         return view('interview_questions.index', compact('questions', 'technologies'));
@@ -81,14 +81,16 @@ class InterviewQuestionController extends Controller
             'round_type' => 'required',
             'experience_level' => 'required',
         ]);
-
+        // dd($request);
         InterviewQuestion::create($request->all());
 
         // return redirect()->route('interview-questions.index')
         //     ->with('success', 'Question added successfully');
 
-        return redirect()->back()
+        return redirect()->route('interview-questions.index', $request->query())
             ->with('success', 'Question added successfully');
+        // return redirect()->back()
+        //     ->with('success', 'Question added successfully');
     }
 
     public function edit(InterviewQuestion $interview_question)
@@ -108,8 +110,10 @@ class InterviewQuestionController extends Controller
 
         $interview_question->update($request->all());
 
-        return redirect()->route('interview-questions.index')
-            ->with('success', 'Question updated successfully');
+        return redirect()->route('interview-questions.index', $request->query())
+        ->with('success', 'Question updated successfully');
+        // return redirect()->route('interview-questions.index')
+        //     ->with('success', 'Question updated successfully');
     }
 
     public function destroy(InterviewQuestion $interview_question)

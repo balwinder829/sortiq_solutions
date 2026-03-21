@@ -173,12 +173,12 @@ function isParent($routes)
 
 
                 {{-- Colleges --}}
-                <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*']) }}">
+                <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*','admin.college-emails*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fas fa-university"></i>
                         <span class="nav-text">Colleges</span>
                     </a>
-                    <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*','workshops*']) }}">
+                    <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*','workshops*','admin.college-emails*']) }}">
                        {{-- Colleges --}}
                         <li class="{{ isParent(['colleges*']) }}">
                             <a href="{{ route('colleges.index') }}">
@@ -203,6 +203,15 @@ function isParent($routes)
                             </a>
                         </li>  
 
+                        <li>
+                            <a class="{{ isChildActive('admin.college-emails*') }}"
+                               href="{{ route('admin.college-emails.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                              Colleges Emails Records
+                            </a>
+                        </li> 
+
+                         
                          <li class="{{ isParent(['workshops*']) }}">
                             <a href="{{ route('workshops.index') }}">
                                 <!-- <i class="fa-regular fa-file-lines"></i> -->
@@ -284,6 +293,18 @@ function isParent($routes)
                             </a>
                         </li>
 
+                        <li class="{{ request()->route('type') == 'student.registered.summary' ? 'mm-active' : '' }}">
+                            <a href="{{ route('notifications.byType', 'student.registered.summary') }}">
+                                Pending Registrations Notification
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="{{ route('notifications.byType', 'sales.leads.low.percent.admin') }}"
+                               class="{{ request()->route('type') == 'sales.leads.low.percent.admin' ? 'mm-active' : '' }}">
+                                Low Leads Alerts
+                            </a>
+                        </li>
                          <!-- <li>
                             <a class="{{ isChildActive('admin.enquiries.performance') }}"
                                 href="{{ route('admin.enquiries.performance') }}">
@@ -419,7 +440,20 @@ function isParent($routes)
                                 <i class="fas fa-file-signature"></i>
                                 Student Office Exams
                             </a>
-                        </li>                    
+                        </li>   
+
+                        <li class="{{ request()->route('type') == 'fee.pending.summary' ? 'mm-active' : '' }}">
+                            <a href="{{ route('notifications.byType', 'fee.pending.summary') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Fee Notification
+                            </a>
+                        </li> 
+                        <li class="{{ request()->route('type') == 'bin.ready.summary' ? 'mm-active' : '' }}">
+                            <a href="{{ route('notifications.byType', 'bin.ready.summary') }}">
+                                <i class="fas fa-file-signature"></i>
+                                BIN Ready Notification
+                            </a>
+                        </li>                
                     </ul>
                 </li>
 
@@ -557,7 +591,12 @@ function isParent($routes)
                         <!-- <i class="fa-regular fa-file-lines"></i> -->
                         <span class="nav-text">Social Share Scanners</span>
                     </a>
-                </li>                        
+                </li>  
+                <li class="{{ request()->route('type') == 'upcoming.event' ? 'mm-active' : '' }}">
+                    <a href="{{ route('notifications.byType', 'upcoming.event') }}">
+                        Upcoming Events Notification
+                    </a>
+                </li>                      
                     </ul>
                 </li>
 
@@ -741,7 +780,11 @@ function isParent($routes)
                             </a>
                         </li>
                        
-
+                         <li class="{{ request()->routeIs('admin.external-attendance.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.external-attendance.index') }}">
+                                Attendance Form
+                            </a>
+                        </li>
                          <!-- <li>
                             <a class="{{ isChildActive('admin.offline-tests.index') }}"
                                 href="{{ route('admin.offline-tests.index') }}">
@@ -795,6 +838,11 @@ function isParent($routes)
                                href="{{ route('daily-interviews.index') }}">
                                 <!-- <i class="fas fa-bed me-2"></i> -->
                                 Daily Interview Schedules
+                            </a>
+                        </li>
+                        <li class="{{ request()->route('type') == 'admin.interviews.today' ? 'mm-active' : '' }}">
+                            <a href="{{ route('notifications.byType', 'admin.interviews.today') }}">
+                                Today Interviews Notification
                             </a>
                         </li>
                     </ul>
@@ -993,6 +1041,12 @@ function isParent($routes)
                             <a href="{{ route('admin.blocked-ips.index') }}">
                                 <i class="fas fa-ban"></i>
                                 <span class="nav-text">Blocked IPs</span>
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.allowed-ips.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.allowed-ips.index') }}">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="nav-text">Allowed IPs (Script Access)</span>
                             </a>
                         </li>
 

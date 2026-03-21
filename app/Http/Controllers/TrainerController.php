@@ -410,9 +410,7 @@ class TrainerController extends Controller
 
          // ✅ Update password ONLY if filled
         if ($request->filled('password')) {
-            $data['password'] = $validated['password'];
-            $data['trainer_pswd'] = $validated['password'];
-            
+            $data['trainer_pswd'] = $data['password'] = $request->password;
         }
 
         $trainer->update($data);

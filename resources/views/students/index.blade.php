@@ -82,266 +82,499 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 </div>
 
 {{-- Search / Filter Form --}}
+@php
+
+$filtersApplied = collect([
+request('college_name'),
+request('start_date'),
+request('end_date'),
+request('status'),
+request('technology'),
+request('part_time_offer'),
+request('placement_offer'),
+request('pg_offer'),
+request('is_intern'),
+request('is_online'),
+request('fee_filter'),
+request('gender'),
+request('limit'),
+request('amount_min'),
+request('amount_max')
+])->filter()->isNotEmpty();
+
+@endphp
+
+
+{{-- ACTIVE FILTER CHIPS --}}
+@if($filtersApplied)
+
+<div class="mb-3">
+
+<strong>Active Filters:</strong>
+
+<div class="d-flex flex-wrap gap-2 mt-2">
+{{-- College --}}
+@if(request('college_name'))
+@php
+$collegeName = $colleges->firstWhere('id', request('college_name'))->FullName ?? request('college_name');
+@endphp
+
+<a href="{{ request()->fullUrlWithQuery(['college_name'=>null]) }}"
+class="badge bg-primary text-decoration-none">
+College name : {{ $collegeName }} ✕
+</a>
+@endif
+
+
+{{-- Technology --}}
+@if(request('technology'))
+@php
+$techName = $courses->firstWhere('id', request('technology'))->course_name ?? request('technology');
+@endphp
+
+<a href="{{ request()->fullUrlWithQuery(['technology'=>null]) }}"
+class="badge bg-primary text-decoration-none">
+Technology : {{ $techName }} ✕
+</a>
+@endif
+@foreach(request()->except(['page','college_name','technology']) as $key => $value)
+
+@if($value !== '' && $value !== null)
+@php
+$displayValue = $value;
+
+/* Convert 0/1 to Yes/No for specific filters */
+if(in_array($key, [
+    'part_time_offer',
+    'placement_offer',
+    'pg_offer',
+    'is_intern',
+    'is_online'
+])){
+    $displayValue = $value == 1 ? 'Yes' : 'No';
+}
+if($key == 'is_online'){
+    $displayValue = $value == 1 ? 'Online' : 'Offline';
+}
+@endphp
+<a href="{{ request()->fullUrlWithQuery([$key => null]) }}"
+class="badge bg-primary text-decoration-none">
+{{ ucfirst(str_replace('_',' ',$key)) }} : {{ $displayValue }} ✕
+</a>
+
+@endif
+
+@endforeach
+
+<a href="{{ route('students.index') }}"
+class="badge bg-danger text-decoration-none">
+Clear All ✕
+</a>
+
+</div>
+
+</div>
+
+@endif
+
+
+
+{{-- FILTER PANEL --}}
+<div class="accordion mb-3" id="filtersAccordion">
+
+<div class="accordion-item">
+
+<h2 class="accordion-header">
+
+<button class="accordion-button collapsed"
+type="button"
+data-bs-toggle="collapse"
+data-bs-target="#collapseFilters">
+
+<b>Filters</b>
+
+</button>
+
+</h2>
+
+<div id="collapseFilters"
+class="accordion-collapse collapse"
+data-bs-parent="#filtersAccordion">
+
+<div class="accordion-body">
+
+
 <form method="GET" id="filterForm" class="mb-4">
-    <div class="row g-2">
-        {{-- Student Name --}}
-        <!-- <div class="col-md-2 col-6">
-            <input type="text" name="student_name" class="form-control"
-                   placeholder="Student Name" value="{{ request('student_name') }}">
-        </div> -->
 
-         
-         {{-- S no. --}}
-        <!-- <div class="col-md-2 col-6">
-            <input type="text" name="sno" class="form-control"
-                   placeholder="S. No" value="{{ request('sno') }}">
-        </div> -->
-        {{-- Session --}}
-        <!-- <div class="col-md-2 col-6">
-            <select name="session" class="form-control session" id="ddl_session">
-                <option value="">--Session Name--</option>
-                @foreach($sessions as $session)
-                    <option value="{{ $session->id }}"
-                        {{ request('session') == $session->id ? 'selected' : '' }}>
-                        {{ $session->session_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div> -->
-
-        {{-- College --}}
-        <div class="col-md-2 col-6">
-            <select name="college_name" class="form-control collegeName filterchange" id="txtcollege">
-                <option value="">--College--</option>
-                @foreach($colleges as $college)
-                    <option value="{{ $college->id }}"
-                        {{ request('college_name') == $college->id ? 'selected' : '' }}>
-                        {{ $college->FullName }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        {{-- Email --}}
-        <!-- <div class="col-md-2">
-            <input type="text" name="email_id" class="form-control"
-                   placeholder="Email" value="{{ request('email_id') }}">
-        </div> -->
-        {{-- Date Range --}}
-        <div class="col-md-3">
-            <div class="input-group">
-                <input type="date" name="start_date" class="form-control filterchange" 
-                    value="{{ request('start_date') }}" placeholder="Start Date">
-                <input type="date" name="end_date" class="form-control filterchange" 
-                    value="{{ request('end_date') }}" placeholder="End Date">
-            </div>
-        </div>
-        {{-- Status --}}
-        <div class="col-md-2 col-6">
-            <select name="status" class="form-control statusData filterchange">
-                <option value="" {{ request('status') == '' ? 'selected' : '' }}>--Status--</option>
-
-                @foreach($student_status as $s)
-                    <option value="{{ $s->status }}"
-                        {{ request('status') == $s->status ? 'selected' : '' }}>
-                        {{ $s->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        {{-- Technology / Course --}}
-        <div class="col-md-2 col-6">
-            <select name="technology" class="form-control technology filterchange" id="txttechnology">
-                <option value="">--Technology--</option>
-                @foreach($courses as $course)
-                    <option value="{{ $course->id }}"
-                        {{ request('technology') == $course->id ? 'selected' : '' }}>
-                        {{ $course->course_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        {{-- Part-Time Offer --}}
-        <div class="col-md-2 col-6">
-            <select name="part_time_offer" class="form-control filterchange">
-                <option value="">--Part-Time Offer--</option>
-                <option value="1" {{ request('part_time_offer') === '1' ? 'selected' : '' }}>Yes</option>
-                <option value="0" {{ request('part_time_offer') === '0' ? 'selected' : '' }}>No</option>
-            </select>
-        </div>
-
-        {{-- Placement Offer --}}
-        <div class="col-md-2 col-6">
-            <select name="placement_offer" class="form-control filterchange">
-                <option value="">--Placement Offer--</option>
-                <option value="1" {{ request('placement_offer') === '1' ? 'selected' : '' }}>Yes</option>
-                <option value="0" {{ request('placement_offer') === '0' ? 'selected' : '' }}>No</option>
-            </select>
-        </div>
-
-        {{-- PG Offer --}}
-        <div class="col-md-2 col-12">
-            <select name="pg_offer" class="form-control filterchange">
-                <option value="">--PG Offer--</option>
-                <option value="1" {{ request('pg_offer') === '1' ? 'selected' : '' }}>Yes</option>
-                <option value="0" {{ request('pg_offer') === '0' ? 'selected' : '' }}>No</option>
-            </select>
-        </div>
-
-         {{-- Is Intern --}}
-        <div class="col-md-2 col-12">
-            <select name="is_intern" class="form-control filterchange">
-                <option value="">--Is Intern--</option>
-                <option value="1" {{ request('is_intern') === '1' ? 'selected' : '' }}>Yes</option>
-                <option value="0" {{ request('is_intern') === '0' ? 'selected' : '' }}>No</option>
-            </select>
-        </div>
-
-         {{-- Study Mode --}}
-        <div class="col-md-2 col-12">
-            <select name="is_online" class="form-control filterchange">
-                <option value="">--Study Mode--</option>
-                <option value="0" {{ request('is_online') === '0' ? 'selected' : '' }}>Offline</option>
-                <option value="1" {{ request('is_online') === '1' ? 'selected' : '' }}>Online</option>
-            </select>
-        </div>
-
- 
-
-        <div class="col-md-3 col-6">
-            <select name="fee_filter" class="form-control filterchange">
-                <option value="">-- Fee Related Filter --</option>
-
-                {{-- Fee Status --}}
-                <option value="completed"
-                    {{ request('fee_filter')=='completed' ? 'selected' : '' }}>
-                    Completed Fees (No Pending)
-                </option>
-
-                <option value="pending"
-                    {{ request('fee_filter')=='pending' ? 'selected' : '' }}>
-                    Pending Fees Only
-                </option>
-
-                {{-- Sorting --}}
-                <option value="pending_high"
-                    {{ request('fee_filter')=='pending_high' ? 'selected' : '' }}>
-                    Pending Fees: High → Low
-                </option>
-
-                <option value="pending_low"
-                    {{ request('fee_filter')=='pending_low' ? 'selected' : '' }}>
-                    Pending Fees: Low → High
-                </option>
-
-                <option value="fees_high"
-                    {{ request('fee_filter')=='fees_high' ? 'selected' : '' }}>
-                    Total Fees: High → Low
-                </option>
-
-                <option value="fees_low"
-                    {{ request('fee_filter')=='fees_low' ? 'selected' : '' }}>
-                    Total Fees: Low → High
-                </option>
-            </select>
-        </div>
+<div class="row g-2">
 
 
+{{-- College --}}
+<div class="col-md-2 col-6">
 
-        <div class="col-md-2 col-12">
-            <select name="gender" class="form-control filterchange">
-                <option value="">--Gender--</option>
+<select name="college_name"
+class="form-control collegeName filterchange">
 
-                <option value="male"
-                    {{ request('gender') == 'male' ? 'selected' : '' }}>
-                    Male
-                </option>
+<option value="">--College--</option>
 
-                <option value="female"
-                    {{ request('gender') == 'female' ? 'selected' : '' }}>
-                    Female
-                </option>
-            </select>
-        </div>
+@foreach($colleges as $college)
 
+<option value="{{ $college->id }}"
+{{ request('college_name') == $college->id ? 'selected' : '' }}>
 
-        <div class="col-md-1 col-12">
-            <input type="number"
-           name="limit"
-           class="form-control filterchangetext"
-           placeholder="limit (e.g. 100)"
-           min="1"
-           step="1"
-           value="{{ request('limit') }}"
-           oninput="this.value = this.value.replace(/\D/g, '')">
-       </div>
+{{ $college->FullName }}
 
-    <!--    {{-- Amount Range Slider --}}
-<div class="col-md-4 col-12">
-    <label class="form-label fw-bold">Amount Range</label>
+</option>
 
-    <div id="amountSlider"></div>
+@endforeach
 
-    <div class="d-flex justify-content-between mt-2">
-        <span>Min: <strong id="amountMinText"></strong></span>
-        <span>Max: <strong id="amountMaxText"></strong></span>
-    </div>
+</select>
 
-    {{-- Hidden inputs for GET --}}
-    <input type="text" name="amount_min" id="amountMin" value="{{ request('amount_min', 0) }}">
-    <input type="text" name="amount_max" id="amountMax" value="{{ request('amount_max', 200000) }}">
-</div> -->
-{{-- Amount Range Slider --}}
-<div class="col-md-4 col-12">
-    <label class="form-label fw-bold">Amount Range</label>
-
-    <div id="amountSlider" class="mb-2"></div>
-
-    <div class="d-flex gap-2 align-items-center">
-        <div class="input-group input-group-sm">
-            <span class="input-group-text">Min</span>
-            <input type="text"
-                   name="amount_min"
-                   id="amountMin"
-                   class="form-control text-end filterchange"
-                   value="{{ request('amount_min', 0) }}">
-        </div>
-
-        <span class="fw-bold">–</span>
-
-        <div class="input-group input-group-sm">
-            <span class="input-group-text">Max</span>
-            <input type="text"
-                   name="amount_max"
-                   id="amountMax"
-                   class="form-control text-end filterchange"
-                   value="{{ request('amount_max', 200000) }}">
-        </div>
-    </div>
 </div>
 
 
-        <!-- <div class="col-md-3">
-            <div class="form-check d-flex align-items-center">
-                <input type="checkbox" class="form-check-input me-2" name="pending_fees" id="pending_fees" value="1" 
-                {{ request('pending_fees') == 1 ? 'checked' : '' }}>
-                <label class="form-check-label" for="pending_fees">Pending Fee Only</label>
-            </div>
-        </div> -->
-    </div>
-	{{-- Buttons --}}
-	<div class="mt-2 tble-bts">
-		<!-- <button type="submit" class="btn" style="background-color: #6b51df; color: #fff;">Search</button> -->
-		<a href="{{ route('students.index') }}" class="btn btn-secondary">Reset</a>
-        <a href="{{ route('students.export.excel', request()->query()) }}"
-           class="btn btn-primary">
-             </i> Download Excel
-        </a>
-        <button  type="button" id="copySelected" class="btn btn-success">Copy to Session</button>
-	</div>
+
+{{-- Date Range --}}
+<div class="col-md-3">
+
+<div class="input-group">
+
+<input type="date"
+name="start_date"
+class="form-control filterchange"
+value="{{ request('start_date') }}">
+
+<input type="date"
+name="end_date"
+class="form-control filterchange"
+value="{{ request('end_date') }}">
+
+</div>
+
+</div>
+
+
+
+{{-- Status --}}
+<div class="col-md-2 col-6">
+
+<select name="status"
+class="form-control statusData filterchange">
+
+<option value="">--Status--</option>
+
+@foreach($student_status as $s)
+
+<option value="{{ $s->status }}"
+{{ request('status') == $s->status ? 'selected' : '' }}>
+
+{{ $s->name }}
+
+</option>
+
+@endforeach
+
+</select>
+
+</div>
+
+
+
+{{-- Technology --}}
+<div class="col-md-2 col-6">
+
+<select name="technology"
+class="form-control technology filterchange">
+
+<option value="">--Technology--</option>
+
+@foreach($courses as $course)
+
+<option value="{{ $course->id }}"
+{{ request('technology') == $course->id ? 'selected' : '' }}>
+
+{{ $course->course_name }}
+
+</option>
+
+@endforeach
+
+</select>
+
+</div>
+
+
+
+{{-- Part Time --}}
+<div class="col-md-2 col-6">
+
+<select name="part_time_offer"
+class="form-control filterchange">
+
+<option value="">--Part-Time Offer--</option>
+
+<option value="1"
+{{ request('part_time_offer')==='1'?'selected':'' }}>
+Yes
+</option>
+
+<option value="0"
+{{ request('part_time_offer')==='0'?'selected':'' }}>
+No
+</option>
+
+</select>
+
+</div>
+
+
+
+{{-- Placement --}}
+<div class="col-md-2 col-6">
+
+<select name="placement_offer"
+class="form-control filterchange">
+
+<option value="">--Placement Offer--</option>
+
+<option value="1"
+{{ request('placement_offer')==='1'?'selected':'' }}>
+Yes
+</option>
+
+<option value="0"
+{{ request('placement_offer')==='0'?'selected':'' }}>
+No
+</option>
+
+</select>
+
+</div>
+
+
+
+{{-- PG Offer --}}
+<div class="col-md-2">
+
+<select name="pg_offer"
+class="form-control filterchange">
+
+<option value="">--PG Offer--</option>
+
+<option value="1"
+{{ request('pg_offer')==='1'?'selected':'' }}>
+Yes
+</option>
+
+<option value="0"
+{{ request('pg_offer')==='0'?'selected':'' }}>
+No
+</option>
+
+</select>
+
+</div>
+
+
+
+{{-- Intern --}}
+<div class="col-md-2">
+
+<select name="is_intern"
+class="form-control filterchange">
+
+<option value="">--Is Intern--</option>
+
+<option value="1"
+{{ request('is_intern')==='1'?'selected':'' }}>
+Yes
+</option>
+
+<option value="0"
+{{ request('is_intern')==='0'?'selected':'' }}>
+No
+</option>
+
+</select>
+
+</div>
+
+
+
+{{-- Study Mode --}}
+<div class="col-md-2">
+
+<select name="is_online"
+class="form-control filterchange">
+
+<option value="">--Study Mode--</option>
+
+<option value="0"
+{{ request('is_online')==='0'?'selected':'' }}>
+Offline
+</option>
+
+<option value="1"
+{{ request('is_online')==='1'?'selected':'' }}>
+Online
+</option>
+
+</select>
+
+</div>
+
+
+
+{{-- Fee Filter --}}
+<div class="col-md-3">
+
+<select name="fee_filter"
+class="form-control filterchange">
+
+<option value="">-- Fee Related Filter --</option>
+
+<option value="completed"
+{{ request('fee_filter')=='completed'?'selected':'' }}>
+Completed Fees
+</option>
+
+<option value="pending"
+{{ request('fee_filter')=='pending'?'selected':'' }}>
+Pending Fees
+</option>
+
+<option value="pending_high"
+{{ request('fee_filter')=='pending_high'?'selected':'' }}>
+Pending High → Low
+</option>
+
+<option value="pending_low"
+{{ request('fee_filter')=='pending_low'?'selected':'' }}>
+Pending Low → High
+</option>
+
+<option value="fees_high"
+{{ request('fee_filter')=='fees_high'?'selected':'' }}>
+Fees High → Low
+</option>
+
+<option value="fees_low"
+{{ request('fee_filter')=='fees_low'?'selected':'' }}>
+Fees Low → High
+</option>
+
+</select>
+
+</div>
+
+
+
+{{-- Gender --}}
+<div class="col-md-2">
+
+<select name="gender"
+class="form-control filterchange">
+
+<option value="">--Gender--</option>
+
+<option value="male"
+{{ request('gender')=='male'?'selected':'' }}>
+Male
+</option>
+
+<option value="female"
+{{ request('gender')=='female'?'selected':'' }}>
+Female
+</option>
+
+</select>
+
+</div>
+
+
+
+{{-- Limit --}}
+<div class="col-md-1">
+
+<input type="number"
+name="limit"
+class="form-control filterchangetext"
+placeholder="limit"
+value="{{ request('limit') }}">
+
+</div>
+
+
+
+{{-- Amount Range --}}
+<div class="col-md-4">
+
+<label class="form-label fw-bold">
+Amount Range
+</label>
+
+<div id="amountSlider" class="mb-2"></div>
+
+<div class="d-flex gap-2">
+
+<input type="text"
+name="amount_min"
+id="amountMin"
+class="form-control filterchange"
+value="{{ request('amount_min',0) }}">
+
+<input type="text"
+name="amount_max"
+id="amountMax"
+class="form-control filterchange"
+value="{{ request('amount_max',200000) }}">
+
+</div>
+
+</div>
+
+
+
+</div>
+
+
+{{-- BUTTONS --}}
+<div class="mt-2">
+
+<a href="{{ route('students.index') }}"
+class="btn btn-secondary">
+
+Reset
+
+</a>
+
+<a href="{{ route('students.export.excel', request()->query()) }}"
+class="btn btn-primary">
+
+Download Excel
+
+</a>
+
+<button type="button"
+id="copySelected"
+class="btn btn-success">
+
+Copy to Session
+
+</button>
+
+</div>
+
 </form>
+
+
+</div>
+
+</div>
+
+</div>
+
+</div>
 
 @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">

@@ -22,6 +22,16 @@
     <button class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 @endif
+@if ($errors->any())
+<div class="alert alert-danger alert-dismissible fade show">
+    <ul class="mb-0">
+        @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+    <button class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
 
 {{-- FILTER FORM --}}
 <form method="GET"
@@ -145,6 +155,16 @@
 {{-- RESULTS TABLE --}}
 <form method="POST" id="bulkForm">
     @csrf
+<!-- 
+    <div class="row mb-3">
+    <div class="col-md-4">
+        <input type="text"
+               name="course_name"
+               class="form-control"
+               placeholder="Enter Course Name (Required)"
+               >
+    </div>
+</div> -->
     <div class="d-flex gap-2 mb-3">
 
 <button type="submit"
@@ -158,6 +178,13 @@
         formaction="{{ route('admin.tests.move.enquiries', $test->id) }}">
     Move to Enquiries
 </button>
+
+   {{-- ✅ NEW BUTTON --}}
+    <button type="submit"
+            class="btn btn-primary"
+            formaction="{{ route('admin.tests.certificate.download', $test->id) }}">
+        Download Certificate
+    </button>
 
 </div>
 <table class="table table-bordered table-striped">
@@ -182,12 +209,12 @@
 @forelse($studentTests as $i => $st)
 <tr>
     <td>
-    @if(!$st->is_finalized && !in_array($st->id, $movedStudentTestIds))
+   
         <input type="checkbox"
                class="student-checkbox"
                name="student_test_ids[]"
                value="{{ $st->id }}">
-    @endif
+   
 </td>
 
     <td>{{ $i + 1 }}</td>
@@ -242,6 +269,25 @@ document.getElementById('selectAll')?.addEventListener('change', function () {
 });
 </script>
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('bulkForm');
+    const courseInput = document.getElementById('course_name');
+
+    form.addEventListener('submit', function (e) {
+        const action = document.activeElement.getAttribute('formaction');
+
+        // Check if certificate button was clicked
+        if (action && action.includes('certificate')) {
+            if (!courseInput.value.trim()) {
+                e.preventDefault();
+                alert('Course name is required for certificate download.');
+                courseInput.focus();
+            }
+        }
+    });
+});
+</script>
+<script>
 $(document).ready(function(){
 
     let timer;
@@ -260,5 +306,98 @@ $(document).ready(function(){
 
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const form = document.getElementById('bulkForm');
+
+    form.querySelectorAll('button[type="submit"]').forEach(button => {
+
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            let selected = document.querySelectorAll('.student-checkbox:checked');
+            let action = this.getAttribute('formaction');
+
+            // ✅ Check at least 1 student
+            if (selected.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Students Selected',
+                    text: 'Please select at least one student'
+                });
+                return;
+            }
+
+            // ✅ Confirmation for all actions
+            Swal.fire({
+                title: 'Are you sure?',
+                text: selected.length + " student(s) selected",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Proceed'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.action = action;
+                    form.submit();
+                }
+            });
+
+        });
+
+    });
+
+});
+</script>
+<!-- <script>
+document.querySelector('[formaction*="certificate"]')
+?.addEventListener('click', function (e) {
+
+    e.preventDefault();
+
+    let course = document.querySelector('[name="course_name"]').value;
+    let selected = document.querySelectorAll('.student-checkbox:checked');
+
+    if (!course.trim()) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Course Required',
+            text: 'Please enter course name'
+        });
+        return;
+    }
+
+    if (selected.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Students Selected',
+            text: 'Please select at least one student'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Generate Certificate?',
+        text: selected.length > 1 
+              ? "Multiple certificates will be downloaded as ZIP"
+              : "Certificate will be downloaded",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Download'
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+
+            let form = document.getElementById('bulkForm');
+
+            // ✅ IMPORTANT: set action manually
+            form.action = this.getAttribute('formaction');
+
+            form.submit();
+        }
+    });
+
+});
+</script> -->
 
 @endsection

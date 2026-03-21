@@ -22,6 +22,7 @@ class WorkshopsExport implements
     {
         $this->request = $request;
         $this->activeSessionId = session('admin_session_id');
+        // dd($this->request);
     }
 
     public function collection()
@@ -60,6 +61,16 @@ class WorkshopsExport implements
         // ✅ Status Filter
         if ($this->request->status) {
             $query->where('status', $this->request->status);
+        }
+
+        // ✅ Workshop Type Filter
+        if ($this->request->type) {
+            $query->where('type', $this->request->type);
+        }
+
+        // ✅ Event Type Filter
+        if ($this->request->event_type) {
+            $query->where('event_type', $this->request->event_type);
         }
 
         // ✅ Exact Date Filter
@@ -123,7 +134,16 @@ class WorkshopsExport implements
 
     public function map($workshop): array
     {   
-         $collegeType = optional($workshop->college)->college_type == 0 ? 'Degree' : 'Diploma';
+         // $collegeType = optional($workshop->college)->college_type == 0 ? 'Degree' : 'Diploma';
+         $college = $workshop->college;
+
+        if ($college && $college->college_type == 2) {
+            $collegeType = 'Degree, Diploma';
+        } else {
+            $collegeType = $college 
+                ? (\App\Models\College::TYPES[$college->college_type] ?? 'N/A') 
+                : '';
+        }
         return [
             $workshop->id,
             $this->formatText($workshop->title),
@@ -132,7 +152,7 @@ class WorkshopsExport implements
             $this->formatText($workshop->college->state->name ?? ''),
             $this->formatText($workshop->college->district->name ?? ''),
             $this->formatText($workshop->type),
-            $this->formatText($workshop->event_type),
+            $this->formatText(str_replace('_', ' ', $workshop->event_type)),
             $this->formatText($workshop->duration),
             $this->formatText($workshop->tp_hod_no),
             $this->formatText($workshop->name),

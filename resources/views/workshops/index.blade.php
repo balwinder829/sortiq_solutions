@@ -110,6 +110,22 @@ table.dataTable td {
             </select>
         </div>
 
+        <div class="col-md-2">
+            <select name="type" class="form-select">
+                <option value="">Workshop Type</option>
+                <option value="campus" {{ request('type')=='campus'?'selected':'' }}>Campus</option>
+                <option value="office" {{ request('type')=='office'?'selected':'' }}>Office</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select name="event_type" class="form-select">
+                <option value="">Event Type</option>
+                <option value="seminar" {{ request('event_type')=='seminar'?'selected':'' }}>Seminar</option>
+                <option value="placement_drive" {{ request('event_type')=='placement_drive'?'selected':'' }}>Placement Drive</option>
+                <option value="both" {{ request('event_type')=='both'?'selected':'' }}>Both</option>
+            </select>
+        </div>
         {{-- DATE FILTER --}}
         <div class="col-md-2">
             <input type="date" name="date" class="form-control"
@@ -166,6 +182,7 @@ table.dataTable td {
                     <th>Date</th>
                     <th>Status</th>
                     <th>Workshop Type</th>
+                    <th>Event Type</th>
                     <th width="100">Actions</th>
                 </tr>
             </thead>
@@ -253,6 +270,8 @@ $(document).ready(function () {
                 d.status     = $('select[name=status]').val();
                 d.date       = $('input[name=date]').val();
                 d.range      = $('select[name=range]').val();
+                d.type        = $('select[name=type]').val();
+                d.event_type  = $('select[name=event_type]').val();
             }
         },
         columns: [
@@ -262,7 +281,8 @@ $(document).ready(function () {
             { data: 3, name: 'date' },      // Date
             { data: 4, name: 'status' },    // Status
             { data: 5, name: 'type' },    // Status
-            { data: 6, name: 'actions', orderable:false, searchable:false } // Actions
+            { data: 6, name: 'event_type' },
+            { data: 7, name: 'actions', orderable:false, searchable:false } // Actions
         ],
         pageLength: 50,
         lengthMenu: [5, 10, 25, 50, 100],
@@ -273,7 +293,7 @@ $(document).ready(function () {
     //     table.ajax.reload();
     // });
 
-    $('select[name=college_id],select[name=status], select[name=range],select[name=state_id],select[name=district_id],select[name=college_type]').on('change', function () {
+    $('select[name=college_id],select[name=status], select[name=range],select[name=state_id],select[name=district_id],select[name=college_type], select[name=type], select[name=event_type]').on('change', function () {
 
         table.ajax.reload();
     });
@@ -336,6 +356,7 @@ $('#exportWorkshopExcel').on('click', function () {
     let status  = $('select[name=status]').val() ?? '';
     let date    = $('input[name=date]').val() ?? '';
     let range   = $('select[name=range]').val() ?? '';
+    let event_type   = $('select[name=event_type]').val() ?? '';
 
     let url = "{{ route('workshops.export.excel') }}?" +
     "state_id=" + encodeURIComponent(state) +
@@ -343,6 +364,7 @@ $('#exportWorkshopExcel').on('click', function () {
     "&college_type=" + encodeURIComponent(type) +
     "&college_id=" + encodeURIComponent(college) +
     "&status=" + encodeURIComponent(status) +
+    "&event_type=" + encodeURIComponent(event_type) +
     "&date=" + encodeURIComponent(date) +
     "&range=" + encodeURIComponent(range);
 

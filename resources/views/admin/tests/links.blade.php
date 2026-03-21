@@ -48,6 +48,7 @@
 <tr>
     <th>#</th>
     <th>College</th>
+    <th>Last Test Activity</th>
     <th>Student Link</th>
     <th>Action</th>
 </tr>
@@ -67,6 +68,14 @@ $testUrl = route('student.test.slug',$link->slug);
 
 <td>
     {{ $link->college->full_name ?? '-' }}
+</td>
+
+<td>
+@if(isset($lastAttempts[$link->college_id]))
+    {{ \Carbon\Carbon::parse($lastAttempts[$link->college_id])->format('d M Y') }}
+@else
+    -
+@endif
 </td>
 
 <td>

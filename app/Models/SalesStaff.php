@@ -19,8 +19,10 @@ class SalesStaff extends Authenticatable
     protected $hidden = ['password'];
 
     public function setPasswordAttribute($value)
-    {
-        $this->attributes['password'] = bcrypt($value);
+    {   
+        if (!empty($value)) {
+            $this->attributes['password'] = bcrypt($value);
+        }
     }
 
     public function attendances()

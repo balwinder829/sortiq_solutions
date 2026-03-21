@@ -24,6 +24,8 @@ use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
 use App\Models\TestLink;
+use Carbon\Carbon;
+use ZipArchive;
 
 class TestController extends Controller
 {
@@ -153,7 +155,7 @@ class TestController extends Controller
     }
 
     return view('admin.tests.index', [
-        'tests'     => $tests->latest()->get(),
+        'tests'     => $tests->latest('updated_at')->get(),
         'colleges'  => College::all(),
         'courses'   => Course::all(),
         'semesters' => Semester::all(),
@@ -568,6 +570,148 @@ class TestController extends Controller
     }
 
     public function results(Request $request, $test_id)
+{
+    $movedStudentTestIds = Enquiry::where('test_id', $test_id)
+        ->pluck('student_test_id')
+        ->toArray();
+
+    $test = Test::withCount('questions')->findOrFail($test_id);
+
+    // Fetch students for S.No
+    $students = Student::select('email_id','sno')->get()->keyBy('email_id');
+
+    $studentTestsQuery = $test->studentTests();
+
+    /* ===== COLLEGE DROPDOWN DATA ===== */
+
+    $collegeIds = StudentTest::where('test_id', $test_id)
+        ->whereNotNull('college_id') // prevent NULL values
+        ->orderByDesc('created_at')
+        ->pluck('college_id')
+        ->unique()
+        ->values();
+
+    $colleges = College::whereIn('id', $collegeIds)
+        ->get()
+        ->sortBy(function ($college) use ($collegeIds) {
+            return $collegeIds->search($college->id);
+        })
+        ->values();
+
+    /* ===== LATEST COLLEGE ===== */
+
+    $latestCollegeId = StudentTest::where('test_id', $test_id)
+        ->whereNotNull('college_id')
+        ->latest('created_at')
+        ->value('college_id');
+
+    /* ===== COLLEGE FILTER ===== */
+
+    if ($request->has('college_id')) {
+
+        if ($request->college_id != '') {
+            $studentTestsQuery->where('college_id', $request->college_id);
+        }
+
+    } else {
+
+        if ($latestCollegeId) {
+            $studentTestsQuery->where('college_id', $latestCollegeId);
+        } elseif ($test->college_id) {
+            // legacy fallback
+            $studentTestsQuery->where('college_id', $test->college_id);
+        }
+    }
+
+    /* ===== EXISTING FILTERS ===== */
+
+    if ($request->filled('sno')) {
+
+        $studentEmails = $students->filter(function ($student) use ($request) {
+            return str_contains($student->sno, $request->sno);
+        })->keys();
+
+        $studentTestsQuery->whereIn('student_email', $studentEmails);
+    }
+
+    if ($request->filled('name')) {
+        $studentTestsQuery->where('student_name', 'like', '%' . $request->name . '%');
+    }
+
+    if ($request->filled('email')) {
+        $studentTestsQuery->where('student_email', 'like', '%' . $request->email . '%');
+    }
+
+    /* ===== SORTING ===== */
+
+    if ($request->has('college_id') && $request->college_id != '') {
+
+        // Specific college → highest score first
+        $studentTestsQuery->orderByDesc('score');
+
+    } else {
+
+        // All colleges → latest college first
+        if ($collegeIds->isNotEmpty()) {
+
+            $ids = $collegeIds->implode(',');
+
+            $studentTestsQuery
+                ->orderByRaw("FIELD(college_id,$ids)")
+                ->orderByDesc('score');
+
+        } else {
+
+            $studentTestsQuery->orderByDesc('score');
+
+        }
+    }
+
+    /* ===== TOP N ===== */
+
+    if ($request->filled('top_n') && is_numeric($request->top_n)) {
+        $studentTestsQuery->limit((int)$request->top_n);
+    }
+
+    /* ===== STATUS FILTER ===== */
+
+    if ($request->filled('finalized')) {
+        $studentTestsQuery->where('is_finalized', $request->finalized);
+    }
+
+    if ($request->filled('moved')) {
+
+        if ($request->moved === '1') {
+            $studentTestsQuery->whereIn('id', $movedStudentTestIds);
+        }
+
+        elseif ($request->moved === '0' && !empty($movedStudentTestIds)) {
+            $studentTestsQuery->whereNotIn('id', $movedStudentTestIds);
+        }
+    }
+
+    $studentTests = $studentTestsQuery->get();
+
+    /* ===== ATTACH S.NO ===== */
+
+    $studentTests->each(function ($st) use ($students) {
+        $st->sno = $students[$st->student_email]->sno ?? '-';
+    });
+
+    $defaultCollegeId = $request->has('college_id')
+        ? $request->college_id
+        : ($latestCollegeId ?? $test->college_id);
+
+    return view('admin.tests.results', compact(
+        'test',
+        'studentTests',
+        'movedStudentTestIds',
+        'colleges',
+        'defaultCollegeId'
+    ));
+}
+
+    public function resultslatest(Request $request, $test_id)
     {
 
         $movedStudentTestIds = Enquiry::where('test_id', $test_id)
@@ -704,7 +848,7 @@ class TestController extends Controller
             'defaultCollegeId'
         ));
     }
-    
+
     public function resultsold(Request $request, $test_id)
     {   
 
@@ -1158,8 +1302,144 @@ class TestController extends Controller
     {
         $links = $test->links()->with('college')->get();
 
-        return view('admin.tests.links', compact('test','links'));
+         // Get last attempt date per college
+        $lastAttempts = StudentTest::where('test_id', $test->id)
+            ->selectRaw('college_id, MAX(created_at) as last_attempt')
+            ->groupBy('college_id')
+            ->pluck('last_attempt', 'college_id');
+
+        return view('admin.tests.links', compact('test','links','lastAttempts'));
     }
 
+    // public function downloadCertificates(Request $request, $testId)
+    // {
+    //     dd('here');
+    // }
 
+    public function downloadCertificates(Request $request)
+    {
+        // ✅ VALIDATION
+        $request->validate([
+            // 'course_name' => 'required|string|max:255',
+            'student_test_ids' => 'required|array|min:1'
+        ], [
+            // 'course_name.required' => 'Course name is required.',
+            'student_test_ids.required' => 'Please select at least one student.'
+        ]);
+
+        $courseName = "training";
+        // $courseName = $request->course_name;
+        $ids = $request->student_test_ids;
+
+
+        $students = StudentTest::whereIn('id', $ids)->get();
+        if ($students->isEmpty()) {
+            return back()->with('error', 'Selected students not found.');
+        }
+
+        $pdfPaths = [];
+
+        foreach ($students as $student) {
+
+            // ✅ PASS COURSE NAME
+            $pdfPath = $this->generatePdf($student, $courseName);
+
+            if (file_exists($pdfPath)) {
+                $pdfPaths[] = $pdfPath;
+            }
+        }
+
+        // ✅ SINGLE PDF
+        if (count($pdfPaths) === 1) {
+            return response()->download($pdfPaths[0], basename($pdfPaths[0]), [
+                'Content-Type' => 'application/pdf'
+            ]);
+        }
+
+        // ✅ ZIP
+        $zipFileName = 'certificate_letters_' . time() . '.zip';
+        $zipFullPath = storage_path('app/' . $zipFileName);
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipFullPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+
+            foreach ($pdfPaths as $path) {
+                $zip->addFile($path, basename($path));
+            }
+
+            $zip->close();
+
+            return response()->download($zipFullPath)->deleteFileAfterSend(true);
+        }
+
+        return back()->with('error', 'Could not create ZIP file.');
+    }
+
+    private function generatePdf($student)
+    {
+     // Create folder path for today
+        $date = Carbon::now()->format('Y-m-d');
+        $folderPath = public_path("student_certificate/{$date}");
+
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0777, true);
+        }
+
+        // Create PDF file name
+        // $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
+        $studentName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->student_name));
+        $mob = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->student_mobile));
+        $id = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->id));
+        // $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($student->CollegeData->FullName));
+        $collegeOrPlace = optional($student->college)->FullName ?: $student->place;
+       
+        // sanitize
+        $collegeName = preg_replace('/[^A-Za-z0-9]+/', '_', trim($collegeOrPlace));
+
+        $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
+
+        $fileName = "{$studentName}_{$mob}{$id}_{$collegeName}_{$dateFormatted}_certificate.pdf";
+         
+        $filePath = $folderPath . '/' . $fileName;
+        // dd($filePath);
+        $regenerate = true;
+
+        // Check if file exists and whether student data changed
+        if (file_exists($filePath)) {
+            $fileModified = filemtime($filePath);
+            $studentUpdated = strtotime($student->updated_at);
+
+            // Only skip regeneration if PDF is newer than student update
+            if ($studentUpdated <= $fileModified) {
+                //$regenerate = false;
+            }
+        }
+        // echo $filePath;
+        // Generate or overwrite PDF if needed
+        if ($regenerate) {
+            
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'orientation' => 'P',
+                'margin_left' => 0,
+                'margin_right' => 0,
+                'margin_top' => 0,
+                'margin_bottom' => 0,
+            ]);
+        
+            $mpdf->SetHTMLHeader($this->getPDFHeader());
+
+            $mpdf->SetHTMLFooter($this->getPDFFooter());
+
+            $html = view('pdf.one_day_student_certificate', compact('student'))->render();
+        
+            $mpdf->WriteHTML($html);
+            $mpdf->Output($filePath, 'F');
+            //return response()->download($filePath);
+        }
+
+        return $filePath;
+    }
 }

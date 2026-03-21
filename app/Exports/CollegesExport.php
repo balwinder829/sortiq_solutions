@@ -17,14 +17,16 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
     protected $activeSessionId;
     protected $college_type;
     protected $offer_training;
+    protected $call_status;
 
-    public function __construct($stateName = null, $districtName = null, $studentFilter = null, $college_type = null, $offer_training = null)
+    public function __construct($stateName = null, $districtName = null, $studentFilter = null, $college_type = null, $offer_training = null, $call_status = null)
     {
         $this->stateName     = $stateName;
         $this->districtName  = $districtName;
         $this->studentFilter = $studentFilter;
         $this->college_type = $college_type;
         $this->offer_training = $offer_training;
+        $this->call_status = $call_status;
         $this->activeSessionId = session('admin_session_id');
 
 
@@ -34,6 +36,7 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
         //     'studentFilter' => $studentFilter,
         //     'college_type' => $college_type,
         //     'offer_training' => $offer_training,
+        //     'call_status' => $call_status,
         // ]);
     }
 
@@ -59,13 +62,24 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
             });
         }
 
-        if (!empty($this->college_type)) {
+        // if (!empty($this->college_type)) {
+        //     $query->where('college_type', $this->college_type);
+        // }
+
+        if ($this->college_type !== null && $this->college_type !== '') {
             $query->where('college_type', $this->college_type);
         }
 
-        if (!empty($this->offer_training)) {
+        if ($this->offer_training !== null && $this->offer_training !== '') {
             $query->where('offer_training', $this->offer_training);
         }
+
+        if ($this->call_status !== null && $this->call_status !== '') {
+            $query->where('call_status', $this->call_status);
+        }
+        // if (!empty($this->offer_training)) {
+        //     $query->where('offer_training', $this->offer_training);
+        // }
 
 
 
@@ -99,7 +113,7 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
             'State',
             'District',
             'Display Name',
-             'College Type',
+            'College Type',
             'Providing Training',
             'Students Count',
         ];
@@ -107,7 +121,13 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
 
     public function map($college): array
     {
-        $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
+        // $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
+        // $collegeType = \App\Models\College::TYPES[$college->college_type] ?? 'N/A'
+        if ($college->college_type == 2) {
+            $collegeType = 'Degree, Diploma';
+        } else {
+            $collegeType = \App\Models\College::TYPES[$college->college_type] ?? 'N/A';
+        }
         $training = $college->offer_training == 1 ? 'Yes' : 'No';
         return [
             $college->college_name,

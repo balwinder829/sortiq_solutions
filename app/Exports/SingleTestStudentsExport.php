@@ -67,13 +67,20 @@ class SingleTestStudentsExport implements FromCollection, WithHeadings, WithMapp
         } else {
 
             // all colleges → latest college first
+            // $collegeIds = StudentTest::where('test_id', $this->test->id)
+            //     ->orderByDesc('created_at')
+            //     ->pluck('college_id')
+            //     ->unique()
+            //     ->values();
+
             $collegeIds = StudentTest::where('test_id', $this->test->id)
+                ->whereNotNull('college_id') // ✅ ADD THIS
                 ->orderByDesc('created_at')
                 ->pluck('college_id')
                 ->unique()
                 ->values();
 
-            if ($collegeIds->count()) {
+            if ($collegeIds->isNotEmpty()) {
 
                 $ids = $collegeIds->implode(',');
 
@@ -85,6 +92,18 @@ class SingleTestStudentsExport implements FromCollection, WithHeadings, WithMapp
                 $q->orderByDesc('score');
 
             }
+            // if ($collegeIds->count()) {
+
+            //     $ids = $collegeIds->implode(',');
+
+            //     $q->orderByRaw("FIELD(college_id,$ids)")
+            //       ->orderByDesc('score');
+
+            // } else {
+
+            //     $q->orderByDesc('score');
+
+            // }
         }
 
         /* ===== TOP N ===== */

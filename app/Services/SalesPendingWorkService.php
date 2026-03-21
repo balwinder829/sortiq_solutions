@@ -116,6 +116,7 @@ class SalesPendingWorkService
             'percent'   => $percentLeft,
             'remaining' => $remainingLeads,
             'sales_user_id'  => $salesUser->id,   // 👈 IMPORTANT
+            'total_assigned' => $totalAssigned, 
         ];
 
         // 🔔 Notify Salesperson

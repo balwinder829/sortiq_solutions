@@ -122,6 +122,9 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
         if ($request->filled('offer_training')) {
             $query->where('offer_training', $request->offer_training);
         }
+        if ($request->call_status !== null && $request->call_status !== '') {
+            $query->where('call_status', $request->call_status);
+        }
 
         // 👇 ADD HERE
         if ($request->filled('student_filter')) {
@@ -220,8 +223,16 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
         $data = [];
         foreach ($colleges as $index => $college) {
             $rowNum = $start + $index + 1;
-            $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
+            // $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
+            $collegeType = $college->college_type_label;
             $training = $college->offer_training == 1 ? 'Yes' : 'No';
+            $statusToggle = '
+                <label class="switch">
+                    <input type="checkbox" class="toggle-status"
+                        data-id="'.$college->id.'"
+                        '.($college->call_status ? 'checked' : '').'>
+                    <span class="slider round"></span>
+                </label>';
             $data[] = [
                 $rowNum,
                 $college->college_name,
@@ -231,6 +242,7 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
                 $collegeType,
                 $training,
                 $college->training_in_year,
+                $statusToggle,
                 '<div class="mb-2">' .
                     '<a href="' . route('colleges.edit', $college->id) . '" class="btn btn-sm" data-bs-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a> ' .
                     '<form action="' . route('colleges.destroy', $college->id) . '" method="POST" style="display:inline;">' .
@@ -445,7 +457,8 @@ public function update(Request $request, $id)
                 $request->district_name,
                 $request->student_filter,
                 $request->college_type,
-                $request->offer_training
+                $request->offer_training,
+                $request->call_status
             ),
             'colleges.xlsx'
         );
@@ -500,5 +513,14 @@ public function update(Request $request, $id)
             new \App\Exports\CollegeStudentsExport($college->id),
             $college->college_name . '_students.xlsx'
         );
+    }
+
+    public function toggleStatus(Request $request, $id)
+    {
+        $college = College::findOrFail($id);
+        $college->call_status = $request->status;
+        $college->save();
+
+        return response()->json(['success' => true]);
     }
 }

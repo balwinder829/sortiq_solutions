@@ -27,6 +27,18 @@ class College extends Model
         'training_in_year',
     ];
 
+    const TYPES = [
+        0 => 'Degree',
+        1 => 'Diploma',
+        2 => 'Both',
+        3 => 'Unknown'
+    ];
+
+    public function getCollegeTypeLabelAttribute()
+    {
+        return self::TYPES[$this->college_type] ?? 'N/A';
+    }
+
     /**
      * Clean only extra spaces.
      * Do NOT remove or modify commas.
@@ -139,6 +151,11 @@ class College extends Model
     public function students()
     {
         return $this->hasMany(Student::class, 'college_name', 'id');
+    }
+
+    public function emailRecipients()
+    {
+        return $this->hasMany(EmailRecipient::class, 'college_id');
     }
 }
 

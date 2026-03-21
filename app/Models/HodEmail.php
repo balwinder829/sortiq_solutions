@@ -13,4 +13,9 @@ class HodEmail extends Model
     {
         return $this->belongsTo(Hod::class, 'hod_id', 'id');
     }
+
+    public function emailRecipients()
+    {
+        return $this->hasMany(EmailRecipient::class, 'hod_email_id');
+    }
 }

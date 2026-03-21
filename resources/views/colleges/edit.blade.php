@@ -57,14 +57,16 @@
         <div class="form-group col-md-6">
             <label>College Type</label>
             <select name="college_type" class="form-control">
-                <option value="0"
-                    {{ old('college_type', $college->college_type ?? '') == 0 ? 'selected' : '' }}>
-                    Degree
-                </option>
-                <option value="1"
-                    {{ old('college_type', $college->college_type ?? '') == 1 ? 'selected' : '' }}>
-                    Diploma
-                </option>
+
+                <option value="">Select College Type</option>
+
+                @foreach(\App\Models\College::TYPES as $key => $value)
+                    <option value="{{ $key }}"
+                        {{ old('college_type', $college->college_type) == $key ? 'selected' : '' }}>
+                        {{ $value }}
+                    </option>
+                @endforeach
+
             </select>
         </div>
 
@@ -95,6 +97,9 @@
         </div>
     </div>
         <button class="btn btn-primary">Update</button>
+        <a href="{{ route('colleges.index') }}" class="btn btn-secondary">
+            Back
+        </a>
     </form>
 </div>
 

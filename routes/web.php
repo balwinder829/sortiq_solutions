@@ -99,6 +99,7 @@ use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\EmployeeLoginController;
 use App\Http\Controllers\SystemActivityController;
 use App\Http\Controllers\BlockedIpController;
+use App\Http\Controllers\AllowedIpController;
 use App\Http\Controllers\SalesStaffController;
 use App\Http\Controllers\SalesStaffLoginController;
 use App\Http\Controllers\WorkshopController;
@@ -122,12 +123,21 @@ use App\Http\Controllers\StudentProjectReviewController;
 use App\Http\Controllers\StudentCvController;
 use App\Http\Controllers\StudentCvTemplateController;
 use App\Http\Controllers\MentorsBatchController;
+use App\Http\Controllers\ExternalAttendanceController;
+use App\Http\Controllers\Student\AttendanceFormController;
+use App\Http\Controllers\CollegeEmailController;
 
 
 use App\Models\Test;
 use App\Models\StudentTest;
 
 use Spatie\Permission\PermissionRegistrar;
+
+
+
+use App\Models\ExternalAttendanceTest;
+
+Route::model('external_attendance', ExternalAttendanceTest::class);
 
 Route::get('/fix-permissions', function () {
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
@@ -180,6 +190,8 @@ Route::prefix('students')->name('students.')->group(function () {
 
         Route::get('/assigned_projects',[StudentDashboardController::class,'projects'])->name('projects');
 
+        Route::get('/fee_status',[StudentDashboardController::class,'fees'])->name('fee_status');
+
     });
 
 });
@@ -210,9 +222,91 @@ Route::get('/scanners', [ScannerShareController::class, 'index'])
 
 Route::get('/scanners/view/{token}', [ScannerShareController::class, 'show'])
     ->name('scanners.share');
-// Route::get('/page/{slug}', [FrontendPageController::class, 'show'])->name('page.show');
 
-// Route::get('/ads-landing-page', [FrontendPageController::class, 'show_ads'])->name('page.show_ads');
+
+
+
+Route::prefix('form')
+    ->name('form.')
+    ->group(function () {
+
+        // ⚠️ Duplicate (PUT FIRST)
+        Route::view('/already-submitted', 'student.attendance.form_already')
+            ->name('already');
+
+        // 🎉 Success
+        Route::view('/thank-you', 'student.attendance.form_thank_you')
+            ->name('thankyou');
+
+        // 📝 Fill form
+        Route::get('/fill/{slug}', [AttendanceFormController::class, 'showForm'])
+            ->name('fill');
+
+        // ✅ Submit
+        Route::post('/submit', [AttendanceFormController::class, 'submit'])
+            ->name('submit');
+
+        // 🔗 Entry (KEEP LAST ALWAYS)
+        Route::get('/{slug}', [AttendanceFormController::class, 'view'])
+            ->name('view');
+    });
+
+
+
+ 
+
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth'])
+    ->group(function () {
+
+
+        Route::prefix('college-emails')->name('college-emails.')->group(function () {
+
+            Route::get('/', [CollegeEmailController::class, 'index'])->name('index');
+
+            Route::get('/create', [CollegeEmailController::class, 'create'])->name('create');
+
+            Route::post('/', [CollegeEmailController::class, 'store'])->name('store');
+
+            Route::get('/campaigns', [CollegeEmailController::class, 'campaigns'])->name('campaigns');
+
+            Route::post('/retry', [CollegeEmailController::class, 'retry'])->name('retry');
+
+        });
+
+
+        Route::resource(
+            'external-attendance',
+            ExternalAttendanceController::class
+        );
+
+        // 🔗 Extra routes
+        Route::get(
+            'external-attendance/{external_attendance}/links',
+            [ExternalAttendanceController::class, 'links']
+        )->name('external-attendance.links');
+
+        Route::post(
+            'external-attendance/{external_attendance}/regenerate-link',
+            [ExternalAttendanceController::class, 'regenerateLink']
+        )->name('external-attendance.regenerate');
+
+        Route::get('external-attendance/{external_attendance}/results', [ExternalAttendanceController::class,'results'])->name('external-attendance.results');
+        Route::get('external-attendance/{external_attendance}/export-all', [ExternalAttendanceController::class, 'exportTestAll'])->name('external-attendance.export.all');
+        Route::get('external-attendance/{external_attendance}/export-selected', [ExternalAttendanceController::class, 'exportSelectedStudents'])->name('external-attendance.export.selected');
+        Route::get('external-attendance/{external_attendance}/export-finalized', [ExternalAttendanceController::class, 'exportFinalized'])->name('external-attendance.export.finalized');
+        Route::post('external-attendance/{external_attendance}/move-to-enquiries', [ExternalAttendanceController::class, 'moveFinalizedToEnquiries'])->name('external-attendance.move.enquiries');
+
+        Route::get('external-attendance/{external_attendance}/selected-students', [ExternalAttendanceController::class, 'selectedStudents'])->name('external-attendance.selected.students');
+
+        // Route::get('/external-attendance/{id}/export-all', ...)->name('admin.external-attendance.export.all');
+        // Route::get('/external-attendance/{id}/export-finalized', ...)->name('admin.external-attendance.export.finalized');
+    });
+
+
+
+
 
 Route::prefix('admin/student')
 ->middleware(['auth'])
@@ -1068,6 +1162,10 @@ Route::get('/payroll/process/{year}/{month}', [PayrollController::class, 'proces
         Route::resource('blocked-ips', BlockedIpController::class)
             ->only(['index', 'create', 'store', 'destroy'])
             ->names('blocked-ips');
+
+        Route::resource('allowed-ips', AllowedIpController::class)
+            ->only(['index', 'create', 'store', 'destroy'])
+            ->names('allowed-ips');
     });
 
 
@@ -1105,6 +1203,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/colleges/{college}/students', [CollegeController::class, 'students']);
     Route::get('/colleges/{college}/students/export-excel', [CollegeController::class, 'exportStudentsExcel']);
+    // Route::post('/colleges/{id}/toggle-status', [CollegeController::class, 'toggleStatus']);
+    Route::post('/colleges/{id}/toggle-status', [CollegeController::class, 'toggleStatus'])
+    ->name('colleges.toggle.status');
 
     Route::get('colleges/export/excel', [CollegeController::class, 'exportExcel'])
     ->name('colleges.export.excel');
@@ -1161,6 +1262,9 @@ Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissi
             [TestController::class,'links']
         )->name('tests.links');
 
+        Route::post('/admin/tests/{test}/download-certificates',
+            [TestController::class, 'downloadCertificates'])
+            ->name('tests.certificate.download');
          // OFFLINE (new)
         // Route::get('offline-tests', [OfflineTestController::class,'index'])
         //     ->name('offline.tests.index');

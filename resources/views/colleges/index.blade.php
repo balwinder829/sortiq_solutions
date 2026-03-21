@@ -23,6 +23,43 @@
         text-decoration: none;
     }
 
+    .switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+.switch input { display: none; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 22px;
+  top: 0; left: 0; right: 0; bottom: 0;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #0d6efd;
+}
+
+input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
 </style>
 
 <div class="container">
@@ -154,8 +191,11 @@
     <div class="col-md-2">
         <select id="filter_college_type" class="form-control">
             <option value="">College Type</option>
-            <option value="0">Degree</option>
-            <option value="1">Diploma</option>
+
+            @foreach(\App\Models\College::TYPES as $key => $value)
+                <option value="{{ $key }}">{{ $value }}</option>
+            @endforeach
+
         </select>
     </div>
 
@@ -167,7 +207,15 @@
         </select>
     </div>
 
-    <div class="col-md-1">
+    <div class="col-md-2 mt-2">
+        <select id="filter_status" class="form-control">
+            <option value="">All</option>
+            <option value="1">Call Done</option>
+            <option value="0">Pending</option>
+        </select>
+    </div>
+
+    <div class="col-md-1  mt-2">
         <a href="{{ route('colleges.index') }}" class="btn btn-secondary w-100">
             Reset
         </a>
@@ -191,7 +239,8 @@
                 <th>College Type</th>
                 <th>Offer Training</th>
                 <th>No of times in year</th>
-                <th style="width:120px;">Actions</th>
+                <th>Call Status</th>
+               <th style="width:250px!important;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -200,50 +249,7 @@
     </table>
 </div>
 
-<div class="modal fade" id="collegeStudentsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    Students – <span id="modalCollegeName"></span>
-                </h5>
-
-                <a href="#" id="downloadCollegeExcel"
-                   class="btn btn-sm btn-success ms-3">
-                    <i class="fa fa-file-excel"></i> Download Excel
-                </a>
-
-                <button type="button" class="btn-close"
-                        data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead class="table-light">
-                            <tr>
-                                <th>#</th>
-                                <th>Student Name</th>
-                                <th>SNO</th>
-                                <th>Session ID</th>
-                                <th>Session Name</th>
-                            </tr>
-                        </thead>
-                        <tbody id="collegeStudentsTableBody">
-                            <tr>
-                                <td colspan="5" class="text-center">
-                                    Click student count to load data
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
+ 
 
 @endsection
 
@@ -270,6 +276,7 @@ $(document).ready(function () {
                 d.student_filter = $('#student_filter').val();
                 d.college_type = $('#filter_college_type').val();
                 d.offer_training = $('#filter_training').val();
+                d.call_status = $('#filter_status').val();
             }
         },
         columns: [
@@ -281,14 +288,15 @@ $(document).ready(function () {
             { data: 5, name: 'college_type' },
             { data: 6, name: 'offer_training' },
             { data: 7, name: 'training_in_year,' },
-            { data: 8, name: 'actions', orderable: false, searchable: false }
+            { data: 8, name: 'call_status', orderable: false, searchable: false },
+            { data: 9, name: 'actions', orderable: false, searchable: false }
         ],
         pageLength: 50,
         lengthMenu: [5, 10, 25, 50, 100],
         order:[]
     });
 
-    $('#student_filter, #filter_college_type, #filter_training').change(function () {
+    $('#student_filter, #filter_college_type, #filter_training, #filter_status').change(function () {
         table.ajax.reload();
     });
 
@@ -322,67 +330,8 @@ var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggl
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
 });
-
-
-$(document).on('click', '.view-college-students', function () {
-
-    let collegeId   = $(this).data('college-id');
-    let collegeName = $(this).data('college-name');
-
-    $('#modalCollegeName').text(collegeName);
-    $('#collegeStudentsTableBody').html(
-        '<tr><td colspan="5" class="text-center">Loading...</td></tr>'
-    );
-
-    $('#downloadCollegeExcel').attr(
-        'href',
-        `/colleges/${collegeId}/students/export-excel`
-    );
-
-    $.ajax({
-        url: `/colleges/${collegeId}/students`,
-        type: 'GET',
-        success: function (students) {
-
-            let rows = '';
-
-            if (students.length === 0) {
-                rows = `<tr>
-                            <td colspan="5" class="text-center">
-                                No students found
-                            </td>
-                        </tr>`;
-            } else {
-                students.forEach((s, i) => {
-                    rows += `<tr>
-                        <td>${i + 1}</td>
-                        <td>${s.student_name}</td>
-                        <td>${s.sno ?? '-'}</td>
-                        <td>${s.session_id ?? '-'}</td>
-                        <td>${s.session_name ?? '-'}</td>
-                    </tr>`;
-                });
-            }
-
-            $('#collegeStudentsTableBody').html(rows);
-            $('#collegeStudentsModal').modal('show');
-        }
-    });
-});
-// $('#exportExcel').click(function () {
-
-//     let state      = $('#filter-state').val();
-//     let district   = $('#filter-district').val();
-//     let student    = $('#student_filter').val();
-
-//     let url = "{{ route('colleges.export.excel') }}?" +
-//         "state_name=" + state +
-//         "&district_name=" + district +
-//         "&student_filter=" + student;
-
-//     window.location.href = url;
-// });
-
+ 
+ 
 $('#exportExcel').on('click', function () {
 
     let $btn = $(this);
@@ -401,12 +350,14 @@ $('#exportExcel').on('click', function () {
 
     let college_type = $('#filter_college_type').val();
     let offer_training = $('#filter_training').val();
+    let call_status = $('#filter_status').val();
 
     let url = "{{ route('colleges.export.excel') }}?" +
         "state_name=" + encodeURIComponent(state) +
         "&district_name=" + encodeURIComponent(district) +
         "&student_filter=" + encodeURIComponent(student) +
         "&college_type=" + encodeURIComponent(college_type) +
+        "&call_status=" + encodeURIComponent(call_status) +
         "&offer_training=" + encodeURIComponent(offer_training);
 
     // Trigger download
@@ -417,7 +368,34 @@ $('#exportExcel').on('click', function () {
         $btn.prop('disabled', false).text('Export');
     }, 3000);
 });
+
+$(document).on('change', '.toggle-status', function () {
+
+    let checkbox = $(this);
+    let id = checkbox.data('id');
+    let status = checkbox.is(':checked') ? 1 : 0;
+
+    $.ajax({
+        url: "{{ route('colleges.toggle.status', ':id') }}".replace(':id', id),
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            status: status
+        },
+        success: function (res) {
+            // optional toast
+            console.log('Updated');
+        },
+        error: function () {
+            alert('Something went wrong');
+
+            // rollback UI
+            checkbox.prop('checked', !status);
+        }
+    });
+});
 </script>
+
 
 @endpush
 @endsection

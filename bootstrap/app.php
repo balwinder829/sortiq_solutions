@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prependToGroup('web', \App\Http\Middleware\BlockBlockedIp::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\AllowIpWhitelist::class);
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\LogSystemActivity::class,
         ]);
