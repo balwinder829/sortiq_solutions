@@ -125,6 +125,7 @@ use App\Http\Controllers\StudentCvTemplateController;
 use App\Http\Controllers\MentorsBatchController;
 use App\Http\Controllers\ExternalAttendanceController;
 use App\Http\Controllers\Student\AttendanceFormController;
+use App\Http\Controllers\CollegeCallController;
 use App\Http\Controllers\CollegeEmailController;
 
 
@@ -261,17 +262,59 @@ Route::prefix('admin')
     ->group(function () {
 
 
+        // Route::prefix('college-emails')->name('college-emails.')->group(function () {
+
+        //     Route::get('/', [CollegeEmailController::class, 'index'])->name('index');
+
+        //     Route::get('/create', [CollegeEmailController::class, 'create'])->name('create');
+
+        //     Route::post('/', [CollegeEmailController::class, 'store'])->name('store');
+
+        //     Route::get('/campaigns', [CollegeEmailController::class, 'campaigns'])->name('campaigns');
+
+        //     Route::post('/retry', [CollegeEmailController::class, 'retry'])->name('retry');
+
+        // });
+
+
         Route::prefix('college-emails')->name('college-emails.')->group(function () {
 
             Route::get('/', [CollegeEmailController::class, 'index'])->name('index');
 
+            Route::post('/store-selection', [CollegeEmailController::class, 'storeSelection'])->name('storeSelection');
+
             Route::get('/create', [CollegeEmailController::class, 'create'])->name('create');
 
-            Route::post('/', [CollegeEmailController::class, 'store'])->name('store');
+            Route::post('/send', [CollegeEmailController::class, 'store'])->name('store');
 
             Route::get('/campaigns', [CollegeEmailController::class, 'campaigns'])->name('campaigns');
 
             Route::post('/retry', [CollegeEmailController::class, 'retry'])->name('retry');
+
+            Route::post('/retry-college', [CollegeEmailController::class, 'retryByCollege'])->name('retryByCollege');
+
+            Route::get('/logs/{college}', [CollegeEmailController::class, 'logs'])->name('logs');
+
+            Route::get('/view/{recipient}', [CollegeEmailController::class, 'view'])->name('view');
+
+        });
+
+
+        Route::prefix('college-calls')->name('college-calls.')->group(function () {
+
+            Route::get('/', [CollegeCallController::class, 'index'])->name('index');
+
+            Route::post('/store-selection', [CollegeCallController::class, 'storeSelection'])->name('storeSelection');
+
+            Route::get('/create', [CollegeCallController::class, 'create'])->name('create');
+
+            Route::post('/store', [CollegeCallController::class, 'store'])->name('store');
+
+            Route::post('/retry-college', [CollegeCallController::class, 'retryByCollege'])->name('retryByCollege');
+
+            Route::get('/logs/{college}', [CollegeCallController::class, 'logs'])->name('logs');
+
+            Route::get('/view/{id}', [CollegeCallController::class, 'view'])->name('view');
 
         });
 
@@ -618,7 +661,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/students/copy', [StudentController::class, 'copyStudents'])->name('students.copy');
         Route::post('/students/make_interns', [StudentController::class, 'makeInterns'])->name('students.make_interns');
 
-
+        Route::post('/students/move-to-placement', [StudentController::class, 'moveToPlacement'])->name('students.moveToPlacement');
 
 
         // Route::post(

@@ -173,12 +173,12 @@ function isParent($routes)
 
 
                 {{-- Colleges --}}
-                <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*','admin.college-emails*']) }}">
+                <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*','admin.college-emails*', 'admin.college-calls*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fas fa-university"></i>
                         <span class="nav-text">Colleges</span>
                     </a>
-                    <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*','workshops*','admin.college-emails*']) }}">
+                    <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*','workshops*','admin.college-emails*', 'admin.college-calls*']) }}">
                        {{-- Colleges --}}
                         <li class="{{ isParent(['colleges*']) }}">
                             <a href="{{ route('colleges.index') }}">
@@ -208,6 +208,14 @@ function isParent($routes)
                                href="{{ route('admin.college-emails.index') }}">
                                 <!-- <i class="fas fa-bed me-2"></i> -->
                               Colleges Emails Records
+                            </a>
+                        </li> 
+
+                        <li>
+                            <a class="{{ isChildActive('admin.college-calls*') }}"
+                               href="{{ route('admin.college-calls.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                              Colleges Calls Records
                             </a>
                         </li> 
 
@@ -1148,15 +1156,15 @@ function isParent($routes)
                         @endcan
 
 
-                    @canany(['colleges.view','mous.view','hods.view','workshop.view'])
+                    @canany(['colleges.view','mous.view','hods.view','workshop.view','college_emails.view','college_calls.view'])
                         {{-- Colleges --}}
 
-                        <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*','tests*']) }}">
+                        <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*','tests*','admin.college-emails*', 'admin.college-calls*']) }}">
                             <a class="has-arrow" href="javascript:void(0)">
                                  <i class="fas fa-university"></i>
                                 <span class="nav-text">Colleges</span>
                             </a>
-                            <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*','workshops*','tests*']) }}">
+                            <ul class="{{ showSubmenu(['colleges*','mous*', 'hods*','workshops*','tests*','admin.college-emails*', 'admin.college-calls*']) }}">
                                {{-- Colleges --}}
                                @can('colleges.view')
                                 <li class="{{ isParent(['colleges*']) }}">
@@ -1191,7 +1199,27 @@ function isParent($routes)
                                         <span class="nav-text">Workshops</span>
                                     </a>
                                 </li> 
-                                @endcan                                         
+                                @endcan 
+
+                                @can('college_emails.view')
+                                <li>
+                                    <a class="{{ isChildActive('admin.college-emails*') }}"
+                                       href="{{ route('admin.college-emails.index') }}">
+                                        <!-- <i class="fas fa-bed me-2"></i> -->
+                                      Colleges Emails Records
+                                    </a>
+                                </li> 
+                                @endcan
+
+                                @can('college_calls.view')
+                                <li>
+                                    <a class="{{ isChildActive('admin.college-calls*') }}"
+                                       href="{{ route('admin.college-calls.index') }}">
+                                        <!-- <i class="fas fa-bed me-2"></i> -->
+                                      Colleges Calls Records
+                                    </a>
+                                </li> 
+                                @endcan                                        
                             </ul>
                         </li>
                         @endcanany
@@ -1202,7 +1230,7 @@ function isParent($routes)
                 <li class="{{ isParent(['states*','districts*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fas fa-university"></i>
-                        <span class="nav-text">Colleges</span>
+                        <span class="nav-text">Colleges Locations</span>
                     </a>
                     <ul class="{{ showSubmenu(['states*','districts*']) }}">
                        {{-- Colleges --}}

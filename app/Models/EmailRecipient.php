@@ -11,6 +11,7 @@ class EmailRecipient extends Model
     protected $fillable = [
         'campaign_id',
         'college_id',
+        'session_id',
         'hod_id',
         'hod_email_id',
         'email',
@@ -19,6 +20,8 @@ class EmailRecipient extends Model
         'status',
         'sent_at',
         'error_message',
+        'rendered_body',
+        'template_name',
         'meta'
     ];
 
@@ -51,5 +54,10 @@ class EmailRecipient extends Model
     public function hodEmail()
     {
         return $this->belongsTo(HodEmail::class, 'hod_email_id');
+    }
+
+    public function scopeForSession($query, $sessionId)
+    {
+        return $query->where('session_id', $sessionId);
     }
 }

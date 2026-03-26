@@ -12,6 +12,7 @@ class Placement extends Model
     protected $table = 'placements';
 
     protected $fillable = [
+         'student_id',
         'student_name',
         'tech',
         'placement_date',
@@ -89,6 +90,11 @@ class Placement extends Model
     public function getCollegeFullNameAttribute()
     {
         return $this->college?->full_name ?? '';
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id');
     }
 
 

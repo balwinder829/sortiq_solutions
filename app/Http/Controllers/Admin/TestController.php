@@ -642,6 +642,10 @@ class TestController extends Controller
         $studentTestsQuery->where('student_email', 'like', '%' . $request->email . '%');
     }
 
+    if ($request->filled('student_mobile')) {
+        $studentTestsQuery->where('student_mobile', 'like', '%' . $request->student_mobile . '%');
+    }
+
     /* ===== SORTING ===== */
 
     if ($request->has('college_id') && $request->college_id != '') {
@@ -679,6 +683,10 @@ class TestController extends Controller
         $studentTestsQuery->where('is_finalized', $request->finalized);
     }
 
+    if ($request->filled('gender')) {
+        $studentTestsQuery->where('gender', $request->gender);
+    }
+
     if ($request->filled('moved')) {
 
         if ($request->moved === '1') {
@@ -689,6 +697,21 @@ class TestController extends Controller
             $studentTestsQuery->whereNotIn('id', $movedStudentTestIds);
         }
     }
+
+
+    /* ===== CLONE FILTERED QUERY ===== */
+    $filteredQuery = clone $studentTestsQuery;
+
+    /* ===== TOTAL STUDENTS (FILTERED) ===== */
+    $totalFilteredStudents = (clone $filteredQuery)->count();
+
+    /* ===== COLLEGE-WISE COUNT (FILTERED) ===== */
+     
+    $collegeStudentCounts = (clone $studentTestsQuery)
+    ->reorder() // ✅ removes ORDER BY
+    ->selectRaw('college_id, COUNT(*) as total')
+    ->groupBy('college_id')
+    ->pluck('total', 'college_id');
 
     $studentTests = $studentTestsQuery->get();
 
@@ -707,6 +730,8 @@ class TestController extends Controller
         'studentTests',
         'movedStudentTestIds',
         'colleges',
+        'totalFilteredStudents',
+        'collegeStudentCounts',
         'defaultCollegeId'
     ));
 }
@@ -1318,19 +1343,41 @@ class TestController extends Controller
 
     public function downloadCertificates(Request $request)
     {
-        // ✅ VALIDATION
-        $request->validate([
-            // 'course_name' => 'required|string|max:255',
-            'student_test_ids' => 'required|array|min:1'
-        ], [
-            // 'course_name.required' => 'Course name is required.',
-            'student_test_ids.required' => 'Please select at least one student.'
-        ]);
 
-        $courseName = "training";
+        $mode = $request->query('mode');
+
+        $rules = [
+            'student_test_ids' => 'required|array|min:1'
+        ];
+
+        // ✅ Require course ONLY for letters
+        if (in_array($mode, ['internship', 'offer'])) {
+            $rules['course_name'] = 'required|string|max:255';
+        }
+
+        $messages = [
+            'student_test_ids.required' => 'Please select at least one student.',
+            'course_name.required' => 'Course name is required for this letter.'
+        ];
+
+         $request->validate($rules, $messages);
+        // ✅ VALIDATION
+        // $request->validate([
+        //     // 'course_name' => 'required|string|max:255',
+        //     'student_test_ids' => 'required|array|min:1'
+        // ], [
+        //     // 'course_name.required' => 'Course name is required.',
+        //     'student_test_ids.required' => 'Please select at least one student.'
+        // ]);
+
+        // $courseName = "training";
+        $courseName = $mode 
+        ? $request->course_name   // letters
+        : 'training';   
         // $courseName = $request->course_name;
         $ids = $request->student_test_ids;
-
+        
+         
 
         $students = StudentTest::whereIn('id', $ids)->get();
         if ($students->isEmpty()) {
@@ -1342,7 +1389,7 @@ class TestController extends Controller
         foreach ($students as $student) {
 
             // ✅ PASS COURSE NAME
-            $pdfPath = $this->generatePdf($student, $courseName);
+            $pdfPath = $this->generatePdf($student, $courseName, $mode);
 
             if (file_exists($pdfPath)) {
                 $pdfPaths[] = $pdfPath;
@@ -1376,8 +1423,9 @@ class TestController extends Controller
         return back()->with('error', 'Could not create ZIP file.');
     }
 
-    private function generatePdf($student)
+    private function generatePdf($student, $courseName, $mode = null)
     {
+        // dd($mode);
      // Create folder path for today
         $date = Carbon::now()->format('Y-m-d');
         $folderPath = public_path("student_certificate/{$date}");
@@ -1427,15 +1475,36 @@ class TestController extends Controller
                 'margin_right' => 0,
                 'margin_top' => 0,
                 'margin_bottom' => 0,
+                'tempDir' => storage_path('app/mpdf'),
             ]);
         
-            $mpdf->SetHTMLHeader($this->getPDFHeader());
+            $view = match ($mode) {
+                'free' => 'pdf.free_letter_fixed_test_pdf',
+                'offer' => 'pdf.offer_letter_fixed_test_pdf',
+                default => 'pdf.one_day_student_certificate',
+            };
 
-            $mpdf->SetHTMLFooter($this->getPDFFooter());
+            
 
-            $html = view('pdf.one_day_student_certificate', compact('student'))->render();
+            if($mode  == null){
+                $html = View::make($view, compact('student'))->render();
+                $mpdf->SetHTMLHeader($this->getPDFHeader());
+                $mpdf->WriteHTML($html);
+                $mpdf->SetHTMLFooter($this->getPDFFooter());
+            }else{
+                $letter = $student;
+                $html = View::make($view, compact('student' , 'courseName'))->render();
+                $mpdf->SetHTMLHeader('');
+                $mpdf->DefHTMLFooterByName('lastPageFooter', $this->getPDFFooter());
+                      
+                $mpdf->WriteHTML($html);
+                $mpdf->SetHTMLFooterByName('lastPageFooter');
+            }
+            
+
+            // $html = view('pdf.one_day_student_certificate', compact('student'))->render();
         
-            $mpdf->WriteHTML($html);
+            
             $mpdf->Output($filePath, 'F');
             //return response()->download($filePath);
         }

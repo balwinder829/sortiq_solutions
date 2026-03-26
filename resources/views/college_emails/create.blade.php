@@ -1,203 +1,233 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h3>Send Email</h3>
 
-    <form method="POST" action="{{ route('admin.college-emails.store') }}">
+<div class="container">
+
+    <h3 class="mb-3">Send Email</h3>
+
+    <form method="POST" action="{{ route('admin.college-emails.store') }}" id="emailForm">
         @csrf
 
-        <div class="row">
+        {{-- TOP FIELDS --}}
+        <div class="row mb-3">
 
-        {{-- SELECT COLLEGES --}}
-        <div class="form-group col-md-6">
-            <label class="fw-bold">College</label>
-            <select name="college_ids[]" id="college-select" class="form-control select2" multiple required>
-                <option value="">Select College</option>
-                @foreach($colleges as $col)
-                    <option value="{{ $col->id }}">{{ $col->FullName }}</option>
-                @endforeach
-            </select>
- 
-        </div>
-
-        {{-- TYPE --}}
-        <div class="form-group col-md-6 mt-3">
-            <label>Recipient Type</label>
-
-            <select name="type"
-                class="form-control @error('type') is-invalid @enderror" required>
-
-                <option value="hod">HOD</option>
-                <option value="tpo">TPO</option>
-                <option value="both">Both</option>
-
-            </select>
-
-            @error('type')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-
-        {{-- PURPOSE --}}
-        <div class="form-group col-md-6 mt-3">
-            <label>Purpose</label>
-
-            <select name="purpose_id"
-                class="form-control @error('purpose_id') is-invalid @enderror" required>
-
-                <option value="">Select Purpose</option>
-
-                @foreach($purposes as $purpose)
-                    <option value="{{ $purpose->id }}">
-                        {{ $purpose->name }}
-                    </option>
-                @endforeach
-
-            </select>
-
-            @error('purpose_id')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-
-        {{-- SENDER --}}
-        <div class="form-group col-md-6 mt-3">
-            <label>Sender Email</label>
-
-            <select name="sender_id"
-                class="form-control @error('sender_id') is-invalid @enderror" required>
-
-                <option value="">Select Sender</option>
-
-                @foreach($senders as $sender)
-                    <option value="{{ $sender->id }}">
-                        {{ $sender->email }}
-                    </option>
-                @endforeach
-
-            </select>
-
-            @error('sender_id')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-
-        {{-- SUBJECT --}}
-        <div class="form-group col-md-12 mt-3">
-            <label>Subject</label>
-
-            <input type="text"
-                   name="subject"
-                   class="form-control @error('subject') is-invalid @enderror"
-                   value="{{ old('subject') }}"
-                   placeholder="Enter subject"
-                   required>
-
-            @error('subject')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-
-        {{-- BODY --}}
-        <div class="form-group col-md-12 mt-3">
-            <label>Email Body</label>
-
-            <textarea name="body"
-                      rows="6"
-                      class="form-control @error('body') is-invalid @enderror"
-                      placeholder="Enter email content..."
-                      >{{ old('body') }}</textarea>
-
-            @error('body')
-                <small class="text-danger">{{ $message }}</small>
-            @enderror
-        </div>
-
-        {{-- BUTTONS --}}
-        <div class="row mt-4">
-            <div class="form-group col-md-6">
-                <button type="submit" class="btn btn-primary">Send Email</button>
-
-                <a href="{{ route('admin.college-emails.index') }}"
-                   class="btn btn-secondary ml-2">
-                    Back
-                </a>
+            <div class="col-md-4">
+                <label>Purpose(Email Template)</label>
+                <select name="purpose_id" class="form-control" required>
+                    <option value="">Select</option>
+                    @foreach($purposes as $p)
+                        <option value="{{ $p->id }}">{{ $p->name }}</option>
+                    @endforeach
+                </select>
             </div>
-        </div>
+
+            <div class="col-md-4">
+                <label>Sender Email ID</label>
+                <select name="sender_id" class="form-control" required>
+                    <option value="">Select</option>
+                    @foreach($senders as $s)
+                        <option value="{{ $s->id }}">{{ $s->name }} ({{ $s->email }})</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label>Subject</label>
+                <input type="text" name="subject" class="form-control" required>
+            </div>
 
         </div>
+
+        <!-- <div class="mb-3">
+            <label>Body</label>
+            <textarea name="body" class="form-control" rows="4"></textarea>
+        </div> -->
+
+        {{-- COLLEGE TABLE --}}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="checkAllRows">
+                        </th>
+                        <th>College</th>
+                        <th>HOD</th>
+                        <th>TPO</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach($colleges as $college)
+
+                        @php
+                            $hod = $college->hod;
+
+                            $hodEmail = $hod?->firstHodEmail;
+                            $tpoEmail = $hod?->firstTpoEmail;
+                        @endphp
+
+                        <tr>
+
+                            {{-- SELECT COLLEGE --}}
+                            <td>
+                                <input type="checkbox" class="row_checkbox" value="{{ $college->id }}">
+                            </td>
+
+                            <td>
+                                {{ $college->full_name }}
+                            </td>
+
+                            {{-- HOD --}}
+                            <td>
+                                @if($hodEmail)
+                                    <input type="checkbox"
+                                           name="types[{{ $college->id }}][]"
+                                           value="hod"
+                                           class="type_checkbox hod_checkbox"
+                                           data-row="{{ $college->id }}">
+                                @else
+                                    <input type="checkbox" disabled>
+                                    <span class="text-danger small">No Email</span>
+                                @endif
+                            </td>
+
+                            {{-- TPO --}}
+                            <td>
+                                @if($tpoEmail)
+                                    <input type="checkbox"
+                                           name="types[{{ $college->id }}][]"
+                                           value="tpo"
+                                           class="type_checkbox tpo_checkbox"
+                                           data-row="{{ $college->id }}">
+                                @else
+                                    <input type="checkbox" disabled>
+                                    <span class="text-danger small">No Email</span>
+                                @endif
+                            </td>
+
+                            {{-- EDIT --}}
+                            <td>
+
+    @if($hod)
+
+        <a href="{{ route('hods.edit', $hod->id) }}" target="_blank" 
+           class="btn btn-sm btn-secondary">
+            Edit Email
+        </a>
+
+    @else
+
+        <a href="{{ route('hods.create', ['college_id' => $college->id]) }}"
+           class="btn btn-sm btn-success" target="_blank" >
+            Add Email
+        </a>
+
+    @endif
+
+</td>
+
+                        </tr>
+
+                    @endforeach
+
+                </tbody>
+
+            </table>
+        </div>
+
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-success">
+                Send Emails
+            </button>
+        </div>
+
     </form>
+
 </div>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
 @endsection
 
+
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-    $(document).ready(function () {
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            placeholder: "Search college name",
-            allowClear: true
-        });
+
+// SELECT ALL ROWS
+$('#checkAllRows').on('change', function () {
+
+    let checked = this.checked;
+
+    $('.row_checkbox').prop('checked', checked);
+
+    $('.type_checkbox').each(function () {
+        if (!this.disabled) {
+            $(this).prop('checked', checked);
+        }
     });
-</script>
-<script>
-let colleges = @json($colleges);
 
-$('form').on('submit', function (e) {
+});
 
-    let selected = $('#college-select').val();
 
-    if (!selected || selected.length === 0) {
+// WHEN ROW CHECKBOX CHANGES
+$(document).on('change', '.row_checkbox', function () {
+
+    let rowId = $(this).val();
+    let checked = $(this).is(':checked');
+
+    $('input[data-row="'+rowId+'"]').each(function () {
+        if (!this.disabled) {
+            $(this).prop('checked', checked);
+        }
+    });
+
+});
+
+
+// VALIDATION BEFORE SUBMIT
+$('#emailForm').submit(function (e) {
+
+    let valid = false;
+
+    $('.type_checkbox:checked').each(function () {
+        valid = true;
+    });
+
+    if (!valid) {
+
         e.preventDefault();
 
         Swal.fire({
             icon: 'warning',
-            title: 'No College Selected',
-            text: 'Please select at least one college'
+            title: 'No Selection',
+            text: 'Please select at least one HOD or TPO'
         });
 
-        return;
+        return false;
     }
 
-    let invalid = [];
+    Swal.fire({
+        title: 'Send Emails?',
+        text: 'Are you sure you want to send emails?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes'
+    }).then((result) => {
 
-    selected.forEach(function(id){
-
-        let c = colleges.find(x => x.id == id);
-
-        if (!c || !c.hod || !c.hod.emails || c.hod.emails.length === 0) {
-            invalid.push(c?.full_name ?? c?.college_name ?? 'Unknown College');
+        if (!result.isConfirmed) {
+            e.preventDefault();
         }
 
     });
 
-    if (invalid.length > 0) {
-
-        e.preventDefault();
-
-        let html = `<div style="text-align:left;">
-                        <p>Please add email for the following colleges:</p>
-                        <ul style="padding-left:20px;">`;
-
-        invalid.forEach(function(name){
-            html += `<li>${name}</li>`;
-        });
-
-        html += `</ul></div>`;
-
-        Swal.fire({
-            icon: 'error',
-            title: 'Missing Emails',
-            html: html,
-            confirmButtonText: 'OK'
-        });
-    }
-
 });
+
+
 </script>
+
+
 @endpush

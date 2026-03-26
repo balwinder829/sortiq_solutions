@@ -60,4 +60,25 @@ class Hod extends Model
     {
         return $this->hasMany(EmailRecipient::class, 'hod_id');
     }
+
+    public function firstHodEmail()
+    {
+        return $this->hasOne(HodEmail::class, 'hod_id')
+                    ->where('type', 'hod')
+                    ->orderByDesc('is_primary')
+                    ->orderBy('id');
+    }
+
+    public function firstTpoEmail()
+    {
+        return $this->hasOne(HodEmail::class, 'hod_id')
+                    ->where('type', 'tpo')
+                    ->orderByDesc('is_primary')
+                    ->orderBy('id');
+    }
+
+    public function callLogs()
+    {
+        return $this->hasMany(CallLog::class, 'hod_id');
+    }
 }

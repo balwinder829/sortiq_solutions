@@ -30,6 +30,8 @@ use App\Exports\StudentListExport;
 use Illuminate\Support\Str;
 use App\Imports\StudentsFeeImport;
 use App\Exports\StudentsFeeTemplateExport;
+use App\Models\Placement;
+
 
 
 class StudentController extends Controller
@@ -2241,4 +2243,164 @@ private function generatePdf($student)
             'active_session_students_fee_upload.xlsx'
         );
     }
+
+
+    public function moveToPlacement(Request $request)
+    {
+        $ids = json_decode($request->ids, true);
+
+        if (empty($ids)) {
+            return back()->with('error', 'No students selected');
+        }
+
+        DB::beginTransaction();
+
+        try {
+
+            $students = Student::whereIn('id', $ids)->get();
+
+            if ($students->isEmpty()) {
+                return back()->with('error', 'No valid students found');
+            }
+
+            $movedCount = 0; // 🔥 IMPORTANT
+
+            foreach ($students as $student) {
+
+                // Skip already placed
+                if ($student->is_placed == 1) {
+                    continue;
+                }
+
+                // Prevent duplicate placement entry
+                $exists = Placement::where('student_id', $student->id)->exists();
+                if ($exists) {
+                    continue;
+                }
+
+                // Handle tech
+                $tech = null;
+
+                if (!empty($student->technology)) {
+                    if (is_array($student->technology)) {
+                        $tech = $student->technology[0] ?? null;
+                    } else {
+                        $tech = explode(',', $student->technology)[0] ?? null;
+                    }
+                }
+
+                // Insert placement
+                Placement::create([
+                    'student_id'     => $student->id,
+                    'student_name'   => $student->student_name,
+                    'tech'           => $tech,
+                    'placement_date' => now(),
+                    'college_name'   => $student->college_name,
+                    'phone_no'       => $student->contact,
+                    'location'       => $student->place,
+                    'session_id'     => $student->session,
+                ]);
+
+                // Update student
+                $student->is_placed = 1;
+                $student->save();
+                $student->delete();
+
+                $movedCount++; // 🔥 track success
+            }
+
+            // ❌ NOTHING MOVED
+            if ($movedCount === 0) {
+                DB::rollBack();
+                return back()->with('error', 'All selected students are already placed');
+            }
+
+            DB::commit();
+
+            return back()->with('success', "$movedCount students moved to placement successfully");
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    // public function moveToPlacement(Request $request)
+    // {
+    //     $ids = json_decode($request->ids, true);
+
+    //     if (empty($ids)) {
+    //         return back()->with('error', 'No students selected');
+    //     }
+
+    //     // dd($ids);
+
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         // Fetch only not already placed students
+    //     $students = Student::whereIn('id', $ids)
+    //         ->where('is_placed', 0)
+    //         ->get();
+
+
+    //     if ($students->isEmpty()) {
+    //         // dd($students);
+    //         return back()->with('error', 'All selected students are already placed');
+    //     }
+
+    //         foreach ($students as $student) {
+
+    //             // 🚫 Prevent duplicate placement entry
+    //             $exists = Placement::where('student_id', $student->id)->exists();
+    //             if ($exists) {
+    //                 continue;
+    //             }
+
+    //             // ✅ Handle tech (first tech only)
+    //             $tech = null;
+
+    //             if (!empty($student->technology)) {
+    //                 if (is_array($student->technology)) {
+    //                     $tech = $student->technology[0] ?? null;
+    //                 } else {
+    //                     $tech = explode(',', $student->technology)[0] ?? null;
+    //                 }
+    //             }
+
+    //             // ✅ Insert into placements
+    //             Placement::create([
+    //                 'student_id'     => $student->id,
+    //                 'student_name'   => $student->student_name,
+    //                 'tech'           => $tech,
+    //                 'placement_date' => now(),
+    //                 'college_name'   => $student->college_name, // already ID
+    //                 'phone_no'       => $student->contact,
+    //                 'location'       => $student->place,
+    //                 'session_id'     => $student->session,
+    //                 'created_at'     => now(),
+    //                 'updated_at'     => now(),
+    //             ]);
+
+    //             // ✅ Update student
+    //             $student->update([
+    //                 'is_placed' => 1,
+    //                 'deleted_at' => now(),
+    //             ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return back()->with('success', 'Selected students moved to placement successfully');
+
+    //     } catch (\Exception $e) {
+
+    //         DB::rollBack();
+
+    //         return back()->with('error', 'Error: ' . $e->getMessage());
+    //     }
+    // }
 }

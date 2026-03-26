@@ -119,20 +119,20 @@ li {
                 <!-- BETWEEN -->
                 <tr><td height="20"></td></tr>
                 <tr>
-                    <td style="text-align:center;font-family:Inter;font-weight:600;">BETWEEN</td>
+                    <td style="text-align:left;font-family:Inter;font-weight:600;">BETWEEN</td>
                 </tr>
                 <tr><td height="10"></td></tr>
 
                <tr>
                     <td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-                        Sortiq Solutions Pvt. Ltd., an Indian Company having its principal place of office at E-51, Ground Floor, Industrial Area, Phase 8, Mohali, Punjab - 160072, hereinafter referred to as “the Company”,
+                        <strong>Sortiq Solutions Pvt. Ltd.</strong>, an Indian Company having its principal place of office at E-51, Second Floor , Phase - 8, Industrial Area, S.A.S. Nagar, Mohali, Punjab 160071, hereinafter referred to as “the Company”,
                     </td>
                 </tr>
 
                 <!-- AND -->
                 <tr><td height="15"></td></tr>
                 <tr>
-                    <td style="text-align:center;font-family:Inter;font-weight:600;">AND</td>
+                    <td style="text-align:left;font-family:Inter;font-weight:600;">AND</td>
                 </tr>
                 <tr><td height="10"></td></tr>
 
@@ -152,21 +152,21 @@ li {
                                font-family:'Inter', sans-serif;">
 
                         <strong>Recitals</strong>
-
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                   WHEREAS, the Company desires to secure the commitment of the Intern for a period following this Bond Agreement;
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;font-family:'Inter', sans-serif;">
+                                   
+                                   WHEREAS, the Company desires to secure the continued commitment of the Intern for a defined period following this Bond Agreement;
                                 </td>
                             </tr>
                             <tr style="padding-top:6px;">
-                                <td width="18" valign="top" style="padding-top:10px;"></td>
-                                <td valign="top" style="padding-top:6px;">
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:5px;font-family:'Inter', sans-serif;">   
                                    NOW, THEREFORE, in consideration of the mutual covenants and promises herein contained, the parties hereto agree as follows:
                                 </td>
                             </tr>
+                           
                         </table>
+                       
                     </td>
                 </tr>
 
@@ -174,7 +174,7 @@ li {
                 </table>
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:5px;">
                 <!-- CLAUSES -->
-                <tr><td height="20"></td></tr>
+                <tr><td height="0"></td></tr>
 
                 
                  <tr>
@@ -188,8 +188,7 @@ li {
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px; padding-left:18px;font-family:'Inter', sans-serif;">   
                                    The Intern agrees to a bond with the Company for a period of two (2) years, commencing from the Starting Date mentioned above.
                                 </td>
                             </tr>
@@ -205,88 +204,117 @@ li {
                                font-family:'Inter', sans-serif;">
 
                         <strong>2. Obligations</strong>
-
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
+                    </td>
+                </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        During the term of this Agreement:
+                       <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-    
-                                   During the term of this Agreement:
-                                </td>
-                            </tr>
-
-                            <tr style="margin-top:6px;">
-                                <td  width="18" valign="top" style="padding-top:6px;"></td>
-                                <td valign="top" style="padding-top:10px;">
-                                    The Intern agrees to diligently perform all duties and responsibilities assigned by the Company.
-                                </td>
-                            </tr>
-                            <tr style="margin-top:6px;">
-                                <td  width="18" valign="top" style="padding-top:6px;"></td>
-                                <td valign="top" style="padding-top:10px;">
-                                    The Intern acknowledges the time, effort, and resources invested by the Company in their training and development, and agrees to fulfill the full term of this Agreement.
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    •  The Intern agrees to diligently perform all duties and responsibilities assigned by the Company.<br>
+                                    • The Intern acknowledges the time, effort, and resources invested by the Company in their training and development, and agrees to fulfill the full term of this Agreement.<br>
+                                    
                                 </td>
                             </tr>
                         </table>
-
                     </td>
-                </tr>
+                </tr> 
                 
-
                 <tr>
                     <td colspan="2"
                         style="font-size:14px;
                                line-height:24px;
                                padding-bottom:15px;
+                               padding-top:15px;
                                font-family:'Inter', sans-serif;">
 
                         <strong>3. Termination</strong>
-
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
+                    </td>
+                </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                         <strong>a. Early Termination by Intern:</strong><br>
+                         If the Intern voluntarily terminates employment before completing the bond period, the Intern agrees to reimburse the Company for:
+                       <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    <strong>a. Early Termination by Intern:</strong>
-                                    If the Intern voluntarily terminates employment before completing the bond period, the Intern agrees to reimburse the Company for:<br><br>
-
-                                    Training costs incurred (fixed amount: ₹20,000 or actual cost, whichever is higher)<br><br>
-
-                                    Salary paid until the last working day<br><br>
-
-                                    Any other directly related expenses incurred by the Company
-
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Training costs incurred (fixed amount: ₹20,000 or actual cost, whichever is higher)<br>
+                                    • Salary paid until the last working day<br>
+                                    • Any other directly related expenses incurred by the Company<br>
+                                  
                                 </td>
                             </tr>
-</table>
- </td>
+                        </table>
+                    </td>
                 </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                         <strong>b. Termination by Company:</strong><br>
+                         The Company reserves the right to terminate the Intern at any time during the bond period for valid reasons, including but not limited to:
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Poor performance<br>
+                                    • Misconduct<br>
+                                    • Breach of Company policies<br>
+                                  
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+               
                 <tr>
                     <td colspan="2"
                         style="font-size:14px;
                                line-height:24px;
-                               margin-top: 3px;
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
 
-                            <tr style="margin-top:6px;">
-                                <td  width="18" valign="top" style="padding-top:6px;"></td>
-                                <td valign="top" style="padding-top:6px;">
-                                    <strong>b. Termination by Company:</strong>
-                                    The Company reserves the right to terminate the Intern at any time during the bond period for valid reasons, including but not limited to:<br><br>
-
-                                    Poor performance<br><br>
-
-                                    Misconduct<br><br>
-
-                                    Breach of Company policies
-                                </td>
-                            </tr>
-                        </table>
-
+                        <strong>4. Security Cheque Usage Clause</strong>
                     </td>
                 </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        In the event that the Employee resigns before completion of the agreed bond period, or leaves the Company without serving the required notice period or without formal approval, the Employee agrees to compensate the Company as per the terms of this Agreement.</td></tr>
+                 <tr>
+                        <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        The Employee hereby authorizes the Company to present the submitted security cheque solely for the purpose of recovering the agreed training and onboarding cost, as specified in this Agreement.</td></tr>
+                 <tr>
+                        <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        The cheque shall be used only in case of breach of bond terms and not otherwise. The Company agrees to use the cheque in a fair and reasonable manner in accordance with applicable laws.</td>
+                    
+                </tr>
+
+                <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               font-family:'Inter', sans-serif;">
+
+                        <strong>5. Mutual Separation & Non-Enforcement of Bond</strong>
+                    </td>
+                </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                       In the event that the Employee resigns by providing the required notice period of three (3) months and obtains formal approval from the Company, or where the separation is mutually agreed upon by both parties, the conditions of the bond shall not be enforced.</td></tr>
+                 <tr>
+                        <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        In such cases, the Employee shall not be liable to pay any training or onboarding costs, and any security cheque or deposit provided shall not be presented or used for recovery purposes.</td></tr>
+                 <tr>
+                        <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+
+                        The Company agrees to process full and final settlement as per applicable policies upon add at the end of the boundcompletion of all formalities.
+                    </td>
+                </tr>
+
                  
+
                  <tr>
                     <td colspan="2"
                         style="font-size:14px;
@@ -294,42 +322,62 @@ li {
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>4. Training Cost / Security Deposit</strong>
+                        <strong>6. Training Cost / Security Deposit</strong>
+                    </td>
+                </tr>
 
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
+                         <strong>a. Purpose:</strong><br>
+                       <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    <strong>a. Purpose:</strong>
-                                    To safeguard the investment in training and development of the Intern, a security deposit is required.<br>
-                                </td>
-                            </tr>
-
-                            <tr style="margin-top:10px;">
-                                <td  width="18" valign="top" style="padding-top:10px;"></td>
-                                <td valign="top" style="padding-top:10px;">
-                                    <strong>b. Security Deposit:</strong>
-                                    Amount: ₹20,000 (or actual training cost, whichever is higher)<br>
-                                    
-                                    Payment Method: Bank transfer / cheque (Cheque No: {{ ucwords($letter->check_number) }} / UTR: ______) or deduction from salary as agreed<br>
-
-
-                                </td>
-                            </tr>
-
-                             <tr style="margin-top:10px;">
-                                <td  width="18" valign="top" style="padding-top:10px;"></td>
-                                <td valign="top" style="padding-top:1opx;">
-                                    <strong>c. Refund:</strong>
-                                    Upon successful completion of the bond period, the security deposit will be refunded in full.<br><br>
-
-                                    Any dues owed by the Intern will be adjusted against this deposit.
-
-                                    
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • To safeguard the investment in training and development of the Intern, a security deposit is required.<br>
+                                   
                                 </td>
                             </tr>
                         </table>
+                    </td>
+                </tr>
 
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
+                         <strong>b. Security Deposit:</strong><br>
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Amount: ₹20,000 (or actual training cost, whichever is higher)<br>
+                                    • Payment Method: Bank transfer / cheque (Cheque No: {{ ucwords($letter->check_number) }} / UTR: ______) or via deduction from salary, if mutually agreed.<br>
+                                   
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
+                         <strong>c. Refund:</strong><br>
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Upon successful completion of the bond period, the security deposit will be refunded in full.<br>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
+                         Any dues owed by the Intern will be adjusted against this deposit.<br>
+                    </td>
+                </tr>
+                
+
+                        
                     </td>
                 </tr>
                 <tr>
@@ -340,12 +388,11 @@ li {
                                 
                                font-family:'Inter', sans-serif;">
 
-                        <strong>5. Confidentiality</strong>
+                        <strong>7. Confidentiality</strong>
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
                                    The Intern may have access to confidential information of the Company and agrees not to disclose or use it outside the scope of employment. Breach may result in penalties or legal action.
 
                                 </td>
@@ -361,13 +408,12 @@ li {
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>6. Performance Management</strong>
+                        <strong>8. Performance Management</strong>
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                   The Company is the sole arbitrator of the Intern’s performance and decisions regarding increments, promotions, or termination.
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                                   The Company is the sole arbitrator of the Intern’s performance and any decisions regarding increments, promotions, or termination.
                                 </td>
                             </tr>
                         </table>
@@ -381,41 +427,24 @@ li {
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>7. Non-Compete and Non-Solicitation</strong>
-
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+                        <strong>9. Non-Compete and Non-Solicitation</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                         During the term of the agreement and for 24 months following the end of the employment, Intern agrees not to:
+                       <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    During the term of the agreement and for 24 months following the end of the employment, the Intern agrees not to:<br><br>
-
-                                    Engage in any business that directly competes with the Company<br><br>
-
-                                    Solicit or attempt to hire any employee of the Company
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Engage in any business that directly competes with the Company<br>
+                                    • Solicit or attempt to hire any employee of the Company<br>                                  
                                 </td>
-                                 </tr>
-                                <!--  <tr>
-                                 <td colspan="2"  style="padding-left:14px;">
-                                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
-                                        <tr>
-                                            <td width="18" valign="top"></td>
-                                            <td valign="top">
-                                               
-                                            </td>
-                                        </tr>
-                                        <tr style="padding-top:6px;">
-                                            <td width="18" valign="top" style="padding-top:6px;"></td>
-                                            <td valign="top" style="padding-top:10px;">
-                                               
-                                            </td>
-                                        </tr>
-                                    </table>
-                                 </td>
-                                    
-                                 
-                            </tr> -->
-
+                            </tr>
                         </table>
+                    </td>
+                </tr>
+                         
                     </td>
                 </tr>
 
@@ -426,13 +455,12 @@ li {
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>8. Governing Law</strong>
+                        <strong>10. Governing Law</strong>
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    This Agreement is governed by the prevailing laws of India. Any dispute will be adjudicated at SAS, Mohali, Punjab.
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                                    This Agreement is governed by the prevailing laws of India. Any dispute arising hereunder shall be adjudicated at SAS Nagar, Mohali, Punjab.
                                 </td>
                             </tr>
                         </table>
@@ -446,19 +474,21 @@ li {
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>9. Entire Agreement</strong>
+                        <strong>11. Entire Agreement</strong>
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    This Agreement constitutes the full understanding between the parties regarding the bond, superseding all prior agreements.
+                                 <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                                    This Agreement constitutes the full understanding between the parties regarding the bond and supersedes any prior agreements, written or oral.
                                 </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
-                 
+                 </table>
+            <pagebreak />
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:0px;">
                 <tr>
                     <td colspan="2"
                         style="font-size:14px;

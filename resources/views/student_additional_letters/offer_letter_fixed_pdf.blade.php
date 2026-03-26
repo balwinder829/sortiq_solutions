@@ -108,6 +108,7 @@
                                 <td style="font-size: 14px; line-height: 24px;">
                                      <strong style="margin-left: 20px;">Duration:</strong> 6 Months<br>
                                     <strong style="margin-left: 20px;">Type:</strong> Free Internship<br>
+                                    <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($letter->student?->course_name ?? 'N/A') }}<br>
                                     <strong style="margin-left: 20px;">Location:</strong> Mohali / Remote (based on project requirement)<br>
                                     <strong style="margin-left: 20px;">Start Date:</strong> {{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}<br>
                                 </td>

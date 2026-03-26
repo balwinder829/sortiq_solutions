@@ -79,11 +79,31 @@
     </div>
 
     <div class="col-md-2">
+        <input type="text"
+               name="student_mobile"
+               value="{{ request('student_mobile') }}"
+               class="form-control filterchangetext"
+               placeholder="Mobile">
+    </div>
+
+    <div class="col-md-2">
         <input type="number"
                name="top_n"
                value="{{ request('top_n') }}"
                class="form-control filterchangetext"
                placeholder="Top N">
+    </div>
+
+    <div class="col-md-2">
+        <select name="gender" class="form-select filterchange">
+            <option value="">All</option>
+            <option value="male" {{ request('gender')==='male'?'selected':'' }}>
+                Male
+            </option>
+            <option value="female" {{ request('gender')==='female'?'selected':'' }}>
+                Female
+            </option>
+        </select>
     </div>
 
     <div class="col-md-2">
@@ -186,7 +206,67 @@
         Download Certificate
     </button>
 
+    <button type="button"
+        class="btn btn-info download-letter"
+        data-type="letter1"
+        data-action="{{ route('admin.tests.certificate.download',  [$test->id, 'mode' => 'free']) }}">
+    Download Free Internship Letter
+</button>
+
+<button type="button"
+        class="btn btn-info download-letter"
+        data-type="letter2"
+        data-action="{{ route('admin.tests.certificate.download',  [$test->id, 'mode' => 'offer']) }}">
+    Download Offer Letter
+</button>
+
 </div>
+<div class="row mb-4">
+
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+
+                <h6 class="text-muted mb-1">Selected College</h6>
+
+                <h5 class="fw-semibold">
+                    {{ $colleges->firstWhere('id', $defaultCollegeId)->full_name ?? 'All Colleges' }}
+                </h5>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 text-center">
+            <div class="card-body">
+
+                <h6 class="text-muted mb-1">Total Students</h6>
+
+                <h2 class="fw-bold text-primary">
+                    {{ $totalFilteredStudents }}
+                </h2>
+
+                <small class="text-muted">
+                    Based on applied filters
+                </small>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- <h5 class="text-success mb-3">
+    Total Students: {{ $totalFilteredStudents }}
+</h5>
+<div class="mb-3">
+    @foreach($colleges as $college)
+        <span class="badge bg-primary me-2">
+            {{ $college->full_name }} :
+            {{ $collegeStudentCounts[$college->id] ?? 0 }}
+        </span>
+    @endforeach
+</div> -->
 <table class="table table-bordered table-striped">
 <thead>
 <tr>
@@ -348,7 +428,64 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
+document.querySelectorAll('.download-letter').forEach(button => {
+
+    button.addEventListener('click', function () {
+
+        let selected = document.querySelectorAll('.student-checkbox:checked');
+
+        if (selected.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Students Selected',
+                text: 'Please select at least one student'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Enter Course Name',
+            input: 'text',
+            inputPlaceholder: 'Course Name',
+            showCancelButton: true,
+            confirmButtonText: 'Download',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Course name is required!';
+                }
+            }
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                let form = document.getElementById('bulkForm');
+
+                // ✅ Create hidden input for course
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'course_name';
+                input.value = result.value;
+
+                form.appendChild(input);
+
+                // ✅ Optional: send which letter type
+                let typeInput = document.createElement('input');
+                typeInput.type = 'hidden';
+                typeInput.name = 'letter_type';
+                typeInput.value = this.dataset.type;
+
+                form.appendChild(typeInput);
+
+                form.action = this.dataset.action;
+                form.submit();
+            }
+        });
+
+    });
+
+});
 </script>
+
 <!-- <script>
 document.querySelector('[formaction*="certificate"]')
 ?.addEventListener('click', function (e) {

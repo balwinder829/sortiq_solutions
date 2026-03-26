@@ -114,7 +114,7 @@ class LetterController extends Controller
 
         $validator = Validator::make($request->all(), [
         'employee_id' => 'required|exists:employees,id',
-        'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond,intern,intern_custom',
+        'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond,intern,intern_custom,intern_with_package',
         'issue_date'  => 'required|date|before_or_equal:today',
 
          'relieving_date' => [
@@ -157,7 +157,7 @@ class LetterController extends Controller
             'nullable',
             'numeric',
             'min:0',
-            'required_if:letter_type,intern',
+            'required_if:letter_type,intern,intern_with_package',
         ],
         // 'bond_terms'  => [
         //     'nullable',
@@ -344,6 +344,7 @@ private function generateLetterPdf(Letter $letter): string
             'increment' => 'letters.pdf-increment',
             'noc' => 'letters.pdf-ndc',
             'intern' => 'letters.pdf-offer_letter_fixed_internship',
+            'intern_with_package' => 'letters.pdf-offer_letter_fixed_internship_with_package',
             'intern_custom' => 'letters.pdf-custom_intern_letter',
             // 'bond' => 'letters.pdf-bond',
             'bond' => match ($letter->employee->employment_type) {
@@ -361,7 +362,7 @@ private function generateLetterPdf(Letter $letter): string
 
         $html = View::make($view, compact('letter'))->render();
 
-        if (in_array($letter->letter_type, ['appointment', 'offer', 'bond','noc','appointment_with_bond','intern','intern_custom'])) {
+        if (in_array($letter->letter_type, ['appointment', 'offer', 'bond','noc','appointment_with_bond','intern','intern_custom','intern_with_package'])) {
             $mpdf->SetHTMLHeader('');
             // $mpdf->SetHTMLFooter('');
             $mpdf->DefHTMLFooterByName('emptyFooter', '');
@@ -407,7 +408,7 @@ private function generateLetterPdf(Letter $letter): string
         }
  
         $mpdf->WriteHTML($html);
-        if (in_array($letter->letter_type, ['appointment', 'offer', 'bond','noc','appointment_with_bond','intern','intern_custom'])) {
+        if (in_array($letter->letter_type, ['appointment', 'offer', 'bond','noc','appointment_with_bond','intern','intern_custom','intern_with_package'])) {
             $mpdf->SetHTMLFooterByName('bondFooter');
         }
 
@@ -557,7 +558,7 @@ private function generateLetterPdf(Letter $letter): string
 
         $validator = Validator::make($request->all(), [
         'employee_id' => 'required|exists:employees,id',
-        'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond,intern,intern_custom',
+        'letter_type' => 'required|in:offer,experience,relieving,appointment,increment,bond,custom_bond,noc,appointment_with_bond,intern,intern_custom,intern_with_package',
         'issue_date'  => 'required|date|before_or_equal:today',
 
         // 'relieving_date' => 'nullable|date',
@@ -602,7 +603,7 @@ private function generateLetterPdf(Letter $letter): string
             'nullable',
             'numeric',
             'min:0',
-            'required_if:letter_type,intern',
+            'required_if:letter_type,intern,intern_with_package',
         ],
 
         'bond_terms'  => [

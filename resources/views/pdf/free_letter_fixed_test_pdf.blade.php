@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Free Internship Letter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Katibeh&display=swap" rel="stylesheet">    
+    <style>
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        .header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .signature {
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    @php
+        $testdate = $student->created_at 
+            ? $student->created_at->format('d F Y') 
+            : '-';
+
+        $collegename = optional($student->college)->FullName ?? '-';
+
+    @endphp
+<div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
+    <div class="head-shape">
+        <img style="width: 100%; display: block;" src="images/head-shape.png"/>
+    </div>
+    <div class="head-main" style="padding-top: 20px;">
+        <div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td width="68%" align="left">
+                        <div class="h-logo">
+                            <img style="width: 100%; max-width: 200px;" src="{{ public_path('images/certificates_images/logo-sortiq.png' ) }}" width="200"/>
+                        </div>
+                    </td>
+                    <td width="32%" align="left">
+                        <div class="h-detials" style="max-width: 210px; width: 100%;">
+                            <p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/cl.png') }}" style="width:15px; margin-top:2px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px; display: inline-block;width: 180px;">+91 96465 22110</span></p>
+                            <p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%;font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/email.png') }}" style="width:15px; margin-top:2px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px; display: inline-block; width: 180px;">info@sortiqsolutions.com</span></p>
+                            <p style="margin: 0; font-size: 14px; line-height: normal; display: inline-block; margin-top: 2px; width: 100%; font-family: 'Inter', sans-serif; text-align:left;"><img src="{{ public_path('images/certificates_images/globe.png') }}" style="width:15px; margin-top:2px;"/>&nbsp;&nbsp;<span style="color: #2c2e35; font-size: 15px; margin-top: 0px; line-height: 14px; position: relative; top: -2px; display: inline-block; width: 180px;">www.sortiqsolutions.com</span></p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <div class="certi-body" style=" background:url('{{ public_path('images/certificates_images/bg-shape.jpg') }}')  no-repeat center; background-size:860px; padding-top: 60px;">
+        <div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
+            <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Internship Letter</strong></h2>
+                    </td>
+                </tr>
+            </table>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+                        Date: <strong>{{ \Carbon\Carbon::now()->format('d M Y') }}</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+                        To,
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+                        <b>{{ ucwords($student->student_name) }}</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+                        {{ ucwords($collegename) }}
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+                        Dear <b>{{ ucwords($student->student_name) }}</b>,
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <br>We are pleased to offer you a <b>six-month free internship</b> with <b>Sortiq Solutions Pvt. Ltd.</b> This internship is intended to provide you with hands-on industry exposure, real-time project experience, and professional skill development under the guidance of our experienced technical team.
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>1. Internship Details </b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px;font-family: 'Inter', sans-serif;">
+                        
+
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                     <strong style="margin-left: 20px;">Duration:</strong> 6 Months<br>
+                                    <strong style="margin-left: 20px;">Type:</strong> Free Internship<br>
+                                    <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($courseName ?? '-') }}<br>
+                                    <strong style="margin-left: 20px;">Location:</strong> Mohali / Remote (based on project requirement)<br>
+                                    <strong style="margin-left: 20px;">Start Date:</strong> {{ $testdate }}<br>
+                                    
+                                </td>
+                            </tr>
+                        </table>
+                        <br>
+                        During this internship, you will be working on live projects, collaborating with our development team, and enhancing both your technical and professional competencies.
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>2. Internship Fee / Maintenance Charges</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        This is a Free Internship program.<br>
+                        However, nominal maintenance and operational charges may be applicable to cover resources such as training infrastructure, mentorship, project tools, and administrative support.
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>3. Performance Evaluation</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px; font-family:'Inter', sans-serif;">
+                        Your performance during the internship will be evaluated based on:
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    <b>• Technical skills and learning progress</b><br>
+                                    <b>• Consistency and dedication</b><br>
+                                  
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                </table>
+                <pagebreak />
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;">
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px; font-family:'Inter', sans-serif;">
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    <b>• Project contribution</b><br>
+                                    <b>• Professional conduct and discipline</b>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>4. Pre-Placement Offer (PPO)</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        Upon successful completion of six months of internship, and based on your performance, you may be considered for a Pre-Placement Offer (PPO) with Sortiq Solutions Pvt. Ltd.<br>
+                        The PPO, if offered, will be subject to company requirements and performance standards at that time.
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>5. Post-Internship Employment</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        Candidates who perform exceptionally well during the internship and PPO phase may be considered for a full-time role, with compensation offered as per company policy and performance evaluation.
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>6. Terms & Conditions</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;"> 
+                       
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Maintain punctuality, professionalism, and discipline throughout the internship.<br>
+                                    • All company data, internal information, and project details must be kept strictly confidential.<br>
+                                    • Adherence to company policies and guidelines is mandatory.<br>
+                                    • The company reserves the right to discontinue the internship in case of unsatisfactory performance, irregularity, or policy violations.
+                                     
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        We are confident that this internship will be a valuable learning experience and help you build a strong foundation for your professional career.
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        Please confirm your acceptance of this offer at your earliest convenience.
+                    </td>
+                </tr>
+            </table>
+              
+            
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <!-- <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               padding-top:10px;
+                               font-family:'Inter', sans-serif;">
+                        We congratulate you and wish you a great career with us. We look forward to embarking on this next chapter together!
+                    </td>
+                </tr> -->
+                <tr><td height="10"></td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;"><strong>Warm Regards</strong>,</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Priyanka</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Manager – Human Resources</td></tr>
+                <!-- <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        Warm Regards,
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>Sortiq Solutions Pvt. Ltd.</b>
+
+                    </td>
+                </tr> -->
+            </table>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <tr>
+                    <td width="100%">
+                        <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br>
+                            <img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/>
+                            
+                        </div>
+                        <div style="display:inline-block; width:100%;">
+                            <br>
+                            <h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
+                        </div>
+                    </td>
+                    <td width="30%" align="right">
+                        <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Agreed and Accepted</h4>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

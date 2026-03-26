@@ -157,6 +157,54 @@ class College extends Model
     {
         return $this->hasMany(EmailRecipient::class, 'college_id');
     }
+
+    // public function emailRecipients()
+    // {
+    //     return $this->hasMany(EmailRecipient::class, 'college_id');
+    // }
+
+    public function emailRecipientsForSession($sessionId)
+    {
+        return $this->hasMany(EmailRecipient::class, 'college_id')
+                    ->where('session_id', $sessionId);
+    }
+
+    public function latestEmail()
+    {
+        return $this->hasOne(EmailRecipient::class, 'college_id')
+                    ->latestOfMany();
+    }
+
+    public function latestEmailForSession($sessionId)
+    {
+        return $this->hasOne(EmailRecipient::class, 'college_id')
+                    ->where('session_id', $sessionId)
+                    ->latestOfMany();
+    }
+
+    public function callLogs()
+    {
+        return $this->hasMany(CallLog::class, 'college_id');
+    }
+
+    public function callLogsForSession($sessionId)
+    {
+        return $this->hasMany(CallLog::class, 'college_id')
+                    ->where('session_id', $sessionId);
+    }
+
+    public function latestCall()
+    {
+        return $this->hasOne(CallLog::class, 'college_id')
+                    ->latestOfMany();
+    }
+
+    public function latestCallForSession($sessionId)
+    {
+        return $this->hasOne(CallLog::class, 'college_id')
+                    ->where('session_id', $sessionId)
+                    ->latestOfMany();
+    }
 }
 
 

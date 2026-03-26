@@ -588,7 +588,8 @@ Copy to Session
         {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-@endif<style></style>
+@endif
+<style></style>
 
 <div class="desktop-view">
 <div class="table-responsive">
@@ -1018,6 +1019,7 @@ Copy to Session
     <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
     <!-- <button id="copySelected" class="btn btn-success">Copy to Session</button> -->
     <button id="makeInterns" class="btn btn-success">Update as Intern</button>
+    <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
 
 </div>
 
@@ -1053,12 +1055,17 @@ Copy to Session
     <input type="hidden" name="ids" id="bulkmove">
 </form>
 
-{{-- Move students to Certificates--}}
+{{-- Move students to Interns--}}
 <form id="bulkMakeInternForm" method="POST" action="{{ route('students.make_interns') }}" style="display:none;">
     @csrf
     <input type="hidden" name="ids" id="bulkmakeInterns">
 </form>
 
+{{-- Move students to Placements--}}
+<form id="bulkPlacementForm" method="POST" action="{{ route('students.moveToPlacement') }}" style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkPlacementIds">
+</form>
 <!-- Copy Students Modal -->
 <div class="modal fade" id="copyStudentsModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
@@ -1631,6 +1638,32 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
              });
         });
 
+        $('#moveToPlacement').click(function () {
+
+            let ids = getSelectedIds();
+
+            if (ids.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Select at least one student'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Move selected students to Placement?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes'
+            }).then((result) => {
+
+                if (!result.isConfirmed) return;
+
+                $('#bulkPlacementIds').val(JSON.stringify(ids));
+                $('#bulkPlacementForm').submit();
+            });
+        });
         // $('.edit_btn').on('click', function () {
             
         //     console.log('Edit clicked');

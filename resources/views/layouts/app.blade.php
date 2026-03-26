@@ -272,7 +272,7 @@
 <!-- <script> document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'success', title: 'Success', text: @json(session('success')) }); }); </script> -->
 @endif
 @if(session('error'))
-<script> document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'error', title: 'Error', text: @json(session('error')) }); }); </script>
+<!-- <script> document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'error', title: 'Error', text: @json(session('error')) }); }); </script> -->
 @endif
 @if(session('warning'))
 <script> document.addEventListener('DOMContentLoaded', function() { Swal.fire({ icon: 'warning', title: 'Warning', text: @json(session('warning')) }); }); </script>

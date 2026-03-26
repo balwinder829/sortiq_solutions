@@ -12,6 +12,7 @@ use App\Models\College;
 use App\Models\State;
 use App\Models\StudentCourse;
 use App\Models\PlacementCompany;
+use App\Http\DataTables\DataTablesServerSide;
 
 class PlacementController extends Controller
 {
@@ -63,6 +64,163 @@ class PlacementController extends Controller
     }
 
     public function index(Request $request)
+{
+    if ($request->ajax()) {
+
+        $query = Placement::with([
+            'college',
+            'state',
+            'course',
+            'session',
+            'images',
+            'videos'
+        ]);
+
+        // 🔍 FILTERS
+        // dd($request->session_id);
+        if ($request->college_id) {
+            $query->where('college_name', $request->college_id);
+        }
+
+        if ($request->state_id) {
+            $query->where('state_id', $request->state_id);
+        }
+
+        if ($request->tech) {
+            $query->where('tech', $request->tech);
+        }
+
+        if (!empty($request->session_id)) {
+            $query->where('session_id', (int) $request->session_id);
+        }
+
+        // if ($request->session_id) {
+        //     $query->where('session_id', $request->session_id);
+        // }
+
+        if ($request->location) {
+            $query->where('location', 'LIKE', "%{$request->location}%");
+        }
+
+        if ($request->student_name) {
+            $query->where('student_name', 'LIKE', "%{$request->student_name}%");
+        }
+
+        if ($request->company) {
+            $query->where('company', $request->company);
+        }
+
+        // 📅 DATE FILTER (optional if you add later)
+        if ($request->date_from) {
+            $query->whereDate('placement_date', '>=', $request->date_from);
+        }
+
+        if ($request->date_to) {
+            $query->whereDate('placement_date', '<=', $request->date_to);
+        }
+
+        // ⚠️ MISSING DATA FILTER
+        if ($request->missing == 'yes') {
+            $query->where(function ($q) {
+                $q->whereNull('college_name')->orWhere('college_name','')
+                  ->orWhereNull('phone_no')->orWhere('phone_no','')
+                  ->orWhereNull('company')->orWhere('company','')
+                  ->orWhereNull('tech')->orWhere('tech','')
+                  ->orWhereNull('placement_date')
+                  ->orWhereNull('state_id')
+                  ->orWhereNull('location')->orWhere('location','')
+                  ->orWhereNull('session_id');
+            });
+        }
+
+        // 📷 MEDIA FILTER
+        if ($request->media == 'with') {
+            $query->where(function ($q) {
+                $q->has('images')->orHas('videos');
+            });
+        }
+
+        if ($request->media == 'without') {
+            $query->doesntHave('images')->doesntHave('videos');
+        }
+
+        $query->latest();
+
+        return DataTablesServerSide::response(
+            $request,
+            $query,
+            [
+                'orderable'  => ['id','student_name','location'],
+                'searchable' => ['student_name','location'],
+            ],
+            function ($row, $index, $start) {
+
+                // 🖼️ GET ALL IMAGES
+                $images = $row->images->pluck('path')->toArray();
+
+                // first image priority → cover → first uploaded
+                $firstImage = $row->cover_image ?? ($images[0] ?? null);
+
+                // IMAGE HTML (for popup)
+                $mediaHtml = $firstImage
+                    ? '<img src="'.asset($firstImage).'"
+                            class="placement-img"
+                            data-images=\''.json_encode($images).'\'
+                            style="width:50px;height:50px;object-fit:cover;border-radius:6px;cursor:pointer;">'
+                    : '<span class="text-muted">No Image</span>';
+
+                return [
+                    'id' => $start + $index + 1,
+
+                    'student' => e($row->student_name),
+
+                    'college' => optional($row->college)->full_name ?? '-',
+
+                    'state' => optional($row->state)->name ?? '-',
+
+                    'location' => $row->location ?? '-',
+
+                    'tech' => optional($row->course)->course_name ?? '-',
+
+                    'session' => optional($row->session)->session_name ?? '-',
+
+                    'media' => $mediaHtml,
+
+                    'actions' => '
+                        <a href="'.route('placements.show', $row->id).'" class="btn btn-sm">
+                            <i class="fa fa-eye"></i>
+                        </a>
+                        <a href="'.route('placements.edit', $row->id).'" class="btn btn-sm">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <form action="'.route('placements.destroy', $row->id).'" method="POST" style="display:inline-block;">
+                            '.csrf_field().method_field('DELETE').'
+                            <button type="submit" class="btn btn-sm" onclick="return confirm(\'Delete this?\')">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </form>
+                    ',
+                ];
+            }
+        );
+    }
+
+    // NORMAL LOAD (NON-AJAX)
+    $sessions  = StudentSession::orderBy('session_name')->get();
+    $colleges  = College::orderBy('college_name')->get();
+    $states    = State::orderBy('name')->get();
+    $courses   = StudentCourse::orderBy('course_name')->get();
+    $companies = PlacementCompany::orderBy('name')->get();
+
+    return view('placements.index', compact(
+        'sessions',
+        'colleges',
+        'states',
+        'courses',
+        'companies'
+    ));
+}
+    public function index1(Request $request)
 {
     $placements = Placement::query()
         ->when($request->college_id, fn ($q) =>

@@ -24,6 +24,7 @@
                     <select name="letter_type" class="form-control filterchange">
                         <option value="">All Letter Types</option>
                         <option value="intern" {{ ($selectedType ?? '') === 'intern' ? 'selected' : '' }}>Intern Letter</option>
+                        <option value="intern_with_package" {{ ($selectedType ?? '') === 'intern_with_package' ? 'selected' : '' }}>Intern With Package Letter</option>
                         <option value="intern_custom" {{ ($selectedType ?? '') === 'intern_custom' ? 'selected' : '' }}>Intern Custom Letter</option>
                         <option value="offer" {{ ($selectedType ?? '') === 'offer' ? 'selected' : '' }}>Offer Letter</option>
                         <option value="experience" {{ ($selectedType ?? '') === 'experience' ? 'selected' : '' }}>Experience Letter</option>

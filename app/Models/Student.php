@@ -171,5 +171,9 @@ class Student extends Authenticatable
             ->implode(', ');
     }
 
+    public function placement()
+    {
+        return $this->hasOne(Placement::class, 'student_id');
+    }
 
 }

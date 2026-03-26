@@ -136,11 +136,22 @@ table.dataTable td {
         <div class="col-md-2">
             <select name="range" class="form-select">
                 <option value="">Range</option>
-                <option value="upcoming" {{ request('range')=='upcoming'?'selected':'' }}>Upcoming</option>
+               <!--  <option value="upcoming" {{ request('range')=='upcoming'?'selected':'' }}>Upcoming</option>
                 <option value="today" {{ request('range')=='today'?'selected':'' }}>Today</option>
-                <option value="past" {{ request('range')=='past'?'selected':'' }}>Past</option>
+                <option value="past" {{ request('range')=='past'?'selected':'' }}>Past</option> -->
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="upcoming">Upcoming</option>
+                <option value="past">Past</option>
+                <option value="current_week_past">Current Week (Till Today)</option>
+                <option value="next_week">Next Week</option>
+                <option value="last_week">Last Week</option>
+                <option value="last_30_days">Last 30 Days</option>
+                <option value="last_month">Last Month</option>
             </select>
         </div>
+
+
 
 
             {{-- BUTTONS WITH SMALL GAP --}}

@@ -31,6 +31,7 @@
                 >
                     <option value="">Select Letter Type</option>
                     <option value="intern" {{ old('letter_type')=='intern'?'selected':'' }}>Intern Letter</option>
+                    <option value="intern_with_package" {{ old('letter_type')=='intern_with_package'?'selected':'' }}>Intern With Package Letter</option>
                     <option value="intern_custom" {{ old('letter_type')=='intern_custom'?'selected':'' }}>Intern Custom Letter</option>
                     <option value="offer" {{ old('letter_type')=='offer'?'selected':'' }}>Offer Letter</option>
                     <option value="experience" {{ old('letter_type')=='experience'?'selected':'' }}>Experience Letter</option>
@@ -252,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const isAppointment = letterType.value === 'appointment';
         const isAppointmentWithBond = letterType.value === 'appointment_with_bond';
         const isIncrement = letterType.value === 'increment';
-        const isintern = letterType.value === 'intern';
+        const isintern = letterType.value === 'intern' || letterType.value === 'intern_with_package';
         const isinternCustom = letterType.value === 'intern_custom';
         const isBond = letterType.value === 'bond'  || letterType.value === 'custom_bond';
         const isBondField = letterType.value === 'bond';

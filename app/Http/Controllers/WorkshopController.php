@@ -93,22 +93,82 @@ class WorkshopController extends Controller
             $query->where('event_type', $request->event_type);
         }
 
-        if($request->date){
-            $query->whereDate('date',$request->date);
+        // if($request->date){
+        //     $query->whereDate('date',$request->date);
+        // }
+
+        if ($request->date && !$request->range) {
+            $query->whereDate('date', $request->date);
+        }
+
+        if ($request->range) {
+
+            switch ($request->range) {
+
+                case 'today':
+                    $query->whereDate('date', today());
+                    break;
+
+                case 'yesterday':
+                    $query->whereDate('date', today()->subDay());
+                    break;
+
+                case 'upcoming':
+                    $query->whereDate('date', '>', today());
+                    break;
+
+                case 'next_week':
+                    $query->whereBetween('date', [
+                        now()->addWeek()->startOfWeek(),
+                        now()->addWeek()->endOfWeek()
+                    ]);
+                    break;
+
+                case 'past':
+                    $query->whereDate('date', '<', today());
+                    break;
+
+                case 'last_week':
+                    $query->whereBetween('date', [
+                        now()->subWeek()->startOfWeek(),
+                        now()->subWeek()->endOfWeek()
+                    ]);
+                    break;
+
+                case 'current_week_past':
+                    $query->whereBetween('date', [
+                        now()->startOfWeek(),
+                        now() // till today
+                    ]);
+                    break;
+
+                case 'last_month':
+                    $query->whereBetween('date', [
+                        now()->subMonth()->startOfMonth(),
+                        now()->subMonth()->endOfMonth()
+                    ]);
+                    break;
+                case 'last_30_days':
+                    $query->whereBetween('date', [
+                        now()->subDays(30),
+                        now()
+                    ]);
+                    break;
+            }
         }
 
         // 👇 custom date filters
-        if($request->range == 'today'){
-            $query->whereDate('date', today());
-        }
+        // if($request->range == 'today'){
+        //     $query->whereDate('date', today());
+        // }
 
-        if($request->range == 'upcoming'){
-            $query->whereDate('date','>', today());
-        }
+        // if($request->range == 'upcoming'){
+        //     $query->whereDate('date','>', today());
+        // }
 
-        if($request->range == 'past'){
-            $query->whereDate('date','<', today());
-        }
+        // if($request->range == 'past'){
+        //     $query->whereDate('date','<', today());
+        // }
 
         $query->orderBy('date', 'desc');
         

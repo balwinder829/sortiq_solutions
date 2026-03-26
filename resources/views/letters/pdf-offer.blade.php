@@ -143,6 +143,12 @@
 					</td>
 				</tr>
 
+				<tr>
+			    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+			        You will be required to serve a notice period of <b>three (3) months</b> prior to leaving the employment of the Company.
+			    </td>
+			</tr>
+
 
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">

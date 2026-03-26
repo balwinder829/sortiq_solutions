@@ -10,6 +10,7 @@ class EmailCampaign extends Model
 
     protected $fillable = [
         'purpose_id',
+        'session_id',
         'sender_id',
         'subject',
         'body',
@@ -38,5 +39,10 @@ class EmailCampaign extends Model
     public function recipients()
     {
         return $this->hasMany(EmailRecipient::class, 'campaign_id');
+    }
+
+    public function session()
+    {
+        return $this->belongsTo(Session::class, 'session_id');
     }
 }

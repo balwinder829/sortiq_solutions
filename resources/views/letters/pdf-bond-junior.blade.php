@@ -119,20 +119,20 @@ li {
                 <!-- BETWEEN -->
                 <tr><td height="20"></td></tr>
                 <tr>
-                    <td style="text-align:center;font-family:Inter;font-weight:600;">BETWEEN</td>
+                    <td style="text-align:left;font-family:Inter;font-weight:600;">BETWEEN</td>
                 </tr>
                 <tr><td height="10"></td></tr>
 
                <tr>
                     <td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-                        Sortiq Solutions Pvt. Ltd., having its principal office at E-51, Ground Floor, Industrial Area, Phase 8, Mohali, Punjab - 160072, hereinafter referred to as “the Company”,
+                         <strong>Sortiq Solutions Pvt. Ltd.</strong>, an Indian Company having its principal place of office at E-51, Second Floor , Phase - 8, Industrial Area, S.A.S. Nagar, Mohali, Punjab 160071, hereinafter referred to as “the Company”,
                     </td>
                 </tr>
 
                 <!-- AND -->
                 <tr><td height="15"></td></tr>
                 <tr>
-                    <td style="text-align:center;font-family:Inter;font-weight:600;">AND</td>
+                    <td style="text-align:left;font-family:Inter;font-weight:600;">AND</td>
                 </tr>
                 <tr><td height="10"></td></tr>
 
@@ -155,20 +155,17 @@ li {
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
+                               <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;font-family:'Inter', sans-serif;">
                                    WHEREAS, the Company invests in training and development of freshers to make them productive assets;
                                 </td>
                             </tr>
                             <tr style="padding-top:6px;">
-                                <td width="18" valign="top" style="padding-top:10px;"></td>
-                                <td valign="top" style="padding-top:6px;">
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;font-family:'Inter', sans-serif;">
                                    AND WHEREAS, the Employee desires to work with the Company and agrees to complete the bond period;
                                 </td>
                             </tr>
                             <tr style="padding-top:6px;">
-                                <td width="18" valign="top" style="padding-top:10px;"></td>
-                                <td valign="top" style="padding-top:6px;">
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;font-family:'Inter', sans-serif;">
                                    NOW, THEREFORE, in consideration of the mutual covenants, the parties agree as follows:
                                 </td>
                             </tr>
@@ -180,8 +177,6 @@ li {
                 </table>
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:5px;">
                 <!-- CLAUSES -->
-                <tr><td height="20"></td></tr>
-
                 
                  <tr>
                     <td colspan="2"
@@ -194,15 +189,13 @@ li {
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
                                    The Employee agrees to a bond of two (2) years, starting from the Joining Date.
                                 </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
-
                 <tr>
                     <td colspan="2"
                         style="font-size:14px;
@@ -211,34 +204,23 @@ li {
                                font-family:'Inter', sans-serif;">
 
                         <strong>2. Obligations</strong>
-
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
+                    </td>
+                </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        During the term of this Agreement:
+                       <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-    
-                                   During the term of this Agreement:
-                                </td>
-                            </tr>
-
-                            <tr style="margin-top:6px;">
-                                <td  width="18" valign="top" style="padding-top:6px;"></td>
-                                <td valign="top" style="padding-top:10px;">
-                                    The Employee shall diligently and faithfully perform all duties assigned by the Company.
-                                </td>
-                            </tr>
-                            <tr style="margin-top:6px;">
-                                <td  width="18" valign="top" style="padding-top:6px;"></td>
-                                <td valign="top" style="padding-top:10px;">
-                                    The Employee acknowledges the Company’s investment in training and agrees to complete the bond period.
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    •  The Employee shall diligently and faithfully perform all duties assigned by the Company.<br>
+                                    • The Employee acknowledges the Company’s investment in training and agrees to complete the bond period.<br>
+                                    
                                 </td>
                             </tr>
                         </table>
-
                     </td>
-                </tr>
-                
-
+                </tr>    
                 <tr>
                     <td colspan="2"
                         style="font-size:14px;
@@ -247,87 +229,134 @@ li {
                                font-family:'Inter', sans-serif;">
 
                         <strong>3. Termination</strong>
-
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
-                            <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    <strong>a. Early Termination by Employee:</strong>
-                                    If the Employee voluntarily leaves before completing the bond period, they shall reimburse the Company for:<br><br>
-
-                                    Training cost / security deposit: ₹20,000 (or actual cost incurred, whichever is higher)<br><br>
-
-                                    Salary paid till the last working day<br><br>
-
-                                    Any other expenses directly related to training
-
-                                </td>
-                            </tr>
-</table>
- </td>
-                </tr>
-                <tr>
-                    <td colspan="2"
-                        style="font-size:14px;
-                               line-height:24px;
-                               margin-top: 3px;
-                               padding-bottom:15px;
-                               font-family:'Inter', sans-serif;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
-
-                            <tr style="margin-top:6px;">
-                                <td  width="18" valign="top" style="padding-top:6px;"></td>
-                                <td valign="top" style="padding-top:6px;">
-                                    <strong>b. Termination by Company:</strong>
-                                    The Company may terminate employment at any time for valid reasons, including poor performance, misconduct, or breach of Company policies.
-                                </td>
-                            </tr>
-                        </table>
-
                     </td>
                 </tr>
-                 
                  <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                         <strong>a. Early Termination by Employee:</strong><br>
+                         If the Employee voluntarily leaves before completing the bond period, they shall reimburse the Company for:
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Training cost / security deposit: ₹20,000 (or actual cost incurred, whichever is higher)<br>
+                                    • Salary paid till the last working day<br>
+                                    • Any other expenses directly related to training<br>
+                                  
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                         <strong>b. Termination by Company:</strong><br>
+                         The Company may terminate employment at any time for valid reasons, including poor performance, misconduct, or breach of Company policies.
+                    </td>
+                </tr>
+               <tr>
                     <td colspan="2"
                         style="font-size:14px;
                                line-height:24px;
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>4. Training Cost / Security Deposit</strong>
+                        <strong>4. Security Cheque Usage Clause</strong>
+                    </td>
+                </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        In the event that the Employee resigns before completion of the agreed bond period, or leaves the Company without serving the required notice period or without formal approval, the Employee agrees to compensate the Company as per the terms of this Agreement.</td></tr>
+                 <tr>
+                        <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        The Employee hereby authorizes the Company to present the submitted security cheque solely for the purpose of recovering the agreed training and onboarding cost, as specified in this Agreement.</td></tr>
+                 <tr>
+                        <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        The cheque shall be used only in case of breach of bond terms and not otherwise. The Company agrees to use the cheque in a fair and reasonable manner in accordance with applicable laws.</td>
+                    
+                </tr>
 
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+                <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               font-family:'Inter', sans-serif;">
+
+                        <strong>5. Mutual Separation & Non-Enforcement of Bond</strong>
+                    </td>
+                </tr>
+                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                       In the event that the Employee resigns by providing the required notice period of three (3) months and obtains formal approval from the Company, or where the separation is mutually agreed upon by both parties, the conditions of the bond shall not be enforced.</td></tr>
+                 <tr>
+                        <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                        In such cases, the Employee shall not be liable to pay any training or onboarding costs, and any security cheque or deposit provided shall not be presented or used for recovery purposes.</td></tr>
+                 <tr>
+                        <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+
+                        The Company agrees to process full and final settlement as per applicable policies upon add at the end of the boundcompletion of all formalities.
+                    </td>
+                </tr>
+
+                 
+                  <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               font-family:'Inter', sans-serif;">
+
+                        <strong>6. Training Cost / Security Deposit</strong>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
+                         <strong>a. Purpose:</strong><br>
+                       <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    Purpose: To safeguard the investment in fresher training and development.<br>
-                                </td>
-                            </tr>
-
-                            <tr style="margin-top:10px;">
-                                <td  width="18" valign="top" style="padding-top:10px;"></td>
-                                <td valign="top" style="padding-top:10px;">
-                                    
-                                    Amount: ₹20,000 (or actual cost incurred by the Company)<br><br>
-                                    
-                                    Payment Method: Bank transfer / cheque (Cheque No:  {{ ucwords($letter->check_number) }} / UTR: ______) or deduction from salary as agreed.<br><br>
-
-
-                                </td>
-                            </tr>
-
-                             <tr style="margin-top:10px;">
-                                <td  width="18" valign="top" style="padding-top:10px;"></td>
-                                <td valign="top" style="padding-top:1opx;">
-                                   <br>Refund: Upon successful completion of the bond, the Company shall refund the security deposit in full. Any outstanding dues will first be adjusted against this deposit.<br><br>
-                                    
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • To safeguard the investment in fresher training and development.<br>
+                                   
                                 </td>
                             </tr>
                         </table>
-
                     </td>
                 </tr>
+
                 <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
+                         <strong>b. Security Deposit:</strong><br>
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Amount: ₹20,000 (or actual cost incurred by the Company)<br>
+                                    • Payment Method: Bank transfer / cheque (Cheque No: {{ ucwords($letter->check_number) }} / UTR: ______) or via deduction from salary, if mutually agreed.<br>
+                                   
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
+                         <strong>c. Refund:</strong><br>
+                       <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Upon successful completion of the bond, the Company shall refund the security deposit in full. Any outstanding dues will first be adjusted against this deposit.<br>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+               
+                 <tr>
                     <td colspan="2"
                         style="font-size:14px;
                                line-height:24px;
@@ -335,12 +364,11 @@ li {
                                 
                                font-family:'Inter', sans-serif;">
 
-                        <strong>5. Confidentiality</strong>
+                        <strong>7. Confidentiality</strong>
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
                                    The Employee agrees not to disclose or use any confidential information obtained during employment. Breach may result in penalties or legal action.
 
                                 </td>
@@ -356,12 +384,11 @@ li {
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>6. Performance Management</strong>
+                        <strong>8. Performance Management</strong>
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
                                    The Company is the sole arbitrator of the Employee’s performance. Decisions regarding promotions, increments, or termination are at the Company’s discretion.
                                 </td>
                             </tr>
@@ -369,51 +396,33 @@ li {
                     </td>
                 </tr>
 
-                <tr>
+                 <tr>
                     <td colspan="2"
                         style="font-size:14px;
                                line-height:24px;
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>7. Non-Compete and Non-Solicitation</strong>
-
-                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+                        <strong>9. Non-Compete and Non-Solicitation</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                         During employment and for 24 months after leaving, the Employee shall not:
+                       <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    During employment and for 24 months after leaving, the Employee shall not:<br><br>
-
-                                    Join a business that directly competes with the Company<br><br>
-
-                                    Solicit or hire any employee of the Company
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Engage in any business that directly competes with the Company<br>
+                                    • Solicit or attempt to hire any employee of the Company<br>                                  
                                 </td>
-                                 </tr>
-                                 <!-- <tr>
-                                 <td colspan="2"  style="padding-left:14px;">
-                                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
-                                        <tr>
-                                            <td width="18" valign="top"></td>
-                                            <td valign="top">
-                                               
-                                            </td>
-                                        </tr>
-                                        <tr style="padding-top:6px;">
-                                            <td width="18" valign="top" style="padding-top:6px;"></td>
-                                            <td valign="top" style="padding-top:10px;">
-                                               
-                                            </td>
-                                        </tr>
-                                    </table>
-                                 </td>
-                                    
-                                 
-                            </tr> -->
-
+                            </tr>
                         </table>
                     </td>
                 </tr>
 
+                 
+
                 <tr>
                     <td colspan="2"
                         style="font-size:14px;
@@ -421,13 +430,12 @@ li {
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>8. Governing Law</strong>
+                        <strong>10. Governing Law</strong>
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    This Agreement shall be governed by Indian laws. Disputes will be adjudicated at SAS, Mohali, Punjab.
+                                <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                                    This Agreement is governed by the prevailing laws of India. Any dispute arising hereunder shall be adjudicated at SAS Nagar, Mohali, Punjab.
                                 </td>
                             </tr>
                         </table>
@@ -441,18 +449,20 @@ li {
                                padding-bottom:15px;
                                font-family:'Inter', sans-serif;">
 
-                        <strong>9. Entire Agreement</strong>
+                        <strong>11. Entire Agreement</strong>
 
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
-                                <td width="18" valign="top"></td>
-                                <td valign="top">
-                                    This Agreement represents the complete understanding between the parties regarding the bond.
+                                 <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
+                                    This Agreement constitutes the full understanding between the parties regarding the bond and supersedes any prior agreements, written or oral.
                                 </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
+
+
+                 
                  
                 <tr>
                     <td colspan="2"

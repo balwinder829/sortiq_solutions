@@ -81,10 +81,11 @@ class HodController extends Controller
 
      
 
-    public function create()
+    public function create(Request $request)
     {
         $colleges = College::whereDoesntHave('hod')->get();
-        return view('hods.create', compact('colleges'));
+         $selectedCollegeId = $request->college_id;
+        return view('hods.create', compact('colleges', 'selectedCollegeId'));
     }
 
     public function store(Request $request)

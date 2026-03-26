@@ -3,9 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\EmailRecipient;
-use App\Models\EmailCampaign;
-use App\Models\EmailSender;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,6 +10,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\View;
+
 use App\Mail\CollegeEmailMailable;
 
 class SendCollegeEmailJob implements ShouldQueue
@@ -38,9 +37,9 @@ class SendCollegeEmailJob implements ShouldQueue
             $sender = $campaign->sender;
 
             /*
-            |--------------------------------------------------------------------------
-            | Dynamic SMTP Config (Gmail)
-            |--------------------------------------------------------------------------
+            |------------------------------------------------------------------
+            | Dynamic SMTP Config
+            |------------------------------------------------------------------
             */
             config([
                 'mail.mailers.smtp.host' => $sender->host,
@@ -51,25 +50,61 @@ class SendCollegeEmailJob implements ShouldQueue
             ]);
 
             /*
-            |--------------------------------------------------------------------------
+            |------------------------------------------------------------------
+            | Resolve Template
+            |------------------------------------------------------------------
+            */
+            // $template = $campaign->meta['template'] ?? 'college_emails.college_visit';
+            $template = data_get($recipient->meta, 'template');
+            // dd($template);
+            if (!$template || !view()->exists($template)) {
+                $template = 'college_emails.college_visit';
+            }
+
+
+            /*
+            |------------------------------------------------------------------
+            | Render HTML (IMPORTANT)
+            |------------------------------------------------------------------
+            */
+            $html = View::make($template, [
+                'campaign' => $campaign,
+                'recipient' => $recipient,
+                'sender' => $sender,
+                'body' => $campaign->body,
+            ])->render();
+            // dd($html);
+            /*
+            |------------------------------------------------------------------
+            | Save rendered email
+            |------------------------------------------------------------------
+            */
+            $recipient->update([
+                'rendered_body' => $html,
+                'template_name' => $template
+            ]);
+
+            /*
+            |------------------------------------------------------------------
             | Send Email
-            |--------------------------------------------------------------------------
+            |------------------------------------------------------------------
             */
             Mail::mailer('smtp')
                 ->to($recipient->email)
-                ->send(new CollegeEmailMailable($campaign, $recipient, $sender));
+                ->send(new CollegeEmailMailable($campaign, $recipient, $sender, $html));
 
             /*
-            |--------------------------------------------------------------------------
+            |------------------------------------------------------------------
             | Update Status
-            |--------------------------------------------------------------------------
+            |------------------------------------------------------------------
             */
             $recipient->update([
                 'status' => 'sent',
                 'sent_at' => now(),
             ]);
 
-            // increment campaign sent count
+            $recipient->refresh();
+
             $campaign->increment('sent_count');
 
         } catch (\Exception $e) {

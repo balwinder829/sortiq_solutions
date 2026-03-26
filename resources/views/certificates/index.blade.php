@@ -515,6 +515,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
         <!-- <button id="issueSelected" class="btn btn-primary">Issue Certificate</button> -->
         <button id="downloadissueSelected" class="btn btn-primary">Download Certificates</button>
         <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
+        <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
     </div>
 
      
@@ -536,6 +537,13 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
     <input type="hidden" name="ids" id="deleteIds" value="">
 
 </form>
+
+{{-- Move students to Placements--}}
+<form id="bulkPlacementForm" method="POST" action="{{ route('students.moveToPlacement') }}" style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkPlacementIds">
+</form>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
 @endsection
 
@@ -911,6 +919,33 @@ $(document).ready(function () {
                 // $('#deleteIds').val(ids);
                 $('#deleteIds').val(JSON.stringify(ids));
                 $('#bulkDeleteForm').submit();
+            });
+        });
+
+     $('#moveToPlacement').click(function () {
+
+            let ids = getSelectedIds();
+
+            if (ids.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Select at least one student'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Move selected students to Placement?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes'
+            }).then((result) => {
+
+                if (!result.isConfirmed) return;
+
+                $('#bulkPlacementIds').val(JSON.stringify(ids));
+                $('#bulkPlacementForm').submit();
             });
         });
 

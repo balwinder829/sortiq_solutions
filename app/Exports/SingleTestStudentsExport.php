@@ -47,6 +47,14 @@ class SingleTestStudentsExport implements FromCollection, WithHeadings, WithMapp
             $q->where('student_email', 'like', '%' . $this->filters['email'] . '%');
         }
 
+        if (!empty($this->filters['student_mobile'])) {
+            $q->where('student_mobile', 'like', '%' . $this->filters['student_mobile'] . '%');
+        }
+
+         if (!empty($this->filters['gender'])) {
+            $q->where('gender', $this->filters['gender']);
+        }
+
         /* ===== FINALIZED FILTER ===== */
 
         if (isset($this->filters['finalized']) && $this->filters['finalized'] !== '') {

@@ -12,22 +12,34 @@ class CollegeEmailMailable extends Mailable
     public $campaign;
     public $recipient;
     public $sender;
+    public $html;
 
-    public function __construct($campaign, $recipient, $sender)
+    public function __construct($campaign, $recipient, $sender, $html)
     {
         $this->campaign = $campaign;
         $this->recipient = $recipient;
         $this->sender = $sender;
+        $this->html = $html;
     }
 
     public function build()
     {
-        return $this->from($this->sender->email, $this->sender->name ?? 'Team')
+        // dd($this);
+        $mail = $this->from($this->sender->email, $this->sender->name ?? 'Team')
             ->subject($this->campaign->subject)
-            ->view('college_emails.college_visit')
-            ->with([
-                // 'body' => $this->campaign->body,
-                // 'recipient' => $this->recipient
-            ]);
+            ->html($this->html);
+
+        /*
+        |------------------------------------------------------
+        | Future Attachment Support
+        |------------------------------------------------------
+        */
+        if (!empty($this->campaign->meta['attachments'] ?? null)) {
+            foreach ($this->campaign->meta['attachments'] as $file) {
+                $mail->attach(storage_path('app/' . $file));
+            }
+        }
+
+        return $mail;
     }
 }

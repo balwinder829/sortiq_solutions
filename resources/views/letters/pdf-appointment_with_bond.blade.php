@@ -159,9 +159,7 @@ body {
 						<strong>Holidays:</strong> <br>
 						→ Unapproved leaves will lead to deduction in salary.<br>
 						→ Leave taken without prior notice will result in double deduction.<br>
-						→ Unauthorized absence or absence without permission from duty for a continuous period of 7 days
-						would make you lose your lien on employment. In such case your employment shall automatically
-						come to an end without any notice of 
+						→ Unauthorized absence or absence without permission from duty for a continuous period of 7 days would result in the loss of your lien on employment. In such case, your employment shall automatically come to an end without any notice or intimation from the Company. 
 					</td>
 				</tr>
 				<tr>
@@ -201,12 +199,21 @@ body {
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						<strong>Termination of Service:</strong> That you cannot leave the company during the bonding agreed period. If you wish to terminate the appointment after the bonding period you will have to give a prior one month notice to the company. If you wish to terminate the contract within the bonding period, you have to give up one month's salary, part of which will be adjusted from the security. Any negligence in the performance of your duties, intentional non-performance of the responsibilities, disobediences, disorderly behavior, dishonesty, indiscipline or any other conduct considered by us deterrent to our interest of or violation of any terms of the letter. Your abuse of alcohol or drug (legal or illegal) that, in the firm's reasonable judgment, materially impairs your ability to perform your duties. If you commit breach of any of the terms of this letter of appointment. Firm has the full right not to award you with an Experience Certificate on violating any of the company policies (termination from either side).
+						<strong>Termination of Service:</strong> That you cannot leave the company during the bonding agreed period. If you wish to terminate the appointment after the bonding period you will have to give a prior one month notice to the company.<br>
+						If you wish to terminate the contract within the bonding period, you have to give up one month's salary, part of which will be adjusted from the security. Any negligence in the performance of your duties, intentional non-performance of the responsibilities, disobediences, disorderly behavior, dishonesty, indiscipline or any other conduct considered by us deterrent to our interest of or violation of any terms of the letter.<br>
+						
 					</td>
 				</tr>
 				</table>
 				<pagebreak />
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:7px;">
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+						
+						Your abuse of alcohol or drug (legal or illegal) that, in the firm's reasonable judgment, materially impairs your ability to perform your duties. If you commit breach of any of the terms of this letter of appointment.<br>Firm has the full right not to award you with an Experience Certificate on violating any of the company policies (termination from either side).
+					</td>
+				</tr>
+				
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						<strong>Standing Orders:</strong> Standing Orders, rules & regulations and service conditions as in vogue from time to time shall be binding on you.
@@ -219,6 +226,17 @@ body {
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+						 <strong>Professional Conduct & Workplace Relationships:</strong> The Employee is expected to maintain a professional work environment at all times. Any personal relationships within the workplace must not interfere with job responsibilities, team dynamics, or the Company’s operations.<br>
+
+						Employees are required to avoid any conflict of interest arising from personal relationships, especially where there is a direct or indirect reporting relationship.<br>
+
+						Any behavior that disrupts workplace discipline, creates discomfort among team members, or affects productivity will be subject to disciplinary action as per Company policy.<br>
+
+						The Company reserves the right to take appropriate action if any such relationship impacts professional conduct, confidentiality, or business interests.
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						<strong>Legal matter of concern:</strong> If at any time in our opinion, which is final in any matter you are found guilty of fraud, dishonest, disobedience, disorderly behavior, negligence, indiscipline, absence from duty without permission or any other conduct considered by us deterrent to our interest or of violation of one or more terms of this letter, your services may be terminated without notice and on account of reason of any of the acts or omission the company shall be entitled to recover the damages from you.
 					</td>
 				</tr>
@@ -226,9 +244,13 @@ body {
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						<strong>Non Declaration:</strong> You are bound to sign, obey and follow the Non Declaration whereby you certify that you won't disclose any of the company's information outside nor misuse it after getting relieved from the company.<br>
 						Note: The company has the right to amend or modify any of the above terms and conditions and the same become automatically binding on you from such date(s) as may be decided by the company.<br>
-						We welcome you again and look forward to a long and useful association. Please sign and return to the undersigned the duplicate copy of this letter signifying your acceptance.
+						We welcome you again and look forward to a long and useful association. <br>
+						Please sign and return to the undersigned the duplicate copy of this letter signifying your acceptance.
 					</td>
 				</tr>
+				</table>
+				<pagebreak />
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:7px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
 						<strong>We congratulate you on your appointment and wish you a great career with us.</strong>
