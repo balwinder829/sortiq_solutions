@@ -16,6 +16,7 @@ class Employee extends Authenticatable
         'user_id',
         'emp_code',
         'emp_name',
+        'father_name',
         'username',
         'email',
         'phone',
@@ -37,6 +38,7 @@ class Employee extends Authenticatable
         'work_mode',
         'job_type',
         'working_hours_per_day',
+        'employment_lifecycle_status',
         'employment_mode',
     ];
 

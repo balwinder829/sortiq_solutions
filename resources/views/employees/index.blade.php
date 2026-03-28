@@ -14,6 +14,32 @@
         </div>
     </div>
 
+<div class="row mb-3 align-items-end">
+    <div class="col-md-3">
+        <label>Status</label>
+        <select id="filter_status" class="form-control">
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label>Employee Status</label>
+        <select id="filter_lifecycle" class="form-control">
+            <option value="">All</option>
+            <option value="current">Current</option>
+            <option value="former">Former</option>
+            <option value="pending">Pending</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button id="reset_filters" class="btn btn-secondary w-100">
+            Reset
+        </button>
+    </div>
+</div>
     <div class="col-md-8 mb-4">
     <p class="mb-1 fw-bold">Employee Login URL</p>
 
@@ -78,7 +104,14 @@ $(document).ready(function() {
     $('#employeesTable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: "{{ route('employees.data') }}",
+        // ajax: "{{ route('employees.data') }}",
+        ajax: {
+            url: "{{ route('employees.data') }}",
+            data: function (d) {
+                d.status = $('#filter_status').val();
+                d.lifecycle = $('#filter_lifecycle').val();
+            }
+        },
         columns: [
             { data: 0 },
             { data: 1 },
@@ -94,6 +127,19 @@ $(document).ready(function() {
 
     new bootstrap.Tooltip(document.body, {
         selector: '[data-bs-toggle="tooltip"]'
+    });
+
+    $('#filter_status, #filter_lifecycle').change(function () {
+        $('#employeesTable').DataTable().ajax.reload();
+    });
+    
+    $('#reset_filters').click(function () {
+        // Reset dropdowns
+        $('#filter_status').val('');
+        $('#filter_lifecycle').val('');
+
+        // Reload table
+        $('#employeesTable').DataTable().ajax.reload();
     });
 });
 </script>

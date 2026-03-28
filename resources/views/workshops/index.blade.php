@@ -84,8 +84,8 @@ table.dataTable td {
             </select>
         </div>
            {{-- COLLEGE FILTER --}}
-        <div class="col-md-2">
-            <select name="college_id" class="form-select">
+        <div class="col-md-3">
+            <select name="college_id" class="form-select select2">
                 <option value="">College</option>
                 @foreach($colleges as $college)
                     <option value="{{ $college->id }}"

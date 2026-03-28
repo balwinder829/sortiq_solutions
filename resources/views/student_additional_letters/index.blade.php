@@ -30,6 +30,10 @@
                         <option value="">All Internship Types</option>
                         <option value="free" {{ request('internship_type') === 'free' ? 'selected' : '' }}>Free Internship Letter
                         </option>
+                        <option value="internship" {{ request('internship_type') === 'internship' ? 'selected' : '' }}>Internship Letter
+                        </option>
+                        <option value="internship_with_package" {{ request('internship_type') === 'internship_with_package' ? 'selected' : '' }}>Internship With Package Letter
+                        </option>
                         <option value="stipend" {{ request('internship_type') === 'stipend' ? 'selected' : '' }}>
                             Stipend Internship Letter
                         </option>

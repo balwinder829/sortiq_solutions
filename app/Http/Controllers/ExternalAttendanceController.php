@@ -28,7 +28,7 @@ class ExternalAttendanceController extends Controller
 
     use PdfLayoutTrait;
     
-    protected string $permissionPrefix = 'external';
+    protected string $permissionPrefix = 'external_attendance';
 
     protected array $permissionMap = [
         'index'        => 'view',

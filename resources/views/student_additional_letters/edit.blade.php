@@ -52,6 +52,14 @@
                         {{ $letter->internship_type == 'free' ? 'selected' : '' }}>
                         Free Internship Letter
                     </option>
+                    <option value="internship"
+                        {{ $letter->internship_type == 'internship' ? 'selected' : '' }}>
+                        Internship Letter
+                    </option>
+                    <option value="internship_with_package"
+                        {{ $letter->internship_type == 'internship_with_package' ? 'selected' : '' }}>
+                        Internship With Package Letter
+                    </option>
                     <option value="stipend"
                         {{ $letter->internship_type == 'stipend' ? 'selected' : '' }}>
                         Stipend Internship Letter

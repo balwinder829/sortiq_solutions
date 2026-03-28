@@ -57,7 +57,7 @@
 
         <div class="col-md-2 mb-2">
             <label>College</label>
-            <select name="college_id" class="form-select filterchange">
+            <select name="college_id" class="form-select filterchange select2">
                 <option value="">All</option>
                 @foreach($colleges as $col)
                     <option value="{{ $col->id }}"

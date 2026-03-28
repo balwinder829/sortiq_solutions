@@ -82,6 +82,8 @@
                 <select name="internship_type" id="internship_type" class="form-control" required>
                     <option value="">Select Type</option>
                     <option value="free" {{ old('internship_type') == 'free' ? 'selected' : '' }} >Free Internship Letter</option>
+                    <option value="internship" {{ old('internship_type') == 'internship' ? 'selected' : '' }} >Internship Letter</option>
+                    <option value="internship_with_package" {{ old('internship_type') == 'internship_with_package' ? 'selected' : '' }} >Internship With Package Letter</option>
                     <option value="stipend" {{ old('internship_type') == 'stipend' ? 'selected' : '' }} >Stipend Internship Letter</option>
                     <option value="offer" {{ old('internship_type') == 'offer' ? 'selected' : '' }} >Offer Letter</option>
                     <option value="custom" {{ old('internship_type') == 'custom' ? 'selected' : '' }} >Custom Type Letter</option>

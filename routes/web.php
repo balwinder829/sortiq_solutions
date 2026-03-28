@@ -127,6 +127,8 @@ use App\Http\Controllers\ExternalAttendanceController;
 use App\Http\Controllers\Student\AttendanceFormController;
 use App\Http\Controllers\CollegeCallController;
 use App\Http\Controllers\CollegeEmailController;
+use App\Http\Controllers\ManualDataController;
+use App\Http\Controllers\FormEntryController;
 
 
 use App\Models\Test;
@@ -260,7 +262,14 @@ Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth'])
     ->group(function () {
+ Route::get('/form-entries', [FormEntryController::class, 'index'])
+        ->name('form-entries.index');
 
+    Route::get('/form-entries/data', [FormEntryController::class, 'data'])->name('form-entries.data');
+
+    Route::get('/admin/form-entries/export', [FormEntryController::class, 'export'])
+    ->name('form-entries.export');
+    
 
         // Route::prefix('college-emails')->name('college-emails.')->group(function () {
 
@@ -342,6 +351,11 @@ Route::prefix('admin')
         Route::post('external-attendance/{external_attendance}/move-to-enquiries', [ExternalAttendanceController::class, 'moveFinalizedToEnquiries'])->name('external-attendance.move.enquiries');
 
         Route::get('external-attendance/{external_attendance}/selected-students', [ExternalAttendanceController::class, 'selectedStudents'])->name('external-attendance.selected.students');
+
+
+        // Route::resource('manual-data', ManualDataController::class)->names('manual_data');
+        Route::resource('manual-data', ManualDataController::class)->names('manual_data')->parameters(['manual-data' => 'manual_data']);
+
 
         // Route::get('/external-attendance/{id}/export-all', ...)->name('admin.external-attendance.export.all');
         // Route::get('/external-attendance/{id}/export-finalized', ...)->name('admin.external-attendance.export.finalized');
@@ -721,6 +735,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     
+
     Route::get('/admin/joining-students',
         [JoiningStudentController::class, 'index']
     )->name('joined_students.index');
@@ -743,6 +758,9 @@ Route::middleware(['auth'])->group(function () {
         [JoiningStudentController::class, 'destroy']
     )->name('joined_students.destroy');
 
+    Route::post('/admin/joining-students/send-to-session', 
+        [JoiningStudentController::class, 'sendToSession']
+    )->name('joined_students.sendToSession');
 
     Route::resource('letters', LetterController::class);
 
@@ -973,6 +991,7 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
     ->middleware(['auth'])   // admin users only
     // ->middleware(['auth','role:1'])   // admin users only
     ->group(function () {
+
 // Route::middleware(['auth', 'enquiry.otp','role:1'])->group(function () {
     Route::resource('recharges', RechargeController::class);
     // quick status update

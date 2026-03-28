@@ -210,10 +210,10 @@ data-bs-parent="#filtersAccordion">
 
 
 {{-- College --}}
-<div class="col-md-2 col-6">
+<div class="col-md-3 col-6">
 
 <select name="college_name"
-class="form-control collegeName filterchange">
+class="form-control collegeName filterchange select2">
 
 <option value="">--College--</option>
 

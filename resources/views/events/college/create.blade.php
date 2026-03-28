@@ -48,7 +48,7 @@
     {{-- COLLEGE --}}
     <div class="mb-3">
         <label>College <span class="text-danger">*</span></label>
-        <select name="college_id" class="form-control" required>
+        <select name="college_id" class="form-control select2" required>
             <option value="">-- Select College --</option>
             @foreach($colleges as $college)
                 <option value="{{ $college->id }}"

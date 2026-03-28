@@ -70,12 +70,12 @@ li {
                 <!-- BETWEEN -->
                 <tr><td height="20"></td></tr>
                 <tr>
-                    <td style="text-align:center;font-family:Inter;font-weight:600;">BETWEEN</td>
+                    <td style="text-align:left;font-family:Inter;font-weight:600;">BETWEEN</td>
                 </tr>
                 <tr><td height="10"></td></tr>
 
                <tr>
-                    <td style="text-align:center; font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">
+                    <td style="text-align:left; font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">
                         <b>Sortiq Solutions Pvt. Ltd., Sahibzada Ajit Singh Nagar, Punjab – 160071</b>
                     </td>
                 </tr>
@@ -83,12 +83,12 @@ li {
                 <!-- AND -->
                 <tr><td height="15"></td></tr>
                 <tr>
-                    <td style="text-align:center;font-family:Inter;font-weight:600;">AND</td>
+                    <td style="text-align:left;font-family:Inter;font-weight:600;">AND</td>
                 </tr>
                 <tr><td height="10"></td></tr>
 
                 <tr>
-                    <td style="text-align:center; font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">
+                    <td style="text-align:left; font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">
                         <b>{{ ucwords($mou->college->FullName) }}</b>
                     </td>
                 </tr>
@@ -106,7 +106,8 @@ li {
                             </tr>
                             <tr>
                                 <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                  <b>Sortiq Solutions Pvt. Ltd. (hereinafter referred to as Sortiq Solutions)</b>, is committed to providing IT solutions, skill development programs, industry-driven training, workshops, internships, and placement opportunities. The company focuses on bridging the gap between academic knowledge and professional industry requirements.
+                                  
+                                  <b>Sortiq Solutions Pvt. Ltd. (hereinafter referred to as Sortiq Solutions)</b>, is committed to providing high-quality IT solutions, skill development programs, industry-driven training, workshops, internships, and placement opportunities. The company focuses on effectively bridging the gap between academic knowledge and professional industry requirements.
                                 </td>
                             </tr>
                             <tr>
@@ -133,29 +134,30 @@ li {
                             </tr>
                             <tr>
                                 <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                 Both parties agree to the following:<br><br>
+                                 Both parties agree to the following:</td>
 
-                                1. Organize online/offline <b>seminars, workshops, training programs, and placement drives</b> to enhance students’ skills and industry readiness.<br><br>
-
-                                2. Provide <b>6-month industrial training/internships</b> to {{ ucwords($mou->college->FullName) }} students at Sortiq Solutions Pvt. Ltd. under the guidance of experienced professionals.<br><br>
-
-                                3. Facilitate <b>faculty/student visits</b> for knowledge exchange and collaborative academic activities.<br><br>
-
-                                4. Encourage <b>joint research projects and publications</b> in emerging technology domains.<br><br>
-
-                                5. Share <b>resources, tools, and expertise</b> for capacity building and innovation.<br><br>
-
-                                6. Provide opportunities for <b>live project participation</b> to students for real-world exposure.<br><br>
-
-                                7. Collaborate on <b>cutting-edge technology training programs</b>, including AI, Machine Learning, Data Analytics, Cyber Security, Cloud Computing, Web/Mobile Development, and Digital Marketing.<br><br>
-
-                                8. Support <b>placement drives, pre-placement talks, and career guidance sessions</b> at {{ ucwords($mou->college->FullName) }}.<br><br>
-
-                                9. Encourage <b>mentorship, resume-building, interview preparation, and soft skills training</b> for students.<br><br>
-
-                                10. Explore possibilities of <b>intellectual property generation</b> through collaborative research, with joint rights as per mutual agreements.
-                                </td>
-                            </tr>
+                               <tr> <td colspan="2" style="font-size: 14px; line-height: 24px;padding-left:18px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                                1. Organize online/offline <b>seminars, workshops, training programs, and placement drives</b> to enhance students’ skills and industry readiness.</td></tr>
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                2. Provide <b>6-month industrial training/internships</b> to {{ ucwords($mou->college->FullName) }} students at Sortiq Solutions Pvt. Ltd. under the guidance of experienced professionals.</td></tr>
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                3. Facilitate <b>faculty/student visits</b> for knowledge exchange and collaborative academic activities.</td></tr>
+                               <tr> <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                4. Encourage <b>joint research projects and publications</b> in emerging technology domains.</td></tr>
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                5. Share <b>resources, tools, and expertise</b> for capacity building and innovation.</td></tr>
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                6. Provide opportunities for <b>live project participation</b> to students for real-world exposure.</td></tr>
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                7. Collaborate on <b>cutting-edge technology training programs</b>, including AI, Machine Learning, Data Analytics, Cyber Security, Cloud Computing, Web/Mobile Development, and Digital Marketing.</td></tr>
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                8. Support <b>placement drives, pre-placement talks, and career guidance sessions</b> at {{ ucwords($mou->college->FullName) }}.</td></tr>
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                9. Encourage <b>mentorship, resume-building, interview preparation, and soft skills training</b> for students.</td></tr>
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                10. Explore possibilities of <b>intellectual property generation</b> through collaborative research, with joint rights as per mutual agreements.</td></tr>
+                            
+                            
                             <tr>
                                 <td style="text-align:left;font-family:Inter;font-weight:600;padding-bottom:10px;"><b>DURATION OF AGREEMENT</b></td>
                             </tr>
@@ -168,6 +170,7 @@ li {
 
                 
                 </table>
+                   <pagebreak />
                 <div style="page-break-inside: avoid; break-inside: avoid;">
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:5px;">
                 <!-- CLAUSES -->
@@ -175,11 +178,12 @@ li {
 
                 <!-- SIGN OFF -->
                 <tr><td height="25"></td></tr>
-                <tr><td style="font-family:Inter;font-size:14px;"><strong>Warm Regards</strong>,</td></tr>
-                <tr><td style="font-family:Inter;font-size:14px;">Priyanka</td></tr>
-                <tr><td style="font-family:Inter;font-size:14px;">Manager – Human Resources</td></tr>
+                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;"><strong>Warm Regards</strong>,</td></tr>
+                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">Priyanka</td></tr>
+                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">Manager – Human Resources</td></tr>
 
             </table>
+
  
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
                 <tr>
@@ -214,7 +218,7 @@ li {
                     <td>
                         <h4 style="margin:0;font-family:Inter;font-size:16px;">For Sortiq Solutions Pvt. Ltd.</h4><br>
                         <img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;">
-                        <br><br>
+                        
                         <h3 style="font-family:Inter;font-size:16px;">Human Resource Department</h3>
                     </td>
                 </tr>

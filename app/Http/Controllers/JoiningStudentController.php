@@ -9,6 +9,8 @@ use App\Models\College;
 use App\Models\Course;
 use App\Models\Duration;
 use Mail;
+use App\Models\Student;
+use App\Models\StudentSession;
 
 class JoiningStudentController extends Controller
 {
@@ -29,7 +31,8 @@ class JoiningStudentController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth');
+        // $this->middleware('auth');
+        $this->middleware('auth')->except(['create', 'store']);
 
         // ❌ deny everything by default
         // $this->middleware(function () {
@@ -86,8 +89,13 @@ class JoiningStudentController extends Controller
             'courseData',
             'durationData'
         ])->latest()->get();
+
+          $sessionsList = StudentSession::where('status', 'active') // ✅ string status
+            ->orderBy('start_date', 'desc')
+            ->get()
+            ->pluck('display_name', 'id');
          // dd($students);
-        return view('joining_students.index', compact('students'));
+        return view('joining_students.index', compact('students', 'sessionsList'));
     }
 
     // Edit form
@@ -138,5 +146,73 @@ class JoiningStudentController extends Controller
     public function adminUrl()
     {
         return view('joining_students.link_index');
+    }
+
+
+
+    public function sendToSession(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:joining_students,id',
+            'session_id' => 'required|exists:student_sessions,id',
+        ]);
+
+        $inserted = 0;
+        $skipped = 0;
+
+        foreach ($request->ids as $id) {
+
+            $joining = JoiningStudent::find($id);
+
+            $lastSno = Student::orderBy('id', 'desc')->value('sno');
+            $newSno = is_numeric($lastSno) ? ((int)$lastSno + 1) : 1;
+
+            if (!$joining) {
+                $skipped++;
+                continue;
+            }
+
+            // 🔒 Prevent duplicate
+            $exists = Student::where('source_type', 'joining_student')
+                ->where('source_id', $id)
+                ->where('session', $request->session_id)
+                ->exists();
+
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            // ✅ Insert into students_detail
+            Student::create([
+                'sno'            => $newSno, // ✅ added
+                'student_name'   => $joining->student_name,
+                'f_name'         => $joining->father_name,
+                'college_name'   => $joining->college,
+                'duration'       => $joining->duration,
+                'technology'     => $joining->technology,
+                'join_date'      => $joining->date_of_joining,
+                'start_date'     => $joining->date_of_joining,
+                'session'        => $request->session_id,
+
+                // 🔥 tracking
+                'source_type'    => 'joining_student',
+                'source_id'      => $joining->id,
+            ]);
+
+            // ✅ Update flag
+            $joining->update([
+                'is_sent_to_detail' => 1,
+                'sent_to_detail_at' => now(),
+            ]);
+
+            $inserted++;
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => "$inserted students sent successfully" . ($skipped ? " ($skipped skipped)" : "")
+        ]);
     }
 }

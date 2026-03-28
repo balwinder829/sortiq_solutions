@@ -66,6 +66,9 @@ class KeyTestController extends Controller
             'gender'   => 'required|string',
             'student_mobile' => 'required|digits:10',
             'slug'       => 'required|exists:test_links,slug',
+            'course_type' => 'required|in:Degree,Diploma',
+            'class'       => 'required|in:BCA,MCA,BTech,BSc IT,BSc CS',
+            'semester'    => 'required|integer|min:1|max:8',
         ], [
             'slug.exists' => 'Test link is expired or invalid.',
             'slug.required' => 'Test link is expired or invalid.'
@@ -147,6 +150,9 @@ class KeyTestController extends Controller
             'student_email'   => $request->student_email,
             'gender'           => $request->gender,
             'student_mobile'  => $request->student_mobile,
+            'course_type'     => $request->course_type,
+            'class'           => $request->class,
+            'semester'        => $request->semester,
             'score'           => 0,
             'session_key'     => session()->getId(),
             'exam_started_at' => null,

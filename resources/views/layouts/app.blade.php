@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -53,9 +56,48 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/3.0.7/metisMenu.min.js"></script>
 <script src="{{ asset('js/custom.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    
+    $(document).ready(function () {
+        $('.select2').select2({
+            theme: 'bootstrap-5',
+            placeholder: "Search college name",
+            allowClear: true
+        });
+    });
+
+     function normalizeIndianNumber(value) {
+    if (!value) return '';
+
+    // Convert to string (Excel sometimes gives weird types)
+    value = String(value);
+
+    // Remove EVERYTHING except digits
+    let digits = value.replace(/[^\d]/g, '');
+
+    // Remove leading country code (91, 0091, etc.)
+    if (digits.length > 10) {
+        digits = digits.slice(-10);
+    }
+
+    return digits;
+}
+
+function handlePaste(e) {
+    e.preventDefault();
+
+    let pasted = (e.clipboardData || window.clipboardData).getData('text');
+
+    // Handle multi-line paste from Excel (take first cell only)
+    pasted = pasted.split(/\r?\n/)[0];
+
+    e.target.value = normalizeIndianNumber(pasted);
+}
+
+function sanitizeContact(el) {
+    el.value = normalizeIndianNumber(el.value);
+}
     $(document).ready(function () {
         $.extend(true, $.fn.dataTable.defaults, {
             pageLength: 50,
@@ -69,9 +111,23 @@
                 );
             },
             stateLoadCallback: function (settings) {
-                return JSON.parse(
+                // return JSON.parse(
+                //     localStorage.getItem('DT_' + window.location.pathname)
+                // );
+
+                  let data = JSON.parse(
                     localStorage.getItem('DT_' + window.location.pathname)
                 );
+
+                if (data) {
+                    data.search.search = "";
+
+                    data.columns.forEach(function(col) {
+                        col.search.search = "";
+                    });
+                }
+
+                return data;
             }
         });
     });

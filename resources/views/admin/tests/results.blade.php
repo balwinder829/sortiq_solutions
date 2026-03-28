@@ -107,6 +107,36 @@
     </div>
 
     <div class="col-md-2">
+        <select name="course_type" class="form-select filterchange">
+            <option value="">Course Type</option>
+            <option value="Degree" {{ request('course_type')=='Degree'?'selected':'' }}>Degree</option>
+            <option value="Diploma" {{ request('course_type')=='Diploma'?'selected':'' }}>Diploma</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="class" class="form-select filterchange">
+            <option value="">Class</option>
+            <option value="BCA" {{ request('class')=='BCA'?'selected':'' }}>BCA</option>
+            <option value="MCA" {{ request('class')=='MCA'?'selected':'' }}>MCA</option>
+            <option value="BTech" {{ request('class')=='BTech'?'selected':'' }}>BTech</option>
+            <option value="BSc IT" {{ request('class')=='BSc IT'?'selected':'' }}>BSc IT</option>
+            <option value="BSc CS" {{ request('class')=='BSc CS'?'selected':'' }}>BSc CS</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="semester" class="form-select filterchange">
+            <option value="">Semester</option>
+            @for ($i = 1; $i <= 8; $i++)
+                <option value="{{ $i }}" {{ request('semester') == $i ? 'selected' : '' }}>
+                    {{ $i }}
+                </option>
+            @endfor
+        </select>
+    </div>
+
+    <div class="col-md-2">
         <select name="finalized" class="form-select filterchange">
             <option value="">All</option>
             <option value="1" {{ request('finalized')==='1'?'selected':'' }}>
@@ -279,6 +309,8 @@
     <th>Name</th>
     <th>Email</th>
     <th>Mobile</th>
+    <th>Class</th>
+    <th>Semester</th>
     <th>Gender</th>
     <th>Score</th>
     <th>Status</th>
@@ -303,6 +335,8 @@
     <td>{{ $st->student_name }}</td>
     <td>{{ $st->student_mobile }}</td>
     <td>{{ $st->student_email }}</td>
+    <td>{{ $st->class ?? '-' }}</td>
+    <td>{{ $st->semester ?? '-' }}</td>
     <td>
         {{ $st->gender ? ucfirst(strtolower($st->gender)) : '-' }}
     </td>

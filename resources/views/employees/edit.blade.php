@@ -31,6 +31,19 @@
                 @enderror
             </div>
 
+            {{-- Father Name --}}
+            <div class="form-group col-md-6">
+                <label>Father Name</label>
+                <input type="text"
+                       name="father_name"
+                       class="form-control @error('father_name') is-invalid @enderror"
+                       value="{{ old('father_name', $employee->father_name) }}"
+                       required>
+                @error('father_name')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
             {{-- Position --}}
             <div class="form-group col-md-6">
                 <label>Position</label>
@@ -277,7 +290,30 @@
                 <textarea name="address" class="form-control" rows="3">{{ old('address', $employee->address) }}</textarea>
             </div>
 
-            {{-- PHOTO UPLOAD (ID CARD) --}}
+           
+
+            {{-- Status --}}
+            <div class="form-group col-md-6">
+                <label>Status</label>
+                <select name="status" class="form-control" required>
+                    <option value="">Select Status</option>
+                    <option value="active"   {{ $employee->status == 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="inactive" {{ $employee->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                </select>
+            </div>
+
+            {{-- Status --}}
+            <div class="form-group col-md-6">
+                <label>Employee Status</label>
+                <select name="employment_lifecycle_status" class="form-control" required>
+                    <option value="">Select Status</option>
+                    <option value="current"   {{ $employee->employment_lifecycle_status == 'current' ? 'selected' : '' }}>Current Employee</option>
+                    <option value="former" {{ $employee->employment_lifecycle_status == 'former' ? 'selected' : '' }}>Former Employee</option>
+                    <option value="pending" {{ $employee->employment_lifecycle_status == 'pending' ? 'selected' : '' }}>Pending Employee</option>
+                </select>
+            </div>
+
+             {{-- PHOTO UPLOAD (ID CARD) --}}
             <div class="form-group col-md-6">
                 <label>Employee Photo (ID Card)</label>
 
@@ -313,16 +349,6 @@
                 @error('photo')
                     <small class="text-danger">{{ $message }}</small>
                 @enderror
-            </div>
-
-            {{-- Status --}}
-            <div class="form-group col-md-6">
-                <label>Status</label>
-                <select name="status" class="form-control" required>
-                    <option value="">Select Status</option>
-                    <option value="active"   {{ $employee->status == 'active' ? 'selected' : '' }}>Active</option>
-                    <option value="inactive" {{ $employee->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                </select>
             </div>
 
         </div>

@@ -12,7 +12,7 @@
             <div class="form-group col-md-6">
                 <label>College</label>
                 <select name="college_id"
-                        class="form-control @error('college_id') is-invalid @enderror" required>
+                        class="form-control @error('college_id') is-invalid @enderror select2" required>
                     <option value="">Select College</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->id }}"
@@ -60,6 +60,8 @@
                     minlength="10"
                     maxlength="10"
                     pattern="[0-9]{10}"
+                    onpaste="handlePaste(event)"
+           oninput="sanitizeContact(this)"
                     title="Enter a valid 10-digit mobile number">
                 @error('mou_number')
                     <small class="text-danger">{{ $message }}</small>
@@ -114,6 +116,7 @@
 @endsection
 @push('scripts')
 <script>
+    
 document.addEventListener('DOMContentLoaded', function () {
 
     const startDateInput = document.querySelector('input[name="start_date"]');

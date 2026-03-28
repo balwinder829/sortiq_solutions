@@ -96,7 +96,7 @@ class StudentAdditionalLetterController extends Controller
             // 'internship_type' => 'required|in:free,stipend,offer,custom,mutual_consent,noc,training_consent,placement',
              'internship_type' => [
                 'required',
-                Rule::in(['free','stipend','offer','custom','mutual_consent','noc','training_consent','placement']),
+                Rule::in(['free','stipend','offer','custom','mutual_consent','noc','training_consent','placement','internship','internship_with_package']),
                 Rule::unique('student_additional_letters')
                     ->where('student_id', $request->student_id),
             ],
@@ -138,7 +138,9 @@ class StudentAdditionalLetterController extends Controller
                     'mutual_consent',
                     'noc',
                     'training_consent',
-                    'placement'
+                    'placement',
+                    'internship',
+                    'internship_with_package'
                 ]),
                 Rule::unique('student_additional_letters')
                     ->where('student_id', $request->student_id)
@@ -243,6 +245,8 @@ class StudentAdditionalLetterController extends Controller
             'placement' => 'student_additional_letters.placement_consent_pdf',
             'offer' => 'student_additional_letters.offer_letter_fixed_pdf',
             'custom' => 'student_additional_letters.custom_type_pdf',
+            'internship' => 'student_additional_letters.pdf-offer_letter_fixed_internship',
+            'internship_with_package' => 'student_additional_letters.pdf-offer_letter_fixed_internship_with_package',
             
             default => 'letters.pdf',
         };
@@ -277,6 +281,8 @@ public function download(StudentAdditionalLetter $StudentAdditionalLetter)
         'noc' => 'INTERNSHIP NO OBJECTION CERTIFICATE',
         'training_consent' => 'TRAINING CONSENT LETTER',
         'placement' => 'PLACEMENT CONSENT LETTER',
+        'internship' => 'INTERNSHIP LETTER',
+        'internship_with_package' => 'INTERNSHIP WITH PACKAGE LETTER',
     ];
 
     $sanitize = function ($value) {

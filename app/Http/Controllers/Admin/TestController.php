@@ -122,8 +122,14 @@ class TestController extends Controller
 
     /* ===== EXISTING FILTERS ===== */
 
-    if ($request->college_id)
-        $tests->where('college_id', $request->college_id);
+    // if ($request->college_id)
+    //     $tests->where('college_id', $request->college_id);
+
+    if ($request->college_id) {
+        $tests->whereHas('links', function ($q) use ($request) {
+            $q->where('college_id', $request->college_id);
+        });
+    }
 
     if ($request->student_course_id)
         $tests->where('student_course_id', $request->student_course_id);
@@ -696,6 +702,18 @@ class TestController extends Controller
         elseif ($request->moved === '0' && !empty($movedStudentTestIds)) {
             $studentTestsQuery->whereNotIn('id', $movedStudentTestIds);
         }
+    }
+
+    if ($request->filled('course_type')) {
+        $studentTestsQuery->where('course_type', $request->course_type);
+    }
+
+    if ($request->filled('class')) {
+        $studentTestsQuery->where('class', $request->class);
+    }
+
+    if ($request->filled('semester')) {
+        $studentTestsQuery->where('semester', $request->semester);
     }
 
 

@@ -28,7 +28,7 @@
             <label>College</label>
 
             <select name="college_id"
-                    class="form-select @error('college_id') is-invalid @enderror">
+                    class="form-select @error('college_id') is-invalid @enderror select2">
 
                 <option value="" disabled readonly>Select College</option>
 

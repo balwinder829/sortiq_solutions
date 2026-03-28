@@ -27,6 +27,9 @@ class StudentTest extends Model
         'exam_locked',
         'gender',
         'ip_address',
+        'course_type',
+        'class',
+        'semester',
         'score'
     ];
 

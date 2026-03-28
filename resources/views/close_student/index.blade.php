@@ -23,7 +23,7 @@
 
         {{-- College --}}
         <div class="col-md-2">
-            <select name="college_name" class="form-control collegeName filterchange" id="txtcollege">
+            <select name="college_name" class="form-control collegeName filterchange select2" id="txtcollege">
                 <option value="">--College--</option>
                 @foreach($colleges as $college)
                     <option value="{{ $college->id }}"

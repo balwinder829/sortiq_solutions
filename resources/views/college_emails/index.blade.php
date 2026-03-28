@@ -56,8 +56,8 @@
         </div>
 
         {{-- COLLEGE --}}
-        <div class="col-md-2">
-            <select id="filter-college" class="form-select">
+        <div class="col-md-3">
+            <select id="filter-college" class="form-select select2">
                 <option value="">College</option>
             </select>
         </div>

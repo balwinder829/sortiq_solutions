@@ -36,7 +36,7 @@
         <div class="row g-2">
 
             <div class="col-md-2">
-                <select name="college_id" class="form-select filterchange">
+                <select name="college_id" class="form-select filterchange select2">
                     <option value="">All Colleges</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->id }}">{{ $college->full_name }}</option>

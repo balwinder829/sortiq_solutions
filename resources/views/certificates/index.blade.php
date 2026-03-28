@@ -122,8 +122,8 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
         </div>
  -->
         {{-- College --}}
-        <div class="col-md-2">
-            <select name="college_name" class="form-control collegeName filterchange" id="txtcollege">
+        <div class="col-md-3">
+            <select name="college_name" class="form-control collegeName filterchange select2" id="txtcollege">
                 <option value="">--College--</option>
                 @foreach($colleges as $college)
                     <option value="{{ $college->id }}"

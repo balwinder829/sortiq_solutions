@@ -38,6 +38,19 @@
                 @enderror
             </div>
 
+            {{-- Father Name --}}
+            <div class="form-group col-md-6">
+                <label>Father Name</label>
+                <input type="text"
+                       name="father_name"
+                       class="form-control @error('father_name') is-invalid @enderror"
+                       value="{{ old('father_name') }}"
+                       required>
+                @error('father_name')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
             {{-- Position --}}
             <div class="form-group col-md-6">
                 <label>Position</label>

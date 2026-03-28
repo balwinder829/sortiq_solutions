@@ -72,6 +72,15 @@ class EmployeeController extends Controller
         ->orderBy('id', 'desc') // 🔥 Latest first
             ->select('employees.*');
 
+        if ($request->status) {
+            $query->where('employees.status', $request->status);
+        }
+
+        // ✅ Filter by lifecycle status
+        if ($request->lifecycle) {
+            $query->where('employees.employment_lifecycle_status', $request->lifecycle);
+        }
+
         return DataTablesServerSide::response($request, $query, [
             'orderable'  => ['emp_code', 'emp_name', 'position', 'joining_date', 'username', 'status'],
             'searchable' => function ($q, $search) {
@@ -145,6 +154,7 @@ class EmployeeController extends Controller
             'unique:employees,emp_code',
         ],
         'emp_name'      => 'required|string|max:100',
+        'father_name'      => 'required|string|max:100',
         'position'      => 'required|string|max:100',
         'employment_type' => 'required',
         'work_mode' => 'required',
@@ -197,6 +207,7 @@ class EmployeeController extends Controller
             'user_id'      =>null,
             'emp_code'     => $newEmpCode,
             'emp_name'     => $data['emp_name'],
+            'father_name'     => $data['father_name'],
             'username' => strtolower(trim($data['username'])),
             'email'    => $data['email'],
             'phone'    => $data['phone'],
@@ -249,12 +260,14 @@ class EmployeeController extends Controller
     $data = $request->validate([
         // Employee fields
         'emp_name'     => 'required|string|max:100',
+        'father_name'     => 'required|string|max:100',
         'position'     => 'required|string|max:100',
         'probation_period' => 'required',
         'employment_type' => 'required',
         'employment_mode' => 'required',
         'joining_date' => 'required|date',
         'status'       => 'required|in:active,inactive,terminated',
+        'employment_lifecycle_status'       => 'required|in:current,former,pending',
         'work_mode' => 'required',
         'job_type' => 'required',
         'working_hours_per_day' => 'required_if:job_type,part_time|nullable|numeric|min:1|max:24',
@@ -306,9 +319,11 @@ class EmployeeController extends Controller
 
          $empData = [
             'emp_name'     => $data['emp_name'],
+            'father_name'     => $data['father_name'],
             'position'     => $data['position'],
             'employment_type'     => $data['employment_type'],
             'employment_mode'     => $data['employment_mode'],
+            'employment_lifecycle_status'     => $data['employment_lifecycle_status'],
             'work_mode'     => $data['work_mode'],
             'job_type'     => $data['job_type'],
             'working_hours_per_day'     => $data['working_hours_per_day'],

@@ -55,6 +55,17 @@ class SingleTestStudentsExport implements FromCollection, WithHeadings, WithMapp
             $q->where('gender', $this->filters['gender']);
         }
 
+        if (!empty($this->filters['course_type'])) {
+            $q->where('course_type', $this->filters['course_type']);
+        }
+
+        if (!empty($this->filters['class'])) {
+            $q->where('class', $this->filters['class']);
+        }
+
+        if (!empty($this->filters['semester'])) {
+            $q->where('semester', $this->filters['semester']);
+        }
         /* ===== FINALIZED FILTER ===== */
 
         if (isset($this->filters['finalized']) && $this->filters['finalized'] !== '') {
@@ -198,6 +209,9 @@ class SingleTestStudentsExport implements FromCollection, WithHeadings, WithMapp
             'Email',
             'Mobile',
             'Gender',
+            'Class',
+            'Semester',
+            'Course Type',
             'Score',
             'Finalized',
             'College',
@@ -211,7 +225,11 @@ class SingleTestStudentsExport implements FromCollection, WithHeadings, WithMapp
             $s->student_email,
             $s->student_mobile,
             $this->formatGender($s),
-            $s->score,
+            $s->class ?? '-',
+            $s->semester ?? '-',
+            $s->course_type ?? '-',
+
+            $s->score !== null ? (int)$s->score : 0,
             $s->is_finalized ? 'Yes' : 'No',
             $s->college->full_name ?? '-',
         ];

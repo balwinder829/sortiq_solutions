@@ -17,6 +17,8 @@ class JoiningStudent extends Model
         'college',
         'duration',
         'technology',
+        'is_sent_to_detail',
+        'sent_to_detail_at',
         'date_of_joining'
     ];
 

@@ -793,6 +793,18 @@ function isParent($routes)
                                 Attendance Form
                             </a>
                         </li>
+
+                        <li class="{{ request()->routeIs('admin.manual_data.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.manual_data.index') }}">
+                                Manual Upload Data
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
+                          <a href="{{ route('admin.form-entries.index') }}">
+                              <!-- <i class="fas fa-file-alt"></i> -->
+                              <span class="nav-text">Gmail Form Entries</span>
+                          </a>
+                        </li>
                          <!-- <li>
                             <a class="{{ isChildActive('admin.offline-tests.index') }}"
                                 href="{{ route('admin.offline-tests.index') }}">
@@ -1774,7 +1786,7 @@ function isParent($routes)
 
                  {{-- Tests --}}
 
-                 @canany(['tests.view','offline_tests.view','test_categories.view'])
+                 @canany(['tests.view','offline_tests.view','test_categories.view','manual_data.view','external_attendance.view','gmail_form_enteries.view'])
                 <li class="{{ isParent(['tests.*','admin.offline-tests*','test-categories.*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
@@ -1797,6 +1809,29 @@ function isParent($routes)
                                 href="{{ route('admin.tests.index') }}">
                                 Online Exams
                             </a>
+                        </li>
+                        @endcan
+                        @can('external_attendance.view')
+                        <li class="{{ request()->routeIs('admin.external-attendance.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.external-attendance.index') }}">
+                                Attendance Form
+                            </a>
+                        </li>
+                        @endcan
+                        @can('manual_data.view')
+                        <li class="{{ request()->routeIs('admin.manual_data.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.manual_data.index') }}">
+                                Manual Upload Data
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('gmail_form_enteries.view')
+                        <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
+                          <a href="{{ route('admin.form-entries.index') }}">
+                              <!-- <i class="fas fa-file-alt"></i> -->
+                              <span class="nav-text">Gmail Form Entries</span>
+                          </a>
                         </li>
                         @endcan
                          <!-- @can('offline_tests.view')

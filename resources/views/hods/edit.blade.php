@@ -24,7 +24,7 @@
 <!-- College -->
 <div class="col-md-6 mb-3">
     <label>College</label>
-    <select name="college_id" class="form-control @error('college_id') is-invalid @enderror">
+    <select name="college_id" class="form-control @error('college_id') is-invalid @enderror select2">
         @foreach($colleges as $college)
             <option value="{{ $college->id }}"
                 {{ old('college_id',$hod->college_id)==$college->id?'selected':'' }}>

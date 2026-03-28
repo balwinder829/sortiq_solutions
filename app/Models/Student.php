@@ -54,6 +54,8 @@ class Student extends Authenticatable
         'plain_password',
         'remember_token',
         'last_login',
+        'source_type',
+        'source_id',
     ];
 
      // Automatically hash password when setting it
