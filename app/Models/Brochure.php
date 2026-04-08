@@ -27,10 +27,26 @@ class Brochure extends Model
         'end_at'    => 'datetime',
     ];
 
+    // protected static function booted()
+    // {
+    //     static::creating(function ($model) {
+    //         $model->share_token = Str::random(36);
+    //     });
+    // }
+
     protected static function booted()
     {
         static::creating(function ($model) {
-            $model->share_token = Str::random(36);
+            $slug = Str::slug($model->title);
+
+            // fallback if title becomes empty (very rare case)
+            if (empty($slug)) {
+                $slug = 'brochure';
+            }
+
+            $token = $slug . '-' . now()->format('Ymd-His') . '-' . Str::random(4);
+
+            $model->share_token = $token;
         });
     }
 

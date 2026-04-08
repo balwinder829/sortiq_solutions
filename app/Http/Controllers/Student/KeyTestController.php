@@ -8,6 +8,7 @@ use App\Models\Test;
 use App\Models\StudentTest;
 use App\Models\StudentAnswer;
 use App\Models\TestLink;
+use App\Rules\NotBlockedNumber;
 
 class KeyTestController extends Controller
 {
@@ -64,12 +65,17 @@ class KeyTestController extends Controller
             'student_name'   => 'required|string',
             'student_email'  => 'required|email',
             'gender'   => 'required|string',
-            'student_mobile' => 'required|digits:10',
+            // 'student_mobile' => 'required|digits:10',
+            'student_mobile' => ['required', 'digits:10', new NotBlockedNumber],
             'slug'       => 'required|exists:test_links,slug',
-            'course_type' => 'required|in:Degree,Diploma',
-            'class'       => 'required|in:BCA,MCA,BTech,BSc IT,BSc CS',
-            'semester'    => 'required|integer|min:1|max:8',
+            'course_type' => 'nullable|in:Degree,Diploma',
+            'student_branch' => 'nullable',
+            // 'class'          => 'required_if:course_type,Degree|nullable|in:BCA,MCA,BTech,BSc IT,BSc CS',
+            'class'          => 'nullable|in:BCA,MCA,BTech,BSc IT,BSc CS,Polytechnic,BSc',
+            'semester'    => 'nullable|integer|min:1|max:8',
+            'student_branch'    => 'nullable',
         ], [
+            'student_mobile.required' => 'Mobile number is required',
             'slug.exists' => 'Test link is expired or invalid.',
             'slug.required' => 'Test link is expired or invalid.'
         ]);
@@ -152,6 +158,7 @@ class KeyTestController extends Controller
             'student_mobile'  => $request->student_mobile,
             'course_type'     => $request->course_type,
             'class'           => $request->class,
+            'branch'           => $request->student_branch,
             'semester'        => $request->semester,
             'score'           => 0,
             'session_key'     => session()->getId(),

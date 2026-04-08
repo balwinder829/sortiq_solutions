@@ -22,6 +22,10 @@ use App\Models\Semester;
 use App\Models\ExternalAttendanceTest;
 use App\Models\ExternalAttendanceLink;
 use App\Models\ExternalAttendanceSubmission;
+use App\Models\StudentSession;
+
+// use App\Models\ExternalAttendance;
+
 
 class ExternalAttendanceController extends Controller
 {
@@ -475,10 +479,16 @@ class ExternalAttendanceController extends Controller
     /* ===== DATA ===== */
 
     $students = $query->with('college')->get();
+    $sessionsList = StudentSession::where('status', 'active') // ✅ string status
+            ->orderBy('start_date', 'desc')
+            ->get()
+            ->pluck('display_name', 'id');
+
     return view('admin.external-attendance.results', compact(
         'test',
         'students',
         'courses',
+        'sessionsList',
         'colleges'
     ));
 }
@@ -529,8 +539,10 @@ class ExternalAttendanceController extends Controller
                     'test_id'    => $test->id,
                     'student_id' => null,
                     'source'     => 'online',
+                    'source_type'     => 'online',
+                    'source_id'     => $st->id,
 
-                    'status'     => 'followup',
+                    'status'     => 'new',
                     'created_by' => auth()->id(),
                 ]
             );
@@ -568,5 +580,145 @@ class ExternalAttendanceController extends Controller
         return view('admin.external-attendance.links', compact('test','links','lastAttempts'));
     }
 
+
+    public function qmoveAttendanceToEnquiries(Request $request, Test $test)
+    {
+        $ids = $request->attendance_ids;
+
+        // ✅ Validation
+        if (empty($ids)) {
+            return back()->with('error', 'Please select at least one student.');
+        }
+
+        // ✅ Get selected attendance records
+        $students = ExternalAttendanceSubmission::whereIn('id', $ids)
+            ->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'No valid students selected.');
+        }
+
+        $count = 0;
+
+        foreach ($students as $st) {
+
+            // ✅ Prevent duplicate (based on email + test)
+            $enquiry = Enquiry::firstOrCreate(
+                [
+                    'email'   => $st->student_email,
+                    'test_id' => $test->id,
+                ],
+                [
+                    'name'       => $st->student_name,
+                    'email'      => $st->student_email,
+                    'mobile'     => $st->student_mobile ?? null,
+
+                    'college'    => $st->college_id ?? null,
+                    'study'      => $st->course->course_name ?? '',
+                    'semester'   => $st->semester ?? null,
+
+                    'test_id'    => $test->id,
+                    'student_id' => null,
+                    'source'     => 'attendance',
+
+                    'status'     => 'followup',
+                    'created_by' => auth()->id(),
+                ]
+            );
+
+            // count only newly created
+            if ($enquiry->wasRecentlyCreated) {
+                $count++;
+            }
+        }
+
+        return back()->with(
+            'success',
+            "$count student(s) moved to Enquiries successfully."
+        );
+    }
+
+    public function moveAttendanceToEnquiries(Request $request, Test $test)
+    {
+        $ids = $request->attendance_ids;
+        $sessionId = $request->session_id;
+
+        // ✅ Validation
+        if (empty($ids)) {
+            return back()->with('error', 'Please select at least one student.');
+        }
+
+        if (!$sessionId) {
+            return back()->with('error', 'Session is required.');
+        }
+
+        // ✅ Get selected attendance records
+        $students = ExternalAttendanceSubmission::with(['course', 'college'])
+            ->whereIn('id', $ids)
+            ->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'No valid students selected.');
+        }
+
+        $count = 0;
+
+        foreach ($students as $st) {
+
+            $enquiry = Enquiry::firstOrCreate(
+                [
+                    'source_id'   => $st->id,
+                    'source_type'   => 'attendance',
+                ],
+                [
+                    'name'       => $st->student_name,
+                    'email'      => $st->student_email,
+                    'mobile'     => $st->student_mobile ?? null,
+
+                    'college'    => $st->college_id ?? null,
+                    'study'      => $st->class ?? '',
+                    'semester'   => $st->semester ?? null,
+
+                    'test_id'    => $test->id,
+                    'session_id' => $sessionId, // ✅ NEW
+
+                    'student_id' => null,
+                    'source'     => 'attendance',
+                    'source_type'     => 'attendance',
+                    'source_id'     => $st->id,
+
+                    'status'     => 'new',
+                    'created_by' => auth()->id(),
+                ]
+            );
+
+            // ✅ count only new
+            // if ($enquiry->wasRecentlyCreated) {
+            //     $count++;
+
+            //     // ✅ UPDATE FLAG HERE (IMPORTANT)
+            //     $st->update([
+            //         'is_moved_to_enquiry' => 1
+            //     ]);
+            // }
+
+              // ✅ count only new
+        if ($enquiry->wasRecentlyCreated) {
+            $count++;
+        }
+
+        // 🔥 ALWAYS UPDATE FLAG (IMPORTANT FIX)
+        if (!$st->is_moved_to_enquiry) {
+            $st->update([
+                'is_moved_to_enquiry' => 1
+            ]);
+        }
+        }
+
+        return back()->with(
+            'success',
+            "$count student(s) moved to Enquiries successfully."
+        );
+    }
 
 }

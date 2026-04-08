@@ -13,6 +13,7 @@ use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
 use Carbon\Carbon;
+use App\Rules\NotBlockedNumber;
 // use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Role as SpatieRole;
 
@@ -166,14 +167,16 @@ class EmployeeController extends Controller
 
         'username'      => 'required|string|max:30|unique:employees',
         'email'         => 'required|email|unique:employees',
-        'phone'         => 'required|unique:employees',
+        // 'phone'         => 'required|unique:employees',
+        'phone' => ['required', 'string','unique:employees,phone', new NotBlockedNumber],
         'password'      => 'required|min:6',
 
         'dob'           => 'nullable|date|before:today',
         'blood_group'   => 'nullable|string|max:5',
         'address'       => 'nullable|string|max:255',
         'photo'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'alternative_phone'         => 'required',
+        // 'alternative_phone'         => 'required',
+        'alternative_phone' => ['required', 'string', new NotBlockedNumber],
         'probation_period' => 'required',
     ]);
 
@@ -275,14 +278,21 @@ class EmployeeController extends Controller
         // User fields
         'username' => 'required|string|max:20|regex:/^[a-zA-Z0-9._-]+$/|unique:employees,username,' . $employee->id,
         'email'    => 'required|email|unique:employees,email,' . $employee->id,
-        'phone'    => 'required|digits:10|unique:employees,phone,' . $employee->id,
+        // 'phone'    => 'required|digits:10|unique:employees,phone,' . $employee->id,
+        'phone' => [
+            'required',
+            'max:20',
+            'unique:employees,phone,' . $employee->id,
+            new NotBlockedNumber,
+        ],  
         'role'     => 'required|exists:roles,id',
 
         'dob'          => 'nullable|date|before:today',
         'blood_group'  => 'nullable|string|max:5',
         'address'      => 'nullable|string|max:255',
         'photo'        => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'alternative_phone'         => 'required',
+        // 'alternative_phone'         => 'required',
+        'alternative_phone' => ['required', 'string', new NotBlockedNumber],
         'password' => 'nullable|min:6',
     ]);
 
@@ -385,74 +395,7 @@ class EmployeeController extends Controller
         ->with('success', 'Employee updated successfully');
 }
 
-    public function update29dec(Request $request, Employee $employee)
-    {
-        $data = $request->validate([
-            // Employee fields
-            'emp_name'     => 'required|string|max:100',
-            'position'     => 'required|string|max:100',
-            'joining_date' => 'required|date',
-            'status'       => 'required|in:active,inactive,terminated',
-
-            // User fields
-            'username' => 'required|string|max:20|regex:/^[a-zA-Z0-9._-]+$/|unique:users,username,' . $employee->user_id,
-            'email'    => 'required|email|unique:users,email,' . $employee->user_id,
-            'phone'    => 'required|digits:10|unique:users,phone,' . $employee->user_id,
-            'role'     => 'required|exists:roles,id',
-            'dob'          => 'nullable|date|before:today',
-            'blood_group'  => 'nullable|string|max:5',
-            'address'      => 'nullable|string|max:255',
-            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
-        // 🔐 Prevent admin / trainer role assignment
-        $role = \App\Models\Role::findOrFail($data['role']);
-        if (in_array($role->name, ['admin', 'trainer'])) {
-            abort(403, 'This role cannot be assigned.');
-        }
-
-        // 🔄 Map employee status → user status
-        $userStatus = $data['status'] === 'active' ? 'active' : 'inactive';
-
-        DB::transaction(function () use ($data, $employee, $userStatus) {
-
-             if ($request->hasFile('photo')) {
-                $dir = public_path('images/employee_images');
-                if (!file_exists($dir)) {
-                    mkdir($dir, 0755, true);
-                }
-                $photoName = time().'_'.$request->photo->getClientOriginalName();
-                $request->photo->move($dir, $photoName);
-                $employee->photo = 'images/employee_images/'.$photoName;
-            }
-
-            // ✅ Update employee table
-            $employee->update([
-                'emp_name'     => $data['emp_name'],
-                'position'     => $data['position'],
-                'joining_date' => $data['joining_date'],
-                'status'       => $data['status'],
-                'dob'          => $data['dob'],
-                'blood_group'  => $data['blood_group'],
-                'address'      => $data['address'],
-                'photo'        => $employee->photo,
-            ]);
-
-            // ✅ Update users table (INCLUDING STATUS)
-            $employee->user->update([
-                'username' => $data['username'],
-                'email'    => $data['email'],
-                'phone'    => $data['phone'],
-                'role'     => $data['role'],
-                'status'   => $userStatus,
-            ]);
-        });
-
-        return redirect()
-            ->route('employees.index')
-            ->with('success', 'Employee updated successfully');
-    }
-
+    
 
     public function destroy(Employee $employee)
     {

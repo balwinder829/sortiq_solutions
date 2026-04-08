@@ -48,7 +48,8 @@ Schedule::call(function () {
 ->name('workshop-reminder') 
 ->timezone('Asia/Kolkata')
 ->withoutOverlapping()
-->cron('0 9 * * *');  
+->everyMinute();
+// ->cron('0 9 * * *');  
 
 // Admin Fee Notification service
 Schedule::call(function () {

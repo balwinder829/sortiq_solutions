@@ -460,10 +460,10 @@ public function store(Request $request)
         'mode' => 'utf-8',
         'format' => 'A4',
 
-        'margin_top' => 20,
-        'margin_bottom' => 20,
-        'margin_left' => 15,
-        'margin_right' => 15,
+         'margin_top' => 0,
+    'margin_bottom' => 0,
+    'margin_left' => 0,
+    'margin_right' => 0,
 
         'default_font' => 'dejavusans'
     ]);

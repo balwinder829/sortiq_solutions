@@ -65,6 +65,9 @@
                                 minlength="10"
                                 maxlength="10"
                                 pattern="[0-9]{10}"
+                                onpaste="handlePaste(event)"
+                                oninput="sanitizeContact(this)"
+                                required
                                 title="Enter a valid 10-digit mobile number">
                         @error('mobile')
                             <small class="text-danger">{{ $message }}</small>
@@ -88,7 +91,7 @@
                     <div class="form-group col-md-6">
                         <label><strong>College</strong></label>
                         <select name="college"
-                                class="form-control @error('college') is-invalid @enderror">
+                                class="form-control @error('college') is-invalid @enderror select2">
 
                             <option value="">Select College</option>
 
@@ -107,7 +110,8 @@
                     </div>
 
 
-                    {{-- Study --}}
+                    
+                  {{-- Study --}}
                     <div class="form-group col-md-6">
                         <label><strong>Study</strong></label>
                         <input type="text"
@@ -120,19 +124,20 @@
                         @enderror
                     </div>
 
-                    {{-- Semester --}}
+                     {{-- SEMESTER --}}
                     <div class="form-group col-md-6">
-                        <label><strong>Semester</strong></label>
-                        <input type="text"
-                               name="semester"
-                               class="form-control @error('semester') is-invalid @enderror"
-                               value="{{ old('semester') }}"
-                               placeholder="Enter semester">
-                        @error('semester')
-                            <small class="text-danger">{{ $message }}</small>
-                        @enderror
+                        <label class="fw-bold">Semester</label>
+                        <select name="semester" class="form-control" required>
+                            <option value="">Select Semester</option>
+                            @for ($i = 1; $i <= 8; $i++)
+                                <option value="{{ $i }}" {{ old('semester') == $i ? 'selected' : '' }}>
+                                    {{ $i }}
+                                </option>
+                            @endfor
+                        </select>
                     </div>
 
+                   
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-2">

@@ -32,6 +32,6 @@ class Registration extends Model
 
     public function collector()
     {
-        return $this->belongsTo(User::class, 'collected_by');
+        return $this->belongsTo(SalesStaff::class, 'collected_by');
     }
 }

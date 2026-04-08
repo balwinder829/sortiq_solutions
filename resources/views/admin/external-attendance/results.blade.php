@@ -16,7 +16,7 @@
     Attendance Submissions
 </h5>
 
-{{-- SUCCESS MESSAGE --}}
+{{-- SUCCESS --}}
 @if(session('success'))
 <div class="alert alert-success alert-dismissible fade show">
     {{ session('success') }}
@@ -24,7 +24,14 @@
 </div>
 @endif
 
-{{-- FILTER FORM --}}
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show">
+    {{ session('error') }}
+    <button class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+{{-- FILTER --}}
 <form method="GET" id="filterForm" class="row g-2 mb-4">
 
     <div class="col-md-2">
@@ -40,65 +47,56 @@
     </div>
 
     <div class="col-md-2">
-        <input type="text"
-               name="name"
-               value="{{ request('name') }}"
+        <input type="text" name="name" value="{{ request('name') }}"
                class="form-control filterchangetext"
                placeholder="Student Name">
     </div>
 
     <div class="col-md-2">
-        <input type="text"
-               name="email"
-               value="{{ request('email') }}"
+        <input type="text" name="email" value="{{ request('email') }}"
                class="form-control filterchangetext"
                placeholder="Email">
     </div>
 
     <div class="col-md-2">
-        <input type="text"
-               name="mobile"
-               value="{{ request('mobile') }}"
+        <input type="text" name="mobile" value="{{ request('mobile') }}"
                class="form-control filterchangetext"
                placeholder="Mobile">
     </div>
 
-    {{-- Course --}}
-<div class="col-md-2">
-    <select name="course_id" class="form-select filterchange">
-        <option value="">All Courses</option>
-        @foreach($courses as $course)
-            <option value="{{ $course->id }}"
-                {{ request('course_id') == $course->id ? 'selected' : '' }}>
-                {{ $course->course_name }}
-            </option>
-        @endforeach
-    </select>
-</div>
+    <div class="col-md-2">
+        <select name="course_id" class="form-select filterchange">
+            <option value="">All Courses</option>
+            @foreach($courses as $course)
+                <option value="{{ $course->id }}"
+                    {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                    {{ $course->course_name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
 
-{{-- Class --}}
-<div class="col-md-2">
-    <select name="class" class="form-select filterchange">
-        <option value="">All Classes</option>
-        <option value="BCA" {{ request('class')=='BCA' ? 'selected' : '' }}>BCA</option>
-        <option value="B.Tech" {{ request('class')=='B.Tech' ? 'selected' : '' }}>B.Tech</option>
-        <option value="MCA" {{ request('class')=='MCA' ? 'selected' : '' }}>MCA</option>
-        <option value="MBA" {{ request('class')=='MBA' ? 'selected' : '' }}>MBA</option>
-    </select>
-</div>
+    <div class="col-md-2">
+        <select name="class" class="form-select filterchange">
+            <option value="">All Classes</option>
+            <option value="BCA" {{ request('class')=='BCA' ? 'selected' : '' }}>BCA</option>
+            <option value="B.Tech" {{ request('class')=='B.Tech' ? 'selected' : '' }}>B.Tech</option>
+            <option value="MCA" {{ request('class')=='MCA' ? 'selected' : '' }}>MCA</option>
+            <option value="MBA" {{ request('class')=='MBA' ? 'selected' : '' }}>MBA</option>
+        </select>
+    </div>
 
-{{-- Semester --}}
-<div class="col-md-2">
-    <select name="semester" class="form-select filterchange">
-        <option value="">All Semester</option>
-        @for($i = 1; $i <= 8; $i++)
-            <option value="{{ $i }}"
-                {{ request('semester') == $i ? 'selected' : '' }}>
-                {{ $i }}
-            </option>
-        @endfor
-    </select>
-</div>
+    <div class="col-md-2">
+        <select name="semester" class="form-select filterchange">
+            <option value="">All Semester</option>
+            @for($i = 1; $i <= 8; $i++)
+                <option value="{{ $i }}"
+                    {{ request('semester') == $i ? 'selected' : '' }}>
+                    {{ $i }}
+                </option>
+            @endfor
+        </select>
+    </div>
 
     <div class="col-md-2">
         <select name="gender" class="form-select filterchange">
@@ -117,21 +115,25 @@
 
 </form>
 
-{{-- DOWNLOAD BUTTONS (KEEPED SAME STRUCTURE) --}}
+{{-- BULK FORM --}}
+<form method="POST" id="bulkForm">
+@csrf
+
 <div class="d-flex gap-2 mb-3">
-
-    <a href="{{ route('admin.external-attendance.export.all', $test->id) }}?{{ http_build_query(request()->query()) }}"
-       class="btn btn-outline-primary">
-        <i class="fa fa-download"></i> Download All
-    </a>
-
+    <button type="submit"
+            class="btn btn-warning"
+            formaction="{{ route('admin.attendance.move.enquiries', $test->id) }}">
+        Move to Enquiries
+    </button>
 </div>
 
-{{-- TABLE --}}
 <table class="table table-bordered table-striped">
 
 <thead>
 <tr>
+    <th>
+        <input type="checkbox" id="selectAll">
+    </th>
     <th>#</th>
     <th>College</th>
     <th>Name</th>
@@ -148,6 +150,18 @@
 <tbody>
 @forelse($students as $i => $st)
 <tr>
+
+    <td>
+        @if($st->is_moved_to_enquiry)
+            <span class="badge bg-info">Moved</span>
+        @else
+            <input type="checkbox"
+                   class="student-checkbox"
+                   name="attendance_ids[]"
+                   value="{{ $st->id }}">
+        @endif
+    </td>
+
     <td>{{ $i + 1 }}</td>
     <td>{{ $st->college->full_name ?? '-' }}</td>
     <td>{{ $st->student_name }}</td>
@@ -158,8 +172,6 @@
     <td>{{ $st->semester ?? '-' }}</td>
     <td>{{ $st->course->course_name ?? '-' }}</td>
 
-    
-
     <td>
         {{ $st->exam_submitted_at
             ? \Carbon\Carbon::parse($st->exam_submitted_at)->format('d M Y h:i A')
@@ -169,7 +181,7 @@
 </tr>
 @empty
 <tr>
-    <td colspan="10" class="text-center text-muted">
+    <td colspan="11" class="text-center text-muted">
         No submissions found
     </td>
 </tr>
@@ -177,10 +189,19 @@
 </tbody>
 
 </table>
+</form>
 
 </div>
 
-{{-- FILTER SCRIPT --}}
+{{-- SELECT ALL --}}
+<script>
+document.getElementById('selectAll')?.addEventListener('change', function () {
+    document.querySelectorAll('.student-checkbox')
+        .forEach(cb => cb.checked = this.checked);
+});
+</script>
+
+{{-- FILTER --}}
 <script>
 $(document).ready(function(){
 
@@ -195,6 +216,65 @@ $(document).ready(function(){
         timer = setTimeout(function(){
             $('#filterForm').submit();
         }, 500);
+    });
+
+});
+</script>
+
+{{-- SESSION POPUP --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const form = document.getElementById('bulkForm');
+    const sessionOptions = @json($sessionsList);
+
+    form.querySelectorAll('button[type="submit"]').forEach(button => {
+
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            let selected = document.querySelectorAll('.student-checkbox:checked');
+            let action = this.getAttribute('formaction');
+
+            if (selected.length === 0) {
+                Swal.fire('No Students Selected', 'Please select at least one student', 'warning');
+                return;
+            }
+
+            let optionsHtml = '';
+            Object.keys(sessionOptions).forEach(function(key) {
+                optionsHtml += `<option value="${key}">${sessionOptions[key]}</option>`;
+            });
+
+            Swal.fire({
+                title: 'Select Session',
+                html: `<select id="session_id" class="form-control">${optionsHtml}</select>`,
+                showCancelButton: true,
+                confirmButtonText: 'Move'
+            }).then((result) => {
+
+                if (!result.isConfirmed) return;
+
+                let session_id = document.getElementById('session_id').value;
+
+                if (!session_id) {
+                    Swal.fire('Error', 'Session is required', 'error');
+                    return;
+                }
+
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'session_id';
+                input.value = session_id;
+
+                form.appendChild(input);
+
+                form.action = action;
+                form.submit();
+            });
+
+        });
+
     });
 
 });

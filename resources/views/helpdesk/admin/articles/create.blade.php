@@ -70,6 +70,23 @@ class="form-control @error('status') is-invalid @enderror">
 <option value="published" selected {{ old('status')=='published'?'selected':'' }}>Published</option>
 </select>
 </div>
+ 
+<div class="form-group col-md-4 mb-3">
+    <label>View Status</label>
+
+    <select name="is_active"
+        class="form-control @error('is_active') is-invalid @enderror">
+
+        <option value="1" {{ old('is_active', $article->is_active ?? 1) == 1 ? 'selected' : '' }}>
+            Enabled
+        </option>
+
+        <option value="0" {{ old('is_active', $article->is_active ?? 1) == 0 ? 'selected' : '' }}>
+            Disabled
+        </option>
+
+    </select>
+</div>
 
 {{-- DESCRIPTION --}}
 <div class="form-group col-md-12 mb-3">
@@ -80,14 +97,14 @@ class="form-control @error('description') is-invalid @enderror">{{ old('descript
 </div>
 
 {{-- FILE UPLOAD --}}
-<!-- <div class="form-group col-md-8 mb-3">
+<div class="form-group col-md-8 mb-3">
 <label>Upload Attachments</label>
 <input type="file"
 name="files[]"
 multiple
 required 
 class="form-control @error('files.*') is-invalid @enderror">
-</div> -->
+</div> 
 
 {{-- EXPIRE --}}
 <div class="form-group col-md-4 mb-3">

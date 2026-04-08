@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Enquiry;
 use App\Models\Student;
+use App\Models\StudentSession;
 use App\Models\User;
 use App\Models\College;
 use App\Models\Registration;
@@ -17,8 +18,9 @@ use App\Imports\EnquiriesImport;
 use App\Notifications\LeadAssignedNotification;
 use Illuminate\Support\Facades\DB;
 use App\Exports\RegistrationsExport;
+use Carbon\Carbon;
 use App\Exports\EnquiriesExport;
-
+use App\Rules\NotBlockedNumber;
 
 class EnquiryController extends Controller
 {
@@ -166,8 +168,10 @@ public function __construct()
     // LIST WITH FILTER
     // LIST WITH FILTER (ADMIN INDEX)
 public function index(Request $request)
-{
-    $query = Enquiry::enquiries();
+{   
+    $activeSessionNo = session('admin_session_id');
+    $query = Enquiry::enquiries()
+        ->where('session_id', $activeSessionNo);
 
     // =========================
     // ROLE BASED ACCESS
@@ -373,11 +377,19 @@ public function index(Request $request)
     {
         $request->validate([
             'name' => 'required',
+            // 'mobile' => 'required',
+            'mobile' => ['required', 'digits:10', new NotBlockedNumber],
+            'study' => 'required',
+            'semester' => 'required',
              // 'college_id' => 'nullable|exists:colleges,id',
         ]);
 
+        $activeSessionNo = session('admin_session_id');
+        // $validated['session'] = $activeSessionNo;
+
         Enquiry::create([
             'name' => $request->name,
+            'session_id' => $activeSessionNo,
             'mobile' => $request->mobile,
             'email' => $request->email,
             'college' => $request->college,
@@ -401,15 +413,30 @@ public function index(Request $request)
 
     public function update(Request $request, $id)
     {
-        $request->validate([
+
+        $validated = $request->validate([
             'name' => 'required',
-            'mobile' => 'nullable',
+            // 'mobile' => 'nullable',
+            'mobile' => ['required', 'digits:10', new NotBlockedNumber],
             'email' => 'nullable|email',
             'college' => 'nullable',
             'study' => 'nullable',
             'semester' => 'nullable',
             'is_passout' => 'nullable',
         ]);
+
+        $validated['session_id'] = session('admin_session_id');
+
+        
+        // $request->validate([
+        //     'name' => 'required',
+        //     'mobile' => 'nullable',
+        //     'email' => 'nullable|email',
+        //     'college' => 'nullable',
+        //     'study' => 'nullable',
+        //     'semester' => 'nullable',
+        //     'is_passout' => 'nullable',
+        // ]);
 
         $enquiry = Enquiry::findOrFail($id);
          if ($enquiry->assigned_to != $request->assigned_to) {
@@ -425,7 +452,8 @@ public function index(Request $request)
                         ]);
 
         }
-        $enquiry->update($request->all());
+        $enquiry->update($validated);
+        // $enquiry->update($request->all());
 
         return redirect()->route('enquiries.index')
                          ->with('success', 'Record updated successfully!');
@@ -434,7 +462,74 @@ public function index(Request $request)
 
 
     // IMPORT
+    public function importForm()
+    {
+        return view('passouts.import');
+    }
     public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,xlsx,xls',
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+
+            $importer = new \App\Imports\EnquiriesImport(auth()->id(), 0);
+
+            \Maatwebsite\Excel\Facades\Excel::import($importer, $request->file('file'));
+
+            $failures = $importer->failures();
+
+            // ❗ IF VALIDATION FAIL → ROLLBACK + STOP
+            if ($failures->isNotEmpty()) {
+
+                \DB::rollBack();
+
+                $messages = [];
+
+                foreach ($failures as $failure) {
+                    $messages[] =
+                        "Row {$failure->row()} – {$failure->attribute()} – " .
+                        implode(', ', $failure->errors());
+                }
+
+                return back()->withErrors($messages);
+            }
+
+            \DB::commit();
+
+            // ✅ ONLY HERE counts are valid
+            $total    = $importer->totalRows;
+            $inserted = $importer->insertedRows;
+            $skipped  = $importer->skippedRows;
+
+            $message = "From {$total} rows: {$inserted} inserted successfully, {$skipped} skipped.";
+
+            $warnings = array_merge(
+                $importer->blockedNumbers,
+                $importer->duplicateEntries
+            );
+
+            if (!empty($warnings)) {
+                return back()
+                    ->with('success', $message)
+                    ->withErrors($warnings);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Throwable $e) {
+
+            \DB::rollBack();
+
+            return back()->withErrors([
+                'Import failed: ' . $e->getMessage()
+            ]);
+        }
+    }
+    public function i2mport(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:csv,xlsx,xls'
@@ -515,14 +610,15 @@ public function index(Request $request)
 
     public function assign(Request $request)
     {
+
         $request->validate([
             'enquiry_ids' => 'required|array',
-            'salesperson_id' => 'required|exists:users,id'
+            'salesperson_id' => 'required|exists:sales_staff,id'
         ]);
 
          // Get the sales user who will receive notifications
         $salesUser = SalesStaff::find($request->salesperson_id);
-
+        // dd('here', $salesUser);
         foreach ($request->enquiry_ids as $id) {
 
            $enquiry = Enquiry::find($id);
@@ -1047,49 +1143,45 @@ public function registeredIndex(Request $request)
 
     $salesUsers = SalesStaff::where('status', 'active')->get();
 
+    $sessionsList = StudentSession::where('status', 'active')
+    ->orderBy('start_date', 'desc')
+    ->pluck('session_name', 'id');
+
     return view('enquiries.registered-list', compact(
         'allRegistrations',
         'pendingRegistrations',
+        'sessionsList',
         'salesUsers'
     ));
-    // All registered (payment done)
-    // $allRegistered = Registration::with('enquiry.assignedTo')
-    //     ->latest('registered_at')
-    //     ->get();
-
-    // // Registered but NOT converted to student
-    // $pendingRegistered = Registration::with('enquiry.assignedTo')
-    //     ->whereDoesntHave('enquiry.student')
-    //     ->latest('registered_at')
-    //     ->get();
-
-    // return view('enquiries.registered-list', compact(
-    //     'allRegistered',
-    //     'pendingRegistered'
-    // ));
 }
 
 
-private function createStudentFromEnquiry(\App\Models\Enquiry $enquiry, $amountPaid = null)
+private function createStudentFromEnquiry(\App\Models\Enquiry $enquiry, $amountPaid = null, $sessionId = null)
 {
      // 🔒 Strong duplicate check
-    $studentExists = Student::where('enquiry_id', $enquiry->id)
-        ->orWhere('contact', $enquiry->mobile)
-        ->orWhere('email_id', $enquiry->email)
-        ->exists();
+    $studentExists = Student::where('enquiry_id', $enquiry->id)->exists();
 
     if ($studentExists) {
         return null; // ⛔ Skip if already exists
     }
 
+    $lastSno = Student::orderBy('id', 'desc')->value('sno');
+    $newSno = is_numeric($lastSno) ? ((int)$lastSno + 1) : 1;
+    
     $student = Student::create([
         'student_name' => $enquiry->name,
+        'sno'            => $newSno,
         'f_name'       => '',
         'email_id'     => $enquiry->email,
         'contact'      => $enquiry->mobile,
         'college_name' => $enquiry->college,
         'reg_fees'     => $amountPaid, // optional
         'enquiry_id'   => $enquiry->id,
+        'session'      => $sessionId, // ✅ NEW
+        'source_type'    => 'enquiry',
+        'source_id'      => $enquiry->id,
+        'join_date'     => Carbon::now()->format('Y-m-d'),
+        'start_date'    => Carbon::now()->format('Y-m-d'),
         'created_by'   => Auth::id(),
     ]);
 
@@ -1097,11 +1189,11 @@ private function createStudentFromEnquiry(\App\Models\Enquiry $enquiry, $amountP
     
     $salesUser = $enquiry->assignedTo;
     $salesUserassign = SalesStaff::find($enquiry->assignedTo);
-    if ($salesUserassign) {
-        $salesUserassign->notify(
-            new \App\Notifications\StudentRegisteredSalesNotification($student)
-        );
-    }
+    // if ($salesUserassign) {
+    //     $salesUserassign->notify(
+    //         new \App\Notifications\StudentRegisteredSalesNotification($student)
+    //     );
+    // }
 
     return $student;
 }
@@ -1136,7 +1228,8 @@ public function convertToStudent(Enquiry $enquiry)
 public function bulkConvert(Request $request)
 {
     $request->validate([
-        'enquiry_ids' => 'required|array'
+        'enquiry_ids' => 'required|array',
+         'session_id'  => 'required|exists:student_sessions,id',
     ]);
 
     \DB::transaction(function () use ($request) {
@@ -1156,7 +1249,8 @@ public function bulkConvert(Request $request)
 
             $this->createStudentFromEnquiry(
                 $enquiry,
-                optional($registration)->amount_paid
+                optional($registration)->amount_paid,
+                $request->session_id
             );
 
             EnquiryActivity::create([

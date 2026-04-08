@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Gate; // add at top with other uses
 use App\Models\Helpdesk\HelpdeskTechnology;
+use App\Models\Notification;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -181,39 +182,48 @@ class AppServiceProvider extends ServiceProvider
     |--------------------------------------------------------------------------
     */
     // View::composer('layouts.header', function ($view) {
-    View::composer(['layouts.header','layouts.students.header'], function ($view) {
+   View::composer(['layouts.header','layouts.students.header'], function ($view) {
 
-    $notifications = collect();
-    $unreadCount = 0;
+            $notifications = collect();
+            $unreadCount = 0;
 
-    if (\Illuminate\Support\Facades\Auth::check()) {
+            if (Auth::check()) {
 
-        $raw = \Illuminate\Support\Facades\Auth::user()
-            ->unreadNotifications()
-            ->get();
+                $activeSessionNo = session('admin_session_id');
 
-        // 🔥 GROUP BY template_key (CONFIRMED FROM LOG)
-        $notifications = $raw
-            ->groupBy(function ($n) {
-                return $n->data['template_key'];
-            })
-            ->map(function ($group) {
-                return [
-                    'notification' => $group->first(), // representative
-                    'count'        => $group->count(), // total per template
-                ];
-            })
-            ->values(); // 🔥 IMPORTANT: reindex for Blade
+                $raw = Notification::where('notifiable_id', Auth::id())
+                    ->where('notifiable_type', \App\Models\User::class)
+                    ->whereNull('read_at')
+                    ->when($activeSessionNo, function ($q) use ($activeSessionNo) {
+                        $q->where(function ($query) use ($activeSessionNo) {
+                            $query->where('session_id', $activeSessionNo)
+                                  ->orWhereNull('session_id'); // global notifications
+                        });
+                    })
+                    ->latest()
+                    ->get();
 
-        // total unread
-        $unreadCount = $raw->count();
-    }
+                // Group by template_key
+                $notifications = $raw
+                    ->groupBy(function ($n) {
+                        return $n->data['template_key'] ?? 'general';
+                    })
+                    ->map(function ($group) {
+                        return [
+                            'notification' => $group->first(),
+                            'count'        => $group->count(),
+                        ];
+                    })
+                    ->values();
 
-    $view->with([
-        'notifications' => $notifications,
-        'unreadCount'   => $unreadCount,
-    ]);
-});
+                $unreadCount = $raw->count();
+            }
+
+            $view->with([
+                'notifications' => $notifications,
+                'unreadCount'   => $unreadCount,
+            ]);
+        });
 
 
    

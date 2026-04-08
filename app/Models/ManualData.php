@@ -24,6 +24,7 @@ class ManualData extends Model
         'semester',
         'course_type',
         'source',
+        'is_moved_to_enquiry',
         'gender',
     ];
 

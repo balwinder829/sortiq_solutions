@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SalesStaff;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Rules\NotBlockedNumber;
 
 class SalesStaffController extends Controller
 {
@@ -56,7 +57,13 @@ class SalesStaffController extends Controller
         $validated = $request->validate([
             'name'     => 'required|string|max:100',
             'gender'   => 'required|in:male,female',
-            'phone'    => 'required|max:20|unique:sales_staff,phone',
+            // 'phone'    => 'required|max:20|unique:sales_staff,phone',
+            'phone' => [
+                'required',
+                'max:20',
+                'unique:sales_staff,phone',
+                new NotBlockedNumber,
+            ],
             'username' => 'required|string|max:30|regex:/^[a-zA-Z0-9._-]+$/|unique:sales_staff,username',
             'password' => 'required|string|min:6',
             'email'    => 'nullable|email|unique:sales_staff,email',
@@ -100,7 +107,13 @@ class SalesStaffController extends Controller
             'name'   => 'required|string|max:100',
             'gender' => 'required|in:male,female',
             'username'  => 'required|max:20|unique:sales_staff,username,' . $sales_staff->id,
-            'phone'  => 'required|max:20|unique:sales_staff,phone,' . $sales_staff->id,
+            // 'phone'  => 'required|max:20|unique:sales_staff,phone,' . $sales_staff->id,
+            'phone' => [
+                'required',
+                'max:20',
+                'unique:sales_staff,phone,' . $sales_staff->id,
+                new NotBlockedNumber,
+            ],
             'email'  => 'nullable|email|unique:sales_staff,email,' . $sales_staff->id,
             'status' => 'required|in:active,inactive',
             'password' => 'nullable|min:6',

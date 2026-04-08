@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\VisitingCard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Rules\NotBlockedNumber;
 
 class VisitingCardController extends Controller
 {
@@ -62,8 +63,10 @@ class VisitingCardController extends Controller
             'name' => 'required|string|max:255',
             'designation' => 'required|string|max:255',
             'company_name' => 'required|string|max:255',
-            'phone_primary' => 'required|string|max:50',
-            'phone_secondary' => 'nullable|string|max:50',
+            // 'phone_primary' => 'required|string|max:50',
+            // 'phone_secondary' => 'nullable|string|max:50',
+            'phone_primary' => ['required', 'string', new NotBlockedNumber],
+            'phone_secondary' => ['nullable', 'string', new NotBlockedNumber],
             'email' => 'nullable|email',
             'website' => 'nullable|string|max:255',
             'address' => 'nullable|string',
@@ -130,8 +133,10 @@ class VisitingCardController extends Controller
             'name' => 'required|string|max:255',
             'designation' => 'required|string|max:255',
             'company_name' => 'required|string|max:255',
-            'phone_primary' => 'required|string|max:50',
-            'phone_secondary' => 'nullable|string|max:50',
+            'phone_primary' => ['required', 'string', new NotBlockedNumber],
+            'phone_secondary' => ['nullable', 'string', new NotBlockedNumber],
+            // 'phone_primary' => 'required|string|max:50',
+            // 'phone_secondary' => 'nullable|string|max:50',
             'email' => 'nullable|email',
             'website' => 'nullable|string|max:255',
             'address' => 'nullable|string',

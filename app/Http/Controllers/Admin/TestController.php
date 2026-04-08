@@ -24,6 +24,7 @@ use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
 use App\Models\TestLink;
+use App\Models\StudentSession;
 use Carbon\Carbon;
 use ZipArchive;
 
@@ -743,6 +744,13 @@ class TestController extends Controller
         ? $request->college_id
         : ($latestCollegeId ?? $test->college_id);
 
+
+        $sessionsList = StudentSession::where('status', 'active') // ✅ string status
+            ->orderBy('start_date', 'desc')
+            ->get()
+            ->pluck('display_name', 'id');
+
+
     return view('admin.tests.results', compact(
         'test',
         'studentTests',
@@ -750,306 +758,12 @@ class TestController extends Controller
         'colleges',
         'totalFilteredStudents',
         'collegeStudentCounts',
+        'sessionsList',
         'defaultCollegeId'
     ));
 }
 
-    public function resultslatest(Request $request, $test_id)
-    {
-
-        $movedStudentTestIds = Enquiry::where('test_id', $test_id)
-            ->pluck('student_test_id')
-            ->toArray();
-
-        $test = Test::withCount('questions')->findOrFail($test_id);
-
-        // Fetch students for S.No
-        $students = Student::select('email_id','sno')->get()->keyBy('email_id');
-
-        $studentTestsQuery = $test->studentTests();
-
-        /* ===== COLLEGE DROPDOWN DATA ===== */
-
-        $collegeIds = StudentTest::where('test_id', $test_id)
-            ->orderByDesc('created_at')
-            ->pluck('college_id')
-            ->unique()
-            ->values();
-
-        $colleges = College::whereIn('id', $collegeIds)
-            ->get()
-            ->sortBy(function ($college) use ($collegeIds) {
-                return $collegeIds->search($college->id);
-            })
-            ->values();
-
-        /* ===== COLLEGE FILTER ===== */
-
-        if ($request->has('college_id')) {
-
-            if ($request->college_id != '') {
-                $studentTestsQuery->where('college_id', $request->college_id);
-            }
-
-        } else {
-
-            $latestCollegeId = StudentTest::where('test_id', $test_id)
-                ->latest('created_at')
-                ->value('college_id');
-
-            if ($latestCollegeId) {
-                $studentTestsQuery->where('college_id', $latestCollegeId);
-            } elseif ($test->college_id) {
-                $studentTestsQuery->where('college_id', $test->college_id);
-            }
-        }
-
-        /* ===== EXISTING FILTERS ===== */
-
-        if ($request->filled('sno')) {
-
-            $studentEmails = $students->filter(function ($student) use ($request) {
-                return str_contains($student->sno, $request->sno);
-            })->keys();
-
-            $studentTestsQuery->whereIn('student_email', $studentEmails);
-        }
-
-        if ($request->filled('name')) {
-            $studentTestsQuery->where('student_name', 'like', '%' . $request->name . '%');
-        }
-
-        if ($request->filled('email')) {
-            $studentTestsQuery->where('student_email', 'like', '%' . $request->email . '%');
-        }
-
-        /* ===== SORTING ===== */
-
-        if ($request->has('college_id') && $request->college_id != '') {
-
-            // Specific college → score high to low
-            $studentTestsQuery->orderByDesc('score');
-
-        } else {
-
-            // All colleges → latest college first
-            if ($collegeIds->count()) {
-
-                $ids = $collegeIds->implode(',');
-
-                $studentTestsQuery
-                    ->orderByRaw("FIELD(college_id,$ids)")
-                    ->orderByDesc('score');
-
-            } else {
-
-                $studentTestsQuery->orderByDesc('score');
-
-            }
-        }
-
-        /* ===== TOP N ===== */
-
-        if ($request->filled('top_n') && is_numeric($request->top_n)) {
-            $studentTestsQuery->limit((int)$request->top_n);
-        }
-
-        /* ===== STATUS FILTER ===== */
-
-        if ($request->filled('finalized')) {
-            $studentTestsQuery->where('is_finalized', $request->finalized);
-        }
-
-        if ($request->filled('moved')) {
-
-            if ($request->moved === '1') {
-                $studentTestsQuery->whereIn('id', $movedStudentTestIds);
-            }
-
-            elseif ($request->moved === '0' && !empty($movedStudentTestIds)) {
-                $studentTestsQuery->whereNotIn('id', $movedStudentTestIds);
-            }
-        }
-
-        $studentTests = $studentTestsQuery->get();
-
-        /* ===== ATTACH S.NO ===== */
-
-        $studentTests->each(function ($st) use ($students) {
-            $st->sno = $students[$st->student_email]->sno ?? '-';
-        });
-
-        $defaultCollegeId = $request->has('college_id')
-            ? $request->college_id
-            : ($latestCollegeId ?? $test->college_id);
-
-        return view('admin.tests.results', compact(
-            'test',
-            'studentTests',
-            'movedStudentTestIds',
-            'colleges',
-            'defaultCollegeId'
-        ));
-    }
-
-    public function resultsold(Request $request, $test_id)
-    {   
-
-
-        $movedStudentTestIds = Enquiry::where('test_id', $test_id)
-            ->pluck('student_test_id')
-            ->toArray();
-        $test = Test::withCount('questions')->findOrFail($test_id);
-
-        // Fetch students for S.No
-        $students = Student::select('email_id','sno')->get()->keyBy('email_id');
-
-        $studentTestsQuery = $test->studentTests();
-
-         /* ===== COLLEGE DROPDOWN DATA ===== */
-
-        // $collegeIds = StudentTest::where('test_id', $test_id)
-        //     ->distinct()
-        //     ->pluck('college_id');
-
-        // $colleges = College::whereIn('id', $collegeIds)->get();
-
-         $collegeIds = StudentTest::where('test_id', $test_id)
-            ->orderByDesc('created_at')
-            ->pluck('college_id')
-            ->unique()
-            ->values();
-
-        $colleges = College::whereIn('id', $collegeIds)
-            ->get()
-            ->sortBy(function ($college) use ($collegeIds) {
-                return $collegeIds->search($college->id);
-            })
-            ->values();
-
-
-        /* ===== COLLEGE FILTER ===== */
-
-        // if ($request->filled('college_id')) {
-        //     $studentTestsQuery->where('college_id', $request->college_id);
-        // }
-
-        /* ===== COLLEGE FILTER ===== */
-
-        // if ($request->has('college_id')) {
-
-        //     // If specific college selected
-        //     if ($request->college_id != '') {
-        //         $studentTestsQuery->where('college_id', $request->college_id);
-        //     }
-
-        //     // If "All Colleges" selected → do nothing (show all)
-
-        // } else {
-
-        //     // No filter applied → default to test college
-        //     $studentTestsQuery->where('college_id', $test->college_id);
-        // }
-
-        if ($request->has('college_id')) {
-
-            if ($request->college_id != '') {
-                $studentTestsQuery->where('college_id', $request->college_id);
-            }
-
-        } else {
-
-            // latest college attempt for this test
-            $latestCollegeId = StudentTest::where('test_id', $test_id)
-                ->latest('created_at')
-                ->value('college_id');
-
-            if ($latestCollegeId) {
-                $studentTestsQuery->where('college_id', $latestCollegeId);
-            } elseif ($test->college_id) {
-                // fallback for legacy tests
-                $studentTestsQuery->where('college_id', $test->college_id);
-            }
-
-        }
-
-
-        /* ===== EXISTING FILTERS ===== */
-
-        if ($request->filled('sno')) {
-            $studentEmails = $students->filter(function ($student) use ($request) {
-                return str_contains($student->sno, $request->sno);
-            })->keys();
-
-            $studentTestsQuery->whereIn('student_email', $studentEmails);
-        }
-
-        if ($request->filled('name')) {
-            $studentTestsQuery->where('student_name', 'like', '%' . $request->name . '%');
-        }
-
-        if ($request->filled('email')) {
-            $studentTestsQuery->where('student_email', 'like', '%' . $request->email . '%');
-        }
-
-        // Top scorer (respects other filters)
-       
-
-        // Top N filter (NEW)
-        // if ($request->filled('top_n') && is_numeric($request->top_n)) {
-        //     $studentTestsQuery->orderByDesc('score')->limit((int)$request->top_n);
-        // } else {
-        //     $studentTestsQuery->orderByDesc('score');
-        // }
-
-        if ($request->filled('top_n') && is_numeric($request->top_n)) {
-
-                $studentTestsQuery
-                    ->orderByDesc('created_at')
-                    ->orderByDesc('score')
-                    ->limit((int)$request->top_n);
-
-            } else {
-
-                $studentTestsQuery
-                    ->orderByDesc('created_at')
-                    ->orderByDesc('score');
-
-            }
-
-        // Selected / Unselected filter (NEW)
-        if ($request->filled('finalized')) {
-            $studentTestsQuery->where('is_finalized', $request->finalized);
-        }
-
-        if ($request->filled('moved')) {
-            if ($request->moved === '1') {
-                // Only moved
-                $studentTestsQuery->whereIn('id', $movedStudentTestIds);
-            } elseif ($request->moved === '0') {
-                // Not moved
-                if (!empty($movedStudentTestIds)) {
-                    $studentTestsQuery->whereNotIn('id', $movedStudentTestIds);
-                }
-            }
-        }
-
-        $studentTests = $studentTestsQuery->get();
-
-        // Attach S.No
-        $studentTests->each(function ($st) use ($students) {
-            $st->sno = $students[$st->student_email]->sno ?? '-';
-        });
-
-        // $defaultCollegeId = $request->college_id ?? $latestCollegeId ?? $test->college_id;
-        $defaultCollegeId = $request->has('college_id')
-        ? $request->college_id
-        : ($latestCollegeId ?? $test->college_id);
-
-        // Filter: moved / not moved
-    
-        return view('admin.tests.results', compact('test', 'studentTests','movedStudentTestIds','colleges','defaultCollegeId'));
-    }
+     
 
     public function bulkFinalize(Request $request)
     {
@@ -1089,9 +803,79 @@ class TestController extends Controller
         );
     }
 
+     public function moveFinalizedToEnquiries(Request $request)
+{
+    $ids = $request->student_test_ids;
+    $sessionId = $request->session_id;
+// dd($ids,$sessionId);
+    // ✅ Validation
+    if (empty($ids)) {
+        // return response()->json(['message' => 'No students selected'], 422);
+         return back()->with('success', 'No students selected.');
+    }
 
-    public function moveFinalizedToEnquiries(Test $test)
+    if (!$sessionId) {
+        // return response()->json(['message' => 'Session required'], 422);
+         return back()->with('success', 'Session required.');
+    }
+
+    // ✅ Ignore already moved (BEST PRACTICE)
+    $students = StudentTest::whereIn('id', $ids)
+        ->where('is_moved_to_enquiry', 0)
+        ->get();
+
+    if ($students->isEmpty()) {
+        // return response()->json(['message' => 'No valid students found'], 422);
+         return back()->with('error', 'No valid students found.');
+    }
+
+    $count = 0;
+
+    foreach ($students as $st) {
+
+        $enquiry = Enquiry::firstOrCreate(
+            [
+                // ✅ UNIQUE KEY (perfect)
+                'source_id'   => $st->id,
+                'source_type' => 'online',
+            ],
+            [
+                'name'       => $st->student_name,
+                'email'      => $st->student_email,
+                'mobile'     => $st->student_mobile ?? null,
+
+                'college'    => $st->college_id ?? null,
+                'study'      => $st->class ?? '',
+                'semester'   => $st->semester ?? null,
+
+                'session_id' => $sessionId,
+
+                'source'     => 'online',
+                'source_type'     => 'online',
+                'source_id'     => $st->id,
+                'status'     => 'new',
+                'created_by' => auth()->id(),
+            ]
+        );
+
+        // ✅ count only new
+        if ($enquiry->wasRecentlyCreated) {
+            $count++;
+        }
+
+        // ✅ ALWAYS update flag (safe)
+        $st->update([
+            'is_moved_to_enquiry' => 1
+        ]);
+    }
+
+return back()->with('success', "$count student(s) moved successfully");
+     
+}
+
+    public function mo21veFinalizedToEnquiries(Test $test)
     {
+        dd('here');
         $studentTests = $test->studentTests()
             ->where('is_finalized', 1)
             ->get();
@@ -1129,56 +913,7 @@ class TestController extends Controller
         return back()->with('success', 'Finalized students moved to Enquiries successfully.');
     }
 
-    public function results16dec(Request $request, $test_id)
-    {
-        // Load test with studentTests
-        $test = Test::with('studentTests')->findOrFail($test_id);
-
-        // Fetch all students for S.No
-        $students = Student::all()->keyBy('email_id');
-
-        // Start query for student tests
-        $studentTestsQuery = $test->studentTests();
-
-        // Apply filters from request
-        if ($request->filled('sno')) {
-            $studentEmails = $students->filter(function ($student) use ($request) {
-                return str_contains($student->sno, $request->sno);
-            })->keys();
-
-            $studentTestsQuery->whereIn('student_email', $studentEmails);
-        }
-
-        if ($request->filled('name')) {
-            $studentTestsQuery->where('student_name', 'like', '%' . $request->name . '%');
-        }
-
-        if ($request->filled('email')) {
-            $studentTestsQuery->where('student_email', 'like', '%' . $request->email . '%');
-        }
-         // Top scorer filter
-        if ($request->filled('top_scorer') && $request->top_scorer == '1') {
-            $maxScore = $test->studentTests()->max('score');
-            $studentTestsQuery->where('score', $maxScore);
-        }
-
-        if ($request->filled('test')) {
-            // Optional if you want to filter by test title
-            $testTitle = $request->test;
-            if ($test->title !== $testTitle) {
-                $studentTestsQuery->where('id', 0); // no match
-            }
-        }
-
-        $studentTests = $studentTestsQuery->get();
-
-        // Attach S.No to each studentTest
-        $studentTests->each(function ($st) use ($students) {
-            $st->sno = $students[$st->student_email]->sno ?? '-';
-        });
-
-        return view('admin.tests.results', compact('test', 'studentTests'));
-    }
+   
     public function studentView($slug)
     {
         $test = Test::where('slug', $slug)->firstOrFail();
@@ -1322,13 +1057,13 @@ class TestController extends Controller
 
         $html = View::make('pdf.aptitude-test-pdf', compact('questions','test'))->render();
         // $mpdf->SetHTMLHeaderByName('firstHeader');
-        $mpdf->SetHTMLFooter('');
+        // $mpdf->SetHTMLFooter('');
 
         // Write ALL content in one go
         $mpdf->WriteHTML($html);
 
         // Footer only on last page
-        $mpdf->SetHTMLFooter($this->getStudentTestPDFFooter());
+        // $mpdf->SetHTMLFooter($this->getStudentTestPDFFooter());
         $mpdf->WriteHTML('');
 
         $safeTitle = preg_replace('/[\/\\\\]/', '-', $test->title);

@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Cv;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Rules\NotBlockedNumber;
 
 class CvController extends Controller
 {
@@ -93,7 +94,8 @@ class CvController extends Controller
             'experience_years' => 'nullable|integer|min:0|max:99',
             'current_job_status' => 'nullable|string|max:150',
             'hiring_status' => ['required', Rule::in(['Looking', 'Not Looking', 'Open to Offers'])],
-            'phone_number' => 'nullable|string|max:30',
+            // 'phone_number' => 'nullable|string|max:30',
+             'phone_number' => ['nullable', 'string', new NotBlockedNumber],
             'email' => 'required|string|max:255',
             'location' => 'nullable|string|max:100',
             'last_updated_at' => 'nullable|date',

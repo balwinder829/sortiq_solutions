@@ -124,7 +124,8 @@
                             </form>
 
                             <button class="btn btn-sm btn-outline-dark"
-                                    onclick="copyShare('{{ route('company_ppt.preview', $cp->share_token) }}')">
+                                    
+                                    onclick="copyShare('{{ route('ppt_company.public.preview', $cp->share_token) }}')">
                                 <i class="fa fa-share"></i>
                             </button>
 
@@ -140,10 +141,32 @@
 
 @push('scripts')
 <script>
+// function copyShare(url){
+//     navigator.clipboard.writeText(url)
+//         .then(() => alert("Share link copied"))
+//         .catch(() => prompt("Copy this link:", url));
+// }
+
 function copyShare(url){
     navigator.clipboard.writeText(url)
-        .then(() => alert("Share link copied"))
-        .catch(() => prompt("Copy this link:", url));
+        .then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Copied!',
+                text: 'Share link copied to clipboard',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Copy failed',
+                text: 'Please copy manually below:',
+            }).then(() => {
+                prompt("Copy this link:", url);
+            });
+        });
 }
 
 $(document).ready(function () {

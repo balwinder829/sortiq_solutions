@@ -3,8 +3,8 @@
 namespace App\Imports;
 
 use App\Models\Trainer;
-use App\Models\User;
 use App\Models\StudentCourse;
+use App\Models\BlockedNumber;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -18,70 +18,80 @@ class TrainersImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVal
     public $warnings = [];
     public $rowNumber = 1;
 
+    /* ================= NORMALIZE ================= */
+    public function prepareForValidation($data, $index)
+    {
+        if (!empty($data['phone'])) {
+            $data['phone'] = preg_replace('/[\|\-_;\s,]+/', '', $data['phone']);
+        }
+
+        if (!empty($data['email'])) {
+            $data['email'] = trim($data['email']);
+        }
+
+        return $data;
+    }
+
+    /* ================= MAIN LOGIC ================= */
     public function model(array $row)
     {
-        // Excel starts reading data at row 2 when using WithHeadingRow
         $this->rowNumber++;
 
         $name     = trim($row['trainer_name'] ?? '');
         $email    = trim($row['email'] ?? '');
         $phone    = trim($row['phone'] ?? '');
         $username = trim($row['username'] ?? '');
-        $gender   = strtolower($row['gender'] ?? '');
-        $tech     = strtolower($row['technology'] ?? '');
+        $gender   = strtolower(trim($row['gender'] ?? ''));
+        $tech     = strtolower(trim($row['technology'] ?? ''));
 
-        // If name missing → fallback to username
+        /* -------- NAME FALLBACK -------- */
         if (empty($name)) {
             if (!empty($username)) {
                 $name = $username;
             } else {
-                // username also missing -> skip
                 return $this->skip('Missing trainer name and username', '-');
             }
         }
 
-        // Course lookup
+        /* -------- COURSE -------- */
         $courseId = StudentCourse::whereRaw("LOWER(course_name) = ?", [$tech])->value('id');
         if (!$courseId) {
             return $this->skip('Invalid technology', $tech);
         }
 
-        // Duplicate checks (manual)
-        if (!empty($email) && User::where('email', $email)->exists()) {
+        /* -------- BLOCKED NUMBER (SKIP, NOT FAIL) -------- */
+        if (!empty($phone) && BlockedNumber::where('number', $phone)->exists()) {
+            return $this->skip('Blocked phone number', $phone);
+        }
+
+        /* -------- DUPLICATE CHECK -------- */
+        if (!empty($email) && Trainer::where('email', $email)->exists()) {
             return $this->skip('Duplicate email', $email);
         }
 
-        if (!empty($phone) && User::where('phone', $phone)->exists()) {
+        if (!empty($phone) && Trainer::where('phone', $phone)->exists()) {
             return $this->skip('Duplicate phone', $phone);
         }
 
-        if (!empty($username) && User::where('username', $username)->exists()) {
+        if (!empty($username) && Trainer::where('username', $username)->exists()) {
             return $this->skip('Duplicate username', $username);
         }
 
-        // Create user safely (catch DB unique constraint errors)
-        try {
-            $user = User::create([
-                'name'     => $name,
-                'email'    => $email,
-                'phone'    => $phone,
-                'username' => $username,
-                'password' => 'trainer123', // hashed by mutator
-                'role'     => 2,
-                'status'   => 'active',
-            ]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            return $this->skip('Duplicate user record (SQL constraint)', $email ?? $phone ?? $username ?? '-');
-        }
-
-        // Create trainer record
+        /* -------- CREATE TRAINER -------- */
         return new Trainer([
-            'user_id'    => $user->id,
-            'gender'     => $gender,
-            'technology' => $courseId,
+            'name'         => $name,
+            'email'        => $email,
+            'phone'        => $phone,
+            'username'     => $username,
+            'password'     => 'trainer123',
+            'trainer_pswd' => 'trainer123',
+            'gender'       => $gender,
+            'technology'   => $courseId,
+            'status'       => 'active',
         ]);
     }
 
+    /* ================= SKIP HANDLER ================= */
     private function skip(string $reason, $value = '-')
     {
         $this->warnings[] = [
@@ -93,15 +103,23 @@ class TrainersImport implements ToModel, WithHeadingRow, SkipsEmptyRows, WithVal
         return null;
     }
 
+    /* ================= VALIDATION ================= */
     public function rules(): array
     {
         return [
             '*.trainer_name' => 'nullable|string',
             '*.gender'       => 'required|in:male,female',
-            '*.phone'        => 'required',
-            '*.email'        => 'nullable|email',
-            '*.technology'   => 'required|string',
-            '*.username'     => 'nullable|string',
+
+            '*.phone' => [
+                'required',
+                'regex:/^\d{10}$/'
+            ],
+
+            '*.email' => 'nullable|email',
+
+            '*.technology' => 'required|string',
+
+            '*.username' => 'nullable|string',
         ];
     }
 }

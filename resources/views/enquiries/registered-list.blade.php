@@ -27,95 +27,74 @@
 
 <div class="container">
 
-    {{-- HEADER --}}
     <div class="row mb-2">
         <div class="col-md-4">
             <h1 class="page_heading">Registrations</h1>
         </div>
         <div class="col-md-8">
-                <div class="d-flex justify-content-end gap-2">
-                    
-                    <a href="{{ route('registrations.export.all') }}"
-               class="btn mb-3" style="background-color: #6b51df; color: #fff;">
-                <i class="fa fa-download"></i> Export All
-            </a>
+            <div class="d-flex justify-content-end gap-2">
+                <a href="{{ route('registrations.export.all') }}"
+                   class="btn mb-3" style="background-color: #6b51df; color: #fff;">
+                    <i class="fa fa-download"></i> Export All
+                </a>
 
-            <a href="{{ route('registrations.export.pending') }}"
-               class="btn mb-3" style="background-color: #6b51df; color: #fff;">
-                <i class="fa fa-download"></i> Export Pending
-            </a>
+                <a href="{{ route('registrations.export.pending') }}"
+                   class="btn mb-3" style="background-color: #6b51df; color: #fff;">
+                    <i class="fa fa-download"></i> Export Pending
+                </a>
             </div>
         </div>
     </div>
-    <!-- <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Registrations</h4>
 
-        <div>
-            <a href="{{ route('registrations.export.all') }}"
-               class="btn btn-outline-primary btn-sm">
-                <i class="fa fa-download"></i> Export All
-            </a>
-
-            <a href="{{ route('registrations.export.pending') }}"
-               class="btn btn-outline-warning btn-sm">
-                <i class="fa fa-download"></i> Export Pending
-            </a>
-        </div>
-    </div> -->
-
-    {{-- FLASH --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
             {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show">
             {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
 
+    {{-- FILTER --}}
     <form method="GET" id="filterForm" class="mb-3">
-    <div class="row">
+        <div class="row">
+            <div class="col-md-3">
+                <label><strong>From Date</strong></label>
+                <input type="date" name="from_date" class="form-control filterchange"
+                       value="{{ request('from_date') }}">
+            </div>
 
-        <div class="col-md-3">
-            <label><strong>From Date</strong></label>
-            <input type="date" name="from_date" class="form-control filterchange"
-                   value="{{ request('from_date') }}">
+            <div class="col-md-3">
+                <label><strong>To Date</strong></label>
+                <input type="date" name="to_date" class="form-control filterchange"
+                       value="{{ request('to_date') }}">
+            </div>
+
+            <div class="col-md-3">
+                <label><strong>Collected By</strong></label>
+                <select name="salesperson_id" class="form-control filterchange">
+                    <option value="">All</option>
+                    @foreach($salesUsers as $user)
+                        <option value="{{ $user->id }}"
+                            {{ request('salesperson_id') == $user->id ? 'selected' : '' }}>
+                            {{ $user->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end">
+                <a href="{{ route('registrations.index') }}" class="btn btn-secondary">
+                    Reset
+                </a>
+            </div>
         </div>
-
-        <div class="col-md-3">
-            <label><strong>To Date</strong></label>
-            <input type="date" name="to_date" class="form-control filterchange"
-                   value="{{ request('to_date') }}">
-        </div>
-
-        <div class="col-md-3">
-            <label><strong>Collected By</strong></label>
-            <select name="salesperson_id" class="form-control filterchange">
-                <option value="">All</option>
-                @foreach($salesUsers as $user)
-                    <option value="{{ $user->id }}"
-                        {{ request('salesperson_id') == $user->id ? 'selected' : '' }}>
-                        {{ $user->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="col-md-3 d-flex align-items-end">
-            <!-- <button class="btn btn-primary me-2">Search</button> -->
-            <a href="{{ route('registrations.index') }}" class="btn btn-secondary">
-                Reset
-            </a>
-        </div>
-
-    </div>
-</form>
-
+    </form>
 
     {{-- TABS --}}
     <ul class="nav nav-tabs mb-3">
@@ -135,114 +114,102 @@
 
         {{-- ALL --}}
         <div class="tab-pane fade show active" id="all">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="allTable">
-                    <thead>
+            <table class="table table-bordered table-striped" id="allTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Amount</th>
+                        <th>Collected By</th>
+                        <th>Mode</th>
+                        <th>Slip</th>
+                        <th>Registered At</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach($allRegistrations as $reg)
                         <tr>
-                            <th><input type="checkbox" id="selectAll"></th>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Mobile</th>
-                            <th>Email</th>
-                            <th>Amount</th>
-                            <th>Collected By</th>
-                            <th>Mode</th>
-                            <th>Slip</th>
-                            <th>Registered At</th>
-                            <th>Status</th>
+                            <td>
+                                @if(!$reg->enquiry->student)
+                                    <input type="checkbox" class="rowCheck" value="{{ $reg->enquiry_id }}">
+                                @else
+                                    <span class="badge bg-success">Converted</span>
+                                @endif
+                            </td>
+
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $reg->enquiry->name }}</td>
+                            <td>{{ $reg->enquiry->mobile }}</td>
+                            <td>{{ $reg->enquiry->email ?? '-' }}</td>
+                            <td>₹{{ number_format($reg->amount_paid, 2) }}</td>
+                            <td>{{ $reg->collector->name ?? '-' }}</td>
+                            <td>{{ ucfirst($reg->payment_mode) }}</td>
+                            <td>
+                                <a href="{{ asset($reg->payment_image) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    View
+                                </a>
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($reg->registered_at)->format('d M Y, h:i A') }}</td>
+                            <td>
+                                @if($reg->enquiry->student)
+                                    <span class="badge bg-success">Converted</span>
+                                @else
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                @endif
+                            </td>
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach($allRegistrations as $reg)
-                            <tr>
-                                <td>
-                                    <input type="checkbox"
-                                           class="rowCheck"
-                                           value="{{ $reg->enquiry_id }}">
-                                </td>
-
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $reg->enquiry->name }}</td>
-                                <td>{{ $reg->enquiry->mobile }}</td>
-                                <td>{{ $reg->enquiry->email ?? '-' }}</td>
-                                <td>₹{{ number_format($reg->amount_paid, 2) }}</td>
-                                <td>{{ $reg->collector->name ?? '-' }}</td>
-                                <td>{{ ucfirst($reg->payment_mode) }}</td>
-                                <td>
-                                    <a href="{{ asset($reg->payment_image) }}"
-                                       target="_blank"
-                                       class="btn btn-sm btn-outline-secondary">
-                                        View
-                                    </a>
-                                </td>
-                                <td>{{ \Carbon\Carbon::parse($reg->registered_at)->format('d M Y, h:i A') }}</td>
-                                <td>
-                                    @if($reg->enquiry->student)
-                                        <span class="badge bg-success">Converted</span>
-                                    @else
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
 
         {{-- PENDING --}}
         <div class="tab-pane fade" id="pending">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="pendingTable">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Name</th>
-                            <th>Mobile</th>
-                            <th>Amount</th>
-                            <th>Slip</th>
-                            <th>Registered At</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
+            <table class="table table-bordered table-striped" id="pendingTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAllPending"></th>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Mobile</th>
+                        <th>Amount</th>
+                        <th>Slip</th>
+                        <th>Registered At</th>
+                    </tr>
+                </thead>
 
-                    <tbody>
-                        @foreach($pendingRegistrations as $reg)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $reg->enquiry->name }}</td>
-                                <td>{{ $reg->enquiry->mobile }}</td>
-                                <td>₹{{ number_format($reg->amount_paid, 2) }}</td>
-                                <td>
-                                    <a href="{{ asset($reg->payment_image) }}"
-                                       target="_blank"
-                                       class="btn btn-sm btn-outline-secondary">
-                                        View
-                                    </a>
-                                </td>
-                                <td>{{ \Carbon\Carbon::parse($reg->registered_at)->format('d M Y, h:i A') }}</td>
-                                <td>
-                                    <form method="POST"
-                                          action="{{ route('convert.to.student', $reg->enquiry_id) }}"
-                                          data-swal-confirm="Convert this registration to student?">
-                                        @csrf
-                                        <button class="btn btn-success btn-sm">
-                                            Convert
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                <tbody>
+                    @foreach($pendingRegistrations as $reg)
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="rowCheck" value="{{ $reg->enquiry_id }}">
+                            </td>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $reg->enquiry->name }}</td>
+                            <td>{{ $reg->enquiry->mobile }}</td>
+                            <td>₹{{ number_format($reg->amount_paid, 2) }}</td>
+                            <td>
+                                <a href="{{ asset($reg->payment_image) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    View
+                                </a>
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($reg->registered_at)->format('d M Y, h:i A') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-<div class="mt-3">
-    <button id="bulkConvertBtn" class="btn btn-success">
-        Convert Selected
-    </button>
-</div>
+
+        <div class="mt-3">
+            <button id="bulkConvertBtn" class="btn btn-success">
+                Convert Selected
+            </button>
+        </div>
 
     </div>
 </div>
@@ -250,67 +217,80 @@
 @endsection
 
 @push('scripts')
+
+<script>
+    let sessionOptions = @json($sessionsList);
+</script>
+
 <script>
 $(document).ready(function () {
+
     $('#allTable, #pendingTable').DataTable({
         paging: false,
         info: false,
         ordering: false,
         searching: false
     });
-});
-</script>
-@push('scripts')
-<script>
-$('#selectAll').on('change', function () {
-    $('.rowCheck').prop('checked', this.checked);
-});
 
-$('#bulkConvertBtn').on('click', function () {
-
-    let ids = [];
-    $('.rowCheck:checked').each(function () {
-        ids.push($(this).val());
+    // Select all (per table)
+    $('#selectAll, #selectAllPending').on('change', function () {
+        let checked = this.checked;
+        $(this).closest('table').find('.rowCheck').prop('checked', checked);
     });
 
-    if (ids.length === 0) {
-        alert('Please select at least one record');
-        return;
-    }
+    // Bulk convert (unified)
+    $('#bulkConvertBtn').on('click', function () {
 
-    if (!confirm('Convert selected registrations to students?')) return;
+        let ids = [];
+        $('.rowCheck:checked').each(function () {
+            ids.push($(this).val());
+        });
 
-    fetch("{{ route('registrations.bulk.convert') }}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': "{{ csrf_token() }}"
-        },
-        body: JSON.stringify({ enquiry_ids: ids })
-    })
-    .then(res => res.json())
-    .then(data => location.reload());
+        if (ids.length === 0) {
+            Swal.fire('No selection', 'Select at least one student', 'warning');
+            return;
+        }
+
+        let optionsHtml = '';
+        Object.keys(sessionOptions).forEach(function(key) {
+            optionsHtml += `<option value="${key}">${sessionOptions[key]}</option>`;
+        });
+
+        Swal.fire({
+            title: 'Select Session',
+            html: `<select id="session_id" class="form-control">${optionsHtml}</select>`,
+            showCancelButton: true,
+            confirmButtonText: 'Convert'
+        }).then((result) => {
+
+            if (!result.isConfirmed) return;
+
+            let session_id = $('#session_id').val();
+
+            fetch("{{ route('registrations.bulk.convert') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    enquiry_ids: ids,
+                    session_id: session_id
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                Swal.fire('Success', data.message, 'success');
+                location.reload();
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Something went wrong', 'error');
+            });
+
+        });
+    });
+
 });
 </script>
-<script>
-$(document).ready(function(){
-
-    let timer;
-
-    $('.filterchange').on('change', function(){
-        $('#filterForm').submit();
-        
-    });
-    $('.filterchangetext').on('input', function(){
-        clearTimeout(timer);
-
-        timer = setTimeout(function(){
-            $('#filterForm').submit();
-        }, 500); // waits 500ms after typing stops
-    });
-
-});
-</script>
-@endpush
 
 @endpush

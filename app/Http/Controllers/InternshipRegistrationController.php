@@ -11,6 +11,7 @@ use App\Models\College;
 use App\Models\Course;
 use App\Exports\InternshipRegistrationsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Rules\NotBlockedNumber;
 
 
 class InternshipRegistrationController extends Controller
@@ -25,7 +26,8 @@ class InternshipRegistrationController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth');
+        // $this->middleware('auth');
+        $this->middleware('auth')->except(['create', 'store']);
 
         // ❌ deny everything by default
         // $this->middleware(function () {
@@ -48,7 +50,8 @@ class InternshipRegistrationController extends Controller
         $validated = $request->validate([
             'full_name'  => 'required|string|max:255',
             'email'      => 'required|email|max:255',
-            'phone'      => 'required|string|max:50',
+            // 'phone'      => 'required|string|max:50',
+            'phone' => ['required', 'string', new NotBlockedNumber],
             'page_type'      => 'nullable|string',
             'college'    => 'required|string|max:255',
             'slug'       => 'required|string|max:255',

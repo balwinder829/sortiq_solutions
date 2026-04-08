@@ -23,6 +23,7 @@ use App\Imports\StudentsImport;
 use Maatwebsite\Excel\Facades\Excel;
 use ZipArchive;
 use Illuminate\Support\Str;
+use App\Rules\NotBlockedNumber;
 
 class CertificateController extends Controller
 {
@@ -328,7 +329,8 @@ if (!$request->filled('fee_filter')) {
             ],
             'sno'            => 'required|string|max:255',
             'email_id'       => 'nullable|email',
-            'contact'        => 'required|string|max:15',
+            // 'contact'        => 'required|string|max:15',
+            'contact' => ['required', 'string', new NotBlockedNumber],
             'gender'         => 'required|string',
             // 'college_name'   => 'required|string',   // not college_id
             // 'technology'     => 'required|string',   // not technology_id

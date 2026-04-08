@@ -81,6 +81,7 @@
                 <th>Email</th>
                 
                 <th>Created Date</th>
+                <th>Updated Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -111,6 +112,7 @@
                 <!-- <td>{{ $letter->email }}</td> -->
                 
                 <td>{{ $letter->created_at->format('d M Y') }}</td>
+                <td>{{ $letter->updated_at->format('d M Y') }}</td>
                 <td>
                     {{-- Edit --}}
                     <a href="{{ route('student-additional-letters.edit', $letter) }}"

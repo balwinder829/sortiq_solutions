@@ -106,7 +106,7 @@ class ManagementsLetterController extends Controller
         // dd($managements_letter);
         $view = match ($managements_letter->letter_type) {
             'custom' => 'managements_letters.pdf-custom_letter',
-            default  => 'letters.pdf-offer',
+            default  => 'managements_letters.pdf-custom_empty_letter',
         };
 
         $html = View::make($view, compact('managements_letter'))->render();
@@ -131,9 +131,9 @@ class ManagementsLetterController extends Controller
         }
 
         $mpdf->SetHTMLHeader($this->getPDFHeader());
+        $mpdf->WriteHTML($html);
         $mpdf->SetHTMLFooter($this->getPDFFooter());
 
-        $mpdf->WriteHTML($html);
 
         return $mpdf->Output('', 'S');
     }
@@ -165,6 +165,40 @@ class ManagementsLetterController extends Controller
         );
 
         $fileName = "{$letterType}.pdf";
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header(
+                'Content-Disposition',
+                'attachment; filename="'.$fileName.'"'
+            );
+    }
+
+    public function show(){
+
+    }
+    public function letterheaddownload()
+{
+    $managements_letter = new ManagementsLetter();
+    $managements_letter->letter_type = ''; // important
+
+    $pdfContent = $this->generateLetterPdf($managements_letter);
+
+    return response($pdfContent)
+        ->header('Content-Type', 'application/pdf')
+        ->header('Content-Disposition', 'attachment; filename="letter_head.pdf"');
+}
+    public function letterheadqdownload()
+    {
+        // dd($managements_letter);
+        // dd('here');
+        $managements_letter = [];
+        $pdfContent = $this->generateLetterPdf($managements_letter);
+
+        
+        
+
+        $fileName = "letter_head.pdf";
 
         return response($pdfContent)
             ->header('Content-Type', 'application/pdf')

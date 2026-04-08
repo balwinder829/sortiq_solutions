@@ -21,6 +21,8 @@
                 <div class="d-flex justify-content-end">
                     
                    <a href="{{ route('passouts.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">        Add Data </a>
+
+                    <a href="{{ route('passouts.importForm') }}" class="btn mb-3 ml-2" style="background-color: #6b51df; color: #fff;">        Import </a>
             </div>
         </div>
     </div>
@@ -173,7 +175,7 @@
 
     
 {{-- ======================== UPLOAD EXCEL (UPDATED) ======================== --}}
-<div class="card shadow-sm mb-4">
+<!-- <div class="card shadow-sm mb-4">
     <div class="card-header bg-primary text-white">
         <strong>Import Data</strong>
     </div>
@@ -208,7 +210,7 @@
             </div>
         </form>
     </div>
-</div>
+</div> -->
 {{-- ======================== END UPLOAD ======================== --}}
 
     {{-- ======================== TABLE ======================== --}}

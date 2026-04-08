@@ -67,6 +67,26 @@ Published
 </select>
 </div>
 
+{{-- VIEW STATUS --}}
+<div class="form-group col-md-4 mb-3">
+<label>View Status</label>
+
+<select name="is_active" class="form-control">
+
+<option value="1"
+{{ old('is_active',$article->is_active ?? 1)=='1' ? 'selected' : '' }}>
+Enabled
+</option>
+
+<option value="0"
+{{ old('is_active',$article->is_active ?? 1)=='0' ? 'selected' : '' }}>
+Disabled
+</option>
+
+</select>
+
+</div>
+
 {{-- DESCRIPTION --}}
 <div class="form-group col-md-12 mb-3">
 <label>Content</label>
@@ -76,10 +96,10 @@ class="form-control">{{ old('description',$article->description) }}</textarea>
 </div>
 
 {{-- NEW FILES --}}
-<!-- <div class="form-group col-md-8 mb-3">
+<div class="form-group col-md-8 mb-3">
 <label>Add More Attachments</label>
 <input type="file" name="files[]" multiple class="form-control">
-</div> -->
+</div>
 
 {{-- EXPIRE --}}
 <div class="form-group col-md-4 mb-3">
@@ -92,7 +112,7 @@ class="form-control">
 
 {{-- EXISTING FILES --}}
 @if($article->attachments->count())
-<!-- <div class="col-md-12 mt-4">
+<div class="col-md-12 mt-4">
 <label>Existing Attachments</label>
 
 <table class="table table-bordered">
@@ -115,11 +135,13 @@ class="form-control">
 
 <span class="admin-preview-trigger text-primary"
       style="cursor:pointer;">
-    {{ $file->file_name }}
+    <a href="{{ route('admin.helpdesk.attachments.preview', $file->id) }}" target="_blank">
+                    {{ $file->file_name }}
+                </a>
 </span>
 
 {{-- HOVER PREVIEW BOX --}}
-<div class="admin-preview-box shadow"
+<!-- <div class="admin-preview-box shadow"
      style="
         display:none;
         position:absolute;
@@ -148,7 +170,7 @@ class="form-control">
         <span>No preview available</span>
     @endif
 
-</div>
+</div> -->
 
 </td>
 
@@ -166,7 +188,7 @@ Delete
 </tbody>
 </table>
 
-</div> -->
+</div>
 @endif
 
 </div>

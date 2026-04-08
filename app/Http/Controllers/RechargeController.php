@@ -8,6 +8,7 @@ use App\Models\Recharge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Rules\NotBlockedNumber;
 
 class RechargeController extends Controller
 {
@@ -88,7 +89,8 @@ class RechargeController extends Controller
 
          $data = $request->validate([
             'employee_name'   => 'required',
-            'mobile_number'      => 'required',
+            // 'mobile_number'      => 'required',
+            'mobile_number' => ['required', 'string', new NotBlockedNumber],
             'operator'      => 'required',
             'amount'      => 'required',
             'reference'      => 'nullable',
@@ -138,7 +140,8 @@ class RechargeController extends Controller
     {
         $data = $request->validate([
             'employee_name'   => 'required',
-            'mobile_number'      => 'required',
+            // 'mobile_number'      => 'required',
+            'mobile_number' => ['required', 'string', new NotBlockedNumber],
             'operator'      => 'required',
             'amount'      => 'required',
             'reference'      => 'nullable',

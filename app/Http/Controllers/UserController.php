@@ -9,6 +9,7 @@ use App\Models\Role;
 use Spatie\Permission\Models\Role as SpatieRole;
 use App\Http\Middleware\LogSystemActivity;
 use App\Http\DataTables\DataTablesServerSide;
+use App\Rules\NotBlockedNumber;
 
 class UserController extends Controller
 {
@@ -190,7 +191,8 @@ if (!$user->hasRole('Admin')) {
             ],
             'password' => 'required|string|min:6',
             'role' => 'required',
-            'phone'        => 'required|max:40|unique:users,phone',
+            // 'phone'        => 'required|max:40|unique:users,phone',
+            'phone' => ['required', 'digits:10', 'unique:users,phone', new NotBlockedNumber],
             // 'username'        => 'required|max:40|unique:users,username',
             'email'        => 'nullable|email|unique:users,email',
             // 'role' => 'required|string',
@@ -271,7 +273,8 @@ if (!$user->hasRole('Admin')) {
                 'unique:users,username,' . $user->id, // ignore current user
                 'regex:/^[A-Za-z0-9_]+$/', // no spaces allowed
             ],
-            'phone' => 'required|max:40|unique:users,phone,' . $user->id,
+            // 'phone' => 'required|max:40|unique:users,phone,' . $user->id,
+            'phone' => ['required', 'digits:10', 'unique:users,phone,' . $user->id, new NotBlockedNumber],
             'email' => 'nullable|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6',
             'status'   => 'required|in:active,inactive',

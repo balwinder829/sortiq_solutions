@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Imports\PlacementCompanyImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\View;
+use App\Rules\NotBlockedNumber;
 class PlacementCompanyController extends Controller
 {   
     protected string $permissionPrefix = 'placement_companies';
@@ -68,7 +69,12 @@ class PlacementCompanyController extends Controller
             // email optional
             'email'   => ['nullable','string'],
             // 'phone' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
-            'phone' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            // 'phone' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            'phone' => [
+                'required',
+                'regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/',
+                new NotBlockedNumber,
+            ],
             'website' => 'nullable|url',
             'status' => 'required',
         ],[
@@ -106,7 +112,12 @@ class PlacementCompanyController extends Controller
             'name' => 'required|string|max:255',
              'email'   => ['nullable','string'],
             // 'phone' => ['nullable','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
-            'phone' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            // 'phone' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            'phone' => [
+                'required',
+                'regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/',
+                new NotBlockedNumber,
+            ],
             
             'website' => 'nullable|url',
             'status' => 'required',

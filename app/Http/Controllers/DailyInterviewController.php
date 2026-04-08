@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\DailyInterview;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Rules\NotBlockedNumber;
 
 class DailyInterviewController extends Controller
 {
@@ -51,7 +52,8 @@ class DailyInterviewController extends Controller
     {
         return [
             'candidate_name' => 'required|string|max:255',
-            'mobile_no' => 'nullable|string|max:20',
+            // 'mobile_no' => 'nullable|string|max:20',
+            'mobile_no' => ['nullable', 'string', new NotBlockedNumber],
             'technology' => 'nullable|string|max:100',
             'interview_mode' => 'nullable|string',
             

@@ -11,6 +11,7 @@ use File;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
+use App\Rules\NotBlockedNumber;
 
 class MouController extends Controller
 {	
@@ -81,7 +82,8 @@ class MouController extends Controller
         $data = $request->validate([
             'college_id' => 'required|exists:colleges,id',
             'mou_title'  => 'required|string|max:255',
-            'mou_number' => 'nullable|string|max:100',
+            // 'mou_number' => 'nullable|string|max:100',
+            'mou_number' => ['nullable', 'string', new NotBlockedNumber],
             'email_to'   => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
@@ -126,7 +128,8 @@ class MouController extends Controller
         $data = $request->validate([
             'college_id' => 'required|exists:colleges,id',
             'mou_title'  => 'required|string|max:255',
-            'mou_number' => 'nullable|string|max:100',
+            // 'mou_number' => 'nullable|string|max:100',
+            'mou_number' => ['nullable', 'string', new NotBlockedNumber],
             'email_to'   => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date',

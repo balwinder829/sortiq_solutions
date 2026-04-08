@@ -5,6 +5,8 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use App\Models\NotificationTemplate;
+use App\Services\NotificationService;
+
 
 class FeePendingSummaryNotification extends Notification
 {
@@ -20,9 +22,21 @@ class FeePendingSummaryNotification extends Notification
     }
 
     // REQUIRED METHOD → Without this, Laravel throws error
+    // public function via($notifiable)
+    // {
+    //     return ['database']; 
+    // }
+
     public function via($notifiable)
     {
-        return ['database']; 
+        NotificationService::send(
+            $notifiable,
+            static::class,
+            $this->toDatabase($notifiable),
+            $this->sessionId ?? null
+        );
+
+        return []; // stop Laravel default DB insert
     }
 
     public function toDatabase($notifiable)

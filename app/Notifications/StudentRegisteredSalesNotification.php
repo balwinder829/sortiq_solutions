@@ -5,6 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use App\Models\NotificationTemplate;
+use App\Services\NotificationService;
 
 class StudentRegisteredSalesNotification extends Notification
 {
@@ -19,7 +20,14 @@ class StudentRegisteredSalesNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['database'];
+        NotificationService::send(
+            $notifiable,
+            static::class,
+            $this->toDatabase($notifiable),
+            $this->sessionId ?? null
+        );
+
+        return []; // stop Laravel default DB insert
     }
 
     public function toDatabase($notifiable)

@@ -167,7 +167,23 @@ class PgImport implements
         $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
 
         /* -------- BLOCKED NUMBER -------- */
-        
+        if (!empty($row['contact'])) {
+
+            $numbers = explode(',', $row['contact']); // already normalized
+
+            foreach ($numbers as $number) {
+
+                $number = trim($number);
+
+                if ($number === '') continue;
+
+                if (\App\Models\BlockedNumber::where('number', $number)->exists()) {
+                    $this->skippedRows++;
+                    $this->duplicateContacts[] = "Blocked contact skipped: {$number}";
+                    return null;
+                }
+            }
+        }
 
         /* -------- SESSION -------- */
 

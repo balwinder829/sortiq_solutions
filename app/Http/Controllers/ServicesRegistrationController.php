@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Exports\ServicesRegistrationsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Rules\NotBlockedNumber;
 
 class ServicesRegistrationController extends Controller
 {
@@ -21,7 +22,8 @@ class ServicesRegistrationController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth');
+        // $this->middleware('auth');
+        $this->middleware('auth')->except(['create', 'store']);
 
         // ❌ deny everything by default
         // $this->middleware(function () {
@@ -100,7 +102,8 @@ class ServicesRegistrationController extends Controller
         $data = $request->validate([
             'full_name'  => 'required|string|max:255',
             'email'      => 'required|email|max:255',
-            'phone'      => 'required|string|max:50',
+            // 'phone'      => 'required|string|max:50',
+            'phone' => ['required', 'string', new NotBlockedNumber],
             'location'   => 'required|string|max:255',
             'technology' => 'required|string|max:255',
             'message'    => 'required|string',

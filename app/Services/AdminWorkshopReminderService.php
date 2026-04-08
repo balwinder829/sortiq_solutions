@@ -47,5 +47,7 @@ class AdminWorkshopReminderService
                 );
             }
         }
+
+        \Log::info('Workshop Reminder Service Running...');
     }
 }

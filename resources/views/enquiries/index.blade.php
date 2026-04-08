@@ -22,6 +22,7 @@
                 <div class="d-flex justify-content-end">
                     
                    <a href="{{ route('enquiries.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">        Add Data </a>
+                    <a href="{{ route('enquiries.importForm') }}" class="btn mb-3 ml-2" style="background-color: #6b51df; color: #fff;">        Import </a>
             </div>
         </div>
     </div>
@@ -77,7 +78,7 @@
 
             <div class="col-md-3 mb-2">
                 <label><strong>College</strong></label>
-                <select name="college" class="form-control filterchange">
+                <select name="college" class="form-control filterchange select2">
                     <option value="">All</option>
                     @foreach($colleges as $college)
                         <option value="{{ $college->id }}"
@@ -233,7 +234,7 @@
 
     
 {{-- ======================== UPLOAD EXCEL (UPDATED) ======================== --}}
-<div class="card shadow-sm mb-4">
+<!-- <div class="card shadow-sm mb-4">
     <div class="card-header bg-primary text-white">
         <strong>Import Data</strong>
     </div>
@@ -268,7 +269,7 @@
             </div>
         </form>
     </div>
-</div>
+</div> -->
 {{-- ======================== END UPLOAD ======================== --}}
 
     {{-- ======================== TABLE ======================== --}}

@@ -26,6 +26,7 @@ class ExternalAttendanceSubmission extends Model
         'class',
         'semester',
         'is_finalized',
+        'is_moved_to_enquiry',
         'course_id'
     ];
 

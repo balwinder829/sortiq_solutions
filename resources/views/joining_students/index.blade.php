@@ -36,7 +36,7 @@
     </div>
 
     <div class="col-md-6 text-end">
-        <button id="sendSelected" class="btn btn-primary">
+        <button id="sendSelected" class="btn btn-primary" title="Add to Session Confirmation">
             Send to Session
         </button>
     </div>
@@ -190,7 +190,7 @@ $('#sendSelected').click(function () {
     });
 
     Swal.fire({
-        title: 'Select Session',
+        title: 'Select Session for Confirmation',
         html: `<select id="session_id" class="form-control">${optionsHtml}</select>`,
         showCancelButton: true,
         confirmButtonText: 'Send'

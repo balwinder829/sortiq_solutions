@@ -526,7 +526,7 @@ function handleMrPrefixold(input) {
 let endDateManuallyChanged = false;
 
 document.addEventListener('DOMContentLoaded', function () {
-    calculateEndDateFromSession();
+    // calculateEndDateFromSession();
 });
 
 // Detect manual change
@@ -813,7 +813,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateLabel();
 });
+// document.addEventListener('DOMContentLoaded', function () {
+
+//     let hasEndDate = document.getElementById('end_date').value;
+
+//     if (!hasEndDate) {
+//         calculateEndDateFromSession();
+//     }
+// });
 </script>
+
 <!-- <script>
    
      

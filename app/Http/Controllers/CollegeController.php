@@ -242,7 +242,7 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
                 $collegeType,
                 $training,
                 $college->training_in_year,
-                $statusToggle,
+                
                 '<div class="mb-2">' .
                     '<a href="' . route('colleges.edit', $college->id) . '" class="btn btn-sm" data-bs-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a> ' .
                     '<form action="' . route('colleges.destroy', $college->id) . '" method="POST" style="display:inline;">' .

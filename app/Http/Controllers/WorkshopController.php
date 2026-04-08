@@ -11,7 +11,8 @@ use App\Exports\WorkshopsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\State;
 use App\Models\District;
-
+use App\Rules\NotBlockedNumber;
+use App\Models\Notification;
 class WorkshopController extends Controller
 {
     /**
@@ -254,6 +255,7 @@ class WorkshopController extends Controller
             'status'          => 'required|string',
             'duration'          => 'required',
             'tp_hod_no'       => 'required|string',
+            'tp_hod_no' => ['required', 'string', new NotBlockedNumber],
             'type'       => 'required',
             'event_type'       => 'required',
             // 'college_type'       => 'required',
@@ -305,7 +307,8 @@ class WorkshopController extends Controller
             'college_id' => 'required|exists:colleges,id',
             'status'     => 'required|in:done,decided,meeting,hold,cancel',
             'duration'          => 'required',
-            'tp_hod_no'  => 'required|digits:10',
+            // 'tp_hod_no'  => 'required|digits:10',
+            'tp_hod_no' => ['required', 'digits:10', new NotBlockedNumber],
             'name'       => 'required|string|max:255',
             'type'       => 'required',
             'event_type'       => 'required',

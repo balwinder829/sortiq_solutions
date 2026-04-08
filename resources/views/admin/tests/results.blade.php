@@ -6,13 +6,11 @@
    class="btn btn-outline-secondary mb-2">
     ← Back to Tests
 </a>
-<h2 class="mb-1 text-primary">
+<h2 class="mb-3 text-primary">
     Results : {{ $test->title }}
 </h2>
 
-<h5 class="mb-3 text-muted">
-    Current College : {{ $test->college_full_name }}
-</h5>
+ 
 
 
 {{-- SUCCESS MESSAGE --}}
@@ -122,6 +120,7 @@
             <option value="BTech" {{ request('class')=='BTech'?'selected':'' }}>BTech</option>
             <option value="BSc IT" {{ request('class')=='BSc IT'?'selected':'' }}>BSc IT</option>
             <option value="BSc CS" {{ request('class')=='BSc CS'?'selected':'' }}>BSc CS</option>
+            <option value="Polytechnic" {{ request('class')=='Polytechnic'?'selected':'' }}>Polytechnic</option>
         </select>
     </div>
 
@@ -224,7 +223,7 @@
 </button>
 
 <button type="submit"
-        class="btn btn-warning"
+        class="btn btn-warning move-enquiry-btn"
         formaction="{{ route('admin.tests.move.enquiries', $test->id) }}">
     Move to Enquiries
 </button>
@@ -424,6 +423,7 @@ $(document).ready(function(){
 document.addEventListener('DOMContentLoaded', function () {
 
     const form = document.getElementById('bulkForm');
+    const sessionOptions = @json($sessionsList); // ✅ pass from controller
 
     form.querySelectorAll('button[type="submit"]').forEach(button => {
 
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let selected = document.querySelectorAll('.student-checkbox:checked');
             let action = this.getAttribute('formaction');
 
-            // ✅ Check at least 1 student
+            // ✅ Check selection
             if (selected.length === 0) {
                 Swal.fire({
                     icon: 'warning',
@@ -443,25 +443,109 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // ✅ Confirmation for all actions
-            Swal.fire({
-                title: 'Are you sure?',
-                text: selected.length + " student(s) selected",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Proceed'
-            }).then((result) => {
-                if (result.isConfirmed) {
+            // 🔥 ONLY for Move to Enquiries
+                 if (this.classList.contains('move-enquiry-btn')) {
+
+                let optionsHtml = '';
+                Object.keys(sessionOptions).forEach(function(key) {
+                    optionsHtml += `<option value="${key}">${sessionOptions[key]}</option>`;
+                });
+
+                Swal.fire({
+                    title: 'Select Session',
+                    html: `<select id="session_id" class="form-control">${optionsHtml}</select>`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Move'
+                }).then((result) => {
+
+                    if (!result.isConfirmed) return;
+
+                    let session_id = document.getElementById('session_id').value;
+
+                    if (!session_id) {
+                        Swal.fire('Error', 'Session is required', 'error');
+                        return;
+                    }
+
+                    // ✅ add hidden input
+                    let input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'session_id';
+                    input.value = session_id;
+
+                    form.appendChild(input);
+
                     form.action = action;
                     form.submit();
-                }
-            });
+                });
+
+            } else {
+
+                // ✅ normal flow for other buttons
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: selected.length + " student(s) selected",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Proceed'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.action = action;
+                        form.submit();
+                    }
+                });
+
+            }
 
         });
 
     });
 
 });
+</script>
+<script>
+// document.addEventListener('DOMContentLoaded', function () {
+
+//     const form = document.getElementById('bulkForm');
+
+//     form.querySelectorAll('button[type="submit"]').forEach(button => {
+
+//         button.addEventListener('click', function (e) {
+//             e.preventDefault();
+
+//             let selected = document.querySelectorAll('.student-checkbox:checked');
+//             let action = this.getAttribute('formaction');
+
+//             // ✅ Check at least 1 student
+//             if (selected.length === 0) {
+//                 Swal.fire({
+//                     icon: 'warning',
+//                     title: 'No Students Selected',
+//                     text: 'Please select at least one student'
+//                 });
+//                 return;
+//             }
+
+//             // ✅ Confirmation for all actions
+//             Swal.fire({
+//                 title: 'Are you sure?',
+//                 text: selected.length + " student(s) selected",
+//                 icon: 'question',
+//                 showCancelButton: true,
+//                 confirmButtonText: 'Yes, Proceed'
+//             }).then((result) => {
+//                 if (result.isConfirmed) {
+//                     form.action = action;
+//                     form.submit();
+//                 }
+//             });
+
+//         });
+
+//     });
+
+// });
+
 document.querySelectorAll('.download-letter').forEach(button => {
 
     button.addEventListener('click', function () {

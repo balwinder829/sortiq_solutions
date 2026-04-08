@@ -82,6 +82,17 @@
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
                 </div>
+                 {{-- Study --}}
+                <div class="form-group col-md-6">
+                    <label><strong>Gap</strong></label>
+                    <input type="text"
+                           name="gap"
+                           class="form-control @error('gap') is-invalid @enderror"
+                           value="{{ old('gap', $enquiry->gap) }}">
+                    @error('gap')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
 
                 {{-- Assign To --}}
                 <div class="form-group col-md-6">

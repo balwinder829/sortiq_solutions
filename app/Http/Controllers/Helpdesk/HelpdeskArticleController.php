@@ -81,6 +81,7 @@ class HelpdeskArticleController extends Controller
         'slug' => Str::slug($request->title),
         'description' => $request->description,
         'status' => $request->status ?? 'draft',
+        'is_active' => $request->is_active ?? '1',
         'expires_at' => $request->filled('expires_at')
             ? $request->expires_at
             : null,
@@ -144,6 +145,7 @@ class HelpdeskArticleController extends Controller
         'slug' => Str::slug($request->title),
         'description' => $request->description,
         'status' => $request->status,
+        'is_active' => $request->is_active,
         'expires_at' => $request->filled('expires_at')
                     ? $request->expires_at
                     : null

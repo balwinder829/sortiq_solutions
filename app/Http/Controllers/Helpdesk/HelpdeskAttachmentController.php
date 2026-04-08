@@ -51,4 +51,17 @@ class HelpdeskAttachmentController extends Controller
 
         return back()->with('success','Deleted');
     }
+
+    public function preview($id)
+    {
+        $file = HelpdeskAttachment::findOrFail($id);
+
+        $path = storage_path('app/public/' . $file->file_path);
+
+        abort_if(!file_exists($path), 404);
+
+        return response()->file($path, [
+            'Content-Type' => $file->file_type
+        ]);
+    }
 }

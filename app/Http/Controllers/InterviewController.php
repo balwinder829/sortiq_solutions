@@ -7,6 +7,7 @@ use App\Models\InterviewRound;
 use App\Models\Technology;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\Rules\NotBlockedNumber;
 
 class InterviewController extends Controller
 {
@@ -98,7 +99,8 @@ class InterviewController extends Controller
     $request->validate([
         'candidate_name'   => 'required|string',
         'interviewer_name' => 'required|string',
-        'candidate_contact' => 'required|string',
+        // 'candidate_contact' => 'required|string',
+        'candidate_contact' => ['required', 'string', new NotBlockedNumber],
         'candidate_email' => 'required|string',
         'round_type'       => 'required|in:hr,technical,machine',
     ]);
@@ -165,6 +167,7 @@ class InterviewController extends Controller
 	        'candidate_name'   => 'required',
 	        'interviewer_name' => 'required',
 	        'candidate_email'  => 'nullable|email',
+	        'candidate_contact' => ['required', 'string', new NotBlockedNumber],
 	    ]);
 
 	    $interview->update($request->only([

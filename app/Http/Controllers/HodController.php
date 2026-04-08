@@ -5,6 +5,7 @@ use App\Models\College;
 use App\Models\State;
 use App\Models\Hod;
 use Illuminate\Http\Request;
+use App\Rules\NotBlockedNumber;
 class HodController extends Controller
 {	
 
@@ -107,7 +108,7 @@ class HodController extends Controller
         // HOD
         'hod_name'    => 'required_without:tpo_name|nullable',
         'hod_gender'  => 'required_with:hod_name|nullable',
-        'hod_contact' => 'required_with:hod_name|nullable|digits:10',
+        'hod_contact' =>  ['required_with:hod_name', 'nullable', 'digits:10', new NotBlockedNumber],
         'hod_emails'  => 'required_with:hod_name|array|min:1',
         'hod_emails.*'=> 'email',
         'hod_primary' => 'nullable|integer',
@@ -115,7 +116,8 @@ class HodController extends Controller
         // TPO
         'tpo_name'    => 'required_without:hod_name|nullable',
         'tpo_gender'  => 'required_with:tpo_name|nullable',
-        'tpo_contact' => 'required_with:tpo_name|nullable|digits:10',
+        // 'tpo_contact' => 'required_with:tpo_name|nullable|digits:10',
+        'tpo_contact' => ['required_with:tpo_name', 'nullable', 'digits:10', new NotBlockedNumber],
         'tpo_emails'  => 'required_with:tpo_name|array|min:1',
         'tpo_emails.*'=> 'email',
         'tpo_primary' => 'nullable|integer',
@@ -185,14 +187,16 @@ class HodController extends Controller
 
             'hod_name'    => 'required_without:tpo_name|nullable',
             'hod_gender'  => 'required_with:hod_name|nullable',
-            'hod_contact' => 'required_with:hod_name|nullable|digits:10',
+            // 'hod_contact' => 'required_with:hod_name|nullable|digits:10',
+            'hod_contact' => ['required_with:hod_name', 'nullable', 'digits:10', new NotBlockedNumber],
             'hod_emails'  => 'required_with:hod_name|array|min:1',
             'hod_emails.*'=> 'email',
             'hod_primary' => 'nullable|integer',
 
             'tpo_name'    => 'required_without:hod_name|nullable',
             'tpo_gender'  => 'required_with:tpo_name|nullable',
-            'tpo_contact' => 'required_with:tpo_name|nullable|digits:10',
+            // 'tpo_contact' => 'required_with:tpo_name|nullable|digits:10',
+            'tpo_contact' => ['required_with:tpo_name', 'nullable', 'digits:10', new NotBlockedNumber],
             'tpo_emails'  => 'required_with:tpo_name|array|min:1',
             'tpo_emails.*'=> 'email',
             'tpo_primary' => 'nullable|integer',

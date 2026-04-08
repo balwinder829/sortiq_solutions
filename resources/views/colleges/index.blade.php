@@ -207,13 +207,13 @@ input:checked + .slider:before {
         </select>
     </div>
 
-    <div class="col-md-2 mt-2">
+   <!--  <div class="col-md-2 mt-2">
         <select id="filter_status" class="form-control">
             <option value="">All</option>
             <option value="1">Call Done</option>
             <option value="0">Pending</option>
         </select>
-    </div>
+    </div> -->
 
     <div class="col-md-1  mt-2">
         <a href="{{ route('colleges.index') }}" class="btn btn-secondary w-100">
@@ -239,7 +239,7 @@ input:checked + .slider:before {
                 <th>College Type</th>
                 <th>Offer Training</th>
                 <th>No of times in year</th>
-                <th>Call Status</th>
+                
                <th style="width:250px!important;">Actions</th>
             </tr>
         </thead>
@@ -267,6 +267,7 @@ $(document).ready(function () {
     let table = $('#colleges-table').DataTable({
         processing: true,
         serverSide: true,
+        scrollX: true,
         ajax: {
             url: "{{ route('colleges.data') }}",
             type: 'GET',
@@ -276,7 +277,7 @@ $(document).ready(function () {
                 d.student_filter = $('#student_filter').val();
                 d.college_type = $('#filter_college_type').val();
                 d.offer_training = $('#filter_training').val();
-                d.call_status = $('#filter_status').val();
+                // d.call_status = $('#filter_status').val();
             }
         },
         columns: [
@@ -288,8 +289,8 @@ $(document).ready(function () {
             { data: 5, name: 'college_type' },
             { data: 6, name: 'offer_training' },
             { data: 7, name: 'training_in_year,' },
-            { data: 8, name: 'call_status', orderable: false, searchable: false },
-            { data: 9, name: 'actions', orderable: false, searchable: false }
+            // { data: 8, name: 'call_status', orderable: false, searchable: false },
+            { data: 8, name: 'actions', orderable: false, searchable: false }
         ],
         pageLength: 50,
         lengthMenu: [5, 10, 25, 50, 100],

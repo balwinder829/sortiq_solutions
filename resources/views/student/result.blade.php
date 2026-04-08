@@ -4,8 +4,8 @@
 <div class="container my-5">
     <div class="card shadow-sm text-center">
         
-        <div class="card-header bg-success text-white">
-            <h3 class="mb-0">Thank You!</h3>
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0" style="text-align: center; width: 100%;">Thank You!</h3>
         </div>
 
         <div class="card-body">

@@ -62,6 +62,8 @@
                 <th>Name</th>
                 <th>Position</th>
                 <th>Issue Date</th>
+                <th>Created Date</th>
+                <th>Updated Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -89,6 +91,12 @@
 
                 <td>
                     {{ \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') }}
+                </td>
+                <td>
+                    {{ \Carbon\Carbon::parse($letter->created_at)->format('d M Y') }}
+                </td>
+                <td>
+                    {{ \Carbon\Carbon::parse($letter->updated_at)->format('d M Y') }}
                 </td>
 
                 <td class="d-flex gap-1">

@@ -31,7 +31,7 @@ use Illuminate\Support\Str;
 use App\Imports\StudentsFeeImport;
 use App\Exports\StudentsFeeTemplateExport;
 use App\Models\Placement;
-
+use App\Rules\NotBlockedNumber;
 
 
 class StudentController extends Controller
@@ -343,7 +343,8 @@ class StudentController extends Controller
 
             // 🔽 removed DB unique, handled manually below
             'email_id'       => 'required|email',
-            'contact'        => 'nullable|string|max:15',
+            // 'contact'        => 'nullable|string|max:15',
+            'contact' => ['nullable', 'string', new NotBlockedNumber],
 
             'gender'         => 'required|string',
             // 'college_name'   => 'required|string',
@@ -531,7 +532,8 @@ class StudentController extends Controller
             'sno'            => 'required|string|max:255',
             // 'email_id'       => 'required|email|unique:students_detail,email_id,'.$student->id,
             'email_id'       => 'nullable',
-            'contact'        => 'required|string|max:15',
+            // 'contact'        => 'required|string|max:15',
+            'contact' => ['nullable', 'string', new NotBlockedNumber],
             'gender'         => 'required|string',
             // 'college_name'   => 'required|string',   // not college_id
             // 'session'        => 'required|string',   // not session_id

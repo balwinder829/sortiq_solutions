@@ -30,7 +30,7 @@ class CompanyPptController extends Controller
 
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except('preview');
 
         // ❌ deny everything by default
         // $this->middleware(function () {

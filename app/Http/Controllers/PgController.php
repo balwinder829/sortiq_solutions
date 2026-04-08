@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Imports\PgImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\View;
+use App\Rules\NotBlockedNumber;
 
 class PgController extends Controller
 {   
@@ -94,7 +95,12 @@ class PgController extends Controller
             'food_type' => 'required|in:food,without_food',
             'status' => 'required|in:active,inactive',
             // 'contact' => ['required','regex:/^\d{10}(,\d{10})*$/'],
-            'contact' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+            // 'contact' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+            'contact' => [
+                'required',
+                'regex:/^[0-9]{10}(,[0-9]{10})*$/',
+                new NotBlockedNumber,
+            ],
 
             // 'email' => [
             //     'nullable',
@@ -143,7 +149,12 @@ class PgController extends Controller
             'pg_type' => 'required|in:boys,girls,both',
              // 'contact' => 'required|digits:10',
             // 'contact' => ['required','regex:/^\d{10}(,\d{10})*$/'],
-            'contact' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+            // 'contact' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
+            'contact' => [
+                'required',
+                'regex:/^[0-9]{10}(,[0-9]{10})*$/',
+                new NotBlockedNumber,
+            ],
             'food_type' => 'required|in:food,without_food',
             'status' => 'required|in:active,inactive',
         ],[

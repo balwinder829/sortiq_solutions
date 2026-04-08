@@ -1,144 +1,98 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <meta charset="UTF-8">
 
 <style>
-
-body{
-    font-family: system-ui, sans-serif;
-    margin:0;
-}
-
-/* page container */
-.container{
-    width:900px;
-    margin:40px auto;
-}
-
-/* table layout for PDF compatibility */
-.cv-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-/* LEFT SIDEBAR */
-.left{
-    width:32%;
-    background:#34495e;
-    color:#fff;
-    padding:30px;
-    vertical-align:top;
-}
-
-/* RIGHT CONTENT */
-.right{
-    width:68%;
-    padding:30px 40px;
-    vertical-align:top;
-}
-
-h2{
-    margin:0 0 5px 0;
-}
-
-.title{
-    margin-bottom:25px;
-}
-
-.section{
-    margin-top:25px;
-    page-break-inside: avoid;
-}
-
-.section-title{
-    font-weight:bold;
-    border-bottom:2px solid #ddd;
-    margin-bottom:10px;
-    padding-bottom:5px;
-}
-
-ul{
-    padding-left:18px;
-    margin:0;
-}
-
-p{
-    margin:6px 0;
-}
 body{
     font-family: DejaVu Sans, sans-serif;
     margin:0;
-    font-size:13px;
-    line-height:1.6;
+    background:#e0e0e0;
 }
 
-/* container */
-.container{
-    width:900px;
-    margin:40px auto;
+/* MAIN CARD */
+.wrapper{
+    width:800px;
+    margin:30px auto;
+    background:#ffffff;
 }
 
-/* layout table */
-.cv-table{
+/* HEADER */
+.header{
+    background:#2f4154;
+    color:#ffffff;
+    padding:25px 30px;
+}
+
+.header h1{
+    margin:0;
+    font-size:26px;
+}
+
+.header p{
+    margin:6px 0 0;
+    font-size:14px;
+}
+
+/* CONTENT */
+.content{
+    padding:25px 30px;
+}
+
+/* TABLE FOR 2 COLUMNS */
+.table{
     width:100%;
     border-collapse:collapse;
 }
 
-/* sidebar */
 .left{
-    width:32%;
-    background:#34495e;
-    color:#fff;
-    padding:35px;
+    width:50%;
     vertical-align:top;
+    padding-right:15px;
 }
 
-/* right content */
 .right{
-    width:68%;
-    padding:35px 40px;
+    width:50%;
     vertical-align:top;
+    padding-left:15px;
 }
 
-/* headings */
-h2{
-    margin:0 0 8px 0;
-    font-size:22px;
-}
-
-.title{
-    margin-bottom:25px;
-    font-size:14px;
-}
-
+/* SECTION */
 .section{
-    margin-top:25px;
-    page-break-inside: avoid;
+    margin-bottom:18px;
 }
 
 .section-title{
     font-weight:bold;
-    font-size:15px;
-    border-bottom:2px solid #ddd;
-    padding-bottom:5px;
-    margin-bottom:12px;
+    font-size:14px;
+    margin-bottom:6px;
 }
 
-/* text spacing */
+/* TEXT */
 p{
-    margin:8px 0;
+    margin:4px 0;
+    font-size:12px;
 }
 
-/* skills list */
 ul{
-    margin:8px 0;
-    padding-left:18px;
+    padding-left:16px;
+    margin:5px 0;
 }
 
 li{
-    margin-bottom:4px;
+    font-size:12px;
+    margin-bottom:3px;
 }
+
+.small{
+    font-size:11px;
+}
+
+.bold{
+    font-weight:bold;
+}
+
 </style>
 
 </head>
@@ -146,129 +100,107 @@ li{
 <body>
 
 @if(!$isPdf)
-<div style="text-align:right;padding:15px">
 
+<div style="text-align:right;padding:15px">
 <a href="{{ route('student.cv.download',[$cv->id,$cv->template_key ?: 'classic']) }}"
 style="background:#2c3e50;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">
 Download PDF
 </a>
-
 </div>
 @endif
 
+<div class="wrapper">
 
-<div class="container">
 
-<table class="cv-table">
-<tr>
-
-<!-- LEFT SIDE -->
-<td class="left">
-
-<h2>{{ $cv->full_name }}</h2>
-
-<div class="title">
-{{ $cv->title }}
+<!-- HEADER -->
+<div class="header">
+    <h1>{{ $cv->full_name }}</h1>
+    <p>{{ $cv->title }}</p>
 </div>
 
-<p>{{ $cv->email }}</p>
-<p>{{ $cv->phone }}</p>
-<p>{{ $cv->location }}</p>
+<!-- CONTENT -->
+<div class="content">
 
+    <table class="table">
+        <tr>
 
-@if($cv->skills->count())
+            <!-- LEFT SIDE -->
+            <td class="left">
 
-<div class="section">
+                <div class="section  mt-3">
+                    <div class="section-title">My Contact</div>
+                    <p>{{ $cv->phone }}</p>
+                    <p>{{ $cv->email }}</p>
+                    <p>{{ $cv->location }}</p>
+                </div>
 
-<div class="section-title">Skills</div>
+                @if($cv->skills->count())
+                <div class="section  mb-2">
+                    <div class="section-title">Soft Skill</div>
+                    <ul>
+                        @foreach($cv->skills as $skill)
+                            <li>{{ $skill->skill }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
 
-<ul>
-@foreach($cv->skills as $skill)
-<li>{{ $skill->skill }}</li>
-@endforeach
-</ul>
+                @if($cv->education->count())
+                <div class="section mt-3">
+                    <div class="section-title">Education Background</div>
 
-</div>
+                    @foreach($cv->education as $edu)
+                        <p class="small">
+                            <span class="bold">{{ $edu->degree }}</span><br>
+                            {{ $edu->institution }}<br>
+                            {{ $edu->start_year }} - {{ $edu->end_year }}
+                        </p>
+                    @endforeach
 
-@endif
+                </div>
+                @endif
 
-</td>
+            </td>
 
+            <!-- RIGHT SIDE -->
+            <td class="right">
 
-<!-- RIGHT SIDE -->
-<td class="right">
+                <div class="section">
+                    <div class="section-title">About Me</div>
+                    <p>{{ $cv->summary }}</p>
+                </div>
 
-<div class="section">
-<div class="section-title">Profile</div>
-<p>{{ $cv->summary }}</p>
-</div>
+                @if($cv->experience->count())
+                <div class="section">
+                    <div class="section-title">Experience</div>
 
+                    @foreach($cv->experience as $exp)
+                        <p class="bold">{{ $exp->role }}</p>
+                        <p class="small">{{ $exp->start_date }} - {{ $exp->end_date }}</p>
+                    @endforeach
 
-@if($cv->projects->count())
+                </div>
+                @endif
 
-<div class="section">
+                @if($cv->projects->count())
+                <div class="section mt-3">
+                    <div class="section-title">Projects</div>
 
-<div class="section-title">Projects</div>
+                    @foreach($cv->projects as $project)
+                        <p class="bold">{{ $project->title }}</p>
+                        <p>{{ $project->description }}</p>
+                    @endforeach
 
-@foreach($cv->projects as $project)
+                </div>
+                @endif
 
-<p>
-<strong>{{ $project->title }}</strong><br>
-{{ $project->description }}
-</p>
+            </td>
 
-@endforeach
-
-</div>
-
-@endif
-
-
-@if($cv->education->count())
-
-<div class="section">
-
-<div class="section-title">Education</div>
-
-@foreach($cv->education as $edu)
-
-<p>
-<strong>{{ $edu->degree }}</strong><br>
-{{ $edu->institution }}<br>
-{{ $edu->start_year }} - {{ $edu->end_year }}
-</p>
-
-@endforeach
-
-</div>
-
-@endif
-
-
-@if($cv->experience->count())
-
-<div class="section">
-
-<div class="section-title">Experience</div>
-
-@foreach($cv->experience as $exp)
-
-<p>
-<strong>{{ $exp->company }}</strong><br>
-{{ $exp->role }}<br>
-{{ $exp->start_date }} - {{ $exp->end_date }}
-</p>
-
-@endforeach
+        </tr>
+    </table>
 
 </div>
 
-@endif
-
-</td>
-
-</tr>
-</table>
 
 </div>
 

@@ -11,6 +11,8 @@ use App\Exports\WorkshopsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\State;
 use App\Models\District;
+use App\Models\Enquiry;
+use App\Rules\NotBlockedNumber;
 
 class ManualDataController extends Controller
 {
@@ -148,6 +150,7 @@ public function index(Request $request)
                 e($data->gender),
                 $data->created_at?->format('d M Y'),
                 $actions,
+                'is_moved_to_enquiry' => $data->is_moved_to_enquiry
             ];
         });
     }
@@ -160,7 +163,13 @@ public function index(Request $request)
         ->get()
         ->groupBy('state_id');
 
-    return view('manual_data.index', compact('colleges','states','districtsGrouped'));
+    $sessionsList = StudentSession::where('status', 'active') // ✅ string status
+            ->orderBy('start_date', 'desc')
+            ->get()
+            ->pluck('display_name', 'id');
+
+
+    return view('manual_data.index', compact('colleges','states','districtsGrouped','sessionsList'));
 }
 
     
@@ -186,6 +195,7 @@ public function store(Request $request)
         'student_name'    => 'required|string|max:255',
         'student_email'   => 'required|email|max:255',
         'student_mobile'  => 'required|digits:10',
+        'student_mobile' => ['required', 'required', 'digits:10', new NotBlockedNumber],
         'gender'          => 'required|in:male,female',
         'course_type'     => 'required|in:Degree,Diploma',
         'class'           => 'required|in:BCA,MCA,BTech,BSc,BSc IT,BSc CS',
@@ -238,7 +248,8 @@ public function update(Request $request, $id)
         'college_id'      => 'required|integer',
         'student_name'    => 'required|string|max:255',
         'student_email'   => 'required|email|max:255',
-        'student_mobile'  => 'required|digits:10',
+        // 'student_mobile'  => 'required|digits:10',
+        'student_mobile' => ['required', 'required', 'digits:10', new NotBlockedNumber],
         'gender'          => 'required|in:male,female',
         'course_type'     => 'required|in:Degree,Diploma',
         'class'           => 'required|in:BCA,MCA,BTech,BSc,BSc IT,BSc CS',
@@ -273,5 +284,64 @@ public function update(Request $request, $id)
             new WorkshopsExport($request),
             'workshops.xlsx'
         );
+    }
+
+    public function moveManualToEnquiries(Request $request)
+    {
+        $ids = $request->ids;
+        $sessionId = $request->session_id;
+
+        if (empty($ids)) {
+            return response()->json(['message' => 'No students selected'], 422);
+        }
+
+        if (!$sessionId) {
+            return response()->json(['message' => 'Session required'], 422);
+        }
+
+        $students = ManualData::whereIn('id', $ids)
+            ->get();
+
+        $count = 0;
+
+        foreach ($students as $st) {
+
+            $enquiry = Enquiry::firstOrCreate(
+                [
+                    'source_id'   => $st->id,
+                    'source_type' => 'manual_data',
+                ],
+                [
+                    'name'       => $st->student_name,
+                    'email'      => $st->student_email,
+                    'mobile'     => $st->student_mobile ?? null,
+
+                    'college'    => $st->college_id ?? null,
+                    'study'      => $st->class ?? '',
+                    'semester'   => $st->semester ?? null,
+
+                    'session_id' => $sessionId,
+
+                    'source'     => 'manual_data',
+                    'source_type'     => 'manual_data',
+                    'source_id'     => $st->id,
+                    'status'     => 'new',
+                    'created_by' => auth()->id(),
+                ]
+            );
+
+            if ($enquiry->wasRecentlyCreated) {
+                $count++;
+            }
+
+            // ✅ flag update
+            $st->update([
+                'is_moved_to_enquiry' => 1
+            ]);
+        }
+
+        return response()->json([
+            'message' => "$count students moved successfully"
+        ]);
     }
 }

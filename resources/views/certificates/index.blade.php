@@ -403,6 +403,8 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
                 <th class="text-center">Study Mode</th>
                 <th class="text-center">Email Count</th>
                 <th class="text-center">Receipt Count</th>
+                <th class="text-center">Created At</th>
+                <th class="text-center">Updated At</th>
                 <th width="100px" class="text-center">Action</th>
             </tr>
             </tr>
@@ -486,6 +488,12 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
                 </td>
                 <td>{{ $student->email_count_certificate ?? 0 }}</td>
                  <td>{{ $student->count_receipt_download ?? 0 }}</td>
+                 <td>
+                    {{ $student->created_at ? \Carbon\Carbon::parse($student->created_at)->format('d M Y') : '-' }}
+                </td>
+                <td>
+                    {{ $student->updated_at ? \Carbon\Carbon::parse($student->updated_at)->format('d M Y') : '-' }}
+                </td>
                 <td class="text-center">
                     <div class="mb-2">
                         {{-- Issue --}}

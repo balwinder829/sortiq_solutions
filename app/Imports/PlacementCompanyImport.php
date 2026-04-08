@@ -150,7 +150,22 @@ class PlacementCompanyImport implements
         $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
 
         /* -------- BLOCKED NUMBER -------- */
-        
+        /* -------- BLOCKED NUMBER -------- */
+        if (!empty($row['contact'])) {
+
+            $numbers = array_filter(
+                array_map('trim', explode(',', $row['contact']))
+            );
+
+            foreach ($numbers as $number) {
+
+                if (\App\Models\BlockedNumber::where('number', $number)->exists()) {
+                    $this->skippedRows++;
+                    $this->duplicateContacts[] = "Blocked contact skipped: {$number}";
+                    return null;
+                }
+            }
+        }        
 
         /* -------- SESSION -------- */
 

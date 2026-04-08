@@ -33,6 +33,7 @@ class Test extends Model
         'test_mode',
         'exam_start_at',
         'exam_end_at',
+        'is_moved_to_enquiry',
         'timer_type',
     ];
 

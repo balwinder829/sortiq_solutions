@@ -60,11 +60,19 @@
 
 <script>
     $(document).ready(function () {
-        $('.select2').select2({
-            theme: 'bootstrap-5',
-            placeholder: "Search college name",
-            allowClear: true
-        });
+        // $('.select2').select2({
+        //     theme: 'bootstrap-5',
+        //     placeholder: "Search college name",
+        //     allowClear: true
+        // });
+
+         if ($.fn.select2) {
+            $('.select2').select2({
+                theme: 'bootstrap-5',
+                placeholder: "Search college name",
+                allowClear: true
+            });
+        }
     });
 
      function normalizeIndianNumber(value) {
@@ -101,6 +109,7 @@ function sanitizeContact(el) {
     $(document).ready(function () {
         $.extend(true, $.fn.dataTable.defaults, {
             pageLength: 50,
+
             language: { lengthMenu: "Show _MENU_ Entries" },
             stateSave: true,
             stateDuration: -1, // keep forever

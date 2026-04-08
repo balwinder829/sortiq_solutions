@@ -25,11 +25,11 @@
         <div class="form-group col-md-6">
             <label>UserName</label>
             <input type="text" 
-                   name="name" 
-                   class="form-control @error('name') is-invalid @enderror"
-                   value="{{ old('name', $trainer->username ?? '') }}"
-                   readonly>
-            @error('name')
+                   name="username" 
+                   class="form-control @error('username') is-invalid @enderror"
+                   value="{{ old('username', $trainer->username ?? '') }}"
+                   >
+            @error('username')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>

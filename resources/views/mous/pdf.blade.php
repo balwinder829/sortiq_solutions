@@ -55,15 +55,15 @@ li {
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" style="text-align: center;">
-                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>MEMORANDUM OF UNDERSTANDING (MoU)</strong></h2>
+                        <h3 style="font-family: 'Katibeh', serif; text-align: center; font-size: 30px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>MEMORANDUM OF UNDERSTANDING (MoU)</strong></h3>
                     </td>
                 </tr>
             </table>
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
 
                <tr>
                     <td colspan="2" align="left" style="font-size: 14px;  padding-bottom:5px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-                        <strong>Date: </strong> {{ \Carbon\Carbon::parse($mou->created_at)->format('d M Y') }}
+                        <strong>Date: </strong> {{ \Carbon\Carbon::parse($mou->start_date)->format('d M Y') }},
                     </td>
                 </tr>
                 
@@ -115,7 +115,7 @@ li {
                             </tr>
                             <tr>
                                 <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                  {!! ucwords($mou->description) !!}
+                                  <b>{{ ucwords($mou->college->FullName) }}</b>
                                 </td>
                             </tr>
                             <tr>
@@ -126,9 +126,7 @@ li {
                                   This Memorandum of Understanding between Sortiq Solutions and {{ ucwords($mou->college->FullName) }} envisages academic and professional collaboration for training, workshops, internships, research, and placement opportunities for students.
                                 </td>
                             </tr>
-                            </table>
-                <pagebreak />
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                            
                             <tr>
                                 <td style="text-align:left;font-family:Inter;font-weight:600;padding-bottom:10px;"><b>SCOPE OF COLLABORATION</b></td>
                             </tr>
@@ -138,6 +136,10 @@ li {
 
                                <tr> <td colspan="2" style="font-size: 14px; line-height: 24px;padding-left:18px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                                 1. Organize online/offline <b>seminars, workshops, training programs, and placement drives</b> to enhance students’ skills and industry readiness.</td></tr>
+                                </table>
+
+ <pagebreak />
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
                                 <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
                                 2. Provide <b>6-month industrial training/internships</b> to {{ ucwords($mou->college->FullName) }} students at Sortiq Solutions Pvt. Ltd. under the guidance of experienced professionals.</td></tr>
                                 <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
@@ -156,8 +158,16 @@ li {
                                 9. Encourage <b>mentorship, resume-building, interview preparation, and soft skills training</b> for students.</td></tr>
                                 <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
                                 10. Explore possibilities of <b>intellectual property generation</b> through collaborative research, with joint rights as per mutual agreements.</td></tr>
+                                
+                                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                11. Both parties shall work in <b>mutual cooperation, coordination, transparency</b>, and good faith to achieve the objectives outlined in this agreement.</td></tr>
+                     
+                                 <tr><td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; padding-left:18px; font-family: 'Inter', sans-serif;">
+                                12. Any amendments or modifications shall be <b>made in writing and duly signed</b> by authorized representatives of both parties.</td></tr>
+                     
+                                  
                             
-                            
+                    
                             <tr>
                                 <td style="text-align:left;font-family:Inter;font-weight:600;padding-bottom:10px;"><b>DURATION OF AGREEMENT</b></td>
                             </tr>
@@ -166,11 +176,62 @@ li {
                                   This MoU shall remain valid for <b>three (3) years</b> from the date of signing. Renewal/amendments will be made on mutually agreed terms between Sortiq Solutions and {{ ucwords($mou->college->FullName) }}.
                                 </td>
                             </tr>
+
+                            <tr>
+                                <td style="text-align:left;font-family:Inter;font-weight:600;padding-bottom:10px;"><b>TERMINATION</b></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                                  Either party may terminate this MoU by providing <b>30 days’ written notice</b> to the other party.<br>
+
+                                Termination will not affect ongoing programs, which shall be completed as agreed.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:left;font-family:Inter;font-weight:600;padding-bottom:10px;"><b>CONFIDENTIALITY</b></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                                  Both parties agree to maintain strict confidentiality of any proprietary, technical, or sensitive information shared during the course of this collaboration. Such information shall not be disclosed to any third party without prior written consent of the concerned party.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:left;font-family:Inter;font-weight:600;padding-bottom:10px;"><b>AMENDMENTS</b></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                                  Any modification or amendment to this MoU shall be made in writing and signed by authorized representatives of both parties.
+                                </td>
+                            </tr>
+                        </table>
+                            <pagebreak />
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                            <tr>
+                                <td style="text-align:left;font-family:Inter;font-weight:600;padding-bottom:10px;"><b>GENERAL TERMS</b></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                                    This MoU is not legally binding but reflects the intent of collaboration.
+                                    Both parties agree to work in good faith and mutual cooperation.<br>
+                                    Any disputes arising shall be resolved amicably through mutual discussion.<br>
+                                </td>
+                            </tr>
+
+                             <tr>
+                                <td style="text-align:left;font-family:Inter;font-weight:600;padding-bottom:10px;"><b>SIGNATORIES</b></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                                  IN WITNESS WHEREOF, the parties hereto have duly signed this Memorandum of Understanding on the date mentioned above in mutual agreement.
+                                </td>
+                            </tr>
                              
 
                 
                 </table>
-                   <pagebreak />
+                   
                 <div style="page-break-inside: avoid; break-inside: avoid;">
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:5px;">
                 <!-- CLAUSES -->

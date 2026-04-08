@@ -22,6 +22,15 @@ class MentorsLoginController extends Controller
             'password' => 'required',
         ]);
 
+        
+        //clear old login user from any type
+        Auth::guard('web')->logout();
+        Auth::guard('trainer')->logout();
+        Auth::guard('employee')->logout();
+        Auth::guard('sales_staff')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         // include soft deleted
         $staff = Trainer::withTrashed()
             ->where('username', $request->username)

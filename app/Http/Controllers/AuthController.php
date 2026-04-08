@@ -115,6 +115,14 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        //clear old login user from any type
+        Auth::guard('web')->logout();
+        Auth::guard('trainer')->logout();
+        Auth::guard('employee')->logout();
+        Auth::guard('sales_staff')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         /*
         |--------------------------------------------------------------------------
         | 1️⃣ TRY EMPLOYEE / ADMIN / SALES (USERS TABLE)

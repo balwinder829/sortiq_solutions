@@ -100,6 +100,19 @@
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
                 </div>
+                 {{-- Study --}}
+                <div class="form-group col-md-6">
+                    <label><strong>Gap</strong></label>
+                    <input type="text"
+                           name="gap"
+                           class="form-control @error('gap') is-invalid @enderror"
+                           value="{{ old('gap') }}"
+                           placeholder="Enter Gap If Any">
+
+                    @error('gap')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
 
             </div>
 

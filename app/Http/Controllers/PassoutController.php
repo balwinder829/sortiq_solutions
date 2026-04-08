@@ -18,6 +18,7 @@ use App\Notifications\LeadAssignedNotification;
 use Illuminate\Support\Facades\DB;
 use App\Exports\RegistrationsExport;
 use App\Exports\EnquiriesExport;
+use App\Rules\NotBlockedNumber;
 
 class PassoutController extends Controller
 {   
@@ -202,13 +203,17 @@ class PassoutController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'mobile' => 'nullable'
+            'mobile' => ['nullable', 'string', new NotBlockedNumber],
         ]);
+
+        $activeSessionNo = session('admin_session_id');
 
         Enquiry::create([
             'name' => $request->name,
             'mobile' => $request->mobile,
             'email' => $request->email,
+            'gap' => $request->gap,
+            'session_id' => $activeSessionNo,
             'is_passout' => 1,
             'created_by' => Auth::id(),
             'study' => $request->study,
@@ -241,6 +246,11 @@ class PassoutController extends Controller
 
     public function update(Request $request, Enquiry $passout)
     {
+        $request->validate([
+            'name' => 'required',
+            'mobile' => ['nullable', 'string', new NotBlockedNumber],
+        ]);
+        
         $passout->update($request->all());
 
         return redirect()->route('passouts.index')
@@ -256,7 +266,138 @@ class PassoutController extends Controller
     }
 
     // IMPORT
+    public function importForm()
+    {
+        return view('passouts.import');
+    }
     public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|mimes:csv,xlsx,xls',
+    ]);
+
+    \DB::beginTransaction();
+
+    try {
+
+        $importer = new \App\Imports\EnquiriesImport(auth()->id(), 1);
+
+        \Maatwebsite\Excel\Facades\Excel::import($importer, $request->file('file'));
+
+        $failures = $importer->failures();
+
+        // ❗ IF VALIDATION FAIL → ROLLBACK + STOP
+        if ($failures->isNotEmpty()) {
+
+            \DB::rollBack();
+
+            $messages = [];
+
+            foreach ($failures as $failure) {
+                $messages[] =
+                    "Row {$failure->row()} – {$failure->attribute()} – " .
+                    implode(', ', $failure->errors());
+            }
+
+            return back()->withErrors($messages);
+        }
+
+        \DB::commit();
+
+        // ✅ ONLY HERE counts are valid
+        $total    = $importer->totalRows;
+        $inserted = $importer->insertedRows;
+        $skipped  = $importer->skippedRows;
+
+        $message = "From {$total} rows: {$inserted} inserted successfully, {$skipped} skipped.";
+
+        $warnings = array_merge(
+            $importer->blockedNumbers,
+            $importer->duplicateEntries
+        );
+
+        if (!empty($warnings)) {
+            return back()
+                ->with('success', $message)
+                ->withErrors($warnings);
+        }
+
+        return back()->with('success', $message);
+
+    } catch (\Throwable $e) {
+
+        \DB::rollBack();
+
+        return back()->withErrors([
+            'Import failed: ' . $e->getMessage()
+        ]);
+    }
+}
+    public function import2(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,xlsx,xls',
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+
+            // 0 = enquiry, 1 = passout
+            $importer = new \App\Imports\EnquiriesImport(auth()->id(), 0);
+
+            \Maatwebsite\Excel\Facades\Excel::import($importer, $request->file('file'));
+
+            $failures = $importer->failures();
+
+            if ($failures->isNotEmpty()) {
+
+                \DB::rollBack();
+
+                $messages = [];
+
+                foreach ($failures as $failure) {
+                    $messages[] =
+                        "Row {$failure->row()} – {$failure->attribute()} – " .
+                        implode(', ', $failure->errors());
+                }
+
+                return back()->withErrors($messages);
+            }
+
+            \DB::commit();
+
+            // ✅ Final counts
+            $total    = $importer->totalRows;
+            $inserted = $importer->insertedRows;
+            $skipped  = $importer->skippedRows;
+
+            $message = "From {$total} rows: {$inserted} inserted successfully, {$skipped} skipped.";
+
+            // ✅ Warnings (blocked + duplicate)
+            $warnings = array_merge(
+                $importer->blockedNumbers,
+                $importer->duplicateEntries
+            );
+
+            if (!empty($warnings)) {
+                return back()
+                    ->with('success', $message)
+                    ->withErrors($warnings);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Throwable $e) {
+            dd($e);
+            \DB::rollBack();
+
+            return back()->withErrors([
+                'Import failed: Please check file format or missing columns.'
+            ]);
+        }
+    }
+    public function import11(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:csv,xlsx,xls'

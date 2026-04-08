@@ -3,9 +3,9 @@
 @section('content')
 
 <!-- ================= FIXED TIMER (TOP RIGHT) ================= -->
-<div id="timer" class="exam-timer bg-success text-white fw-bold">
+<!-- <div id="timer" class="exam-timer bg-success text-white fw-bold">
     Time Remaining: --
-</div>
+</div> -->
 
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
     <div class="head-shape">
@@ -71,7 +71,7 @@
     </div>
     </form>
     <div class="footer-shape">
-        <img style="width: 100%; display: block;" src="{{ asset('images/footer-shape-1-test.png') }}"/>
+        <img style="width: 100%; display: block;" src="{{ asset('images/confirmation_images/footer-shape-1.png') }}"/>
     </div>
 </div>
 <!-- ================= SCROLLABLE CONTENT ================= -->

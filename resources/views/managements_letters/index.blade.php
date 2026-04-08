@@ -14,6 +14,12 @@
                    style="background-color:#6b51df;color:#fff;">
                     Generate Letter
                 </a>
+
+                <a href="{{ route('managements_letters.download_empty') }}"
+                   class="btn ml-2"
+                   style="background-color:#6b51df;color:#fff;">
+                    Download LetterHead
+                </a>
             </div>
         </div>
     </div>

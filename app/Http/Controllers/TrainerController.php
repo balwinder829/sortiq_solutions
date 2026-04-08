@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\Rule;
+use App\Rules\NotBlockedNumber;
 
 class TrainerController extends Controller
 {   
@@ -290,7 +291,8 @@ class TrainerController extends Controller
         $validated = $request->validate([
             'name'       => 'required|string|max:100',
             'gender'     => 'required|in:male,female',
-            'phone'      => 'required|max:20|unique:trainers,phone',
+            // 'phone'      => 'required|max:20|unique:trainers,phone',
+            'phone' => ['required', 'string','unique:trainers,phone', new NotBlockedNumber],
             'username'   => 'required|string|max:30|regex:/^[a-zA-Z0-9._-]+$/|unique:trainers,username',
             'password'   => 'required|string|min:6',
             'email'      => 'nullable|email|unique:trainers,email',
@@ -315,57 +317,7 @@ class TrainerController extends Controller
             ->with('success', 'Trainer added successfully!');
     }
 
-    public function store27jan(Request $request)
-    {
-        // dd($request->post());
-        $validated = $request->validate([
-            'trainer_name' => 'required|string|max:100',
-            'gender'       => 'required|in:male,female',
-            'phone'        => 'required|max:20|unique:users,phone',
-            // 'username'        => 'required|max:20|unique:users,username',
-            'username'     => [
-                'required',
-                'string',
-                'max:30',
-                'regex:/^[a-zA-Z0-9._-]+$/', // ❌ no spaces allowed
-                'unique:users,username',
-            ],
-            'password' => 'required|string|min:6',
-            'email'        => 'required|email|unique:users,email',
-            'technology'   => 'required|array',
-            'technology.*' => 'exists:student_courses,id',
-
-        ],
-        [
-            // 🔴 Custom messages
-            'username.regex'  => 'Username must not contain spaces. Only letters, numbers, dot (.), dash (-), and underscore (_) are allowed.',
-            'username.unique' => 'This username is already taken.',
-            'username.max'    => 'Username may not be greater than 30 characters.',
-            'username.required' => 'Please enter a username.',
-        ]);
-
-        // 🔵 STEP 1 — Create User Account
-        $user = User::create([
-            'username' => $validated['username'],
-            'password' => $validated['password'],
-            'role'     => 2, // trainer role
-            'name'     => $validated['trainer_name'],
-            'email'    => $validated['email'],
-            'phone'    => $validated['phone'],
-            'status'   => 'active',
-        ]);
-
-        // 🔵 STEP 2 — Create Trainer Profile
-        Trainer::create([
-            'user_id'    => $user->id,
-            'gender'     => $validated['gender'],
-            // 'technology' => $validated['technology'],
-            'technology' => implode(',', $validated['technology']),
-        ]);
-
-        return redirect()->route('trainers.index')
-            ->with('success', 'Trainer added successfully!');
-    }
+    
 
     public function edit(Trainer $trainer)
     {   
@@ -390,7 +342,14 @@ class TrainerController extends Controller
         $validated = $request->validate([
             'name'     => 'required|string|max:100',
             'gender'   => 'required|in:male,female',
-            'phone'    => 'required|max:20|unique:trainers,phone,' . $trainer->id,
+            // 'phone'    => 'required|max:20|unique:trainers,phone,' . $trainer->id,
+            'phone' => [
+                'required',
+                'max:20',
+                'unique:trainers,phone,' . $trainer->id,
+                new NotBlockedNumber,
+            ],
+            'username'   => 'required|string|max:30|regex:/^[a-zA-Z0-9._-]+$/|unique:trainers,username,' . $trainer->id,
             'email'    => 'nullable|email|unique:trainers,email,' . $trainer->id,
             'technology'   => 'required|array',
             'technology.*' => 'exists:student_courses,id',
@@ -402,6 +361,7 @@ class TrainerController extends Controller
         $data = [
             'name'       => $validated['name'],
             'gender'     => $validated['gender'],
+            'username'      => $validated['username'],
             'phone'      => $validated['phone'],
             'email'      => $validated['email'],
             'status'      => $validated['status'],
@@ -427,84 +387,7 @@ class TrainerController extends Controller
             ->with('success', 'Trainer updated successfully!');
     }
 
-    public function update27jan(Request $request, Trainer $trainer)
-    {
-        $validated = $request->validate([
-            'trainer_name' => 'required|string|max:100',
-            'gender'       => 'required|in:male,female',
-
-            'phone' => [
-                'required',
-                'string',
-                'max:20',
-                Rule::unique('users', 'phone')->ignore($trainer->user_id),
-            ],
-
-            'email' => [
-                'required',
-                'email',
-                Rule::unique('users', 'email')->ignore($trainer->user_id),
-            ],
-
-            // 🔵 MULTIPLE TECHNOLOGY VALIDATION
-            'technology'   => 'required|array',
-            'technology.*' => 'exists:student_courses,id',
-        ]);
-
-        // 🔵 Update user table
-        $trainer->user->update([
-            'name'  => $validated['trainer_name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-        ]);
-
-        // 🔵 Update trainer profile (SAVE MULTIPLE TECHNOLOGIES)
-        $trainer->update([
-            'gender'     => $validated['gender'],
-            'technology' => implode(',', $validated['technology']), // 🔥 SAVE AS "1,3,5"
-        ]);
-
-        return redirect()->route('trainers.index')
-            ->with('success', 'Trainer updated successfully!');
-    }
-
-    public function update2(Request $request, Trainer $trainer)
-    {
-
-        $validated = $request->validate([
-            'trainer_name' => 'required|string|max:100',
-            'gender'       => 'required|in:male,female',
-            'phone'        => [
-                'required',
-                'string',
-                'max:20',
-                Rule::unique('users', 'phone')->ignore($trainer->user_id),
-            ],
-            'email'        => [
-                'required',
-                'email',
-                Rule::unique('users', 'email')->ignore($trainer->user_id),
-            ],
-            'technology'   => 'required|max:100',
-        ]);
-
-        // 🔵 Update user table
-        $trainer->user->update([
-            'name'  => $validated['trainer_name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-        ]);
-
-        // 🔵 Update trainer profile
-        $trainer->update([
-            'gender'     => $validated['gender'],
-            'technology' => $validated['technology'],
-        ]);
-
-        return redirect()->route('trainers.index')
-            ->with('success', 'Trainer updated successfully!');
-    }
-
+    
     // public function destroy(Trainer $trainer)
     // {
     //     // Delete user + trainer safely

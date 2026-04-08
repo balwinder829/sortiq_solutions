@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Imports\PartTimeJobImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\View;
+use App\Rules\NotBlockedNumber;
 
 class PartTimeJobController extends Controller
 {   
@@ -88,11 +89,17 @@ class PartTimeJobController extends Controller
             // 'mobile' => 'nullable|string|max:20',
             // 'mobile' => ['required','regex:/^\d{10}(,\d{10})*$/'],
             // 'mobile' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
-            'mobile' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            // 'mobile' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
 
             'email' => [
                 'nullable',
                 'regex:/^[^,\s]+@[^,\s]+\.[^,\s]+(,[^,\s]+@[^,\s]+\.[^,\s]+)*$/'
+            ],
+
+            'mobile' => [
+                'required',
+                'regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/',
+                new NotBlockedNumber,
             ],
             'status' => 'required|in:active,inactive',
             // 'email' => 'nullable|email',
@@ -148,7 +155,12 @@ class PartTimeJobController extends Controller
             // 'email' => 'nullable|email',
             // 'mobile' => ['required','regex:/^\d{10}(,\d{10})*$/'],
             // 'mobile' => ['required','regex:/^[0-9]{10}(,[0-9]{10})*$/'],
-            'mobile' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            // 'mobile' => ['required','regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/'],
+            'mobile' => [
+                'required',
+                'regex:/^[0-9]{10,18}(,[0-9]{10,18})*$/',
+                new NotBlockedNumber,
+            ],
             'email'  => ['nullable','regex:/^[^,\s]+@[^,\s]+\.[^,\s]+(,[^,\s]+@[^,\s]+\.[^,\s]+)*$/']
         ],[
             'mobile.regex' => 'Each phone number must be between 10 to 18 digits and comma separated.',

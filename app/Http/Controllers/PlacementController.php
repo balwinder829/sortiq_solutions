@@ -13,6 +13,7 @@ use App\Models\State;
 use App\Models\StudentCourse;
 use App\Models\PlacementCompany;
 use App\Http\DataTables\DataTablesServerSide;
+use App\Rules\NotBlockedNumber;
 
 class PlacementController extends Controller
 {
@@ -288,7 +289,8 @@ class PlacementController extends Controller
         'tech'           => 'required|string|max:255',
         'placement_date' => 'required|date',
         'college_name'   => 'nullable|max:255',
-        'phone_no'       => 'required|string|max:20',
+        // 'phone_no'       => 'required|string|max:20',
+        'phone_no' => ['required', 'string', new NotBlockedNumber],
         // 'address'        => 'nullable|string',
         'company'        => 'required|string|max:255',
         'state_id'        => 'required|max:255',
@@ -396,7 +398,8 @@ class PlacementController extends Controller
         'tech'           => 'required|string|max:255',
         'placement_date' => 'required|date',
         'college_name'   => 'nullable|max:255',
-        'phone_no'       => 'required|string|max:20',
+        // 'phone_no'       => 'required|string|max:20',
+        'phone_no' => ['required', 'string', new NotBlockedNumber],
         // 'address'        => 'nullable|string',
         'company'        => 'required|string|max:255',
         'state_id'        => 'required|max:255',

@@ -4,47 +4,83 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Notification; // ✅ IMPORTANT
 
 class NotificationController extends Controller
 {
     // ===================== LIST =====================
     public function index()
     {   
+        $activeSessionNo = session('admin_session_id');
+
         // 🔹 TRAINER
         if (Auth::guard('trainer')->check()) {
             $trainer = Auth::guard('trainer')->user();
-            $notifications = $trainer->notifications()->latest()->paginate(20);
+
+            $notifications = Notification::where('notifiable_id', $trainer->id)
+                ->where('notifiable_type', get_class($trainer))
+                ->when($activeSessionNo, function ($q) use ($activeSessionNo) {
+                    $q->where(function ($query) use ($activeSessionNo) {
+                        $query->where('session_id', $activeSessionNo)
+                              ->orWhereNull('session_id');
+                    });
+                })
+                ->latest()
+                ->paginate(20);
 
             return view('notifications.index', compact('notifications'));
         }
-        // 🔹 TRAINER
+
+        // 🔹 SALES STAFF
         if (Auth::guard('sales_staff')->check()) {
             $sales_staff = Auth::guard('sales_staff')->user();
-            $notifications = $sales_staff->notifications()->latest()->paginate(20);
+
+            $notifications = Notification::where('notifiable_id', $sales_staff->id)
+                ->where('notifiable_type', get_class($sales_staff))
+                ->when($activeSessionNo, function ($q) use ($activeSessionNo) {
+                    $q->where(function ($query) use ($activeSessionNo) {
+                        $query->where('session_id', $activeSessionNo)
+                              ->orWhereNull('session_id');
+                    });
+                })
+                ->latest()
+                ->paginate(20);
 
             return view('notifications.index', compact('notifications'));
         }
 
+        // 🔹 ADMIN / USER
         if (Auth::check()) {
             if (!in_array(Auth::user()->role, [1, 2, 3])) {
                 abort(403);
             }
 
-            $notifications = Auth::user()->notifications()->latest()->paginate(20);
+            $notifications = Notification::where('notifiable_id', Auth::id())
+                ->where('notifiable_type', \App\Models\User::class)
+                ->when($activeSessionNo, function ($q) use ($activeSessionNo) {
+                    $q->where(function ($query) use ($activeSessionNo) {
+                        $query->where('session_id', $activeSessionNo)
+                              ->orWhereNull('session_id');
+                    });
+                })
+                ->latest()
+                ->paginate(20);
 
             return view('notifications.index', compact('notifications'));
         }
+
         abort(403);
-        // $notifications = auth()->user()->notifications()->paginate(20);
-        // return view('notifications.index', compact('notifications'));
     }
 
 
     // ===================== VIEW + REDIRECT =====================
     public function view($id)
     {
-        $n = auth()->user()->notifications()->findOrFail($id);
-        $n->markAsRead();
+        $n = Notification::where('id', $id)
+            ->where('notifiable_id', auth()->id())
+            ->firstOrFail();
+
+        $n->update(['read_at' => now()]);
 
         $data = $n->data;
         $key  = $data['template_key'] ?? null;
@@ -55,18 +91,15 @@ class NotificationController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        // 1️⃣ Lead Assigned → Go to Enquiry Detail Page
         if ($key === 'lead.assigned' && isset($data['lead_id'])) {
             return redirect()->route('sales.enquiries.show', $data['lead_id']);
         }
 
-        // 2️⃣ Follow-ups Pending Today → Go to Enquiry List Page
         if ($key === 'sales.followups.today') {
             return redirect()->route('sales.enquiries.index')
                 ->with('info', 'You have follow-ups pending today.');
         }
 
-        // 3️⃣ Missed Follow-ups Yesterday → Go to Enquiry List Page
         if ($key === 'sales.followups.missed') {
             return redirect()->route('sales.enquiries.index')
                 ->with('warning', 'You missed follow-ups yesterday.');
@@ -77,7 +110,6 @@ class NotificationController extends Controller
                 ->route('daily-interviews.index', ['date_filter' => 'today'])
                 ->with('info', 'Here are today’s scheduled interviews.');
         }
-
 
         if ($key === 'workshop.reminder.week') {
             return redirect()
@@ -91,19 +123,15 @@ class NotificationController extends Controller
                 ->with('info', 'Here are upcoming workshops.');
         }
 
-
-
         /*
         |--------------------------------------------------------------------------
         | TRAINER NOTIFICATIONS
         |--------------------------------------------------------------------------
         */
 
-        // Batch Assigned → Trainer redirect to batch detail page
         if ($key === 'batch.assigned' && isset($data['batch_id'])) {
             return redirect()->route('batches.show', $data['batch_id']);
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -111,55 +139,28 @@ class NotificationController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        // Fee Pending Summary → Admin redirect to student list
         if ($key === 'fee.pending.summary') {
-             // return redirect()->route('admin.pendingfees.list')->with('info', 'Here is the list of students with pending fee.');
             return redirect()->route('certificates.index', ['notification' => 'pending_fee']);
-            // return redirect()->route('students.index')
-                // ->with('info', 'Here is the list of students with pending fee.');
         }
 
-         // Fee paid and certificate issued → Admin redirect to student list
         if ($key === 'bin.ready.summary') {
             return redirect()->route('admin.closinglists');
-            return redirect()->route('certificates.index', ['notification' => 'bin_ready']);
         }
 
-
-        // Notify when lead is coverted as student
         if ($key === 'student.registered.sales' && isset($data['student_id'])) {
             return redirect()->route('students.show', $data['student_id']);
         }
-
-        // Notify admin when lead is coverted as student
-        // if ($key === 'student.registered.summary') {
-        //     return redirect()->route('students.index');
-        // }
 
         if ($key === 'student.registered.summary') {
             return redirect()->route('students.index', ['notification' => 'registered_today']);
         }
 
         if ($key === 'upcoming.event') {
-            return redirect()->route('upcoming-events.show', $data['event_id']
-        );
-
-
-            // dd($data['template_key'] ?? 'no template_key');
-
-
-       
-
-
-}
+            return redirect()->route('upcoming-events.show', $data['event_id']);
+        }
 
         if ($key === 'sales.leads.low.percent.admin') {
-
-            // 👨‍💼 ADMIN → Salesperson detail page
-            if (
-                auth()->user()->role == 1 &&
-                isset($data['meta']['sales_user_id'])
-            ) {
+            if (auth()->user()->role == 1 && isset($data['meta']['sales_user_id'])) {
                 return redirect()->route(
                     'salespersons.show',
                     $data['meta']['sales_user_id']
@@ -167,19 +168,10 @@ class NotificationController extends Controller
             }
         }
 
-         if ($key === 'sales.leads.low.percent') {
-            // dd('here2');
-           
-            // 🧑‍💼 SALES USER → Own enquiries
+        if ($key === 'sales.leads.low.percent') {
             return redirect()->route('sales.enquiries.index')
                 ->with('warning', 'Your leads are running low.');
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEFAULT FALLBACK
-        |--------------------------------------------------------------------------
-        */
 
         return redirect()->back();
     }
@@ -188,7 +180,10 @@ class NotificationController extends Controller
     // ===================== FULL SHOW PAGE =====================
     public function show($id)
     {
-        $notification = auth()->user()->notifications()->findOrFail($id);
+        $notification = Notification::where('id', $id)
+            ->where('notifiable_id', auth()->id())
+            ->firstOrFail();
+
         return view('notifications.show', compact('notification'));
     }
 
@@ -196,8 +191,9 @@ class NotificationController extends Controller
     // ===================== MARK ONE READ (AJAX) =====================
     public function markRead($id)
     {
-        $n = auth()->user()->notifications()->findOrFail($id);
-        $n->markAsRead();
+        Notification::where('id', $id)
+            ->where('notifiable_id', auth()->id())
+            ->update(['read_at' => now()]);
 
         return response()->json(['success' => true]);
     }
@@ -206,55 +202,52 @@ class NotificationController extends Controller
     // ===================== MARK ALL READ =====================
     public function markAll()
     {
-        auth()->user()->unreadNotifications->markAsRead();
+        Notification::where('notifiable_id', auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
 
         return redirect()->back()->with('success', 'All notifications marked as read.');
     }
 
+
     public function byType($type)
-{
-    $notifications = Auth::user()
-        ->notifications()
-        ->where('data->template_key', $type)
-        ->paginate(10);
+    {
+        $notifications = Notification::where('notifiable_id', Auth::id())
+            ->where('notifiable_type', \App\Models\User::class)
+            ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(data, '$.template_key')) = ?", [$type])
+            ->paginate(10);
 
-    return view('notifications.index', compact('notifications'));
-}
+        return view('notifications.index', compact('notifications'));
+    }
 
-  /**
-     * ✅ Mark ONE notification as read
-     */
+
+    // ===================== CLEAR ONE =====================
     public function clearOne($id)
     {
-        Auth::user()
-            ->notifications()
-            ->where('id', $id)
+        Notification::where('id', $id)
+            ->where('notifiable_id', Auth::id())
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
         return back();
     }
 
-    /**
-     * ✅ Mark ALL unread notifications as read
-     */
+
+    // ===================== CLEAR ALL =====================
     public function clearAll()
     {
-        Auth::user()
-            ->unreadNotifications()
+        Notification::where('notifiable_id', Auth::id())
+            ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
         return back();
     }
 
-    /**
-     * ✅ Mark ALL unread notifications of ONE TEMPLATE as read
-     * (MariaDB-safe JSON query)
-     */
+
+    // ===================== CLEAR BY TEMPLATE =====================
     public function clearByTemplate(string $templateKey)
     {
-        Auth::user()
-            ->notifications()
+        Notification::where('notifiable_id', Auth::id())
             ->whereNull('read_at')
             ->whereRaw(
                 "JSON_UNQUOTE(JSON_EXTRACT(data, '$.template_key')) = ?",

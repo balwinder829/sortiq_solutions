@@ -111,9 +111,11 @@ use App\Http\Controllers\Students\StudentDashboardController;
 use App\Http\Controllers\Helpdesk\HelpdeskTechnologyController;
 use App\Http\Controllers\Helpdesk\HelpdeskArticleController;
 use App\Http\Controllers\Helpdesk\HelpdeskAttachmentController;
+use App\Http\Controllers\Helpdesk\HelpdeskFrontController;
 use App\Http\Controllers\Admin\OfficeTestController;
 use App\Http\Controllers\Admin\OfficeQuestionController;
 use App\Http\Controllers\Admin\OfficeResultController;
+use App\Http\Controllers\Admin\StudentPendingController;
 use App\Http\Controllers\Student\OfficeOnlineExamController;
 use App\Http\Controllers\PassoutController;
 use App\Http\Controllers\StudentProjectController;
@@ -128,7 +130,12 @@ use App\Http\Controllers\Student\AttendanceFormController;
 use App\Http\Controllers\CollegeCallController;
 use App\Http\Controllers\CollegeEmailController;
 use App\Http\Controllers\ManualDataController;
+use App\Http\Controllers\HardDataController;
 use App\Http\Controllers\FormEntryController;
+use App\Http\Controllers\JobDescriptionController;
+use App\Http\Controllers\StudentRegistrationController;
+use App\Http\Controllers\StudentPptController;
+
 
 
 use App\Models\Test;
@@ -139,6 +146,11 @@ use Spatie\Permission\PermissionRegistrar;
 
 
 use App\Models\ExternalAttendanceTest;
+
+
+Route::get('/join_student', [StudentRegistrationController::class, 'create']);
+Route::post('/join_student', [StudentRegistrationController::class, 'store'])->name('student.register');
+
 
 Route::model('external_attendance', ExternalAttendanceTest::class);
 
@@ -215,6 +227,7 @@ Route::prefix('employee')->group(function () {
 
 });
 
+Route::get('/job/{id}', [JobDescriptionController::class,'publicView'])->name('jd.public');
 // Frontend
 Route::get('/join', [JoiningStudentController::class, 'create'])->name('joining_student.front');
 Route::post('/join', [JoiningStudentController::class, 'store'])->name('joining_student.store');
@@ -262,6 +275,8 @@ Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth'])
     ->group(function () {
+
+
  Route::get('/form-entries', [FormEntryController::class, 'index'])
         ->name('form-entries.index');
 
@@ -355,6 +370,15 @@ Route::prefix('admin')
 
         // Route::resource('manual-data', ManualDataController::class)->names('manual_data');
         Route::resource('manual-data', ManualDataController::class)->names('manual_data')->parameters(['manual-data' => 'manual_data']);
+        Route::post('/manual-data/move-enquiries',
+            [ManualDataController::class, 'moveManualToEnquiries']
+        )->name('manual_data.move.enquiries');
+
+
+        Route::resource('hard-data', HardDataController::class)->names('hard_data')->parameters(['manuhardal-data' => 'hard_data']);
+        Route::post('/hard-data/move-enquiries',
+            [HardDataController::class, 'moveManualToEnquiries']
+        )->name('hard_data.move.enquiries');
 
 
         // Route::get('/external-attendance/{id}/export-all', ...)->name('admin.external-attendance.export.all');
@@ -528,12 +552,36 @@ Route::get(
 Route::prefix('admin')
     ->middleware('auth')
     ->group(function () {
+        Route::get('/pending-registration-students', [StudentPendingController::class, 'index'])->name('admin.pending_request.index');
+        Route::post('/pending-send', [StudentPendingController::class, 'sendToSession'])
+        ->name('admin.pending.send');
 
+        Route::get('/enquiries/import', [EnquiryController::class, 'importForm'])
+        ->name('enquiries.importForm');
+        Route::get('/passouts/import', [PassoutController::class, 'importForm'])
+        ->name('passouts.importForm');
         Route::resource('passouts', PassoutController::class);
         Route::post('passouts/import', [PassoutController::class, 'import'])
             ->name('passouts.import');  
         Route::get('/passouts-export', [PassoutController::class, 'export'])
             ->name('passouts.export');
+
+
+        Route::prefix('jd')->group(function(){
+
+            Route::get('/', [JobDescriptionController::class,'index'])->name('jd.index');
+            Route::get('/data', [JobDescriptionController::class,'data'])->name('jd.data');
+
+            Route::get('/create', [JobDescriptionController::class,'create'])->name('jd.create');
+            Route::post('/store', [JobDescriptionController::class,'store'])->name('jd.store');
+
+            Route::get('/edit/{id}', [JobDescriptionController::class,'edit'])->name('jd.edit');
+            Route::post('/update/{id}', [JobDescriptionController::class,'update'])->name('jd.update');
+
+            Route::get('/show/{id}', [JobDescriptionController::class,'show'])->name('jd.show');
+            Route::delete('/delete/{id}', [JobDescriptionController::class,'destroy'])->name('jd.destroy');
+
+        });
 
 });
 
@@ -542,6 +590,28 @@ Route::prefix('admin')
     ->middleware('auth')
     ->group(function () {
 
+
+    // Route::prefix('jd')->group(function(){
+
+    //     Route::get('/', [JobDescriptionController::class,'index'])->name('admin.jd.index');
+    //     Route::get('/data', [JobDescriptionController::class,'data'])->name('admin.jd.data');
+
+    //     Route::get('/create', [JobDescriptionController::class,'create'])->name('admin.jd.create');
+    //     Route::post('/store', [JobDescriptionController::class,'store'])->name('admin.jd.store');
+
+    //     Route::get('/edit/{id}', [JobDescriptionController::class,'edit'])->name('admin.jd.edit');
+    //     Route::post('/update/{id}', [JobDescriptionController::class,'update'])->name('admin.jd.update');
+
+    //     Route::get('/show/{id}', [JobDescriptionController::class,'show'])->name('admin.jd.show');
+    //     Route::delete('/delete/{id}', [JobDescriptionController::class,'destroy'])->name('admin.jd.destroy');
+
+    // });
+
+    // Route::prefix('admin')->group(function(){
+
+        
+
+    // });
         //Passout Module
         // Route::resource('passouts', PassoutController::class);
 
@@ -568,6 +638,8 @@ Route::prefix('admin')
         )->name('office-tests.results.store');
 
 });
+    Route::get('/attachments/{id}', [HelpdeskAttachmentController::class, 'preview'])
+    ->name('attachments.preview');
 Route::prefix('admin/helpdesk')
     ->name('admin.helpdesk.')
     ->middleware('auth')
@@ -576,13 +648,72 @@ Route::prefix('admin/helpdesk')
     Route::resource('categories', HelpdeskTechnologyController::class);
     // Route::resource('technologies', HelpdeskTechnologyController::class);
     Route::resource('articles', HelpdeskArticleController::class);
+    Route::get('/attachments/{id}', [HelpdeskAttachmentController::class, 'preview'])
+    ->name('attachments.preview');
     Route::resource('attachments', HelpdeskAttachmentController::class)
         ->only(['index','create','store','destroy']);
+
 });
 
 
+Route::prefix('helpdesk')->group(function () {
+
+    Route::get('/', [HelpdeskFrontController::class, 'index'])
+        ->name('helpdesk.index');
+
+    Route::get('/{techSlug}', [HelpdeskFrontController::class, 'technology'])
+        ->name('helpdesk.technology');
+
+    Route::get('/{techSlug}/{articleSlug}', [HelpdeskFrontController::class, 'article'])
+        ->name('helpdesk.article');
+
+});
+Route::get('services-registrations/create', [ServicesRegistrationController::class, 'create'])
+    ->name('services-registrations.create');
+
+Route::post('services-registrations', [ServicesRegistrationController::class, 'store'])
+    ->name('services-registrations.store');
+
+Route::resource(
+    'internship-registrations',
+    InternshipRegistrationController::class
+)->only(['create', 'store']);
+
+// Public preview via share token
+    // Route::get(
+    //     'student-ppt/preview/{token}',
+    //     [StudentPptController::class, 'preview']
+    // )->name('student_ppt.preview');
+
+    Route::get(
+    'ppt/preview/{token}',
+    [StudentPptController::class, 'preview']
+)->name('student_ppt.public.preview');
+
+    Route::get(
+    'ppt_company/preview/{token}',
+    [CompanyPptController::class, 'preview']
+)->name('ppt_company.public.preview');
+
+    
+
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
+         Route::resource('student-ppt', StudentPptController::class)
+        ->names('student_ppt');
+
+    // Public preview via share token
+    Route::get(
+        'student-ppt/preview/{token}',
+        [StudentPptController::class, 'preview']
+    )->name('student_ppt.preview');
+
+    // Admin download
+    Route::get(
+        'student-ppt/{studentPpt}/admin-download',
+        [StudentPptController::class, 'adminDownload']
+    )->name('student_ppt.admin.download');
+
         Route::get('workshops/export/excel', [WorkshopController::class, 'exportExcel'])->name('workshops.export.excel');
         Route::get('workshops/data', [WorkshopController::class, 'data'])->name('workshops.data');
         Route::resource('workshops', WorkshopController::class);
@@ -619,7 +750,7 @@ Route::middleware(['auth'])->group(function () {
         Route::resource(
             'internship-registrations',
             InternshipRegistrationController::class
-        )->except(['create', 'edit', 'update']);
+        )->except(['edit', 'update' , 'store','create']);
 
         // Status update (approve / reject)
         Route::patch(
@@ -633,7 +764,7 @@ Route::middleware(['auth'])->group(function () {
             ->name('services-registrations.export');
 
         Route::resource('services-registrations', ServicesRegistrationController::class)
-            ->only(['index', 'create', 'store', 'show', 'destroy']);
+            ->only(['index', 'show', 'destroy']);
 
         Route::resource('hods', HodController::class);
 
@@ -774,8 +905,15 @@ Route::middleware(['auth'])->group(function () {
         [LetterController::class,'sendEmail']
     )->name('letters.email');
 
+    Route::get(
+        'managements_letters/download_empty',
+        [ManagementsLetterController::class,'letterheaddownload']
+    )->name('managements_letters.download_empty');
+
+
     Route::resource('managements_letters', ManagementsLetterController::class);
 
+    
     Route::get(
         'managements_letters/{managements_letter}/download',
         [ManagementsLetterController::class,'download']
@@ -922,6 +1060,8 @@ Route::middleware(['auth'])->group(function () {
         'company-ppt/{companyPpt}/admin-download',
         [CompanyPptController::class, 'adminDownload']
     )->name('company_ppt.admin.download');
+
+
 
     
 
@@ -1339,6 +1479,7 @@ Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissi
     // )->name('offline.tests.index');
 
     // OFFLINE TEST RESULTS
+
     Route::get(
         'offline-tests/{test}/results',
         [OfflineTestController::class, 'results']
@@ -1388,6 +1529,11 @@ Route::get(
  Route::get('offline-tests/{test}/results', [OfflineTestController::class,'results'])->name('offline-tests.results');
 
         Route::post('tests/bulk-finalize', [TestController::class, 'bulkFinalize'])->name('tests.bulk.finalize');
+
+        Route::post('/attendance/{test}/move-enquiries',
+            [ExternalAttendanceController::class, 'moveAttendanceToEnquiries']
+        )->name('attendance.move.enquiries');
+         
 
 
         Route::get('tests/{test}/questions/create', [QuestionController::class,'create'])->name('questions.create');
@@ -1780,7 +1926,8 @@ Route::middleware(['auth', 'role:1,3'])->group(function () {
     //      Route::get('/dashboard', [LeadController::class, 'salesDashboard'])->name('sales.dashboard');
     // });
 });
-
+Route::get('/b/{brochure}', [BrochureController::class, 'preview'])
+    ->name('brochures.preview');
 Route::middleware(['auth'])->group(function () {
 
     Route::prefix('admin')->group(function () {
@@ -1947,8 +2094,7 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/brochure/view/{brochure}', [BrochureController::class, 'view'])
      ->name('brochure.view');
 /* SECURE VIEW & DOWNLOAD */
-Route::get('/b/{brochure}', [BrochureController::class, 'preview'])
-    ->name('brochures.preview');
+
 
 Route::get('/b/{brochure}/download', [BrochureController::class, 'download'])
     ->name('brochures.secure.download');

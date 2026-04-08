@@ -171,6 +171,28 @@ function isParent($routes)
                      
                 </li>
 
+                 {{-- Colleges Locations --}}
+                <li class="{{ isParent(['states*','districts*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                         <i class="fas fa-university"></i>
+                        <span class="nav-text">Colleges Locations</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['states*','districts*']) }}">
+                       {{-- Colleges --}}
+                        <li class="{{ isParent(['states*']) }}">
+                            <a href="{{ route('states.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Colleges States</span>
+                            </a>
+                        </li> 
+                        <li class="{{ isParent(['districts*']) }}">
+                            <a href="{{ route('districts.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Colleges Districts</span>
+                            </a>
+                        </li> 
+                    </ul>
+                </li>
 
                 {{-- Colleges --}}
                 <li class="{{ isParent(['colleges*','mous*', 'hods*','workshops*','admin.college-emails*', 'admin.college-calls*']) }}">
@@ -237,26 +259,52 @@ function isParent($routes)
                     </ul>
                 </li>
 
-                {{-- Colleges Locations --}}
-                <li class="{{ isParent(['states*','districts*']) }}">
+               
+                 
+
+                 {{-- Tests --}}
+                <li class="{{ isParent(['tests*','test-categories.*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
-                         <i class="fas fa-university"></i>
-                        <span class="nav-text">Colleges Locations</span>
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">College Exams</span>
                     </a>
-                    <ul class="{{ showSubmenu(['states*','districts*']) }}">
-                       {{-- Colleges --}}
-                        <li class="{{ isParent(['states*']) }}">
-                            <a href="{{ route('states.index') }}">
-                                <!-- <i class="fa-regular fa-file-lines"></i> -->
-                                <span class="nav-text">Colleges States</span>
+                    <ul class="{{ showSubmenu(['tests*','test-categories.*']) }}">
+                        <li>
+                            <a class="{{ isChildActive('test-categories.*') }}"
+                                href="{{ route('test-categories.index') }}">
+                                Exam Category
                             </a>
-                        </li> 
-                        <li class="{{ isParent(['districts*']) }}">
-                            <a href="{{ route('districts.index') }}">
-                                <!-- <i class="fa-regular fa-file-lines"></i> -->
-                                <span class="nav-text">Colleges Districts</span>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('tests*') }}"
+                                href="{{ route('admin.tests.index') }}">
+                                Online Exams
                             </a>
-                        </li> 
+                        </li>
+                       
+                         <li class="{{ request()->routeIs('admin.external-attendance.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.external-attendance.index') }}">
+                                Attendance Form
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('admin.manual_data.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.manual_data.index') }}">
+                                Manual Upload Data
+                            </a>
+                        </li>
+                         <li class="{{ request()->routeIs('admin.hard_data.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.hard_data.index') }}">
+                                Hard Data
+                            </a>
+                        </li>
+                        
+                         <!-- <li>
+                            <a class="{{ isChildActive('admin.offline-tests.index') }}"
+                                href="{{ route('admin.offline-tests.index') }}">
+                                Offline Exams
+                            </a>
+                        </li> -->
                     </ul>
                 </li>
 
@@ -448,6 +496,14 @@ function isParent($routes)
                                 <i class="fas fa-file-signature"></i>
                                 Student Office Exams
                             </a>
+                        </li> 
+
+                        <li>
+                            <a class="{{ isChildActive('admin.pending_request.index*') }}"
+                                href="{{ route('admin.pending_request.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Registration Request
+                            </a>
                         </li>   
 
                         <li class="{{ request()->route('type') == 'fee.pending.summary' ? 'mm-active' : '' }}">
@@ -465,151 +521,158 @@ function isParent($routes)
                     </ul>
                 </li>
 
-                
 
-                
-               
-
-               
-
-                 {{-- Attendence --}}
-                <!-- <li class="{{ isParent(['attendance.employees']) }}">
-                    <a href="{{ route('attendance.employees') }}">
-                        <i class="fa-regular fa-file-lines"></i>
-                        <span class="nav-text">Employee Attendence </span>
+                 {{-- Help Desk --}}
+                <li class="{{ request()->routeIs('admin.helpdesk.*') || isParent(['projects*','tutorials*']) ? 'mm-active' : '' }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Student Help Desk</span>
                     </a>
+                    <ul class="{{ request()->routeIs('admin.helpdesk.*') || showSubmenu(['projects*','tutorials*']) ? 'mm-show' : '' }}">
+                         <li>
+                            <a class="{{ isChildActive('projects*') }}"
+                               href="{{ route('projects.index') }}">
+                                <!-- <i class="fas fa-user-clock me-2"></i> -->
+                                Student Projects
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('tutorials*') }}"
+                               href="{{ route('tutorials.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                               Student Tutorials
+                            </a>
+                        </li>
+
+                        @foreach($helpdeskCategories as $cat)
+
+                        <li class="{{ request()->get('category') == $cat->id ? 'mm-active' : '' }}">
+
+                            <a href="{{ route('admin.helpdesk.articles.index',['category'=>$cat->id]) }}">
+
+                                {{ $cat->name }}
+
+                            </a>
+
+                        </li>
+
+                        @endforeach
+                        <li class="{{ request()->routeIs('admin.helpdesk.categories.index.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.helpdesk.categories.index') }}">
+                                
+                                <span class="nav-text">Helpdesk Categories</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('student-projects.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-projects.index') }}">
+                                <span class="nav-text">Projects</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('student-project-assignments.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-assignments.index') }}">
+                                <span class="nav-text">Projects Assignments</span>
+                            </a>
+                        </li>
+
+                         <li class="{{ request()->routeIs('student-project-submissions.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-submissions.index') }}">
+                                <span class="nav-text">Projects Submissions</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('student-project-reviews.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-reviews.index') }}">
+                                <span class="nav-text">Projects Reviews</span>
+                            </a>
+                        </li>
+
+                         <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.student.cv-templates.index') }}">
+                                <span class="nav-text">CVs Templates</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('admin.student.cv.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.student.cv.index') }}">
+                                <span class="nav-text">Generated CVs</span>
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('student_ppt.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student_ppt.index') }}">
+                                <span class="nav-text">Students PPT</span>
+                            </a>
+                        </li> 
+
+                       <!--  <li class="{{ request()->routeIs('admin.helpdesk.categories.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.helpdesk.articles.index') }}">
+                                
+                                <span class="nav-text">Articles</span>
+                            </a>
+                        </li> -->
+
+                       
+                    </ul>
+                </li>
+
+               
+               <!--  <li class="{{ isParent(['admin.helpdesk.*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Helpdesk</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['admin.helpdesk.*']) }}">
+                        
+                    </ul>
                 </li> -->
 
-                {{-- Attendence --}}
-                <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*']) }}">
+                {{-- Joined Students --}}
+                <li class="{{ isParent(['joined_students*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fa-regular fa-file-lines"></i>
-                        <span class="nav-text">HR Management </span>
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Joined Students</span>
                     </a>
-                    <ul class="{{ showSubmenu(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*']) }}">
+                    <ul class="{{ showSubmenu(['joined_students*']) }}">
                         <li>
-                            <a class="{{ isChildActive('employees*') }}"
-                                href="{{ route('employees.index') }}">
-                                Employees Lists 
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('attendance*') }}"
-                                href="{{ route('attendance.employees') }}">
-                                Employees Attendence 
-                            </a>
-                        </li>
-                        
-                         <li>
-                            <a class="{{ isChildActive('letters*') }}"
-                                href="{{ route('letters.index') }}">
-                                Emp Official Letters
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="{{ isChildActive('managements_letters*') }}"
-                                href="{{ route('managements_letters.index') }}">
-                                Management Official Letters
-                            </a>
-                        </li>
-                        
-
-                         <li>
-                            <a class="{{ isChildActive('accepted-letters*') }}"
-                                href="{{ route('accepted-letters.index') }}">
-                                Emp Signed Letters
+                            <a class="{{ isChildActive('joined_students.adminUrl') }}"
+                                href="{{ route('joined_students.adminUrl') }}">
+                                Joined Students Link
                             </a>
                         </li>
                         <li>
-                            <a class="{{ isChildActive('salary-slips*') }}"
-                                href="{{ route('salary-slips.index') }}">
-                                Emp Salary Slips
+                            <a class="{{ isChildActive('admin.joined_students.index') }}"
+                                href="{{ route('joined_students.index') }}">
+                                Joined Students Lists
                             </a>
                         </li>
-                        
-
-                         
+                    </ul>
+                </li>
+                    
+                    {{-- Verify Students --}}
+                <li class="{{ isParent(['verify-students*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Verify Students</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['verify-students*']) }}">
+                        <li>
+                            <a class="{{ isChildActive('verify-students-index.index') }}"
+                                href="{{ route('verify-students-index.index') }}">
+                                Verify Students Link
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('verify-students.index') }}"
+                                href="{{ route('verify-students.index') }}">
+                                Verify Students Lists
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
-                 
-                <li class="{{ isParent(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                         <i class="fas fa-chalkboard-teacher"></i>
-                        <span class="nav-text">Website Uses</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
-                        
-                        <li>
-                            <a class="{{ isChildActive('upcoming-events.*') }}"
-                               href="{{ route('upcoming-events.index') }}">
-                              Upcoming Events
-                            </a>
-                        </li>
-                     {{-- College Events --}}
-                        <li>
-                            <a class="{{ isChildActive('college.events.*') }}"
-                               href="{{ route('college.events.index') }}">
-                                 College Memory Events
-                            </a>
-                        </li>
-
-                        {{-- Student Events --}}
-                        <li>
-                            <a class="{{ isChildActive('student.events.*') }}"
-                               href="{{ route('student.events.index') }}">
-                               Student Memory  Events
-                            </a>
-                        </li>
-
-                        {{-- Employee Events --}}
-                        <li>
-                            <a class="{{ isChildActive('employee.events.*') }}"
-                               href="{{ route('employee.events.index') }}">
-                              Employee  Memory  Events
-                            </a>
-                        </li>
-
-                        
-                         {{-- Brochures --}}
-
-                <li class="{{ isParent(['brochures.*']) }}">
-                    <a href="{{ route('brochures.index') }}">
-                        <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Manage Brochures</span>
-                    </a>
-                </li>
-                 {{-- Brochures --}}
-                <li class="{{ isParent(['company_profile*']) }}">
-                    <a href="{{ route('company_profile.index') }}">
-                        <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Company Profile Manage</span>
-                    </a>
-                </li>
-
-                <li class="{{ isParent(['company_ppt.*']) }}">
-                    <a href="{{ route('company_ppt.index') }}">
-                        <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Company PPT Manage</span>
-                    </a>
-                </li>
-                <li class="{{ isParent(['scanners*']) }}">
-                    <a href="{{ route('scanners.index') }}">
-                        <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Social Share Scanners</span>
-                    </a>
-                </li>  
-                <li class="{{ request()->route('type') == 'upcoming.event' ? 'mm-active' : '' }}">
-                    <a href="{{ route('notifications.byType', 'upcoming.event') }}">
-                        Upcoming Events Notification
-                    </a>
-                </li>                      
-                    </ul>
-                </li>
-
-              
-                {{-- Leads --}}
+                  {{-- Student Services --}}
                 <li class="{{ isParent(['pgs*','part-time-jobs*','placement-companies*','placements*','references*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-tasks"></i>
@@ -659,10 +722,294 @@ function isParent($routes)
                             
                         </li>
                     </ul>
+                </li>   
+           
+
+                 {{-- Attendence --}}
+                <!-- <li class="{{ isParent(['attendance.employees']) }}">
+                    <a href="{{ route('attendance.employees') }}">
+                        <i class="fa-regular fa-file-lines"></i>
+                        <span class="nav-text">Employee Attendence </span>
+                    </a>
+                </li> -->
+
+                {{-- HR Management --}}
+                <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*','jd*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fa-regular fa-file-lines"></i>
+                        <span class="nav-text">HR Management </span>
+                    </a>
+                    <ul class="{{ showSubmenu(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*','jd*']) }}">
+                        <li>
+                            <a class="{{ isChildActive('employees*') }}"
+                                href="{{ route('employees.index') }}">
+                                Employees Lists 
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('attendance*') }}"
+                                href="{{ route('attendance.employees') }}">
+                                Employees Attendence 
+                            </a>
+                        </li>
+                        
+                         <li>
+                            <a class="{{ isChildActive('letters*') }}"
+                                href="{{ route('letters.index') }}">
+                                Emp Official Letters
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('managements_letters*') }}"
+                                href="{{ route('managements_letters.index') }}">
+                                Management Official Letters
+                            </a>
+                        </li>
+                        
+
+                         <li>
+                            <a class="{{ isChildActive('accepted-letters*') }}"
+                                href="{{ route('accepted-letters.index') }}">
+                                Emp Signed Letters
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('salary-slips*') }}"
+                                href="{{ route('salary-slips.index') }}">
+                                Emp Salary Slips
+                            </a>
+                        </li>
+
+                         <li>
+                            <a class="{{ isChildActive('jd.*') }}"
+                                href="{{ route('jd.index') }}">
+                                Job Desciptions
+                            </a>
+                        </li>
+                        
+
+                         
+                    </ul>
+                </li>
+
+                  {{-- Interviews --}}
+                <li class="{{ isParent(['technologies.*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Interviews</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['technologies.*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
+                        <li>
+                            <a class="{{ isChildActive('technologies*') }}"
+                                href="{{ route('technologies.index') }}">
+                                Technologies
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('interview-questions*') }}"
+                                href="{{ route('interview-questions.index') }}">
+                                Interview Questions
+                            </a>
+                        </li>
+
+                         <li>
+                            <a class="{{ isChildActive('interview-questions.practice') }}"
+                                href="{{ route('interview-questions.practice') }}">
+                                Interview Q&As
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('interviews*') }}"
+                                href="{{ route('interviews.index') }}">
+                                Candidates
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('cvs*') }}"
+                               href="{{ route('cvs.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                                CVs or Resumes
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('daily-interviews*') }}"
+                               href="{{ route('daily-interviews.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                                Daily Interview Schedules
+                            </a>
+                        </li>
+                        <li class="{{ request()->route('type') == 'admin.interviews.today' ? 'mm-active' : '' }}">
+                            <a href="{{ route('notifications.byType', 'admin.interviews.today') }}">
+                                Today Interviews Notification
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                 
+                <li class="{{ isParent(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                         <i class="fas fa-chalkboard-teacher"></i>
+                        <span class="nav-text">Website Uses</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
+                        
+                        <li>
+                            <a class="{{ isChildActive('upcoming-events.*') }}"
+                               href="{{ route('upcoming-events.index') }}">
+                              Upcoming Events
+                            </a>
+                        </li>
+                     {{-- College Events --}}
+                        <li>
+                            <a class="{{ isChildActive('college.events.*') }}"
+                               href="{{ route('college.events.index') }}">
+                                 College Memory Events
+                            </a>
+                        </li>
+
+                        {{-- Student Events --}}
+                        <li>
+                            <a class="{{ isChildActive('student.events.*') }}"
+                               href="{{ route('student.events.index') }}">
+                               Student Memory  Events
+                            </a>
+                        </li>
+
+                        {{-- Employee Events --}}
+                        <li>
+                            <a class="{{ isChildActive('employee.events.*') }}"
+                               href="{{ route('employee.events.index') }}">
+                              Employee  Memory  Events
+                            </a>
+                        </li>
+
+                        
+                         {{-- Brochures --}}
+
+                    <li class="{{ isParent(['brochures.*']) }}">
+                        <a href="{{ route('brochures.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Manage Brochures</span>
+                        </a>
+                    </li>
+                     {{-- Brochures --}}
+                    <li class="{{ isParent(['company_profile*']) }}">
+                        <a href="{{ route('company_profile.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Company Profile Manage</span>
+                        </a>
+                    </li>
+
+                    <li class="{{ isParent(['company_ppt.*']) }}">
+                        <a href="{{ route('company_ppt.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Company PPT Manage</span>
+                        </a>
+                    </li>
+                    <li class="{{ isParent(['scanners*']) }}">
+                        <a href="{{ route('scanners.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Social Share Scanners</span>
+                        </a>
+                    </li>  
+                    <li class="{{ request()->route('type') == 'upcoming.event' ? 'mm-active' : '' }}">
+                        <a href="{{ route('notifications.byType', 'upcoming.event') }}">
+                            Upcoming Events Notification
+                        </a>
+                    </li>                      
+                    </ul>
                 </li>
 
 
-               {{-- Finance --}}
+                 {{-- Ads Management --}}
+                <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Ads Management</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['internship-registrations*','pages*','services-registrations*']) }}">
+                        <li>
+                            <a class="{{ isChildActive('pages.*') }}"
+                                href="{{ route('pages.index') }}">
+                                Ads Pages
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('internship-registrations*') }}"
+                                href="{{ route('internship-registrations.index') }}">
+                                Internship Entries
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('services-registrations*') }}"
+                                href="{{ route('services-registrations.index') }}">
+                                Services Entries
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                 {{-- Gmail Form Entries --}}
+                <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
+                  <a href="{{ route('admin.form-entries.index') }}">
+                      <i class="fas fa-file-alt"></i>
+                      <span class="nav-text">Gmail Form Entries</span>
+                  </a>
+                </li>
+                       
+
+                {{-- Blocked Numbers --}}
+                <li class="{{ isParent(['blocked-numbers.*']) }}">
+                    <a href="{{ route('admin.blocked-numbers.index') }}">
+                        <i class="fas fa-certificate"></i>
+                        <span class="nav-text">Blocked Numbers</span>
+                    </a>
+                     
+                </li>
+
+                {{-- Security --}}
+                <li class="{{ isParent(['admin.blocked-ips.*','admin.system-activity*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Security</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['admin.blocked-ips.*','admin.system-activity*']) }}">
+                        <li class="{{ request()->routeIs('admin.blocked-ips.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.blocked-ips.index') }}">
+                                <i class="fas fa-ban"></i>
+                                <span class="nav-text">Blocked IPs</span>
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('admin.allowed-ips.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.allowed-ips.index') }}">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="nav-text">Allowed IPs (Script Access)</span>
+                            </a>
+                        </li>
+
+                        {{-- System Activity (logins, page views, IP) --}}
+                        <li class="{{ request()->routeIs('admin.system-activity') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.system-activity') }}">
+                                <i class="fas fa-history"></i>
+                                <span class="nav-text">Activity</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                
+                 {{-- Users --}}
+
+                 <li class="{{ isParent(['users*']) }}">
+                    <a href="{{ route('users.index') }}">
+                         <i class="fas fa-users"></i>
+                        <span class="nav-text">User Management</span>
+                    </a>
+                </li>
+
+                 {{-- Finance --}}
                 <li class="{{ isParent(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*','office-paper-expenses*','tea-pantry-expenses*','office-cleaning-expenses*','office-accessories-expenses*','office-cleaning-expenses*','office-accessories-expenses*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-coins"></i>
@@ -760,341 +1107,6 @@ function isParent($routes)
                          
                     </ul>
                 </li>
-
-
-                         
-
-               
-               
-                 
-
-                 {{-- Tests --}}
-                <li class="{{ isParent(['tests*','test-categories.*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">College Exams</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['tests*','test-categories.*']) }}">
-                        <li>
-                            <a class="{{ isChildActive('test-categories.*') }}"
-                                href="{{ route('test-categories.index') }}">
-                                Exam Category
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('tests*') }}"
-                                href="{{ route('admin.tests.index') }}">
-                                Online Exams
-                            </a>
-                        </li>
-                       
-                         <li class="{{ request()->routeIs('admin.external-attendance.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.external-attendance.index') }}">
-                                Attendance Form
-                            </a>
-                        </li>
-
-                        <li class="{{ request()->routeIs('admin.manual_data.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.manual_data.index') }}">
-                                Manual Upload Data
-                            </a>
-                        </li>
-                        <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
-                          <a href="{{ route('admin.form-entries.index') }}">
-                              <!-- <i class="fas fa-file-alt"></i> -->
-                              <span class="nav-text">Gmail Form Entries</span>
-                          </a>
-                        </li>
-                         <!-- <li>
-                            <a class="{{ isChildActive('admin.offline-tests.index') }}"
-                                href="{{ route('admin.offline-tests.index') }}">
-                                Offline Exams
-                            </a>
-                        </li> -->
-                    </ul>
-                </li>
-
-                 {{-- Joined Students --}}
-                <li class="{{ isParent(['technologies.*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Interviews</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['technologies.*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
-                        <li>
-                            <a class="{{ isChildActive('technologies*') }}"
-                                href="{{ route('technologies.index') }}">
-                                Technologies
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('interview-questions*') }}"
-                                href="{{ route('interview-questions.index') }}">
-                                Interview Questions
-                            </a>
-                        </li>
-
-                         <li>
-                            <a class="{{ isChildActive('interview-questions.practice') }}"
-                                href="{{ route('interview-questions.practice') }}">
-                                Interview Q&As
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('interviews*') }}"
-                                href="{{ route('interviews.index') }}">
-                                Candidates
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('cvs*') }}"
-                               href="{{ route('cvs.index') }}">
-                                <!-- <i class="fas fa-bed me-2"></i> -->
-                                CVs or Resumes
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('daily-interviews*') }}"
-                               href="{{ route('daily-interviews.index') }}">
-                                <!-- <i class="fas fa-bed me-2"></i> -->
-                                Daily Interview Schedules
-                            </a>
-                        </li>
-                        <li class="{{ request()->route('type') == 'admin.interviews.today' ? 'mm-active' : '' }}">
-                            <a href="{{ route('notifications.byType', 'admin.interviews.today') }}">
-                                Today Interviews Notification
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                 {{-- Help Desk --}}
-                <li class="{{ request()->routeIs('admin.helpdesk.*') || isParent(['projects*','tutorials*']) ? 'mm-active' : '' }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Student Help Desk</span>
-                    </a>
-                    <ul class="{{ request()->routeIs('admin.helpdesk.*') || showSubmenu(['projects*','tutorials*']) ? 'mm-show' : '' }}">
-                         <li>
-                            <a class="{{ isChildActive('projects*') }}"
-                               href="{{ route('projects.index') }}">
-                                <!-- <i class="fas fa-user-clock me-2"></i> -->
-                                Student Projects
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="{{ isChildActive('tutorials*') }}"
-                               href="{{ route('tutorials.index') }}">
-                                <!-- <i class="fas fa-bed me-2"></i> -->
-                               Student Tutorials
-                            </a>
-                        </li>
-
-                        @foreach($helpdeskCategories as $cat)
-
-                        <li class="{{ request()->get('category') == $cat->id ? 'mm-active' : '' }}">
-
-                            <a href="{{ route('admin.helpdesk.articles.index',['category'=>$cat->id]) }}">
-
-                                {{ $cat->name }}
-
-                            </a>
-
-                        </li>
-
-                        @endforeach
-                        <li class="{{ request()->routeIs('admin.helpdesk.categories.index.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.helpdesk.categories.index') }}">
-                                
-                                <span class="nav-text">Helpdesk Categories</span>
-                            </a>
-                        </li>
-
-                        <li class="{{ request()->routeIs('student-projects.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('student-projects.index') }}">
-                                <span class="nav-text">Projects</span>
-                            </a>
-                        </li>
-
-                        <li class="{{ request()->routeIs('student-project-assignments.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('student-project-assignments.index') }}">
-                                <span class="nav-text">Projects Assignments</span>
-                            </a>
-                        </li>
-
-                         <li class="{{ request()->routeIs('student-project-submissions.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('student-project-submissions.index') }}">
-                                <span class="nav-text">Projects Submissions</span>
-                            </a>
-                        </li>
-
-                        <li class="{{ request()->routeIs('student-project-reviews.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('student-project-reviews.index') }}">
-                                <span class="nav-text">Projects Reviews</span>
-                            </a>
-                        </li>
-
-                         <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.student.cv-templates.index') }}">
-                                <span class="nav-text">CVs Templates</span>
-                            </a>
-                        </li>
-
-                        <li class="{{ request()->routeIs('admin.student.cv.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.student.cv.index') }}">
-                                <span class="nav-text">Generated CVs</span>
-                            </a>
-                        </li>
-
-                       <!--  <li class="{{ request()->routeIs('admin.helpdesk.categories.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.helpdesk.articles.index') }}">
-                                
-                                <span class="nav-text">Articles</span>
-                            </a>
-                        </li> -->
-
-                       
-                    </ul>
-                </li>
-
-                {{-- Joined Students --}}
-               <!--  <li class="{{ isParent(['admin.helpdesk.*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Helpdesk</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['admin.helpdesk.*']) }}">
-                        
-                    </ul>
-                </li> -->
-
-                {{-- Joined Students --}}
-                <li class="{{ isParent(['joined_students*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Joined Students</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['joined_students*']) }}">
-                        <li>
-                            <a class="{{ isChildActive('joined_students.adminUrl') }}"
-                                href="{{ route('joined_students.adminUrl') }}">
-                                Joined Students Link
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('admin.joined_students.index') }}"
-                                href="{{ route('joined_students.index') }}">
-                                Joined Students Lists
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                    
-                    {{-- Verify Students --}}
-                <li class="{{ isParent(['verify-students*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Verify Students</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['verify-students*']) }}">
-                        <li>
-                            <a class="{{ isChildActive('verify-students-index.index') }}"
-                                href="{{ route('verify-students-index.index') }}">
-                                Verify Students Link
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('verify-students.index') }}"
-                                href="{{ route('verify-students.index') }}">
-                                Verify Students Lists
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                
-
-                 {{-- Joined Students --}}
-                <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Ads Management</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['internship-registrations*','pages*','services-registrations*']) }}">
-                        <li>
-                            <a class="{{ isChildActive('pages.*') }}"
-                                href="{{ route('pages.index') }}">
-                                Ads Pages
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('internship-registrations*') }}"
-                                href="{{ route('internship-registrations.index') }}">
-                                Internship Entries
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('services-registrations*') }}"
-                                href="{{ route('services-registrations.index') }}">
-                                Services Entries
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <li class="{{ isParent(['blocked-numbers.*']) }}">
-                    <a href="{{ route('admin.blocked-numbers.index') }}">
-                        <i class="fas fa-certificate"></i>
-                        <span class="nav-text">Blocked Numbers</span>
-                    </a>
-                     
-                </li>
-
-                {{-- Joined Students --}}
-                <li class="{{ isParent(['admin.blocked-ips.*','admin.system-activity*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Security</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['admin.blocked-ips.*','admin.system-activity*']) }}">
-                        <li class="{{ request()->routeIs('admin.blocked-ips.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.blocked-ips.index') }}">
-                                <i class="fas fa-ban"></i>
-                                <span class="nav-text">Blocked IPs</span>
-                            </a>
-                        </li>
-                        <li class="{{ request()->routeIs('admin.allowed-ips.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.allowed-ips.index') }}">
-                                <i class="fas fa-check-circle"></i>
-                                <span class="nav-text">Allowed IPs (Script Access)</span>
-                            </a>
-                        </li>
-
-                        {{-- System Activity (logins, page views, IP) --}}
-                        <li class="{{ request()->routeIs('admin.system-activity') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.system-activity') }}">
-                                <i class="fas fa-history"></i>
-                                <span class="nav-text">Activity</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-
-                
-
-
-                        {{-- Certificates --}}
-                        
-                 {{-- Users --}}
-
-                 <li class="{{ isParent(['users*']) }}">
-                    <a href="{{ route('users.index') }}">
-                         <i class="fas fa-users"></i>
-                        <span class="nav-text">User Management</span>
-                    </a>
-                </li>
-
                {{-- Logout --}}
                 <li>
                     <a href="{{ route('logout') }}"
@@ -1166,7 +1178,35 @@ function isParent($routes)
                         </li>
 
                         @endcan
+                        @canany(['districts.view','states.view'])
 
+                        {{-- Colleges Locations --}}
+                            <li class="{{ isParent(['states*','districts*']) }}">
+                                <a class="has-arrow" href="javascript:void(0)">
+                                     <i class="fas fa-university"></i>
+                                    <span class="nav-text">Colleges Locations</span>
+                                </a>
+                                <ul class="{{ showSubmenu(['states*','districts*']) }}">
+                                   {{-- Colleges --}}
+                                   @can('states.view')
+                                    <li class="{{ isParent(['states*']) }}">
+                                        <a href="{{ route('states.index') }}">
+                                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                            <span class="nav-text">Colleges States</span>
+                                        </a>
+                                    </li> 
+                                     @endcan  
+                                            @can('districts.view')
+                                    <li class="{{ isParent(['districts*']) }}">
+                                        <a href="{{ route('districts.index') }}">
+                                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                            <span class="nav-text">Colleges Districts</span>
+                                        </a>
+                                    </li> 
+                                     @endcan 
+                                </ul>
+                            </li>
+                        @endcanany  
 
                     @canany(['colleges.view','mous.view','hods.view','workshop.view','college_emails.view','college_calls.view'])
                         {{-- Colleges --}}
@@ -1236,35 +1276,69 @@ function isParent($routes)
                         </li>
                         @endcanany
 
-@canany(['districts.view','states.view'])
+                          {{-- Tests --}}
 
-                        {{-- Colleges Locations --}}
-                <li class="{{ isParent(['states*','districts*']) }}">
+                 @canany(['tests.view','offline_tests.view','test_categories.view','manual_data.view','external_attendance.view','hard_data.view'])
+                <li class="{{ isParent(['tests.*','admin.offline-tests*','test-categories.*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
-                         <i class="fas fa-university"></i>
-                        <span class="nav-text">Colleges Locations</span>
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">College Exams</span>
                     </a>
-                    <ul class="{{ showSubmenu(['states*','districts*']) }}">
-                       {{-- Colleges --}}
-                       @can('states.view')
-                        <li class="{{ isParent(['states*']) }}">
-                            <a href="{{ route('states.index') }}">
-                                <!-- <i class="fa-regular fa-file-lines"></i> -->
-                                <span class="nav-text">Colleges States</span>
+                    <ul class="{{ showSubmenu(['tests*','test-categories.*']) }}">
+
+                         @can('test_categories.view')
+                        <li>
+                            <a class="{{ isChildActive('test-categories.*') }}"
+                                href="{{ route('test-categories.index') }}">
+                                Exam Category
                             </a>
-                        </li> 
-                         @endcan  
-                                @can('districts.view')
-                        <li class="{{ isParent(['districts*']) }}">
-                            <a href="{{ route('districts.index') }}">
-                                <!-- <i class="fa-regular fa-file-lines"></i> -->
-                                <span class="nav-text">Colleges Districts</span>
+                        </li>
+                        @endcan   
+                        
+                        @can('tests.view')
+                        <li>
+                            <a class="{{ isChildActive('tests.*') }}"
+                                href="{{ route('admin.tests.index') }}">
+                                Online Exams
                             </a>
-                        </li> 
-                         @endcan 
+                        </li>
+                        @endcan
+                        @can('external_attendance.view')
+                        <li class="{{ request()->routeIs('admin.external-attendance.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.external-attendance.index') }}">
+                                Attendance Form
+                            </a>
+                        </li>
+                        @endcan
+                        @can('manual_data.view')
+                        <li class="{{ request()->routeIs('admin.manual_data.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.manual_data.index') }}">
+                                Manual Upload Data
+                            </a>
+                        </li>
+                        @endcan
+
+                        @can('hard_data.view')
+                        <li class="{{ request()->routeIs('admin.hard_data.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.hard_data.index') }}">
+                                Hard Data
+                            </a>
+                        </li>
+                        @endcan
+
+                        
+                         <!-- @can('offline_tests.view')
+
+                         <li>
+                            <a class="{{ isChildActive('admin.offline-tests.index') }}"
+                                href="{{ route('admin.offline-tests.index') }}">
+                                Offline Exams
+                            </a>
+                        </li>
+                        @endcan   --> 
                     </ul>
                 </li>
-@endcanany
+                @endcanany
 
                 @canany(['enquiries.view','salespersons.view','calls.view','registrations.view'])
                  {{-- Leads --}}
@@ -1366,7 +1440,7 @@ function isParent($routes)
 
 
 
-                @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view'])
+                @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view','student_registration_request.view'])
                 {{-- Student Main Admin --}}
                 <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
@@ -1441,162 +1515,178 @@ function isParent($routes)
                                 Student Office Exams
                             </a>
                         </li>
-                        @endcan                          
+                        @endcan   
+                        @can('student_registration_request.view')
+                        <li>
+                            <a class="{{ isChildActive('admin.pending_request.index*') }}"
+                                href="{{ route('admin.pending_request.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Registration Request
+                            </a>
+                        </li> 
+                        @endcan                      
                     </ul>
                 </li>   
                 @endcanany
                 
 
+        
 
-                 {{-- Attendence --}}
-              
-@canany(['employees.view','attendance.view','letters.view','accepted_letters.view','salary_slips.view'])
-                {{-- Attendence --}}
-                <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*']) }}">
+                 {{-- Help Desk --}}
+                 @canany(['projects.view','tutorials.view','latest_tech_articles.view','seo_tips.view','interview_preparation_blogs.view','cpanel_explanation.view','hosting.view','faqs_section.view','helpdesk_categories.view','student_projects.view','student_project_assignments.view','student_project_submissions.view','student_project_reviews.view','cv_templates.view','student_cvs.view','student_ppt.view'])
+                <li class="{{ request()->routeIs('admin.helpdesk.*') || isParent(['projects*','tutorials*']) ? 'mm-active' : '' }}">
                     <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fa-regular fa-file-lines"></i>
-                        <span class="nav-text">HR Management </span>
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Student Help Desk</span>
                     </a>
-                    <ul class="{{ showSubmenu(['attendance*','employees*','letters*','salary-slips*','accepted-letters*']) }}">
-                        @can('employees.view')
+                    <ul class="{{ request()->routeIs('admin.helpdesk.*') || showSubmenu(['projects*','tutorials*']) ? 'mm-show' : '' }}">
+                        @can('projects.view')
                          <li>
-                            <a class="{{ isChildActive('employees*') }}"
-                                href="{{ route('employees.index') }}">
-                                Employees Lists 
+                            <a class="{{ isChildActive('projects*') }}"
+                               href="{{ route('projects.index') }}">
+                                <!-- <i class="fas fa-user-clock me-2"></i> -->
+                                Student Projects
                             </a>
                         </li>
-                        @endcan   
-                         @can('attendance.view')
-                         <li>
-                            <a class="{{ isChildActive('attendance*') }}"
-                                href="{{ route('attendance.employees') }}">
-                                Employees Attendence 
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('letters.view')
-                         <li>
-                            <a class="{{ isChildActive('letters*') }}"
-                                href="{{ route('letters.index') }}">
-                                Emp Official Letters
-                            </a>
-                        </li>
-                        @endcan   
-                        
-                        @can('accepted_letters.view')
-                         <li>
-                            <a class="{{ isChildActive('accepted-letters*') }}"
-                                href="{{ route('accepted-letters.index') }}">
-                                Emp Signed Letters
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('salary_slips.view')
+                         @endcan   
+                         @can('tutorials.view')
                         <li>
-                            <a class="{{ isChildActive('salary-slips*') }}"
-                                href="{{ route('salary-slips.index') }}">
-                                Emp Salary Slips
+                            <a class="{{ isChildActive('tutorials*') }}"
+                               href="{{ route('tutorials.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                               Student Tutorials
+                            </a>
+                        </li>
+                         @endcan  
+                        
+                        @foreach($helpdeskCategories as $cat)
+
+                            @can($cat->slug.'.view')
+                                <li class="{{ request()->get('category') == $cat->id ? 'mm-active' : '' }}">
+                                    <a href="{{ route('admin.helpdesk.articles.index',['category'=>$cat->id]) }}">
+                                        {{ $cat->name }}
+                                    </a>
+                                </li>
+                            @endcan
+
+                        @endforeach
+
+                        @can('helpdesk_categories.view')
+                        <li class="{{ request()->routeIs('admin.helpdesk.categories.index.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.helpdesk.categories.index') }}">
+                                
+                                <span class="nav-text">Helpdesk Categories</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_projects.view')
+                        <li class="{{ request()->routeIs('student-projects.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-projects.index') }}">
+                                <span class="nav-text">Projects</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_project_assignments.view')
+                        <li class="{{ request()->routeIs('student-project-assignments.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-assignments.index') }}">
+                                <span class="nav-text">Projects Assignments</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_project_submissions.view')
+                         <li class="{{ request()->routeIs('student-project-submissions.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-submissions.index') }}">
+                                <span class="nav-text">Projects Submissions</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_project_reviews.view')
+                        <li class="{{ request()->routeIs('student-project-reviews.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-project-reviews.index') }}">
+                                <span class="nav-text">Projects Reviews</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('cv_templates.view')
+                         <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.student.cv-templates.index') }}">
+                                <span class="nav-text">CVs Templates</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('student_cvs.view')
+                        <li class="{{ request()->routeIs('admin.student.cv.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.student.cv.index') }}">
+                                <span class="nav-text">Generated CVs</span>
+                            </a>
+                        </li> 
+                        @endcan 
+
+                        @can('student_cvs.view')
+                        <li class="{{ request()->routeIs('student_ppt.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student_ppt.index') }}">
+                                <span class="nav-text">Students PPT</span>
+                            </a>
+                        </li> 
+                        @endcan                      
+                    </ul>
+                </li>
+                @endcanany
+                {{-- Joined Students --}}
+
+                @canany(['joined_students.view'])
+                <li class="{{ isParent(['joined_students*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Joined Students</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['joined_students*']) }}">
+                          
+                         @can('joined_students.view')
+                        <li>
+                            <a class="{{ isChildActive('joined_students.adminUrl') }}"
+                                href="{{ route('joined_students.adminUrl') }}">
+                                Joined Students Link
                             </a>
                         </li>
                         @endcan   
-
+                         @can('joined_students.view')
+                        <li>
+                            <a class="{{ isChildActive('admin.joined_students.index') }}"
+                                href="{{ route('joined_students.index') }}">
+                                Joined Students Lists
+                            </a>
+                        </li>
+                        @endcan   
                          
                     </ul>
                 </li>
-            @endcanany
+                 @endcanany
 
 
-
-
-            @canany(['upcoming_events.view','college_events.view','student_events.view','employee_events.view','brochures.view','company_profile.view','company_ppt.view','scanners.view'])
-                 
-                <li class="{{ isParent(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
+                    {{-- Verify Students --}}
+                    @can('verify_students.view')
+                <li class="{{ isParent(['verify-students*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
-                         <i class="fas fa-chalkboard-teacher"></i>
-                        <span class="nav-text">Website Uses</span>
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Verify Students</span>
                     </a>
-                    <ul class="{{ showSubmenu(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
-                        
-                         @can('upcoming_events.view')
+                    <ul class="{{ showSubmenu(['verify-students*']) }}">
                         <li>
-                            <a class="{{ isChildActive('upcoming-events.*') }}"
-                               href="{{ route('upcoming-events.index') }}">
-                              Upcoming Events
+                            <a class="{{ isChildActive('verify-students-index.index') }}"
+                                href="{{ route('verify-students-index.index') }}">
+                                Verify Students Link
                             </a>
                         </li>
-                        @endcan   
-                         @can('college_events.view')
-                     {{-- College Events --}}
                         <li>
-                            <a class="{{ isChildActive('college.events.*') }}"
-                               href="{{ route('college.events.index') }}">
-                                 College Memory Events
+                            <a class="{{ isChildActive('verify-students.index') }}"
+                                href="{{ route('verify-students.index') }}">
+                                Verify Students Lists
                             </a>
                         </li>
-                        @endcan   
-                         @can('student_events.view')
-
-                        {{-- Student Events --}}
-                        <li>
-                            <a class="{{ isChildActive('student.events.*') }}"
-                               href="{{ route('student.events.index') }}">
-                               Student Memory  Events
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('employee_events.view')
-
-                        {{-- Employee Events --}}
-                        <li>
-                            <a class="{{ isChildActive('employee.events.*') }}"
-                               href="{{ route('employee.events.index') }}">
-                              Employee  Memory  Events
-                            </a>
-                        </li>
-
-                        @endcan   
-                         @can('brochures.view')
-                         {{-- Brochures --}}
-
-                <li class="{{ isParent(['brochures.*']) }}">
-                    <a href="{{ route('brochures.index') }}">
-                        <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Manage Brochures</span>
-                    </a>
-                </li>
-                @endcan   
-                         @can('company_profile.view')
-                 {{-- Brochures --}}
-                <li class="{{ isParent(['company_profile*']) }}">
-                    <a href="{{ route('company_profile.index') }}">
-                        <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Company Profile Manage</span>
-                    </a>
-                </li>
-                @endcan   
-                         @can('company_ppt.view')
-                <li class="{{ isParent(['company_ppt.*']) }}">
-                    <a href="{{ route('company_ppt.index') }}">
-                        <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Company PPT Manage</span>
-                    </a>
-                </li>
-                @endcan   
-                         @can('scanners.view')
-                <li class="{{ isParent(['scanners*']) }}">
-                    <a href="{{ route('scanners.index') }}">
-                        <!-- <i class="fa-regular fa-file-lines"></i> -->
-                        <span class="nav-text">Social Share Scanners</span>
-                    </a>
-                </li>
-
-@endcan  
-                         
                     </ul>
                 </li>
-
-              @endcanany
-
+                @endcan 
 
 
               @canany(['placement_companies.view','part_time_jobs.view','pgs.view','placements.view','references.view'])
@@ -1659,6 +1749,310 @@ function isParent($routes)
                 </li>
 @endcanany
                 
+
+
+
+                 {{-- Attendence --}}
+              
+                @canany(['employees.view','attendance.view','letters.view','accepted_letters.view','salary_slips.view'])
+                {{-- Attendence --}}
+                <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fa-regular fa-file-lines"></i>
+                        <span class="nav-text">HR Management </span>
+                    </a>
+                    <ul class="{{ showSubmenu(['attendance*','employees*','letters*','salary-slips*','accepted-letters*']) }}">
+                        @can('employees.view')
+                         <li>
+                            <a class="{{ isChildActive('employees*') }}"
+                                href="{{ route('employees.index') }}">
+                                Employees Lists 
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('attendance.view')
+                         <li>
+                            <a class="{{ isChildActive('attendance*') }}"
+                                href="{{ route('attendance.employees') }}">
+                                Employees Attendence 
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('letters.view')
+                         <li>
+                            <a class="{{ isChildActive('letters*') }}"
+                                href="{{ route('letters.index') }}">
+                                Emp Official Letters
+                            </a>
+                        </li>
+                        @endcan   
+                        
+                        @can('accepted_letters.view')
+                         <li>
+                            <a class="{{ isChildActive('accepted-letters*') }}"
+                                href="{{ route('accepted-letters.index') }}">
+                                Emp Signed Letters
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('salary_slips.view')
+                        <li>
+                            <a class="{{ isChildActive('salary-slips*') }}"
+                                href="{{ route('salary-slips.index') }}">
+                                Emp Salary Slips
+                            </a>
+                        </li>
+                        @endcan   
+
+                         
+                    </ul>
+                </li>
+                 @endcanany
+
+
+ @canany(['interview_questions.view','interview_technology.view','interviews.view','cvs.view','daily_interviews.view'])
+                 {{-- Joined Students --}}
+                <li class="{{ isParent(['technologies*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Interviews</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['technologies*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
+
+                         @can('interview_technology.view')
+                        <li>
+                            <a class="{{ isChildActive('technologies*') }}"
+                                href="{{ route('technologies.index') }}">
+                                Technologies
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('interview_questions.view')
+                        <li>
+                            <a class="{{ isChildActive('interview-questions*') }}"
+                                href="{{ route('interview-questions.index') }}">
+                                Interview Questions
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('interview_questions.view')
+                         <li>
+                            <a class="{{ isChildActive('interview-questions.practice') }}"
+                                href="{{ route('interview-questions.practice') }}">
+                                Interview Q&As
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('interviews.view')
+                        <li>
+                            <a class="{{ isChildActive('interviews*') }}"
+                                href="{{ route('interviews.index') }}">
+                                Candidates
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('cvs.view')
+                        <li>
+                            <a class="{{ isChildActive('cvs*') }}"
+                               href="{{ route('cvs.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                                CVs or Resumes
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('daily_interviews.view')
+                        <li>
+                            <a class="{{ isChildActive('daily-interviews*') }}"
+                               href="{{ route('daily-interviews.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                                Daily Interview Schedules
+                            </a>
+                        </li>
+                        @endcan   
+                         
+                    </ul>
+                </li>
+@endcanany
+
+
+
+
+
+            @canany(['upcoming_events.view','college_events.view','student_events.view','employee_events.view','brochures.view','company_profile.view','company_ppt.view','scanners.view'])
+                 
+                <li class="{{ isParent(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                         <i class="fas fa-chalkboard-teacher"></i>
+                        <span class="nav-text">Website Uses</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
+                        
+                         @can('upcoming_events.view')
+                        <li>
+                            <a class="{{ isChildActive('upcoming-events.*') }}"
+                               href="{{ route('upcoming-events.index') }}">
+                              Upcoming Events
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('college_events.view')
+                     {{-- College Events --}}
+                        <li>
+                            <a class="{{ isChildActive('college.events.*') }}"
+                               href="{{ route('college.events.index') }}">
+                                 College Memory Events
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('student_events.view')
+
+                        {{-- Student Events --}}
+                        <li>
+                            <a class="{{ isChildActive('student.events.*') }}"
+                               href="{{ route('student.events.index') }}">
+                               Student Memory  Events
+                            </a>
+                        </li>
+                        @endcan   
+                         @can('employee_events.view')
+
+                        {{-- Employee Events --}}
+                        <li>
+                            <a class="{{ isChildActive('employee.events.*') }}"
+                               href="{{ route('employee.events.index') }}">
+                              Employee  Memory  Events
+                            </a>
+                        </li>
+
+                        @endcan   
+                         @can('brochures.view')
+                         {{-- Brochures --}}
+
+                    <li class="{{ isParent(['brochures.*']) }}">
+                        <a href="{{ route('brochures.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Manage Brochures</span>
+                        </a>
+                    </li>
+                    @endcan   
+                             @can('company_profile.view')
+                     {{-- Brochures --}}
+                    <li class="{{ isParent(['company_profile*']) }}">
+                        <a href="{{ route('company_profile.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Company Profile Manage</span>
+                        </a>
+                    </li>
+                    @endcan   
+                             @can('company_ppt.view')
+                    <li class="{{ isParent(['company_ppt.*']) }}">
+                        <a href="{{ route('company_ppt.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Company PPT Manage</span>
+                        </a>
+                    </li>
+                    @endcan   
+                             @can('scanners.view')
+                    <li class="{{ isParent(['scanners*']) }}">
+                        <a href="{{ route('scanners.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Social Share Scanners</span>
+                        </a>
+                    </li>
+
+                    @endcan  
+                         
+                    </ul>
+                </li>
+
+              @endcanany
+
+
+
+        
+               
+               
+                 
+
+               
+            
+
+
+
+
+                 {{-- Ads Management --}}
+                 @canany(['pages.view','internship_registrations.view','services_registrations.view'])
+                <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Ads Management</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['internship-registrations*','pages*','services-registrations*']) }}">
+                        @can('pages.view')
+                        <li>
+                            <a class="{{ isChildActive('pages.*') }}"
+                                href="{{ route('pages.index') }}">
+                                Ads Pages
+                            </a>
+                        </li>
+                        @endcan 
+
+                        @can('internship_registrations.view')
+                        <li>
+                            <a class="{{ isChildActive('internship-registrations*') }}"
+                                href="{{ route('internship-registrations.index') }}">
+                                Internship Entries
+                            </a>
+                        </li>
+                        @endcan 
+                        
+                        @can('services_registrations.view')
+                        <li>
+                            <a class="{{ isChildActive('services-registrations*') }}"
+                                href="{{ route('services-registrations.index') }}">
+                                Services Entries
+                            </a>
+                        </li>
+                        @endcan 
+                    </ul>
+                </li>
+                @endcanany
+
+                {{-- Gmail Form Entries --}}
+                        
+                 
+                 @can('gmail_form_enteries.view')
+                        <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
+                          <a href="{{ route('admin.form-entries.index') }}">
+                              <i class="fas fa-file-alt"></i>
+                              <span class="nav-text">Gmail Form Entries</span>
+                          </a>
+                        </li>
+                        @endcan
+
+                @can('blocked_numbers.view')
+                <li class="{{ isParent(['blocked-numbers.*']) }}">
+                    <a href="{{ route('admin.blocked-numbers.index') }}">
+                        <i class="fas fa-certificate"></i>
+                        <span class="nav-text">Blocked Numbers</span>
+                    </a>
+                     
+                </li>
+@endcan
+
+
+
+                        
+
+                {{-- Users --}}    
+                @can('users.view')
+                 <li class="{{ isParent(['users*']) }}">
+                    <a href="{{ route('users.index') }}">
+                         <i class="fas fa-users"></i>
+                        <span class="nav-text">User Management</span>
+                    </a>
+                </li>
+                @endcan
 
 
 @canany(['office_expenses.view','pantry_expenses.view','event_expenses.view','travel_expenses.view','office_assets.view','recharges.view','visiting_cards.view','office_paper_expenses.view','tea_pantry_expenses.view'])
@@ -1771,365 +2165,15 @@ function isParent($routes)
                                 <span class="nav-text">Visiting Cards</span>
                             </a>
                         </li>
-@endcan 
+                        @endcan 
 
                          
                     </ul>
                 </li>
 
-@endcanany
+                @endcanany
                          
-                    
-               
-               
-                 
-
-                 {{-- Tests --}}
-
-                 @canany(['tests.view','offline_tests.view','test_categories.view','manual_data.view','external_attendance.view','gmail_form_enteries.view'])
-                <li class="{{ isParent(['tests.*','admin.offline-tests*','test-categories.*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">College Exams</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['tests*','test-categories.*']) }}">
-
-                         @can('test_categories.view')
-                        <li>
-                            <a class="{{ isChildActive('test-categories.*') }}"
-                                href="{{ route('test-categories.index') }}">
-                                Exam Category
-                            </a>
-                        </li>
-                        @endcan   
-                        
-                        @can('tests.view')
-                        <li>
-                            <a class="{{ isChildActive('tests.*') }}"
-                                href="{{ route('admin.tests.index') }}">
-                                Online Exams
-                            </a>
-                        </li>
-                        @endcan
-                        @can('external_attendance.view')
-                        <li class="{{ request()->routeIs('admin.external-attendance.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.external-attendance.index') }}">
-                                Attendance Form
-                            </a>
-                        </li>
-                        @endcan
-                        @can('manual_data.view')
-                        <li class="{{ request()->routeIs('admin.manual_data.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.manual_data.index') }}">
-                                Manual Upload Data
-                            </a>
-                        </li>
-                        @endcan
-
-                        @can('gmail_form_enteries.view')
-                        <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
-                          <a href="{{ route('admin.form-entries.index') }}">
-                              <!-- <i class="fas fa-file-alt"></i> -->
-                              <span class="nav-text">Gmail Form Entries</span>
-                          </a>
-                        </li>
-                        @endcan
-                         <!-- @can('offline_tests.view')
-
-                         <li>
-                            <a class="{{ isChildActive('admin.offline-tests.index') }}"
-                                href="{{ route('admin.offline-tests.index') }}">
-                                Offline Exams
-                            </a>
-                        </li>
-                        @endcan   --> 
-                    </ul>
-                </li>
-@endcanany
             
- @canany(['interview_questions.view','interview_technology.view','interviews.view','cvs.view','daily_interviews.view'])
-                 {{-- Joined Students --}}
-                <li class="{{ isParent(['technologies*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Interviews</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['technologies*','interview-questions.practice','interview-questions*','interviews*','cvs*','daily-interviews*']) }}">
-
-                         @can('interview_technology.view')
-                        <li>
-                            <a class="{{ isChildActive('technologies*') }}"
-                                href="{{ route('technologies.index') }}">
-                                Technologies
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('interview_questions.view')
-                        <li>
-                            <a class="{{ isChildActive('interview-questions*') }}"
-                                href="{{ route('interview-questions.index') }}">
-                                Interview Questions
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('interview_questions.view')
-                         <li>
-                            <a class="{{ isChildActive('interview-questions.practice') }}"
-                                href="{{ route('interview-questions.practice') }}">
-                                Interview Q&As
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('interviews.view')
-                        <li>
-                            <a class="{{ isChildActive('interviews*') }}"
-                                href="{{ route('interviews.index') }}">
-                                Candidates
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('cvs.view')
-                        <li>
-                            <a class="{{ isChildActive('cvs*') }}"
-                               href="{{ route('cvs.index') }}">
-                                <!-- <i class="fas fa-bed me-2"></i> -->
-                                CVs or Resumes
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('daily_interviews.view')
-                        <li>
-                            <a class="{{ isChildActive('daily-interviews*') }}"
-                               href="{{ route('daily-interviews.index') }}">
-                                <!-- <i class="fas fa-bed me-2"></i> -->
-                                Daily Interview Schedules
-                            </a>
-                        </li>
-                        @endcan   
-                         
-                    </ul>
-                </li>
-@endcanany
-
-
-        
-
-                 {{-- Help Desk --}}
-                 @canany(['projects.view','tutorials.view','latest_tech_articles.view','seo_tips.view','interview_preparation_blogs.view','cpanel_explanation.view','hosting.view','faqs_section.view','helpdesk_categories.view','student_projects.view','student_project_assignments.view','student_project_submissions.view','student_project_reviews.view','cv_templates.view','student_cvs.view'])
-                <li class="{{ request()->routeIs('admin.helpdesk.*') || isParent(['projects*','tutorials*']) ? 'mm-active' : '' }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Student Help Desk</span>
-                    </a>
-                    <ul class="{{ request()->routeIs('admin.helpdesk.*') || showSubmenu(['projects*','tutorials*']) ? 'mm-show' : '' }}">
-                        @can('projects.view')
-                         <li>
-                            <a class="{{ isChildActive('projects*') }}"
-                               href="{{ route('projects.index') }}">
-                                <!-- <i class="fas fa-user-clock me-2"></i> -->
-                                Student Projects
-                            </a>
-                        </li>
-                         @endcan   
-                         @can('tutorials.view')
-                        <li>
-                            <a class="{{ isChildActive('tutorials*') }}"
-                               href="{{ route('tutorials.index') }}">
-                                <!-- <i class="fas fa-bed me-2"></i> -->
-                               Student Tutorials
-                            </a>
-                        </li>
-                         @endcan  
-                        
-                        @foreach($helpdeskCategories as $cat)
-
-                            @can($cat->slug.'.view')
-                                <li class="{{ request()->get('category') == $cat->id ? 'mm-active' : '' }}">
-                                    <a href="{{ route('admin.helpdesk.articles.index',['category'=>$cat->id]) }}">
-                                        {{ $cat->name }}
-                                    </a>
-                                </li>
-                            @endcan
-
-                        @endforeach
-
-                        @can('helpdesk_categories.view')
-                        <li class="{{ request()->routeIs('admin.helpdesk.categories.index.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.helpdesk.categories.index') }}">
-                                
-                                <span class="nav-text">Helpdesk Categories</span>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('student_projects.view')
-                        <li class="{{ request()->routeIs('student-projects.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('student-projects.index') }}">
-                                <span class="nav-text">Projects</span>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('student_project_assignments.view')
-                        <li class="{{ request()->routeIs('student-project-assignments.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('student-project-assignments.index') }}">
-                                <span class="nav-text">Projects Assignments</span>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('student_project_submissions.view')
-                         <li class="{{ request()->routeIs('student-project-submissions.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('student-project-submissions.index') }}">
-                                <span class="nav-text">Projects Submissions</span>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('student_project_reviews.view')
-                        <li class="{{ request()->routeIs('student-project-reviews.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('student-project-reviews.index') }}">
-                                <span class="nav-text">Projects Reviews</span>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('cv_templates.view')
-                         <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.student.cv-templates.index') }}">
-                                <span class="nav-text">CVs Templates</span>
-                            </a>
-                        </li>
-                        @endcan
-                        @can('student_cvs.view')
-                        <li class="{{ request()->routeIs('admin.student.cv.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.student.cv.index') }}">
-                                <span class="nav-text">Generated CVs</span>
-                            </a>
-                        </li> 
-                        @endcan                      
-                    </ul>
-                </li>
-                @endcanany
-                {{-- Joined Students --}}
-
-                @canany(['joined_students.view'])
-                <li class="{{ isParent(['joined_students*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Joined Students</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['joined_students*']) }}">
-                          
-                         @can('joined_students.view')
-                        <li>
-                            <a class="{{ isChildActive('joined_students.adminUrl') }}"
-                                href="{{ route('joined_students.adminUrl') }}">
-                                Joined Students Link
-                            </a>
-                        </li>
-                        @endcan   
-                         @can('joined_students.view')
-                        <li>
-                            <a class="{{ isChildActive('admin.joined_students.index') }}"
-                                href="{{ route('joined_students.index') }}">
-                                Joined Students Lists
-                            </a>
-                        </li>
-                        @endcan   
-                         
-                    </ul>
-                </li>
-                 @endcanany
-
-
-                    {{-- Verify Students --}}
-                    @can('verify_students.view')
-                <li class="{{ isParent(['verify-students*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Verify Students</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['verify-students*']) }}">
-                        <li>
-                            <a class="{{ isChildActive('verify-students-index.index') }}"
-                                href="{{ route('verify-students-index.index') }}">
-                                Verify Students Link
-                            </a>
-                        </li>
-                        <li>
-                            <a class="{{ isChildActive('verify-students.index') }}"
-                                href="{{ route('verify-students.index') }}">
-                                Verify Students Lists
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                @endcan 
-
-
-
-                 {{-- Joined Students --}}
-                 @canany(['pages.view','internship_registrations.view','services_registrations.view'])
-                <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                        <i class="fas fa-pen-to-square"></i>
-                        <span class="nav-text">Ads Management</span>
-                    </a>
-                    <ul class="{{ showSubmenu(['internship-registrations*','pages*','services-registrations*']) }}">
-                        @can('pages.view')
-                        <li>
-                            <a class="{{ isChildActive('pages.*') }}"
-                                href="{{ route('pages.index') }}">
-                                Ads Pages
-                            </a>
-                        </li>
-                        @endcan 
-
-                        @can('internship_registrations.view')
-                        <li>
-                            <a class="{{ isChildActive('internship-registrations*') }}"
-                                href="{{ route('internship-registrations.index') }}">
-                                Internship Entries
-                            </a>
-                        </li>
-                        @endcan 
-                        
-                        @can('services_registrations.view')
-                        <li>
-                            <a class="{{ isChildActive('services-registrations*') }}"
-                                href="{{ route('services-registrations.index') }}">
-                                Services Entries
-                            </a>
-                        </li>
-                        @endcan 
-                    </ul>
-                </li>
-                @endcanany
-
-
-
-                @can('blocked_numbers.view')
-                <li class="{{ isParent(['blocked-numbers.*']) }}">
-                    <a href="{{ route('admin.blocked-numbers.index') }}">
-                        <i class="fas fa-certificate"></i>
-                        <span class="nav-text">Blocked Numbers</span>
-                    </a>
-                     
-                </li>
-@endcan
-
-
-
-                        {{-- Certificates --}}
-                        
-                 {{-- Users --}}
-
-                @can('users.view')
-                 <li class="{{ isParent(['users*']) }}">
-                    <a href="{{ route('users.index') }}">
-                         <i class="fas fa-users"></i>
-                        <span class="nav-text">User Management</span>
-                    </a>
-                </li>
-                @endcan
-
-
                
                {{-- Logout --}}
                 <li>
@@ -2171,7 +2215,7 @@ function isParent($routes)
                 </li>
 
                 {{-- Attendence --}}
-                <li class="{{ isParent(['attendance.employee','attendance.myDetail']) }}">
+                <!-- <li class="{{ isParent(['attendance.employee','attendance.myDetail']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fa-regular fa-file-lines"></i>
                         <span class="nav-text">Attendence</span>
@@ -2190,7 +2234,7 @@ function isParent($routes)
                             </a>
                         </li>
                     </ul>
-                </li>
+                </li> -->
 
                 {{-- Logout --}}
                 <li>
@@ -2247,7 +2291,7 @@ function isParent($routes)
                 </li>
 
                 {{-- Attendence --}}
-                <li class="{{ isParent(['attendance.employee','attendance.myDetail']) }}">
+           <!--      <li class="{{ isParent(['attendance.employee','attendance.myDetail']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fa-regular fa-file-lines"></i>
                         <span class="nav-text">Calling Status</span>
@@ -2266,7 +2310,7 @@ function isParent($routes)
                             </a>
                         </li>
                     </ul>
-                </li>
+                </li> -->
 
                 {{-- Logout --}}
                 <li>

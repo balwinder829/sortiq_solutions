@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class HelpdeskArticle extends Model
 {
     protected $fillable = [
-        'technology_id','title','slug','description','status','expires_at'
+        'technology_id','title','slug','description','status','expires_at','is_active'
     ];
 
     public function technology()

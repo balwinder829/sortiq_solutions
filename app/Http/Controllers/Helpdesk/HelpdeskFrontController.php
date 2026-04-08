@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Helpdesk\Front;
+namespace App\Http\Controllers\Helpdesk;
 
 use App\Http\Controllers\Controller;
 use App\Models\Helpdesk\HelpdeskTechnology;
@@ -12,11 +12,12 @@ class HelpdeskFrontController extends Controller
 {
     public function index()
     {
+        abort(404);
         $technologies = HelpdeskTechnology::latest()->get();
-        return view('helpdesk.front.index',compact('technologies'));
+        return view('frontend.helpdesk.article',compact('technologies'));
     }
 
-    public function technology($slug)
+    public function technology_old($slug)
     {
         $technology = HelpdeskTechnology::where('slug',$slug)->firstOrFail();
 
@@ -28,7 +29,43 @@ class HelpdeskFrontController extends Controller
         return view('helpdesk.front.technology',compact('technology','articles'));
     }
 
-    public function article($techSlug,$articleSlug)
+    public function technology($slug)
+    {
+        abort(404);
+        $technology = HelpdeskTechnology::where('slug',$slug)->firstOrFail();
+
+        $articles = $technology->articles()
+            ->where('status','published')
+            ->where('is_active',1)
+            ->where(function($q){
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at','>',now());
+            })
+            ->latest()
+            ->get();
+
+        return view('frontend.helpdesk.technology',compact('technology','articles'));
+    }
+
+    public function article($techSlug, $articleSlug)
+    {
+        $article = HelpdeskArticle::where('slug',$articleSlug)
+            ->whereHas('technology', function($q) use ($techSlug){
+                $q->where('slug',$techSlug);
+            })
+            ->where('status','published')
+            ->where('is_active',1)
+            // ->where(function($q){
+            //     $q->whereNull('expires_at')
+            //       ->orWhere('expires_at','>',now());
+            // })
+            ->with('attachments','technology')
+            ->firstOrFail();
+
+        return view('frontend.helpdesk.article',compact('article'));
+    }
+
+    public function article_old($techSlug,$articleSlug)
     {
         $article = HelpdeskArticle::where('slug',$articleSlug)
             ->where('status','published')

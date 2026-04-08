@@ -82,7 +82,8 @@ Reset
                 <th>Title</th>
                 <th>Category</th>
                 <th>Status</th>
-                <th width="160">Action</th>
+                <th>View Status</th>
+                <th width="200">Action</th>
             </tr>
         </thead>
 
@@ -94,6 +95,29 @@ Reset
                 <td>{{ ucwords($row->technology->name ?? '') }}</td>
                 <td>{{ ucwords($row->status) }}</td>
                 <td>
+                    {{ $row->is_active ? 'Enabled' : 'Disabled' }}
+                </td>
+                <td>
+                    {{-- COPY FRONTEND URL --}}
+                    <button 
+                        class="btn btn-sm  copy-link-btn"
+                        data-url="{{ url('/helpdesk/'.$row->technology->slug.'/'.$row->slug) }}"
+                        title="Copy Link">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                      {{-- ADMIN VIEW --}}
+                    <a href="{{ route('admin.helpdesk.articles.show',$row->id) }}"
+                       class="btn btn-sm" title="View">
+                        <i class="fa fa-eye"></i>
+                    </a>
+
+                    {{-- FRONTEND VIEW --}}
+                    <a href="{{ url('/helpdesk/'.$row->technology->slug.'/'.$row->slug) }}"
+                       class="btn btn-sm text-success"
+                       target="_blank"
+                       title="Frontend View">
+                        <i class="fa fa-external-link"></i>
+                    </a>
                     <a href="{{ route('admin.helpdesk.articles.edit',$row->id) }}"
                        class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a>
 
@@ -141,6 +165,31 @@ $('#categoryFilter, #statusFilter').on('change', function(){
 $('#filterForm').submit();
 
 });
+
+});
+
+</script>
+<script>
+
+$(document).ready(function(){
+
+    $('.copy-link-btn').click(function(){
+
+        let url = $(this).data('url');
+
+        navigator.clipboard.writeText(url).then(function(){
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Copied!',
+                text: 'Frontend URL copied to clipboard',
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+        });
+
+    });
 
 });
 

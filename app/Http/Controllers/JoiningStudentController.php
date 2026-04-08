@@ -176,7 +176,7 @@ class JoiningStudentController extends Controller
             // 🔒 Prevent duplicate
             $exists = Student::where('source_type', 'joining_student')
                 ->where('source_id', $id)
-                ->where('session', $request->session_id)
+                // ->where('session', $request->session_id)
                 ->exists();
 
             if ($exists) {

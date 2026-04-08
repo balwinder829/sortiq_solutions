@@ -30,6 +30,7 @@ class StudentTest extends Model
         'course_type',
         'class',
         'semester',
+        'branch',
         'score'
     ];
 
