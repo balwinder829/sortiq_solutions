@@ -102,7 +102,11 @@ li {
                 $bondPeriod = ($letter->bond_period ?? '2.00') . ' years';
             @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
-
+                <tr>
+                    <td colspan="2" align="left" style="font-size: 14px;  padding-bottom:5px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
+                       <strong>EMP Code: </strong> {{ ucwords($letter->employee->emp_code) }}
+                    </td>
+                </tr>
                <tr>
                     <td colspan="2" align="left" style="font-size: 14px;  padding-bottom:5px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
                         <strong>Date: </strong> {{ \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') }}
