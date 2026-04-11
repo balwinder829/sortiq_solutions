@@ -14,16 +14,15 @@
         <div class="col-md-4">
             <h1 class="page_heading">Internship Registrations</h1>
         </div>
-      
     </div>
-     <div class="row mb-2">
-         
+
+    <div class="row mb-2">
         <div class="col-md-10">
-           {{-- FILTERS --}}
+
+            {{-- FILTERS (UNCHANGED) --}}
             <form method="GET" id="filterForm" class="mb-3">
                 <div class="row g-2">
 
-                   {{-- SLUG --}}
                 <div class="col-md-3">
                     <select name="slug" class="form-select filterchange">
                         <option value="">All Slugs</option>
@@ -36,65 +35,56 @@
                     </select>
                 </div>
 
-
-                    {{-- COLLEGE --}}
-                    <div class="col-md-3">
-                       <select name="college" class="form-select filterchange">
-                            <option value="">All Colleges</option>
-                            @foreach($colleges as $college)
-                                <option value="{{ $college->id }}"
-                                    {{ request('college') == $college->id ? 'selected' : '' }}>
-                                    {{ $college->FullName }}
-                                     
-                                </option>
-                            @endforeach
-                        </select>
-
-                    </div>
-
-                    {{-- TECHNOLOGY --}}
-                    <div class="col-md-3">
-                       <select name="technology" class="form-select filterchange">
-                            <option value="">All Technologies</option>
-                            @foreach($technologies as $tech)
-                                <option value="{{ $tech->id }}"
-                                    {{ request('technology') == $tech->id ? 'selected' : '' }}>
-                                    {{ $tech->course_name }}
-                                </option>
-                            @endforeach
-                        </select>
-
-
-                    </div>
-
-                   {{-- LIMIT --}}
-                <div class="col-md-2">
-                    <select name="limit" class="form-select filterchange">
-                        <option value="">All</option>
-                        <option value="10" {{ request('limit') == 10 ? 'selected' : '' }}>10</option>
-                        <option value="20" {{ request('limit') == 20 ? 'selected' : '' }}>20</option>
-                        <option value="50" {{ request('limit') == 50 ? 'selected' : '' }}>50</option>
-                        <option value="100" {{ request('limit') == 100 ? 'selected' : '' }}>100</option>
+                <div class="col-md-3">
+                    <select name="college" class="form-select filterchange select2">
+                        <option value="">All Colleges</option>
+                        @foreach($colleges as $college)
+                            <option value="{{ $college->id }}"
+                                {{ request('college') == $college->id ? 'selected' : '' }}>
+                                {{ $college->FullName }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
+                <div class="col-md-3">
+                    <select name="technology" class="form-select filterchange">
+                        <option value="">All Technologies</option>
+                        @foreach($technologies as $tech)
+                            <option value="{{ $tech->id }}"
+                                {{ request('technology') == $tech->id ? 'selected' : '' }}>
+                                {{ $tech->course_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-                    {{-- BUTTONS --}}
-                    <div class="col-md-1 d-flex gap-2">
-                        <!-- <button class="btn btn-primary w-100">Filter</button> -->
-                        <a href="{{ route('internship-registrations.index') }}"
-                           class="btn btn-secondary w-100">Reset</a>
-                        <a href="{{ route('internship-registrations.export', request()->all()) }}"
-                           class="btn btn-success w-100">
-                            Export
-                        </a>
+                <div class="col-md-2">
+                    <select name="limit" class="form-select filterchange">
+                        <option value="">All</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
 
-                    </div>
+                <div class="col-md-1 d-flex gap-2">
+                    <a href="{{ route('internship-registrations.index') }}"
+                       class="btn btn-secondary w-100">Reset</a>
+
+                    <a href="javascript:void(0)"
+                       id="exportBtn"
+                       class="btn btn-success w-100">
+                        Export
+                    </a>
+                </div>
+
                 </div>
             </form>
+
         </div>
     </div>
-
 
     {{-- SUCCESS --}}
     @if(session('success'))
@@ -103,8 +93,6 @@
             <button class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
-    
 
     {{-- TABLE --}}
     <div class="table-responsive">
@@ -117,73 +105,68 @@
                 <th>Phone</th>
                 <th>College</th>
                 <th>Technology</th>
-                
                 <th>Actions</th>
             </tr>
             </thead>
-
-            <tbody>
-            @foreach($registrations as $registration)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $registration->full_name }}</td>
-                    <td>{{ $registration->email }}</td>
-                    <td>{{ $registration->phone ?? '-' }}</td>
-                     <td>{{ $registration->collegeData->FullName ?? '-' }}</td>
-                    <td> {{ $registration->courseData->course_name }}</td>
-                    
-
-                    
-
-                    {{-- ACTIONS --}}
-                    <td class="text-center" style="width:160px">
-                        <a href="{{ route('internship-registrations.show', $registration) }}"
-                           class="btn btn-sm">
-                            <i class="fa fa-eye"></i>
-                        </a>
-
-                      
-                        
-                    </td>
-                </tr>
-            @endforeach
-            </tbody>
         </table>
     </div>
-
-    {{ $registrations->links('pagination::bootstrap-5') }}
 
 </div>
 @endsection
 
 @push('scripts')
-<script>
-    $(function () {
-        $('#internshipTable').DataTable({
-            pageLength: 25,
-            lengthMenu: [10, 25, 50, 100],
-            paging: false,
-            info: false
-        });
-    });
-</script>
-<script>
-$(document).ready(function(){
 
-    let timer;
+<script>
+$(document).ready(function () {
+
+    let table = $('#internshipTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('internship-registrations.index') }}",
+            data: function (d) {
+                d.slug = $('select[name=slug]').val();
+                d.college = $('select[name=college]').val();
+                d.technology = $('select[name=technology]').val();
+            }
+        },
+        columns: [
+            { data: 0 },
+            { data: 1 },
+            { data: 2 },
+            { data: 3 },
+            { data: 4 },
+            { data: 5 },
+            { data: 6, orderable:false, searchable:false }
+        ],
+        pageLength: 25
+    });
 
     $('.filterchange').on('change', function(){
-        $('#filterForm').submit();
-        
-    });
-    $('.filterchangetext').on('input', function(){
-        clearTimeout(timer);
-
-        timer = setTimeout(function(){
-            $('#filterForm').submit();
-        }, 500); // waits 500ms after typing stops
+        table.ajax.reload();
     });
 
 });
 </script>
+
+{{-- EXPORT WITH FILTERS --}}
+<script>
+$('#exportBtn').on('click', function () {
+
+    let params = new URLSearchParams();
+
+    let slug = $('select[name=slug]').val();
+    let college = $('select[name=college]').val();
+    let technology = $('select[name=technology]').val();
+
+    if (slug) params.append('slug', slug);
+    if (college) params.append('college', college);
+    if (technology) params.append('technology', technology);
+
+    let url = "{{ route('internship-registrations.export') }}?" + params.toString();
+
+    window.location.href = url;
+});
+</script>
+
 @endpush

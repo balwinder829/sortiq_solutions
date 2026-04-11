@@ -23,6 +23,7 @@ use App\Models\ExternalAttendanceTest;
 use App\Models\ExternalAttendanceLink;
 use App\Models\ExternalAttendanceSubmission;
 use App\Models\StudentSession;
+use App\Exports\ExternalAttendanceExport;
 
 // use App\Models\ExternalAttendance;
 
@@ -452,6 +453,10 @@ class ExternalAttendanceController extends Controller
         $query->where('is_finalized', $request->finalized);
     }
 
+    if ($request->filled('status')) {
+        $query->where('is_moved_to_enquiry', $request->status);
+    }
+
       // COURSE
     if ($request->filled('course_id')) {
         $query->where('course_id', $request->course_id);
@@ -720,5 +725,15 @@ class ExternalAttendanceController extends Controller
             "$count student(s) moved to Enquiries successfully."
         );
     }
+
+    
+
+public function exportResults(Request $request, ExternalAttendanceTest $test)
+{
+    return Excel::download(
+        new ExternalAttendanceExport($test, $request),
+        'test-'.$test->id.'-results-' . now()->format('Ymd_His') . '.xlsx'
+    );
+}
 
 }

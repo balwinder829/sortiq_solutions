@@ -39,8 +39,62 @@
         <button id="sendSelected" class="btn btn-primary" title="Add to Session Confirmation">
             Send to Session
         </button>
+        <a href="{{ route('joined_students.export', request()->query()) }}"
+   class="btn btn-success">
+    Export Excel
+</a>
     </div>
+
 </div>
+
+<form id="filterForm" class="row mb-3">
+
+    <div class="col-md-2">
+        <input type="text" name="student_name"
+               value="{{ request('student_name') }}"
+               class="form-control filter-input"
+               placeholder="Student Name">
+    </div>
+
+    <div class="col-md-2">
+        <select name="college" class="form-control filter-input select2">
+            <option value="">All College</option>
+            @foreach($colleges as $college)
+                <option value="{{ $college->id }}"
+                    {{ request('college') == $college->id ? 'selected' : '' }}>
+                    {{ $college->college_name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="technology" class="form-control filter-input">
+            <option value="">All Technology</option>
+            @foreach($courses as $course)
+                <option value="{{ $course->course_name }}"
+                    {{ request('technology') == $course->course_name ? 'selected' : '' }}>
+                    {{ $course->course_name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="is_sent" class="form-control filter-input">
+            <option value="">All Status</option>
+            <option value="1" {{ request('is_sent') === '1' ? 'selected' : '' }}>Sent</option>
+            <option value="0" {{ request('is_sent') === '0' ? 'selected' : '' }}>Not Sent</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="button" id="resetFilters" class="btn btn-secondary w-100">
+            Reset
+        </button>
+    </div>
+
+</form>
 
 {{-- FLASH MESSAGE --}}
 @if(session('success'))
@@ -146,6 +200,12 @@ $(document).ready(function () {
     });
 });
 
+$('.filter-input').on('change keyup', function () {
+
+    let query = $('#filterForm').serialize();
+
+    window.location.href = "{{ route('joined_students.index') }}?" + query;
+});
 // Select single
 $(document).on('change', '.record_checkbox', function () {
     let id = $(this).val();
@@ -219,7 +279,9 @@ $('#sendSelected').click(function () {
 
     });
 });
-
+$('#resetFilters').click(function () {
+    window.location.href = "{{ route('joined_students.index') }}";
+});
 </script>
 
 @endpush

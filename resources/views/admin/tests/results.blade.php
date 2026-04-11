@@ -186,7 +186,7 @@
 
 <div class="d-flex gap-2 mb-3">
 
-    {{-- DOWNLOAD ALL (FILTERED) --}}
+    {{-- DOWNLOAD ALL (FILTERED) --}}<!-- 
     <a href="{{ route('admin.tests.export.all', $test->id) }}?{{ http_build_query(request()->query()) }}"
        class="btn btn-outline-primary">
         <i class="fa fa-download"></i> Download All
@@ -196,7 +196,18 @@
     <a href="{{ route('admin.tests.export.finalized', $test->id) }}?{{ http_build_query(request()->query()) }}"
        class="btn btn-outline-success">
         <i class="fa fa-download"></i> Download Selected
-    </a>
+    </a> -->
+    <a href="#"
+   onclick="downloadWithFilters('{{ route('admin.tests.export.all', $test->id) }}')"
+   class="btn btn-outline-primary">
+    <i class="fa fa-download"></i> Download All
+</a>
+
+<a href="#"
+   onclick="downloadWithFilters('{{ route('admin.tests.export.finalized', $test->id) }}')"
+   class="btn btn-outline-success">
+    <i class="fa fa-download"></i> Download Selected
+</a>
 
 </div>
 
@@ -654,5 +665,37 @@ document.querySelector('[formaction*="certificate"]')
 
 });
 </script> -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    const url = new URL(window.location.href);
+
+    // If college_id missing → inject it
+    if (!url.searchParams.has('college_id')) {
+
+        const defaultCollegeId = "{{ $defaultCollegeId }}";
+
+        if (defaultCollegeId) {
+            url.searchParams.set('college_id', defaultCollegeId);
+
+            // Update URL WITHOUT reload
+            window.history.replaceState({}, '', url);
+        }
+    }
+
+});
+</script>
+<script>
+function downloadWithFilters(baseUrl) {
+
+    const params = new URLSearchParams(window.location.search);
+
+    // safety fallback (in case still missing)
+    if (!params.has('college_id')) {
+        params.set('college_id', "{{ $defaultCollegeId }}");
+    }
+
+    window.location.href = baseUrl + '?' + params.toString();
+}
+</script>
 @endsection

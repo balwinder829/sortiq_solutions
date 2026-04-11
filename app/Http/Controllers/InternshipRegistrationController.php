@@ -12,7 +12,7 @@ use App\Models\Course;
 use App\Exports\InternshipRegistrationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Rules\NotBlockedNumber;
-
+use App\Http\DataTables\DataTablesServerSide;
 
 class InternshipRegistrationController extends Controller
 {
@@ -82,7 +82,72 @@ class InternshipRegistrationController extends Controller
      * GET /admin/internship-registrations
      */
 
-   public function index(Request $request)
+
+public function index(Request $request)
+{
+    if ($request->ajax()) {
+
+        $query = InternshipRegistration::with([
+            'collegeData' => fn($q) => $q->withTrashed(),
+            'courseData' => fn($q) => $q->withTrashed()
+        ]);
+
+        if ($request->college) {
+            $query->where('college', $request->college);
+        }
+
+        if ($request->technology) {
+            $query->where('technology', $request->technology);
+        }
+
+        if ($request->slug) {
+            $query->where('slug', $request->slug);
+        }
+
+        return DataTablesServerSide::response($request, $query, [
+            'orderable'  => ['id','full_name','email'],
+            'searchable' => ['full_name','email','phone'],
+        ], function ($row) {
+
+            $actions = '
+                <a href="' . route('internship-registrations.show', $row->id) . '" class="btn btn-sm">
+                    <i class="fa fa-eye"></i>
+                </a>
+
+                <form action="' . route('internship-registrations.destroy', $row->id) . '" 
+                      method="POST" 
+                      style="display:inline-block;"
+                      >
+
+                    ' . csrf_field() . '
+                    ' . method_field('DELETE') . '
+
+                    <button type="submit" class="btn btn-sm">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </form>
+            ';
+
+            return [
+                $row->id,
+                e($row->full_name),
+                e($row->email),
+                e($row->phone ?? '-'),
+                e(optional($row->collegeData)->FullName ?? '-'),
+                e(optional($row->courseData)->course_name),
+                $actions
+            ];
+        });
+    }
+
+    // NORMAL VIEW (UNCHANGED)
+    $colleges = College::orderBy('college_display_name')->get();
+    $technologies = Course::orderBy('course_name')->get();
+    $slugs = InternshipRegistration::select('slug')->distinct()->pluck('slug');
+
+    return view('pages_admin.index', compact('colleges','technologies','slugs'));
+}
+   public function indexoldd(Request $request)
 {
     // $query = InternshipRegistration::with(['collegeData', 'courseData']);
 

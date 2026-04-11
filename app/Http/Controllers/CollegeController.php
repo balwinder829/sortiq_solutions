@@ -449,20 +449,77 @@ public function update(Request $request, $id)
     //     return Excel::download(new CollegesExport, 'colleges.xlsx');
     // }
 
-    public function exportExcel(Request $request)
-    {
-        return Excel::download(
-            new CollegesExport(
-                $request->state_name,
-                $request->district_name,
-                $request->student_filter,
-                $request->college_type,
-                $request->offer_training,
-                $request->call_status
-            ),
-            'colleges.xlsx'
-        );
+    // public function exportExcel(Request $request)
+    // {
+    //     return Excel::download(
+    //         new CollegesExport(
+    //             $request->state_name,
+    //             $request->district_name,
+    //             $request->student_filter,
+    //             $request->college_type,
+    //             $request->offer_training,
+    //             $request->call_status
+    //         ),
+    //         'colleges.xlsx'
+    //     );
+    // }
+
+    // use App\Models\College;
+
+public function exportExcel(Request $request)
+{
+    $fileNameParts = ['colleges'];
+
+    if (!empty($request->state_name)) {
+        $fileNameParts[] = $request->state_name;
     }
+
+    if (!empty($request->district_name)) {
+        $fileNameParts[] = $request->district_name;
+    }
+
+    // ✅ FIX: college_type key → label
+    if ($request->college_type !== null && $request->college_type !== '') {
+        $types = College::TYPES;
+
+        if (isset($types[$request->college_type])) {
+            $fileNameParts[] = strtolower($types[$request->college_type]);
+        }
+    }
+
+    if (!empty($request->student_filter)) {
+        $fileNameParts[] = $request->student_filter;
+    }
+
+    // training fix
+    if ($request->offer_training !== null && $request->offer_training !== '') {
+        $fileNameParts[] = $request->offer_training == 1 
+            ? 'training_yes' 
+            : 'training_no';
+    }
+
+    // clean unwanted values
+    $fileNameParts = array_filter($fileNameParts, function ($value) {
+        return $value !== null && $value !== '' && $value !== 'undefined';
+    });
+
+    $fileName = implode('_', $fileNameParts);
+    $fileName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $fileName);
+
+    $fileName .= '_' . now()->format('Ymd_His') . '.xlsx';
+
+    return Excel::download(
+        new CollegesExport(
+            $request->state_name,
+            $request->district_name,
+            $request->student_filter,
+            $request->college_type,
+            $request->offer_training,
+            $request->call_status
+        ),
+        $fileName
+    );
+}
 
     public function importColleges(Request $request, CollegeResolver $resolver)
     {

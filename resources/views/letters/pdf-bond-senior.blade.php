@@ -72,7 +72,7 @@ li {
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" style="text-align: center;">
-                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Two-Year Bond Agreement (Senior Employee)</strong></h2>
+                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 30px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Bond Agreement (Senior Employee)</strong></h2>
                     </td>
                 </tr>
             </table>
@@ -86,6 +86,20 @@ li {
                 } elseif ($letter->employee->job_type === 'part_time') {
                     $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
                 }
+
+                 $amount = (int) ($letter->bond_amount ?? 20000);
+
+                $bondAmountFormatted = '₹' . (
+                    strlen($amount) > 3
+                        ? preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', substr($amount, 0, -3)) . ',' . substr($amount, -3)
+                        : $amount
+                );
+
+                $startDate = $letter->bond_start_date 
+                ? \Carbon\Carbon::parse($letter->bond_start_date)->format('d M Y') 
+                : now()->format('d M Y');
+
+                $bondPeriod = ($letter->bond_period ?? '2.00') . ' years';
             @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
 
@@ -194,7 +208,7 @@ li {
                             <tr>
                                 <td width="18" valign="top"></td>
                                 <td valign="top">
-                                   The Employee agrees to a bond of two (2) years, starting from the Joining Date.
+                                   The Employee agrees to a bond of {{ $bondPeriod }}, starting from {{ $startDate }}.
                                 </td>
                             </tr>
                         </table>
@@ -241,7 +255,7 @@ li {
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                    • Training / onboarding / development cost: ₹50,000 (or actual cost incurred, whichever is higher)<br>
+                                    • Training / onboarding / development cost: {{ $bondAmountFormatted }} (or actual cost incurred, whichever is higher)<br>
                                     • Salary paid till the last working day<br>
                                     • Any other expenses directly related to onboarding or professional development<br>
                                   
@@ -336,7 +350,7 @@ li {
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
                                     • Purpose: To safeguard the Company’s investment in senior employee development.<br>
-                                    • Amount: ₹50,000 (or actual training/development cost, whichever is higher)<br>
+                                    • Amount: {{ $bondAmountFormatted }} (or actual training/development cost, whichever is higher)<br>
                                     • Payment Method: By bank transfer or cheque (Cheque No.: {{ ucwords($letter->check_number) }} / UTR No.: ______), or via deduction from salary, if mutually agreed.<br>
                                    
                                   

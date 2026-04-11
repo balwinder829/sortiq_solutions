@@ -229,7 +229,7 @@ public function index(Request $request)
     }
 
     if ($request->filled('source_type')) {
-        $query->where('source', $request->source_type);
+        $query->where('source_type', $request->source_type);
     }
 
     if ($request->filled('registered')) {
@@ -335,11 +335,16 @@ public function index(Request $request)
                           ->orWhere('assigned_to','');
                     })
                     ->count();
+
+    $querySql = str_replace('?', '%s', $query->toSql());
+
+    // dd(vsprintf($querySql, $query->getBindings()));
+    // dd($query->toSql());
     // =========================
     // DATA
     // =========================
     $enquiries = $query->paginate(20)->appends($request->all());
-
+    // dd($enquiries);
     $sales    = SalesStaff::where('status', 'active')->get();
     $colleges = College::orderBy('college_name')->get();
 

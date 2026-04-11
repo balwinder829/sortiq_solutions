@@ -7,12 +7,14 @@ use App\Models\College;
 use App\Models\StudentSession;
 use Illuminate\Http\Request;
 use App\Http\DataTables\DataTablesServerSide;
-use App\Exports\WorkshopsExport;
+use App\Exports\HardDataExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\State;
 use App\Models\District;
 use App\Models\Enquiry;
 use App\Rules\NotBlockedNumber;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class HardDataController extends Controller
 {
@@ -72,6 +74,10 @@ public function index(Request $request)
         }
         if ($request->gender) {
             $query->where('gender', $request->gender);
+        }
+
+         if ($request->is_moved !== null && $request->is_moved !== '') {
+            $query->where('is_moved_to_enquiry', (int) $request->is_moved);
         }
 
         if ($request->course_type) {
@@ -278,14 +284,45 @@ public function update(Request $request, $id)
             ->with('success','Data deleted successfully');
     }
 
-    public function exportExcel(Request $request)
+    public function exportExcelo(Request $request)
     {
         return Excel::download(
-            new WorkshopsExport($request),
-            'workshops.xlsx'
+            new HardDataExport($request),
+            'hard-data.xlsx'
         );
     }
+public function exportExcel(Request $request)
+{
+    $fileName = 'hard-data';
 
+    // ✅ Add filters to filename
+    if ($request->is_moved !== null && $request->is_moved !== '') {
+        $fileName .= $request->is_moved == 1 ? '-moved' : '-not-moved';
+    }
+
+    if ($request->gender) {
+        $fileName .= '-' . strtolower($request->gender);
+    }
+
+    if ($request->course_type) {
+        $fileName .= '-' . strtolower($request->course_type);
+    }
+
+    if ($request->college_id) {
+        $college = \App\Models\College::find($request->college_id);
+        if ($college) {
+            $fileName .= '-' . Str::slug($college->college_name);
+        }
+    }
+
+    // ✅ Always add datetime
+    $fileName .= '-' . Carbon::now()->format('d-m-Y_H-i');
+
+    return \Maatwebsite\Excel\Facades\Excel::download(
+        new \App\Exports\HardDataExport($request),
+        $fileName . '.xlsx'
+    );
+}
     public function moveManualToEnquiries(Request $request)
     {
         $ids = $request->ids;
@@ -343,5 +380,68 @@ public function update(Request $request, $id)
         return response()->json([
             'message' => "$count students moved successfully"
         ]);
+    }
+
+     public function importForm()
+    {
+        return view('hard_data.import');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+
+        \DB::beginTransaction();
+
+        try {
+
+            $importer = new \App\Imports\HardDataImport();
+            \Maatwebsite\Excel\Facades\Excel::import($importer, $file);
+
+            $failures = $importer->failures();
+
+            if ($failures->isNotEmpty()) {
+
+                \DB::rollBack();
+
+                $messages = [];
+
+                foreach ($failures as $failure) {
+                    $messages[] =
+                        "Row {$failure->row()} – {$failure->attribute()} – " .
+                        implode(', ', $failure->errors());
+                }
+
+                return back()->withErrors($messages);
+            }
+
+            \DB::commit();
+
+            $total    = $importer->totalRows;
+            $inserted = $importer->insertedRows;
+            $skipped  = $importer->skippedRows;
+
+            $message = "From {$total} rows: {$inserted} inserted, {$skipped} skipped.";
+
+            if (!empty($importer->duplicateContacts)) {
+                return back()
+                    ->with('success', $message)
+                    ->withErrors($importer->duplicateContacts);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Throwable $e) {
+
+            \DB::rollBack();
+
+            return back()->withErrors([
+                'Import failed. Something went wrong.'
+            ]);
+        }
     }
 }

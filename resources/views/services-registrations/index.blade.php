@@ -14,14 +14,15 @@
         <div class="col-md-4">
             <h1 class="page_heading">Services Registrations</h1>
         </div>
-      
     </div>
-     <div class="row mb-2">
-         
+
+    <div class="row mb-2">
         <div class="col-md-10">
-           {{-- FILTERS --}}
+
+            {{-- FILTERS (UNCHANGED) --}}
             <form method="GET" id="filterForm" class="mb-3">
                 <div class="row g-2">
+
                     <div class="col-md-3">
                         <select name="slug" class="form-select filterchange">
                             <option value="">All Slugs</option>
@@ -34,8 +35,6 @@
                         </select>
                     </div>
 
-
-                    {{-- TECHNOLOGY --}}
                     <div class="col-md-4">
                        <select name="technology" class="form-select filterchange">
                             <option value="">All Technologies</option>
@@ -48,33 +47,21 @@
                         </select>
                     </div>
 
-                     {{-- EXPORT LIMIT --}}
-                      <div class="col-md-2">
-                            <select name="limit" class="form-select filterchange">
-                                <option value="" >All</option>
-                                <option value="20" {{ request('limit') == 20 ? 'selected' : '' }}>20</option>
-                                <option value="30" {{ request('limit') == 30 ? 'selected' : '' }}>30</option>
-                                <option value="50" {{ request('limit') == 50 ? 'selected' : '' }}>50</option>
-                                <option value="100" {{ request('limit') == 100 ? 'selected' : '' }}>100</option>
-                            </select>
-                        </div>
+                     
 
-                    {{-- BUTTONS --}}
                     <div class="col-md-1 d-flex gap-2">
-                        <!-- <button class="btn btn-primary w-100">Filter</button> -->
                         <a href="{{ route('services-registrations.index') }}"
                            class="btn btn-secondary w-100">Reset</a>
-                          {{-- EXPORT --}}
-                        <a href="{{ route('services-registrations.export', request()->all()) }}"
-                           class="btn btn-success w-100">
+
+                        <a href="javascript:void(0)" id="exportBtn" class="btn btn-success w-100">
                             Export
                         </a>
                     </div>
                 </div>
             </form>
+
         </div>
     </div>
-
 
     {{-- SUCCESS --}}
     @if(session('success'))
@@ -83,8 +70,6 @@
             <button class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
-
-    
 
     {{-- TABLE --}}
     <div class="table-responsive">
@@ -97,68 +82,110 @@
                 <th>Phone</th>
                 <th>Location</th>
                 <th>Technology</th>
+                <th>Added Date</th>
                 <th>Actions</th>
             </tr>
             </thead>
-
-            <tbody>
-            @foreach($registrations as $registration)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $registration->full_name }}</td>
-                    <td>{{ $registration->email }}</td>
-                    <td>{{ $registration->phone ?? '-' }}</td>
-                     <td>{{ $registration->location ?? '-' }}</td>
-                    <td> {{ $registration->courseData->course_name }}</td>
-                    {{-- ACTIONS --}}
-                    <td class="text-center" style="width:160px">
-                        <a href="{{ route('services-registrations.show', $registration) }}"
-                           class="btn btn-sm">
-                            <i class="fa fa-eye"></i>
-                        </a>
-
-                        
- 
-                    </td>
-                </tr>
-            @endforeach
-            </tbody>
         </table>
     </div>
-
-    {{ $registrations->links('pagination::bootstrap-5') }}
 
 </div>
 @endsection
 
 @push('scripts')
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
+
 <script>
-    $(function () {
-        $('#internshipTable').DataTable({
-            pageLength: 25,
-            lengthMenu: [10, 25, 50, 100],
-            paging: false,
-            info: false
-        });
+$(document).ready(function () {
+
+    let table = $('#internshipTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('services-registrations.index') }}",
+            data: function (d) {
+                d.slug       = $('select[name=slug]').val();
+                d.technology = $('select[name=technology]').val();
+               
+            }
+        },
+        columns: [
+            { data: 0 },
+            { data: 1 },
+            { data: 2 },
+            { data: 3 },
+            { data: 4 },
+            { data: 5 },
+            { data: 6 },
+            { data: 7, orderable:false, searchable:false }
+        ],
+        pageLength: 1
     });
-</script>
-<script>
-$(document).ready(function(){
 
-    let timer;
-
+    // ✅ FILTER CHANGE → NO RELOAD
     $('.filterchange').on('change', function(){
-        $('#filterForm').submit();
-        
-    });
-    $('.filterchangetext').on('input', function(){
-        clearTimeout(timer);
-
-        timer = setTimeout(function(){
-            $('#filterForm').submit();
-        }, 500); // waits 500ms after typing stops
+        table.ajax.reload();
     });
 
 });
 </script>
+
+{{-- DELETE WITH SWAL --}}
+<script>
+$(document).ready(function () {
+
+    // IMPORTANT: use body delegation (works with DataTable)
+    $('body').on('click', '.delete-btn_clicked', function () {
+
+        let id = $(this).data('id');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This record will be permanently deleted!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                let form = $('<form>', {
+                    method: 'POST',
+                    action: "{{ url('services-registrations') }}/" + id
+                });
+
+                form.append('@csrf');
+                form.append('<input type="hidden" name="_method" value="DELETE">');
+
+                $('body').append(form);
+                form.submit();
+            }
+        });
+
+    });
+
+});
+
+ 
+
+$('#exportBtn').on('click', function () {
+
+    let params = new URLSearchParams();
+
+    let slug       = $('select[name=slug]').val();
+    let technology = $('select[name=technology]').val();
+    let limit      = $('select[name=limit]').val();
+
+    if (slug) params.append('slug', slug);
+    if (technology) params.append('technology', technology);
+    if (limit) params.append('limit', limit);
+
+    let url = "{{ route('services-registrations.export') }}?" + params.toString();
+
+    window.location.href = url;
+});
+</script>
+
 @endpush

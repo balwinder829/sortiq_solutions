@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Exports\ServicesRegistrationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Rules\NotBlockedNumber;
+ use App\Http\DataTables\DataTablesServerSide;
 
 class ServicesRegistrationController extends Controller
 {
@@ -37,8 +38,132 @@ class ServicesRegistrationController extends Controller
             )->only($method);
         }
     }
-    
-    public function index(Request $request)
+   
+ public function index(Request $request)
+    {
+        // ✅ AJAX → DataTable
+        if ($request->ajax()) {
+
+            $query = ServicesRegistration::with('courseData');
+
+            // ✅ FILTERS
+            if ($request->technology) {
+                $query->where('technology', $request->technology);
+            }
+
+            if ($request->slug) {
+                $query->where('slug', 'like', '%' . $request->slug . '%');
+            }
+
+         
+            
+
+            return DataTablesServerSide::response($request, $query, [
+                'orderable'  => ['id','full_name','email'],
+                'searchable' => ['full_name','email','phone'],
+            ], function ($row) {
+
+                $actions = '
+                    <a href="' . route('services-registrations.show', $row->id) . '" class="btn btn-sm">
+                        <i class="fa fa-eye"></i>
+                    </a>
+
+                    <form action="' . route('services-registrations.destroy', $row->id) . '" 
+                          method="POST" 
+                          style="display:inline-block;"
+                          >
+
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
+
+                        <button type="submit" class="btn btn-sm ">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </form>
+
+                    
+                ';
+
+                return [
+                    $row->id,
+                    e($row->full_name),
+                    e($row->email),
+                    e($row->phone ?? '-'),
+                    e($row->location ?? '-'),
+                    e(optional($row->courseData)->course_name),
+                    $actions
+                ];
+            });
+        }
+
+        // ✅ NORMAL PAGE LOAD (NO CHANGE)
+        $technologies = Course::orderBy('course_name')->get([
+            'id',
+            'course_name'
+        ]);
+
+        $slugs = ServicesRegistration::select('slug')
+            ->distinct()
+            ->orderBy('slug')
+            ->pluck('slug');
+
+        return view('services-registrations.index', compact('technologies','slugs'));
+    }
+public function index34(Request $request)
+{
+    // 👉 AJAX REQUEST (DataTable)
+    if ($request->ajax()) {
+
+        $query = ServicesRegistration::with('courseData');
+
+        if ($request->technology) {
+            $query->where('technology', $request->technology);
+        }
+
+        if ($request->slug) {
+            $query->where('slug', 'like', '%' . $request->slug . '%');
+        }
+
+        return DataTablesServerSide::response($request, $query, [
+            'orderable'  => ['id','full_name','email'],
+            'searchable' => ['full_name','email','phone'],
+        ], function ($row) {
+
+            $actions = '
+                <a href="' . route('services-registrations.show', $row->id) . '" class="btn btn-sm">
+                    <i class="fa fa-eye"></i>
+                </a>
+
+                <button type="button"
+                    class="btn btn-sm btn-danger delete-btn"
+                    data-id="' . $row->id . '">
+                    <i class="fa fa-trash"></i>
+                </button>
+            ';
+
+            return [
+                $row->id,
+                e($row->full_name),
+                e($row->email),
+                e($row->phone ?? '-'),
+                e($row->location ?? '-'),
+                e(optional($row->courseData)->course_name),
+                $actions
+            ];
+        });
+    }
+
+    // 👉 NORMAL PAGE LOAD (Blade)
+    $technologies = Course::orderBy('course_name')->get(['id','course_name']);
+
+    $slugs = ServicesRegistration::select('slug')
+        ->distinct()
+        ->orderBy('slug')
+        ->pluck('slug');
+
+    return view('services-registrations.index', compact('technologies','slugs'));
+}
+    public function in2dex2(Request $request)
     {
         $query = ServicesRegistration::query()
             ->when($request->technology, function ($query) use ($request) {

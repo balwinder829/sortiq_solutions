@@ -130,7 +130,7 @@
             </div>
 
             
-            <div class="col-md-3 mb-2">
+            <!-- <div class="col-md-3 mb-2">
                 <label><strong>Source</strong></label>
                 <select name="source_type" class="form-control filterchange">
                     <option value="">All</option>
@@ -139,7 +139,22 @@
                     <option value="online" {{ request('source_type')=='online' ? 'selected' : '' }}>Online</option>
                     <option value="offline" {{ request('source_type')=='offline' ? 'selected' : '' }}>Offline</option>
                 </select>
-            </div>
+            </div> -->
+            <div class="col-md-3 mb-2">
+                <label><strong>Source</strong></label>
+            <select name="source_type" class="form-control filterchange">
+                <option value="">All</option>
+
+                <option value="excel" {{ request('source_type')=='excel' ? 'selected' : '' }}>Excel</option>
+                <option value="manual" {{ request('source_type')=='manual' ? 'selected' : '' }}>Manual</option>
+                <option value="online" {{ request('source_type')=='online' ? 'selected' : '' }}>Online Exam</option>
+                <!-- <option value="offline" {{ request('source_type')=='offline' ? 'selected' : '' }}>Offline</option> -->
+                <option value="gmail" {{ request('source_type')=='gmail' ? 'selected' : '' }}>Gmail</option>
+                <option value="manual_data" {{ request('source_type')=='manual_data' ? 'selected' : '' }}>Manual Data</option>
+                <option value="attendance" {{ request('source_type')=='attendance' ? 'selected' : '' }}>Attendance</option>
+                <option value="hard_data" {{ request('source_type')=='hard_data' ? 'selected' : '' }}>Hard Data</option>
+            </select>
+        </div>
 
             <div class="col-md-3 mb-2">
                 <label><strong>Registered</strong></label>

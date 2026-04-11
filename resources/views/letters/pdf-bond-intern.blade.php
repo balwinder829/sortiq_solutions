@@ -72,7 +72,7 @@ li {
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" style="text-align: center;">
-                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Two-Year Bond Agreement (Intern)</strong></h2>
+                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 35px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Bond Agreement (Intern)</strong></h2>
                     </td>
                 </tr>
             </table>
@@ -86,6 +86,22 @@ li {
                 } elseif ($letter->employee->job_type === 'part_time') {
                     $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
                 }
+            @endphp
+
+            @php
+                $amount = (int) ($letter->bond_amount ?? 20000);
+
+                $bondAmountFormatted = '₹' . (
+                    strlen($amount) > 3
+                        ? preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', substr($amount, 0, -3)) . ',' . substr($amount, -3)
+                        : $amount
+                );
+
+                $startDate = $letter->bond_start_date 
+                ? \Carbon\Carbon::parse($letter->bond_start_date)->format('d M Y') 
+                : now()->format('d M Y');
+
+                $bondPeriod = ($letter->bond_period ?? '2.00') . ' years';
             @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
 
@@ -189,7 +205,7 @@ li {
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
                                 <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px; padding-left:18px;font-family:'Inter', sans-serif;">   
-                                   The Intern agrees to a bond with the Company for a period of two (2) years, commencing from the Starting Date mentioned above.
+                                   The Intern agrees to a bond with the Company for a period of {{ $bondPeriod }}, commencing from the Starting Date mentioned above.
                                 </td>
                             </tr>
                         </table>
@@ -241,7 +257,7 @@ li {
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                    • Training costs incurred (fixed amount: ₹20,000 or actual cost, whichever is higher)<br>
+                                    • Training costs incurred (fixed amount: {{ $bondAmountFormatted }} or actual cost, whichever is higher)<br>
                                     • Salary paid until the last working day<br>
                                     • Any other directly related expenses incurred by the Company<br>
                                   
@@ -348,7 +364,7 @@ li {
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                    • Amount: ₹20,000 (or actual training cost, whichever is higher)<br>
+                                    • Amount: {{ $bondAmountFormatted }} (or actual training cost, whichever is higher)<br>
                                     • Payment Method: Bank transfer / cheque (Cheque No: {{ ucwords($letter->check_number) }} / UTR: ______) or via deduction from salary, if mutually agreed.<br>
                                    
                                 </td>

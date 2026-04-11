@@ -51,7 +51,7 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
         }
 
         if (!empty($this->filters['source_type'])) {
-            $query->where('source', $this->filters['source_type']);
+            $query->where('source_type', $this->filters['source_type']);
         }
 
         if (!empty($this->filters['registered'])) {

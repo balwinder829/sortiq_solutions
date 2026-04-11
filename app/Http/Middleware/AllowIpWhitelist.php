@@ -17,6 +17,13 @@ class AllowIpWhitelist
             return $next($request);
         }
 
+         // ✅ Detect logged-in user from ANY guard
+        $user = $this->getAuthenticatedUser();
+
+        // ✅ If NOT logged in → skip (frontend/public)
+        if (!$user) {
+            return $next($request);
+        }
         if (auth()->check() && auth()->user()->role == 1) {
             return $next($request);
         }
@@ -27,23 +34,35 @@ class AllowIpWhitelist
         // When list is empty and whitelist is on: allow no one (except localhost in local env below)
         if (empty($allowedIps)) {
             
-            if (app()->environment('local') && in_array($clientIp, ['127.0.0.1', '::1'], true)) {
+            if (app()->environment('local') && in_array($clientIp, ['127.0.0.2', '::2'], true)) {
                 return $next($request);
             }
             return response()->view('errors.ip-not-allowed', ['ip' => $clientIp], 403);
         }
 
-        if (app()->environment('local') && in_array($clientIp, ['127.0.0.1', '::1'], true)) {
+        if (app()->environment('local') && in_array($clientIp, ['127.0.0.2', '::2'], true)) {
             return $next($request);
         }
-        
-        if (! $this->isIpAllowed($clientIp, $allowedIps)) {
+       if (! $this->isIpAllowed($clientIp, $allowedIps)) {
             return response()->view('errors.ip-not-allowed', ['ip' => $clientIp], 403);
         }
 
+        dd(config('security.ip_whitelist_enabled'));
         return $next($request);
     }
 
+    private function getAuthenticatedUser()
+{
+    foreach (['web', 'trainer', 'employee', 'sales_staff', 'student'] as $guard) {
+        $user = auth($guard)->user(); // works before auth middleware
+
+        if ($user) {
+            return $user;
+        }
+    }
+
+    return null;
+}
     protected function isIpAllowed(string $clientIp, array $allowedIps): bool
     {
         foreach ($allowedIps as $entry) {

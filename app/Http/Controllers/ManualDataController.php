@@ -13,6 +13,10 @@ use App\Models\State;
 use App\Models\District;
 use App\Models\Enquiry;
 use App\Rules\NotBlockedNumber;
+use App\Exports\ManualDataExport;
+
+    use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class ManualDataController extends Controller
 {
@@ -63,6 +67,9 @@ public function index(Request $request)
             });
         }
 
+        if ($request->is_moved !== null && $request->is_moved !== '') {
+            $query->where('is_moved_to_enquiry', (int) $request->is_moved);
+        }
         if ($request->email) {
             $query->where('student_email', 'like', '%' . $request->email . '%');
         }
@@ -278,14 +285,48 @@ public function update(Request $request, $id)
             ->with('success','Data deleted successfully');
     }
 
-    public function exportExcel(Request $request)
+
+    public function exportExcelo (Request $request)
     {
         return Excel::download(
-            new WorkshopsExport($request),
-            'workshops.xlsx'
+            new ManualDataExport($request),
+            'manual-data.xlsx'
         );
     }
 
+
+public function exportExcel(Request $request)
+{
+    $fileName = 'manual-data';
+
+    // ✅ Add filters to filename
+    if ($request->is_moved !== null && $request->is_moved !== '') {
+        $fileName .= $request->is_moved == 1 ? '-moved' : '-not-moved';
+    }
+
+    if ($request->gender) {
+        $fileName .= '-' . strtolower($request->gender);
+    }
+
+    if ($request->course_type) {
+        $fileName .= '-' . strtolower($request->course_type);
+    }
+
+    if ($request->college_id) {
+        $college = \App\Models\College::find($request->college_id);
+        if ($college) {
+            $fileName .= '-' . Str::slug($college->college_name);
+        }
+    }
+
+    // ✅ Always add datetime
+    $fileName .= '-' . Carbon::now()->format('d-m-Y_H-i');
+
+    return \Maatwebsite\Excel\Facades\Excel::download(
+        new \App\Exports\ManualDataExport($request),
+        $fileName . '.xlsx'
+    );
+}
     public function moveManualToEnquiries(Request $request)
     {
         $ids = $request->ids;
@@ -343,5 +384,68 @@ public function update(Request $request, $id)
         return response()->json([
             'message' => "$count students moved successfully"
         ]);
+    }
+
+    public function importForm()
+    {
+        return view('manual_data.import');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+
+        \DB::beginTransaction();
+
+        try {
+
+            $importer = new \App\Imports\ManualDataImport();
+            \Maatwebsite\Excel\Facades\Excel::import($importer, $file);
+
+            $failures = $importer->failures();
+
+            if ($failures->isNotEmpty()) {
+
+                \DB::rollBack();
+
+                $messages = [];
+
+                foreach ($failures as $failure) {
+                    $messages[] =
+                        "Row {$failure->row()} – {$failure->attribute()} – " .
+                        implode(', ', $failure->errors());
+                }
+
+                return back()->withErrors($messages);
+            }
+
+            \DB::commit();
+
+            $total    = $importer->totalRows;
+            $inserted = $importer->insertedRows;
+            $skipped  = $importer->skippedRows;
+
+            $message = "From {$total} rows: {$inserted} inserted, {$skipped} skipped.";
+
+            if (!empty($importer->duplicateContacts)) {
+                return back()
+                    ->with('success', $message)
+                    ->withErrors($importer->duplicateContacts);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Throwable $e) {
+
+            \DB::rollBack();
+
+            return back()->withErrors([
+                'Import failed. Something went wrong.'
+            ]);
+        }
     }
 }

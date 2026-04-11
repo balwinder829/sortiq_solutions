@@ -72,7 +72,7 @@ li {
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" style="text-align: center;">
-                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Two-Year Bond Agreement ( Junior Employee)</strong></h2>
+                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 35px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Bond Agreement ( Junior Employee)</strong></h2>
                     </td>
                 </tr>
             </table>
@@ -86,6 +86,22 @@ li {
                 } elseif ($letter->employee->job_type === 'part_time') {
                     $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
                 }
+            @endphp
+
+            @php
+                 $amount = (int) ($letter->bond_amount ?? 20000);
+
+                $bondAmountFormatted = '₹' . (
+                    strlen($amount) > 3
+                        ? preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', substr($amount, 0, -3)) . ',' . substr($amount, -3)
+                        : $amount
+                );
+
+                $startDate = $letter->bond_start_date 
+                ? \Carbon\Carbon::parse($letter->bond_start_date)->format('d M Y') 
+                : now()->format('d M Y');
+
+                $bondPeriod = ($letter->bond_period ?? '2.00') . ' years';
             @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
 
@@ -190,7 +206,7 @@ li {
                         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
                             <tr>
                                 <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18px; font-family:'Inter', sans-serif;">
-                                   The Employee agrees to a bond of two (2) years, starting from the Joining Date.
+                                   The Employee agrees to a bond of {{ $bondPeriod }}, starting from {{ $startDate }}.
                                 </td>
                             </tr>
                         </table>
@@ -239,7 +255,7 @@ li {
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                    • Training cost / security deposit: ₹20,000 (or actual cost incurred, whichever is higher)<br>
+                                    • Training cost / security deposit: {{ $bondAmountFormatted }} (or actual cost incurred, whichever is higher)<br>
                                     • Salary paid till the last working day<br>
                                     • Any other expenses directly related to training<br>
                                   
@@ -333,7 +349,7 @@ li {
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                    • Amount: ₹20,000 (or actual cost incurred by the Company)<br>
+                                    • Amount: {{ $bondAmountFormatted }} (or actual cost incurred by the Company)<br>
                                     • Payment Method: Bank transfer / cheque (Cheque No: {{ ucwords($letter->check_number) }} / UTR: ______) or via deduction from salary, if mutually agreed.<br>
                                    
                                 </td>

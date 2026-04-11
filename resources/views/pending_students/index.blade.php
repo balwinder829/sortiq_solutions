@@ -5,15 +5,22 @@
 <div class="container">
 
 <div class="row mb-2">
-    <div class="col-md-6">
+    <div class="col-md-3">
         <h3>Pending Students</h3>
     </div>
 
-    <div class="col-md-6 text-end">
+    <div class="col-md-9 text-end">
         <button id="sendSelected" class="btn btn-primary">
             Send to Session
         </button>
+        <button class="btn btn-primary copy-link" 
+            data-link="{{ route('student.register.form') }}">
+        <i class="fa fa-link"></i> Copy Student Registration Link
+    </button>
     </div>
+     
+    
+ 
 </div>
 
 <table class="table table-bordered" id="studentsTable">
@@ -127,4 +134,32 @@ $('#sendSelected').click(function () {
 
 </script>
 
+
+<script>
+$(document).on('click', '.copy-link', function () {
+
+    let link = $(this).data('link');
+
+    navigator.clipboard.writeText(link).then(function () {
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied!',
+            text: 'Form link copied to clipboard',
+            timer: 1500,
+            showConfirmButton: false
+        });
+
+    }, function () {
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Failed!',
+            text: 'Could not copy link'
+        });
+
+    });
+
+});
+</script>
 @endpush

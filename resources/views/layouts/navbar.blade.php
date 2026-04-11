@@ -426,12 +426,12 @@ function isParent($routes)
                 </li>
 
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*']) }}">
                         
 
                         
@@ -496,6 +496,14 @@ function isParent($routes)
                                 <i class="fas fa-file-signature"></i>
                                 Student Office Exams
                             </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('admin.office-online-tests*') }}"
+                                href="{{ route('admin.office-online-tests.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Student Online Exams
+                            </a>
                         </li> 
 
                         <li>
@@ -503,6 +511,14 @@ function isParent($routes)
                                 href="{{ route('admin.pending_request.index') }}">
                                 <i class="fas fa-file-signature"></i>
                                 Registration Request
+                            </a>
+                        </li> 
+
+                        <li>
+                            <a class="{{ isChildActive('admin.student.leave*') }}"
+                                href="{{ route('admin.student.leave.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Students Leaves
                             </a>
                         </li>   
 
@@ -785,6 +801,12 @@ function isParent($routes)
                             <a class="{{ isChildActive('jd.*') }}"
                                 href="{{ route('jd.index') }}">
                                 Job Desciptions
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('admin.employee.leave*') }}"
+                                href="{{ route('admin.employee.leave.index') }}">
+                                Employees Leaves
                             </a>
                         </li>
                         
@@ -1515,6 +1537,18 @@ function isParent($routes)
                                 Student Office Exams
                             </a>
                         </li>
+                        @endcan
+
+                        @can('students_office_online_test.view')
+                        <li>
+                            <a class="{{ isChildActive('admin.office-online-tests*') }}"
+                                href="{{ route('admin.office-online-tests.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Student Online Exams
+                            </a>
+                        </li> 
+
+
                         @endcan   
                         @can('student_registration_request.view')
                         <li>
@@ -1754,7 +1788,7 @@ function isParent($routes)
 
                  {{-- Attendence --}}
               
-                @canany(['employees.view','attendance.view','letters.view','accepted_letters.view','salary_slips.view'])
+                @canany(['employees.view','attendance.view','letters.view','accepted_letters.view','salary_slips.view','job_description.view','employee_leave.view'])
                 {{-- Attendence --}}
                 <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
@@ -1802,8 +1836,23 @@ function isParent($routes)
                                 Emp Salary Slips
                             </a>
                         </li>
-                        @endcan   
-
+                        @endcan  
+                        @can('job_description.view') 
+                        <li>
+                            <a class="{{ isChildActive('jd.*') }}"
+                                href="{{ route('jd.index') }}">
+                                Job Desciptions
+                            </a>
+                        </li>
+                        @endcan
+                        @can('employee_leave.view')
+                        <li>
+                            <a class="{{ isChildActive('admin.employee.leave*') }}"
+                                href="{{ route('admin.employee.leave.index') }}">
+                                Employees Leaves
+                            </a>
+                        </li>
+                        @endcan
                          
                     </ul>
                 </li>

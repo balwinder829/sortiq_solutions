@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LogSystemActivity::class,
         ]);
         $middleware->alias([
+            'ip.whitelist' => \App\Http\Middleware\AllowIpWhitelist::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'enquiry.otp' => \App\Http\Middleware\EnquiryOtpCheck::class,
             'can:view-enquiry' => \App\Http\Middleware\CanViewEnquiry::class,

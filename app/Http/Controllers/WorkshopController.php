@@ -13,6 +13,7 @@ use App\Models\State;
 use App\Models\District;
 use App\Rules\NotBlockedNumber;
 use App\Models\Notification;
+use Carbon\Carbon;
 class WorkshopController extends Controller
 {
     /**
@@ -197,11 +198,29 @@ class WorkshopController extends Controller
                 . e(ucwords(str_replace('_', ' ', $workshop->event_type)))
                 . '</span>';
 
+
+
+            $date = $workshop->date;
+             
+
+            $today = now()->startOfDay();
+
+            $diff = $today->diffInDays($date->startOfDay(), false);
+
+            if ($diff == 0) {
+                $dateText = 'Today';
+            } elseif ($diff < 0) {
+                $dateText = abs($diff) . ' days ago';
+            } else {
+                $dateText = 'in ' . $diff . ' days';
+            }
+
             return [
                 $workshop->id,                                // ID
                 e($workshop->title),                          // Title (using name column)
                 e(optional($workshop->college)->FullName),   // College
-                $workshop->date?->format('d M Y'),
+                // $workshop->date?->format('d M Y'),
+                $date?->format('d M Y') . '<br><small class="text-muted">' . $dateText . '</small>',
                 $statusBadge,                                // Status
                  // e(ucfirst($workshop->type)),                    // Title (using name column)
                  // e(ucwords(str_replace('_', ' ', $workshop->event_type))),
@@ -348,4 +367,99 @@ class WorkshopController extends Controller
             'workshops.xlsx'
         );
     }
+
+
+
+public function analytics(Request $request)
+{
+    $query = Workshop::with('college');
+
+    // SAME FILTERS AS data()
+    if ($request->state_id) {
+        $query->whereHas('college', fn($q) => 
+            $q->where('state_id', $request->state_id)
+        );
+    }
+
+    if ($request->district_id) {
+        $query->whereHas('college', fn($q) => 
+            $q->where('district_id', $request->district_id)
+        );
+    }
+
+    if ($request->college_type !== null && $request->college_type !== '') {
+        $query->whereHas('college', fn($q) => 
+            $q->where('college_type', $request->college_type)
+        );
+    }
+
+    if ($request->college_id) {
+        $query->where('college_id', $request->college_id);
+    }
+
+    if ($request->status) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->type) {
+        $query->where('type', $request->type);
+    }
+
+    if ($request->event_type) {
+        $query->where('event_type', $request->event_type);
+    }
+
+    if ($request->date && !$request->range) {
+        $query->whereDate('date', $request->date);
+    }
+
+    // RANGE FILTER (same as yours)
+    if ($request->range) {
+        switch ($request->range) {
+            case 'today':
+                $query->whereDate('date', today());
+                break;
+            case 'yesterday':
+                $query->whereDate('date', today()->subDay());
+                break;
+            case 'upcoming':
+                $query->whereDate('date', '>', today());
+                break;
+            case 'past':
+                $query->whereDate('date', '<', today());
+                break;
+        }
+    }
+
+    // 📊 STATUS COUNT
+    $statusCounts = (clone $query)
+        ->selectRaw('status, COUNT(*) as total')
+        ->groupBy('status')
+        ->pluck('total', 'status');
+
+    // 📊 DATE ANALYTICS
+    $today = Carbon::today();
+    $workshops = (clone $query)->get(['date']);
+
+    $past = 0;
+    $future = 0;
+    $todayCount = 0;
+
+    foreach ($workshops as $w) {
+        $diff = $today->diffInDays($w->date, false);
+
+        if ($diff == 0) $todayCount++;
+        elseif ($diff < 0) $past++;
+        else $future++;
+    }
+
+    return response()->json([
+        'statusCounts' => $statusCounts,
+        'dateStats' => [
+            'past' => $past,
+            'today' => $todayCount,
+            'future' => $future
+        ]
+    ]);
+}
 }

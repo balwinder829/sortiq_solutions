@@ -107,6 +107,14 @@
     </div>
 
     <div class="col-md-2">
+    <select name="status" class="form-select filterchange">
+        <option value="">Status</option>
+        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Moved</option>
+        <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Not Moved</option>
+    </select>
+</div>
+
+    <div class="col-md-2">
         <a href="{{ route('admin.external-attendance.results', $test->id) }}"
            class="btn btn-secondary w-100">
             Reset
@@ -125,6 +133,10 @@
             formaction="{{ route('admin.attendance.move.enquiries', $test->id) }}">
         Move to Enquiries
     </button>
+    <a href="{{ route('admin.external-attendance.export.results', [$test->id] + request()->query()) }}"
+   class="btn btn-success">
+    Export Excel
+</a>
 </div>
 
 <table class="table table-bordered table-striped">

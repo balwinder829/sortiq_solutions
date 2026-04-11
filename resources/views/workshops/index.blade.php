@@ -183,6 +183,53 @@ table.dataTable td {
         </div>
     @endif
 
+
+    <div class="row mb-3" id="analytics-box">
+
+    <div class="col-md-2">
+        <div class="card text-center p-2">
+            <h6>Done</h6>
+            <h4 id="done-count">0</h4>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card text-center p-2">
+            <h6>Meeting</h6>
+            <h4 id="meeting-count">0</h4>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card text-center p-2">
+            <h6>Decided</h6>
+            <h4 id="decided-count">0</h4>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card text-center p-2">
+            <h6>Past</h6>
+            <h4 id="past-count">0</h4>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card text-center p-2">
+            <h6>Today</h6>
+            <h4 id="today-count">0</h4>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card text-center p-2">
+            <h6>Upcoming</h6>
+            <h4 id="future-count">0</h4>
+        </div>
+    </div>
+
+</div>
+
     <div class="table-responsive">
         <table id="trainers-table" class="table table-bordered table-striped">
             <thead>
@@ -307,18 +354,21 @@ $(document).ready(function () {
     $('select[name=college_id],select[name=status], select[name=range],select[name=state_id],select[name=district_id],select[name=college_type], select[name=type], select[name=event_type]').on('change', function () {
 
         table.ajax.reload();
+        loadAnalytics();
     });
 
     $('#filter-state, #filter-district, #filter-college-type').on('change', function(){
 
         loadFilteredColleges();
         table.ajax.reload();
+        loadAnalytics();
 
     });
 
     // For date input
     $('input[name=date]').on('change', function () {
         table.ajax.reload();
+        loadAnalytics();
     });
 
     let districtsByState = @json($districtsGrouped);
@@ -344,6 +394,7 @@ $(document).ready(function () {
         }
 
         table.ajax.reload();
+        loadAnalytics();
     });
 });
 
@@ -384,6 +435,36 @@ $('#exportWorkshopExcel').on('click', function () {
     setTimeout(function () {
         $btn.prop('disabled', false).text('Export');
     }, 3000);
+});
+
+function loadAnalytics() {
+    $.ajax({
+        url: "{{ route('workshops.analytics') }}",
+        data: {
+            state_id: $('#filter-state').val(),
+            district_id: $('#filter-district').val(),
+            college_type: $('#filter-college-type').val(),
+            college_id: $('select[name=college_id]').val(),
+            status: $('select[name=status]').val(),
+            type: $('select[name=type]').val(),
+            event_type: $('select[name=event_type]').val(),
+            date: $('input[name=date]').val(),
+            range: $('select[name=range]').val()
+        },
+        success: function (res) {
+
+            $('#done-count').text(res.statusCounts.done ?? 0);
+            $('#meeting-count').text(res.statusCounts.meeting ?? 0);
+            $('#decided-count').text(res.statusCounts.decided ?? 0);
+
+            $('#past-count').text(res.dateStats.past);
+            $('#today-count').text(res.dateStats.today);
+            $('#future-count').text(res.dateStats.future);
+        }
+    });
+}
+$(document).ready(function () {
+    loadAnalytics();
 });
 </script>
 

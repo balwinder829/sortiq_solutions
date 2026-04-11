@@ -6,11 +6,11 @@
 
 <div class="row mb-2 align-items-end">
 
-    <div class="col-md-8">
+    <div class="col-md-4">
         <h1 class="page_heading">Hard Data</h1>
     </div>
 
-    <div class="col-md-4 text-end">
+    <div class="col-md-8 text-end">
         <button id="moveToEnquiry" class="btn btn-warning mb-3">
             Move to Enquiries
         </button>
@@ -20,8 +20,68 @@
            style="background:#6b51df;">
             Add
         </a>
+        <a href="{{ route('admin.hard_data.import.form') }}"
+           class="btn btn-primary mb-3"
+           style="background:#6b51df;">
+            Import
+        </a>
+               <a href="#" id="exportExcel"
+   class="btn btn-success mb-3">
+    Export Excel
+</a>
+    </div>
+<form id="filterForm" class="row mb-3">
+   
+
+    {{-- ✅ NEW: COLLEGE --}}
+    <div class="col-md-2">
+        <select name="college_id" class="form-control select2">
+            <option value="">All College</option>
+            @foreach($colleges as $college)
+                <option value="{{ $college->id }}">
+                    {{ $college->college_name }}
+                </option>
+            @endforeach
+        </select>
     </div>
 
+    {{-- ✅ NEW: COURSE TYPE --}}
+    <div class="col-md-2">
+        <select name="course_type" class="form-control">
+            <option value="">All Course</option>
+            <option value="Degree">Degree</option>
+            <option value="Diploma">Diploma</option>
+        </select>
+    </div>
+     <div class="col-md-2">
+        <select name="gender" class="form-control">
+            <option value="">All Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select name="is_moved" class="form-control">
+            <option value="">All Status</option>
+            <option value="1">Moved</option>
+            <option value="0">Not Moved</option>
+        </select>
+    </div>
+
+     <div class="col-md-3">
+        <input type="text" name="email" class="form-control" placeholder="Email">
+    </div>
+
+    <div class="col-md-3">
+        <input type="text" name="mobile" class="form-control mt-2" placeholder="Mobile">
+    </div>
+<div class="col-md-2">
+    <button type="button" id="resetFilters" class="btn btn-secondary w-100 mt-2">
+        Reset
+    </button>
+</div>
+</form>
 </div>
 
 {{-- SUCCESS --}}
@@ -72,8 +132,18 @@ let selectedIds = new Set();
 var table = $('#trainers-table').DataTable({
     processing: true,
     serverSide: true,
-    ajax: "{{ route('admin.hard_data.index') }}",
-
+    // ajax: "{{ route('admin.hard_data.index') }}",
+    ajax: {
+    url: "{{ route('admin.hard_data.index') }}",
+    data: function (d) {
+        d.email = $('input[name=email]').val();
+        d.mobile = $('input[name=mobile]').val();
+        d.gender = $('select[name=gender]').val();
+        d.college_id = $('select[name=college_id]').val();
+        d.course_type = $('select[name=course_type]').val();
+         d.is_moved = $('select[name=is_moved]').val();
+    }
+},
     columns: [
 
         // ✅ CHECKBOX COLUMN
@@ -105,7 +175,9 @@ var table = $('#trainers-table').DataTable({
 
     ]
 });
-
+$('#filterForm input, #filterForm select').on('keyup change', function () {
+    table.ajax.reload();
+});
 
 // ✅ SELECT SINGLE
 $(document).on('change', '.record_checkbox', function () {
@@ -187,6 +259,24 @@ $('#moveToEnquiry').click(function () {
 
     });
 
+});
+$('#exportExcel').click(function () {
+
+    let query = $('#filterForm').serialize();
+
+    window.location.href = "{{ route('admin.hard_data.export') }}?" + query;
+});
+
+$('#resetFilters').click(function () {
+
+    // Reset all inputs
+    $('#filterForm')[0].reset();
+
+    // If using select2 (optional)
+    $('#filterForm select').val('').trigger('change');
+
+    // Reload table
+    table.ajax.reload();
 });
 
 </script>

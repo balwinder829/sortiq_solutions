@@ -11,6 +11,8 @@ use App\Models\Duration;
 use Mail;
 use App\Models\Student;
 use App\Models\StudentSession;
+use App\Exports\JoiningStudentsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class JoiningStudentController extends Controller
 {
@@ -82,20 +84,89 @@ class JoiningStudentController extends Controller
     }
 
     // Admin list
-    public function index()
-    { 
-         $students = JoiningStudent::with([
+    public function indexData(Request $request)
+{
+    if ($request->ajax()) {
+
+        $query = JoiningStudent::with([
             'collegeData',
             'courseData',
             'durationData'
-        ])->latest()->get();
+        ]);
+
+        // ✅ FILTERS
+
+        if ($request->student_name) {
+            $query->where('student_name', 'like', '%' . $request->student_name . '%');
+        }
+
+        if ($request->college) {
+            $query->where('college', $request->college);
+        }
+
+        if ($request->technology) {
+            $query->where('technology', $request->technology);
+        }
+
+        if ($request->is_sent !== null && $request->is_sent !== '') {
+            $query->where('is_sent_to_detail', (int)$request->is_sent);
+        }
+
+        return datatables()->of($query->orderBy('id', 'desc'))->make(true);
+    }
+
+    $colleges = College::orderBy('college_name')->get();
+    $courses  = Course::orderBy('course_name')->get();
+
+    $sessionsList = StudentSession::where('status', 'active')
+        ->pluck('display_name', 'id');
+
+    return view('joining_students.index', compact('sessionsList', 'colleges', 'courses'));
+}
+    public function index(Request $request)
+    { 
+        $query = JoiningStudent::with([
+            'collegeData',
+            'courseData',
+            'durationData'
+        ]);
+
+        // ✅ FILTERS
+
+        if ($request->student_name) {
+            $query->where('student_name', 'like', '%' . $request->student_name . '%');
+        }
+
+        if ($request->college) {
+            $query->where('college', $request->college);
+        }
+
+        if ($request->technology) {
+            $query->where('technology', $request->technology);
+        }
+
+        if ($request->is_sent !== null && $request->is_sent !== '') {
+            $query->where('is_sent_to_detail', (int)$request->is_sent);
+        }
+        
+        $students = $query->latest()->get();
+        //  $students = JoiningStudent::with([
+        //     'collegeData',
+        //     'courseData',
+        //     'durationData'
+        // ])->latest()->get();
 
           $sessionsList = StudentSession::where('status', 'active') // ✅ string status
             ->orderBy('start_date', 'desc')
             ->get()
             ->pluck('display_name', 'id');
          // dd($students);
-        return view('joining_students.index', compact('students', 'sessionsList'));
+
+            $colleges = College::orderBy('college_name')->get();
+            $courses = Course::orderBy('course_name')->get();
+
+        return view('joining_students.index', compact('students', 'sessionsList','colleges','courses'));
+        // return view('joining_students.index', compact('students', 'sessionsList','colleges'));
     }
 
     // Edit form
@@ -215,4 +286,14 @@ class JoiningStudentController extends Controller
             'message' => "$inserted students sent successfully" . ($skipped ? " ($skipped skipped)" : "")
         ]);
     }
+
+    public function export(Request $request)
+{
+    $fileName = 'joining-students-' . now()->format('Ymd_His') . '.xlsx';
+
+    return Excel::download(
+        new JoiningStudentsExport($request),
+        $fileName
+    );
+}
 }
