@@ -8242,7 +8242,9 @@ a {
     display: flex; }
     @media only screen and (max-width: 575px) {
       .header .header-content {
-        padding-left: 2.375rem; } }
+        padding-left: 2.375rem; 
+      } 
+    }
   .header .navbar {
     padding: 0;
     height: 100%;
@@ -10369,7 +10371,7 @@ html[dir="rtl"] [direction="rtl"][data-sidebar-style="compact"]:not([data-layout
       background-color: #1c0f54;
       transition: all .2s ease-in-out; }
       .quixnav .metismenu ul a {
-        padding-left: 54px;
+        padding-left: 40px;
         font-weight: 300; }
         .quixnav .metismenu ul a:hover, .quixnav .metismenu ul a:focus, .quixnav .metismenu ul a.mm-active {
           text-decoration: none;
@@ -19687,16 +19689,52 @@ button.swal2-confirm.swal2-styled.swal2-default-outline {
     font-weight: 500;
     padding: 14px 10px;
 }
-@media only screen and (max-width:1024px){.mobile-view {    display: block;}.desktop-view{display:none;}	}@media only screen and (max-width:991px){.header {    padding-left: 150px !important;}.header .header-content {    padding-left: 40px;    padding-right: 20px;}.nav-header {    width: 130px;}.header-right .nav-item .nav-link {    font-size: 14px;}.header-right li.nav-item.dropdown.mx-2 {    margin: 0 !important;}.navbar-expand .navbar-nav {    flex-direction: unset !important;    flex-wrap: wrap;}.brand-logo img {    max-width: 90px;    width: 100%;    height: auto !important;}.nav-header .brand-logo {    margin-left: 0 !important;}.hamburger {    left: 0;}.nav-control {    left: 140px;}	}@media only screen and (max-width:767px){.nav-header {	width: 100px;	height: 4rem;}.header {	padding-left: 110px !important;	height: 4rem;}.header .header-content {	padding-left: 0px;}.nav-control {	left: 100px;}.brand-logo img {	max-width: 75px;}.header-right .nav-item:first-child {    display: none;}.navbar-expand .navbar-nav .nav-link {    padding: 0 !important;}.notification-badge {    top: -5px;} .tble-bts { display: grid; gap: 5px; grid-template-columns: repeat(auto-fit, minmax(177px, 1fr)); } .tble-bts button { margin: 0px 0px !important; line-height: 14px; padding: 10px 10px; font-size: 14px; width: 100%; }.btn { font-size: 14px !important; } .form-control { font-size: 14px !important; }.pagination .page-item .page-link { font-size: 14px !important; }	.content-body .container-fluid {    padding-right: 10px;    padding-left: 10px;}	.table-card-wd {    width: 100%;	margin-bottom: 10px;}	}
-
-.flex_between {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
+@media only screen and (max-width:1024px){
+  .mobile-view {    display: block;}
+  .desktop-view{display:none;}	
 }
+  @media only screen and (max-width:991px){
+    .header {    padding-left: 150px !important;}
+    .header .header-content {    
+      padding-left: 40px;    
+      padding-right: 20px;
+    }
+    .nav-header {    width: 130px;}
+    .header-right .nav-item .nav-link {    font-size: 14px;}
+    .header-right li.nav-item.dropdown.mx-2 {    margin: 0 !important;}
+    .navbar-expand .navbar-nav {    flex-direction: unset !important;    flex-wrap: wrap;}
+    .brand-logo img {    max-width: 90px;    width: 100%;    height: auto !important;}
+    .nav-header .brand-logo {    margin-left: 0 !important;}
+    .hamburger {    left: 0;}
+    .nav-control {    left: 140px;}	
+  }
+    
+    @media only screen and (max-width:767px){
+      .nav-header {	width: 100px;	height: 4rem;}
+      .header {	padding-left: 0px !important;	height: 4rem;}
+      .header .header-content {	
+        padding-left: 0px;
+      }
+      .nav-control {	left: 100px;}
+      .brand-logo img {	max-width: 75px;}
+      .header-right .nav-item:first-child {    display: none;}
+      .navbar-expand .navbar-nav .nav-link {    padding: 0 !important;}
+      .notification-badge {    top: -5px;} 
+      .tble-bts { display: grid; gap: 5px; grid-template-columns: repeat(auto-fit, minmax(177px, 1fr)); } 
+      .tble-bts button { margin: 0px 0px !important; line-height: 14px; padding: 10px 10px; font-size: 14px; width: 100%; }
+      .btn { font-size: 14px !important; } 
+      .form-control { font-size: 14px !important; }
+      .pagination .page-item .page-link { font-size: 14px !important; }	
+      .content-body .container-fluid {    padding-right: 10px;    padding-left: 10px;}	
+      .table-card-wd {    width: 100%;	margin-bottom: 10px;}	
+    }
 
-.page_heading {
-    font-size: 26px;
-}
+  .flex_between {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+  }
 
-
+  .page_heading {
+      font-size: 26px;
+  }
