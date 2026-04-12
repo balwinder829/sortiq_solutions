@@ -39,12 +39,35 @@
 <tr>
 <td colspan="2" align="center" height="180" style="height:185px; vertical-align:middle;">
 
- <div style="
+    <div style="
+        width:80px;
+        height:80px;
+        margin:auto;
+        border-radius:40px;
+        overflow:hidden;
+    ">
+        <img
+            src="{{ public_path(
+                $employee->photo
+                    ? 'images/employee_images/' . $employee->photo
+                    : 'images/employee_id_card_images/default-avatar.png'
+            ) }}"
+            style="
+                width:80px;
+                height:80px;
+            "
+        />
+    </div>
+
+
+ <!-- <div style="
     width:130px;
     height:130px;
     margin:auto;
     border:0px solid #ffffff;
     text-align:center;
+    border-radius:65px;
+    overflow:hidden;
 ">
     <img
         src="{{ public_path(
@@ -57,7 +80,7 @@
             height:127px;
         "
     />
-</div>
+</div> -->
 
 </td>
 </tr>
