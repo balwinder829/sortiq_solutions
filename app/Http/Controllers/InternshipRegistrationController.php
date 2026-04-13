@@ -135,6 +135,7 @@ public function index(Request $request)
                 e($row->phone ?? '-'),
                 e(optional($row->collegeData)->FullName ?? '-'),
                 e(optional($row->courseData)->course_name),
+                $row->created_at->format('d M Y'),
                 $actions
             ];
         });

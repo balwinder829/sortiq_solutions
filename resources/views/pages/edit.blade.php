@@ -30,7 +30,7 @@
     </div>
 
     <div class="form-group col-md-6">
-        <label>Slug *</label>
+        <label>Slug *<span style="color: red;">( Use word services- for Services pages and internship- for Internship Pages )</span></label>
         <input type="text"
                name="slug"
                class="form-control"

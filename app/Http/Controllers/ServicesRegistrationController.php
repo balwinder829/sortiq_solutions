@@ -91,6 +91,7 @@ class ServicesRegistrationController extends Controller
                     e($row->phone ?? '-'),
                     e($row->location ?? '-'),
                     e(optional($row->courseData)->course_name),
+                    $row->created_at->format('d M Y'),
                     $actions
                 ];
             });

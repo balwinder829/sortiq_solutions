@@ -138,6 +138,7 @@ use App\Http\Controllers\FormEntryController;
 use App\Http\Controllers\JobDescriptionController;
 use App\Http\Controllers\StudentRegistrationController;
 use App\Http\Controllers\StudentPptController;
+use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\EmployeeLeaveController;
 use App\Http\Controllers\Admin\EmployeeLeaveController as AdminEmployeeLeaveController;
 use App\Http\Controllers\StudentLeaveController;
@@ -958,6 +959,8 @@ Route::middleware(['auth'])->group(function () {
         )->name('internship-registrations.status');
 
         Route::resource('visiting-cards', VisitingCardController::class);
+        
+        Route::resource('testimonials', TestimonialController::class);
 
         Route::get('services-registrations/export', [ServicesRegistrationController::class, 'export'])
             ->name('services-registrations.export');

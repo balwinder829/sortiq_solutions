@@ -85,6 +85,24 @@
                     <textarea class="form-control" name="reason" rows="3"></textarea>
                 </div>
 
+                {{-- To --}}
+                    <div class="mb-3">
+                        <label class="form-label">To</label>
+                        <input type="email" 
+                               class="form-control" 
+                               value="hr@yourcompany.com" 
+                               readonly>
+                    </div>
+
+                    {{-- CC --}}
+                    <div class="mb-3">
+                        <label class="form-label">CC</label>
+                        <input type="text" 
+                               class="form-control" 
+                               value="manager@yourcompany.com, admin@yourcompany.com" 
+                               readonly>
+                    </div>
+
                 {{-- Submit --}}
                 <div class="text-center">
                     <button type="submit" class="btn btn-success px-5">

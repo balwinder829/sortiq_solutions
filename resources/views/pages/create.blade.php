@@ -25,8 +25,8 @@
     </div>
 
     <div class="form-group col-md-6">
-        <label>Slug *</label>
-        <input type="text" name="slug" class="form-control" required>
+        <label>Slug * <span style="color: red;">( Use word services- for Services pages and internship- for Internship Pages )</span></label>
+        <input type="text" name="slug" class="form-control" placeholder="Use services- for Services pages and internship- for Internship Pages" required>
     </div>
 
     <div class="form-group col-md-6">

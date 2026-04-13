@@ -6,7 +6,7 @@
     <meta name="geo.placename" content="{{ $page->location }}">
     <meta name="geo.region" content="IN">
 @endif
-<title>Internship | Sortiq Solutions Pvt Ltd</title>
+<title>Services | Sortiq Solutions Pvt Ltd</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -537,7 +537,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- FEEDBACK -->
-<section class="section" style="background:#f7f7f7;">
+<!-- <section class="section" style="background:#f7f7f7;">
 <div class="container">
 <h2 class="section-title">Student Feedback</h2>
 <div class="row g-4 text-center">
@@ -553,6 +553,48 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/3.png"><p>"Portfolio ready - boosted my confidence!"</p><strong>- Usha</strong></div></div>
 </div>
+</div>
+</section> -->
+
+<!-- FEEDBACK -->
+<section class="section" style="background:#f7f7f7;">
+<div class="container">
+
+<h2 class="section-title">Student Feedback</h2>
+
+<div class="row g-4 text-center">
+
+@forelse($testimonials as $item)
+
+    <div class="col-md-4">
+        <div class="info-box">
+
+            {{-- IMAGE --}}
+            @if($item->image && file_exists(public_path($item->image)))
+                <img src="{{ asset($item->image) }}">
+            @else
+                <img src="{{ asset('images/placeholder_avatar.png') }}">
+            @endif
+
+            {{-- DESCRIPTION --}}
+            <p>"{{ $item->description }}"</p>
+
+            {{-- NAME --}}
+            <strong>- {{ $item->name }}</strong>
+
+        </div>
+    </div>
+
+@empty
+
+    <div class="col-md-12">
+        <p>No testimonials available.</p>
+    </div>
+
+@endforelse
+
+</div>
+
 </div>
 </section>
 

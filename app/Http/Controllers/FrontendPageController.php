@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Page;
 use App\Models\College;
 use App\Models\Course;
+use App\Models\Testimonial;
 
 class FrontendPageController extends Controller
 {
@@ -29,17 +30,29 @@ class FrontendPageController extends Controller
         // ];
 
         // $view = $bladeMap[$slug] ?? 'custom_pages_default_show';
-
+        $type = null;
+        $testimonials = collect(); 
         if (str_contains($slug, 'internship')) {
             $view = 'internship-landing-page';
+            $type = 'internship';
+            
         } elseif (str_contains($slug, 'services')) {
             $view = 'ads-landing-page';
+             $type = 'services';
+            
         } else {
             $view = 'custom_pages_default_show';
         }
 
+        if ($type) {
+            $testimonials = Testimonial::where('status', 1)
+                ->where('type', $type)
+                ->latest()
+                ->take(10)
+                ->get();
+        }
 
-        return view($view, compact('page','colleges','courses'));
+        return view($view, compact('page','colleges','courses','testimonials'));
     }
     public function showold($slug)
     {

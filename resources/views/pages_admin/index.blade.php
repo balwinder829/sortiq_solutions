@@ -105,6 +105,7 @@
                 <th>Phone</th>
                 <th>College</th>
                 <th>Technology</th>
+                <th>Added At</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -137,7 +138,8 @@ $(document).ready(function () {
             { data: 3 },
             { data: 4 },
             { data: 5 },
-            { data: 6, orderable:false, searchable:false }
+            { data: 6 },
+            { data: 7, orderable:false, searchable:false }
         ],
         pageLength: 25
     });
