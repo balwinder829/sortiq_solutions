@@ -970,6 +970,11 @@ function isParent($routes)
                                 Services Entries
                             </a>
                         </li>
+                         <li class="{{ request()->routeIs('testimonials.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('testimonials.index') }}">
+                                Testimonials
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -2062,7 +2067,14 @@ function isParent($routes)
                                 Services Entries
                             </a>
                         </li>
-                        @endcan 
+                        @endcan
+                        @can('services_registrations.view')
+                        <li class="{{ request()->routeIs('testimonials.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('testimonials.index') }}">
+                                Testimonials
+                            </a>
+                        </li> 
+                        @endcan
                     </ul>
                 </li>
                 @endcanany

@@ -309,8 +309,8 @@ Route::prefix('form')
             ->name('view');
     });
 
-Route::prefix('admin')->group(function () {
-
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    
     Route::get('/employee-leave', [AdminEmployeeLeaveController::class, 'index'])
         ->name('admin.employee.leave.index');
 
@@ -327,7 +327,7 @@ Route::prefix('admin')->group(function () {
         ->name('admin.employee.leave.reject');
 });
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     Route::get('/student-leave', [AdminStudentLeaveController::class, 'index'])
         ->name('admin.student.leave.index');
