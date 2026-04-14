@@ -26,7 +26,7 @@
              {{-- Student Name --}}
             <div class="form-group col-md-12">
                 <label>Select Student</label>
-                <select name="student_id" id="student_select" class="form-control" required>
+                <select name="student_id[]" id="student_select" class="form-control select2" multiple required>
                     <option value="">Select Student</option>
 
                     @foreach($students as $student)
@@ -94,6 +94,22 @@
                 </select>
                 @error('internship_type')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+
+             {{-- Issue Date --}}
+            <div class="form-group col-md-6">
+                <label>Issue Date</label>
+                <input
+                    type="date"
+                    name="issue_date"
+                    max="{{ now()->toDateString() }}"
+                    value="{{ old('issue_date', now()->toDateString()) }}"
+                    class="form-control @error('issue_date') is-invalid @enderror"
+                    required
+                >
+                @error('issue_date')
+                    <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
@@ -188,6 +204,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     letterType.addEventListener('change', toggleFields);
     toggleFields(); // run on page load (old values)
+});
+
+$(document).ready(function () {
+
+    $('#student_select').select2({
+        placeholder: "Search student name"
+    });
+
 });
 </script>
 

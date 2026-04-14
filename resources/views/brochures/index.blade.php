@@ -192,9 +192,7 @@
     </div>
 
     {{-- ================= PAGINATION ================= --}}
-    <div class="mt-3">
-        {{ $brochures->links() }}
-    </div>
+   
 
 </div>
 
@@ -204,7 +202,7 @@
 <script>
 $(document).ready(function () {
     $('#brochuresTable').DataTable({
-        paging: false,
+        // paging: false,
         info: false,
         ordering: false,
         searching: false

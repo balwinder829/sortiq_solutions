@@ -26,7 +26,6 @@ use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Student\KeyTestController;
 use App\Http\Controllers\Admin\OfflineTestController;
-use App\Http\Controllers\Admin\OfficeOnlineQuestionController;
 
 
 use App\Http\Controllers\LeadController;
@@ -114,12 +113,10 @@ use App\Http\Controllers\Helpdesk\HelpdeskArticleController;
 use App\Http\Controllers\Helpdesk\HelpdeskAttachmentController;
 use App\Http\Controllers\Helpdesk\HelpdeskFrontController;
 use App\Http\Controllers\Admin\OfficeTestController;
-use App\Http\Controllers\Admin\OfficeOnlineTestController;
 use App\Http\Controllers\Admin\OfficeQuestionController;
 use App\Http\Controllers\Admin\OfficeResultController;
 use App\Http\Controllers\Admin\StudentPendingController;
 use App\Http\Controllers\Student\OfficeOnlineExamController;
-use App\Http\Controllers\Student\OfficeOnlineMCQTestController;
 use App\Http\Controllers\PassoutController;
 use App\Http\Controllers\StudentProjectController;
 use App\Http\Controllers\StudentProjectAssignmentController;
@@ -138,12 +135,13 @@ use App\Http\Controllers\FormEntryController;
 use App\Http\Controllers\JobDescriptionController;
 use App\Http\Controllers\StudentRegistrationController;
 use App\Http\Controllers\StudentPptController;
-use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\EmployeeLeaveController;
 use App\Http\Controllers\Admin\EmployeeLeaveController as AdminEmployeeLeaveController;
 use App\Http\Controllers\StudentLeaveController;
 use App\Http\Controllers\Admin\StudentLeaveController as AdminStudentLeaveController;
 use App\Http\Controllers\Admin\GmailController;
+
+
 use App\Models\Student;
 
 
@@ -190,7 +188,7 @@ Route::post('/student/leave/apply', [StudentLeaveController::class, 'store'])
     ->name('student.leave.store')
     ->middleware('throttle:5,1');
 
-Route::get('/register_student', [StudentRegistrationController::class, 'create'])->name('student.register.form');
+Route::get('/join_student', [StudentRegistrationController::class, 'create'])->name('student.register.form');
 Route::post('/join_student', [StudentRegistrationController::class, 'store'])->name('student.register');
 
 
@@ -309,7 +307,7 @@ Route::prefix('form')
             ->name('view');
     });
 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->group(function () {
 
     Route::get('/employee-leave', [AdminEmployeeLeaveController::class, 'index'])
         ->name('admin.employee.leave.index');
@@ -327,7 +325,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
         ->name('admin.employee.leave.reject');
 });
 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->group(function () {
 
     Route::get('/student-leave', [AdminStudentLeaveController::class, 'index'])
         ->name('admin.student.leave.index');
@@ -360,7 +358,7 @@ Route::prefix('admin')
     Route::get('/admin/form-entries/export', [FormEntryController::class, 'export'])
     ->name('form-entries.export');
     
-     // Gmail (Sortiq & HR)
+       // Gmail (Sortiq & HR)
         Route::get('/gmail/{account?}', [GmailController::class, 'index'])
             ->name('gmail.index');
         Route::get('/gmail/{account}/{uid}/reply', [GmailController::class, 'replyForm'])
@@ -368,6 +366,7 @@ Route::prefix('admin')
         Route::post('/gmail/{account}/{uid}/reply', [GmailController::class, 'sendReply'])
             ->name('gmail.reply.send');
     
+
         // Route::prefix('college-emails')->name('college-emails.')->group(function () {
 
         //     Route::get('/', [CollegeEmailController::class, 'index'])->name('index');
@@ -424,10 +423,6 @@ Route::prefix('admin')
 
         });
 
-    Route::get(
-        'external-attendance/{test}/export-results',
-        [ExternalAttendanceController::class, 'exportResults']
-    )->name('external-attendance.export.results');
 
         Route::resource(
             'external-attendance',
@@ -453,7 +448,7 @@ Route::prefix('admin')
 
         Route::get('external-attendance/{external_attendance}/selected-students', [ExternalAttendanceController::class, 'selectedStudents'])->name('external-attendance.selected.students');
 
-        Route::get('manual-data/export', [ManualDataController::class, 'exportExcel'])->name('manual_data.export');
+
         Route::get('manual-data/import', [ManualDataController::class, 'importForm'])->name('manual_data.import.form');
         Route::post('manual-data/import', [ManualDataController::class, 'import'])->name('manual_data.import');
         // Route::resource('manual-data', ManualDataController::class)->names('manual_data');
@@ -462,7 +457,6 @@ Route::prefix('admin')
             [ManualDataController::class, 'moveManualToEnquiries']
         )->name('manual_data.move.enquiries');
 
-        Route::get('hard-data/export', [HardDataController::class, 'exportExcel'])->name('hard_data.export');
         Route::get('hard-data/import', [HardDataController::class, 'importForm'])->name('hard_data.import.form');
         Route::post('hard-data/import', [HardDataController::class, 'import'])->name('hard_data.import');
         Route::resource('hard-data', HardDataController::class)->names('hard_data')->parameters(['manuhardal-data' => 'hard_data']);
@@ -494,28 +488,6 @@ Route::prefix('admin/student')
     Route::resource('student-project-reviews', StudentProjectReviewController::class)
         ->only(['index','store']);
 
-});
-
-
-Route::prefix('admin')->name('admin.')->group(function () {
-
-    Route::get('office-online-tests/{test}/questions', [OfficeOnlineQuestionController::class, 'index'])
-        ->name('office-online-questions.index');
-
-    Route::get('office-online-tests/{test}/questions/create', [OfficeOnlineQuestionController::class, 'create'])
-        ->name('office-online-questions.create');
-
-    Route::post('office-online-questions/store', [OfficeOnlineQuestionController::class, 'store'])
-        ->name('office-online-questions.store');
-
-    Route::get('office-online-questions/{id}/edit', [OfficeOnlineQuestionController::class, 'edit'])
-        ->name('office-online-questions.edit');
-
-    Route::post('office-online-questions/{id}/update', [OfficeOnlineQuestionController::class, 'update'])
-        ->name('office-online-questions.update');
-
-    Route::delete('office-online-questions/{id}', [OfficeOnlineQuestionController::class, 'destroy'])
-        ->name('office-online-questions.destroy');
 });
 
 Route::prefix('admin')
@@ -567,83 +539,6 @@ Route::prefix('admin/student')
         Route::resource('cv-templates', StudentCvTemplateController::class);
 
     });
-Route::prefix('office-online-exam')->name('student.office-online.')->group(function () {
-    /* Result */
-    Route::get(
-        '/result',
-        [OfficeOnlineMCQTestController::class, 'showResult']
-    )->name('result');
-    Route::get('/{slug}/exam_closed', function ($slug) {
-
-        $test = \App\Models\OfficeOnlineTest::where('slug', $slug)
-            ->firstOrFail();
-
-        return view(
-            'student.office-online.exam_closed',
-            compact('test')
-        );
-
-    })->name('exam.closed');
-   
-
-
-    /* Enter details page */
-    Route::get(
-        '/{slug}/enter',
-        [OfficeOnlineMCQTestController::class, 'enter']
-    )->name('enter');
-
-
-    /* Submit student details */
-    Route::post(
-        '/access',
-        [OfficeOnlineMCQTestController::class, 'accessTest']
-    )->name('access');
-
-
-    /* Show exam */
-    Route::get(
-        '/{slug}/exam',
-        [OfficeOnlineMCQTestController::class, 'showTest']
-    )->name('exam');
-
-    Route::get(
-        '/{slug}/already-submitted',
-        [OfficeOnlineMCQTestController::class, 'showTest']
-    )->name('already.submitted');
-
-    Route::get('/{slug}/already-submitted', function ($slug) {
-        $test = \App\Models\OfficeOnlineTest::where('slug', $slug)
-            ->firstOrFail();
-        return view(
-            'student.office-online.already_submitted',
-            compact('test')
-        );
-
-    })->name('already.submitted');
-   
-
-    /* Autosave */
-    Route::post(
-        '/autosave',
-        [OfficeOnlineMCQTestController::class, 'autoSave']
-    )->name('autosave');
-
-
-    /* Submit exam */
-    Route::post(
-        '/submit',
-        [OfficeOnlineMCQTestController::class, 'submitTest']
-    )->name('submit');
-
-     /* Open test link */
-    Route::get(
-        '/{slug}',
-        [OfficeOnlineMCQTestController::class, 'enter']
-    )->name('view');
-    
-
-});
 
 Route::prefix('office-exam')->name('student.office.')->group(function () {
 
@@ -805,22 +700,6 @@ Route::prefix('admin')
         // Route::resource('passouts', PassoutController::class);
 
 
-    Route::get(
-    'office-online-tests/{office_test}/download-pdf',
-        [OfficeOnlineTestController::class, 'downloadPdf']
-    )->name('office-online-tests.download.pdf');
-
-    Route::get(
-    'office-online-tests/{office_test}/results',
-        [OfficeOnlineTestController::class, 'results']
-    )->name('office-online-tests.results');
-    
-
-    Route::resource('office-online-tests', OfficeOnlineTestController::class);
-
-
-
-
         Route::get(
     'office-tests/{office_test}/download-pdf',
     [OfficeTestController::class, 'downloadPdf']
@@ -919,8 +798,6 @@ Route::middleware(['auth'])->group(function () {
         [StudentPptController::class, 'adminDownload']
     )->name('student_ppt.admin.download');
 
-        Route::get('/workshops/analytics', [WorkshopController::class, 'analytics'])
-        ->name('workshops.analytics');
         Route::get('workshops/export/excel', [WorkshopController::class, 'exportExcel'])->name('workshops.export.excel');
         Route::get('workshops/data', [WorkshopController::class, 'data'])->name('workshops.data');
         Route::resource('workshops', WorkshopController::class);
@@ -966,8 +843,6 @@ Route::middleware(['auth'])->group(function () {
         )->name('internship-registrations.status');
 
         Route::resource('visiting-cards', VisitingCardController::class);
-        
-        Route::resource('testimonials', TestimonialController::class);
 
         Route::get('services-registrations/export', [ServicesRegistrationController::class, 'export'])
             ->name('services-registrations.export');
@@ -1075,8 +950,6 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     
-    Route::get('joined-students/export', [JoiningStudentController::class, 'export'])
-    ->name('joined_students.export');
 
     Route::get('/admin/joining-students',
         [JoiningStudentController::class, 'index']
@@ -1671,7 +1544,7 @@ Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissi
             [TestController::class, 'regenerateCollegeLink']
         )->name('tests.links.regenerate');
 
-        Route::get('/tests/{test}/links',
+        Route::get('/admin/tests/{test}/links',
             [TestController::class,'links']
         )->name('tests.links');
 

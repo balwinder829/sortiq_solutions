@@ -95,7 +95,21 @@
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
-
+              {{-- Issue Date --}}
+            <div class="form-group col-md-6">
+                <label>Issue Date</label>
+                <input
+                    type="date"
+                    name="issue_date"
+                    class="form-control @error('issue_date') is-invalid @enderror"
+                    max="{{ now()->toDateString() }}"
+                    value="{{ old('issue_date', $letter->issue_date) }}"
+                    required
+                >
+                @error('issue_date')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
             {{-- Subject --}}
             <div class="form-group col-md-6 d-none" id="subject_field">
                 <label>Subject</label>

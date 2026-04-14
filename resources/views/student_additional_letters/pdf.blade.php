@@ -72,7 +72,12 @@ body {
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
                 <tr>
                     <td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-                        <strong>Date</strong> {{ \Carbon\Carbon::now()->format('d M Y') }}
+                        <strong>Date</strong> 
+                                {{ $letter->issue_date 
+                                    ? \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') 
+                                    : \Carbon\Carbon::now()->format('d M Y') 
+                                }}
+                            
                     </td>
                 </tr>
                 <tr>

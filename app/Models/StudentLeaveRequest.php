@@ -21,5 +21,7 @@ class StudentLeaveRequest extends Model
         'status',
         'session_id',
         'ip_address',
+        'mentor',
+        'course_id',
     ];
 }

@@ -1,24 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
-<style>
-.nav-tabs .nav-link {
-    background:#f4f6f9;
-    border:1px solid #dee2e6;
-    margin-right:5px;
-    border-radius:6px 6px 0 0;
-}
-.nav-tabs .nav-link:hover{
-    background:#e9ecef;
-}
-.nav-tabs .nav-link.active{
-    background:#ffffff;
-    border-bottom:2px solid #0d6efd;
-    font-weight:600;
-}
-</style>
-
 <div class="container">
 
 <h4>Add HOD / TPO</h4>
@@ -37,33 +19,12 @@
 <form method="POST" action="{{ route('hods.store') }}">
 @csrf
 
-<ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-        <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#college">
-            College
-        </button>
-    </li>
-    <li class="nav-item">
-        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#hod">
-            HOD Details
-        </button>
-    </li>
-    <li class="nav-item">
-        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tpo">
-            TPO Details
-        </button>
-    </li>
-</ul>
-
-<div class="tab-content border p-3">
-
-<!-- ================= COLLEGE ================= -->
-<div class="tab-pane fade show active" id="college">
 <div class="row">
 
+<!-- College -->
 <div class="col-md-6 mb-3">
     <label>College</label>
-    <select name="college_id" class="form-control @error('college_id') is-invalid @enderror select2" required>
+    <select name="college_id" class="form-control @error('college_id') is-invalid @enderror select2">
         <option value="">Select College</option>
         @foreach($colleges as $college)
             <option value="{{ $college->id }}"
@@ -77,26 +38,7 @@
     @enderror
 </div>
 
-<!-- DESCRIPTION (MOVED HERE) -->
-<div class="col-md-12 mb-3">
-    <label>Description</label>
-    <textarea name="description"
-              rows="4"
-              class="form-control @error('description') is-invalid @enderror"
-              placeholder="Enter Description...">{{ old('description') }}</textarea>
-    @error('description')
-        <small class="text-danger">{{ $message }}</small>
-    @enderror
-</div>
-
-</div>
-</div>
-
-
 <!-- ================= HOD ================= -->
-<div class="tab-pane fade" id="hod">
-<div class="row">
-
 <h5 class="col-12 mt-3">HOD Details</h5>
 
 <div class="col-md-4 mb-3">
@@ -114,12 +56,14 @@
         <option value="Female" {{ old('hod_gender')=='Female'?'selected':'' }}>Female</option>
         <option value="Other" {{ old('hod_gender')=='Other'?'selected':'' }}>Other</option>
     </select>
+    @error('hod_gender') <small class="text-danger">{{ $message }}</small> @enderror
 </div>
 
 <div class="col-md-4 mb-3">
     <label>HOD Contact</label>
     <input type="text" name="hod_contact" value="{{ old('hod_contact') }}"
            class="form-control @error('hod_contact') is-invalid @enderror" maxlength="10">
+    @error('hod_contact') <small class="text-danger">{{ $message }}</small> @enderror
 </div>
 
 <!-- HOD Emails -->
@@ -158,20 +102,14 @@
 <button type="button" class="btn btn-sm btn-secondary" onclick="addHodEmail()">+ Add More</button>
 </div>
 
-</div>
-</div>
-
-
 <!-- ================= TPO ================= -->
-<div class="tab-pane fade" id="tpo">
-<div class="row">
-
 <h5 class="col-12 mt-4">TPO Details</h5>
 
 <div class="col-md-4 mb-3">
     <label>TPO Name</label>
     <input type="text" name="tpo_name" value="{{ old('tpo_name') }}"
            class="form-control @error('tpo_name') is-invalid @enderror">
+    @error('tpo_name') <small class="text-danger">{{ $message }}</small> @enderror
 </div>
 
 <div class="col-md-4 mb-3">
@@ -182,12 +120,14 @@
         <option value="Female" {{ old('tpo_gender')=='Female'?'selected':'' }}>Female</option>
         <option value="Other" {{ old('tpo_gender')=='Other'?'selected':'' }}>Other</option>
     </select>
+    @error('tpo_gender') <small class="text-danger">{{ $message }}</small> @enderror
 </div>
 
 <div class="col-md-4 mb-3">
     <label>TPO Contact</label>
     <input type="text" name="tpo_contact" value="{{ old('tpo_contact') }}"
            class="form-control @error('tpo_contact') is-invalid @enderror" maxlength="10">
+    @error('tpo_contact') <small class="text-danger">{{ $message }}</small> @enderror
 </div>
 
 <!-- TPO Emails -->
@@ -226,7 +166,19 @@
 <button type="button" class="btn btn-sm btn-secondary" onclick="addTpoEmail()">+ Add More</button>
 </div>
 
-</div>
+
+
+<div class="form-group col-md-12">
+    <label>Description</label>
+
+    <textarea name="description"
+              rows="4"
+              class="form-control @error('description') is-invalid @enderror"
+              placeholder="Enter Description...">{{ old('description') }}</textarea>
+
+    @error('description')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
 </div>
 
 </div>
@@ -237,7 +189,7 @@
 </form>
 </div>
 
-{{-- SAME JS --}}
+{{-- SAME JS AS BEFORE --}}
 <script>
 function addHodEmail() {
     let index = document.querySelectorAll('#hod-emails .email-row').length;
@@ -278,5 +230,4 @@ function removeRow(btn) {
     if (wasPrimary && radios.length > 0) radios[0].checked = true;
 }
 </script>
-
 @endsection

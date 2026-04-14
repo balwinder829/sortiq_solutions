@@ -3,13 +3,80 @@
 <head>
     <title>Employee Leave Application</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* LOGO HEADER */
+        .site-header{
+            position:absolute;
+            top:20px;
+            left:30px;
+            z-index:2000;
+        }
+        .site-header img{
+            height:55px;
+        }
+
+        /* HERO BACKGROUND */
+        .hero-section {
+          background:url('{{ asset("images/internship.avif") }}') center/cover no-repeat;
+          padding:120px 0 100px;
+          position:relative;
+          color:#fff;
+          z-index:1;
+        }
+
+        .hero-section::after {
+          content:'';
+          position:absolute;
+          top:0;
+          left:0;
+          width:100%;
+          height:100%;
+          background:rgba(0,0,0,0.55);
+          z-index:-1;
+        }
+
+        /* CARD */
+        .card{
+            border-radius:15px;
+            overflow:hidden;
+            background: rgba(255,255,255,0.95);
+        }
+
+        /* BRAND COLORS */
+        .primary-bg{
+            background-color:#343957 !important;
+            color:#fff !important;
+        }
+
+        .primary-btn{
+            background-color:#343957;
+            color:#fff;
+            border:none;
+            padding:10px 25px;
+        }
+
+        .primary-btn:hover{
+            background-color:#2a2f4a;
+        }
+    </style>
 </head>
 
-<body class="bg-light">
+<body>
 
+<!-- HEADER -->
+<div class="site-header">
+  <a href="/">
+    <img src="{{ asset('images/front_ss-logo.png') }}" alt="Sortiq">
+  </a>
+</div>
+
+<!-- HERO -->
+<section class="hero-section">
 <div class="container mt-5">
+
     <div class="card shadow">
-        <div class="card-header bg-primary text-white text-center">
+        <div class="card-header primary-bg text-center">
             <h4>Employee Leave Application</h4>
         </div>
 
@@ -43,10 +110,8 @@
             <form method="POST" action="{{ route('employee.leave.store') }}">
                 @csrf
 
-                {{-- Honeypot (hidden anti-bot) --}}
                 <input type="text" name="website" style="display:none">
 
-                {{-- Employee Info --}}
                 <div class="row mb-3">
                     <div class="col">
                         <label class="form-label">Employee Code</label>
@@ -60,52 +125,49 @@
                     </div>
                 </div>
 
-                {{-- Email --}}
-                <div class="mb-3">
+                <div class="row mb-3">
+                    <div class="col">
+                    <label class="form-label">Contact</label>
+                    <input type="text" class="form-control" name="contact" required>
+                </div>
+                <div class="col">
                     <label class="form-label">Email</label>
                     <input type="email" class="form-control" name="email" required>
                 </div>
 
-                {{-- Dates --}}
+                <div class="mb-3">
+                    <label class="form-label">Number of Days</label>
+                    <input type="number" id="days" class="form-control" min="1">
+                </div>
                 <div class="row mb-3">
                     <div class="col">
                         <label class="form-label">From Date</label>
                         <input type="date" class="form-control" name="from_date" required>
                     </div>
 
-                    <div class="col">
+                    <div class="col" id="toDateDiv" style="display:none;">
                         <label class="form-label">To Date</label>
-                        <input type="date" class="form-control" name="to_date" required>
+                        <input type="date" class="form-control" name="to_date" readonly>
                     </div>
                 </div>
 
-                {{-- Reason --}}
                 <div class="mb-3">
                     <label class="form-label">Reason</label>
                     <textarea class="form-control" name="reason" rows="3"></textarea>
                 </div>
 
-                {{-- To --}}
-                    <div class="mb-3">
-                        <label class="form-label">To</label>
-                        <input type="email" 
-                               class="form-control" 
-                               value="hr@yourcompany.com" 
-                               readonly>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">To</label>
+                    <input type="email" class="form-control" value="hr.sortiqsolutions@gmail.com" readonly>
+                </div>
 
-                    {{-- CC --}}
-                    <div class="mb-3">
-                        <label class="form-label">CC</label>
-                        <input type="text" 
-                               class="form-control" 
-                               value="manager@yourcompany.com, admin@yourcompany.com" 
-                               readonly>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">CC</label>
+                    <input type="text" class="form-control" value="sortiqsolutions@gmail.com" readonly>
+                </div>
 
-                {{-- Submit --}}
                 <div class="text-center">
-                    <button type="submit" class="btn btn-success px-5">
+                    <button type="submit" class="btn primary-btn px-5">
                         Apply Leave
                     </button>
                 </div>
@@ -113,9 +175,10 @@
             </form>
         </div>
     </div>
-</div>
 
-{{-- jQuery (for auto-fill) --}}
+</div>
+</section>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
@@ -124,7 +187,7 @@ $('#emp_code').on('blur', function () {
 
     if (!code) return;
 
-    $('#emp_code_error').text(''); // clear old error
+    $('#emp_code_error').text('');
 
     $.get("{{ route('employee.find') }}", { emp_code: code }, function (data) {
 
@@ -138,6 +201,29 @@ $('#emp_code').on('blur', function () {
     }).fail(function () {
         $('#emp_code_error').text('Something went wrong');
     });
+});
+// Days logic
+$('#days, input[name="from_date"]').on('input change', function () {
+
+    let days = parseInt($('#days').val());
+    let fromDate = $('input[name="from_date"]').val();
+
+    if (!days || !fromDate) return;
+
+    let from = new Date(fromDate);
+
+    if (days > 1) {
+        $('#toDateDiv').show();
+
+        let to = new Date(from);
+        to.setDate(to.getDate() + days - 1);
+
+        $('input[name="to_date"]').val(to.toISOString().split('T')[0]);
+
+    } else {
+        $('#toDateDiv').hide();
+        $('input[name="to_date"]').val(fromDate);
+    }
 });
 </script>
 

@@ -33,7 +33,8 @@ class SessionController extends Controller
                 $query->where('is_online', 0);
             }
         ])
-        ->latest()
+        // ->latest()
+         ->orderByDesc('students_count')
         ->get();
 
     // dd($sessionsList);

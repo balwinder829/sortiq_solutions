@@ -104,7 +104,7 @@ function isParent($routes)
 
     return '';
 }
-
+ 
 
 @endphp
 <style>
@@ -263,12 +263,15 @@ function isParent($routes)
                  
 
                  {{-- Tests --}}
-                <li class="{{ isParent(['tests*','test-categories.*']) }}">
+                <li class="{{ 
+    (isParent(['tests.*','test-categories.*'])|| request()->is('admin/questions*')  || request()->is('admin/tests*')) 
+    ? 'mm-active' : '' 
+}}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
                         <span class="nav-text">College Exams</span>
                     </a>
-                    <ul class="{{ showSubmenu(['tests*','test-categories.*']) }}">
+                    <ul class="{{ showSubmenu(['tests*','test-categories.*']) ||  request()->is('admin/tests*')  }}">
                         <li>
                             <a class="{{ isChildActive('test-categories.*') }}"
                                 href="{{ route('test-categories.index') }}">
@@ -276,7 +279,7 @@ function isParent($routes)
                             </a>
                         </li>
                         <li>
-                            <a class="{{ isChildActive('tests*') }}"
+                              <a class="{{ request()->is('admin/tests*') ? 'mm-active' : '' }}"
                                 href="{{ route('admin.tests.index') }}">
                                 Online Exams
                             </a>
@@ -490,16 +493,17 @@ function isParent($routes)
                             </a>
                         </li>
 
-                        <li>
-                            <a class="{{ isChildActive('admin.office-tests*') }}"
+                        <li class="{{ request()->routeIs('admin.office-tests.*') ? 'mm-active' : '' }}">
+                            <a 
                                 href="{{ route('admin.office-tests.index') }}">
                                 <i class="fas fa-file-signature"></i>
                                 Student Office Exams
                             </a>
                         </li>
 
-                        <li>
-                            <a class="{{ isChildActive('admin.office-online-tests*') }}"
+                        <!-- <li class="{{ request()->routeIs('admin.office-online-tests.*') ? 'mm-active' : '' }}"> -->
+                        <li class="{{ request()->is('admin/office-online-tests*') ? 'mm-active' : '' }}">
+                            <a 
                                 href="{{ route('admin.office-online-tests.index') }}">
                                 <i class="fas fa-file-signature"></i>
                                 Student Online Exams
@@ -1134,6 +1138,19 @@ function isParent($routes)
                          
                     </ul>
                 </li>
+
+                <li class="{{ isParent(['admin.gmail*']) }}">
+
+                    <a href="{{ route('admin.gmail.index') }}">
+
+                        <i class="fas fa-envelope"></i>
+
+                        <span class="nav-text">Gmail (Queries & HR)</span>
+
+                    </a>
+
+                </li>
+
                {{-- Logout --}}
                 <li>
                     <a href="{{ route('logout') }}"

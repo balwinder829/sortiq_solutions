@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Offer Letter</title>
+    <title>Internship Letter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Katibeh&display=swap" rel="stylesheet">    
@@ -60,7 +60,12 @@
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                        Date: <strong>{{ \Carbon\Carbon::now()->format('d M Y') }}</strong>
+                        Date: <strong>
+                            {{ $letter->issue_date 
+                                ? \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') 
+                                : \Carbon\Carbon::now()->format('d M Y') 
+                            }}
+                        </strong>
                     </td>
                 </tr>
                 <tr>
@@ -95,7 +100,7 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <br>We are pleased to offer you a <b>six-month free internship</b> with <b>Sortiq Solutions Pvt. Ltd.</b> This internship is intended to provide you with hands-on industry exposure, real-time project experience, and professional skill development under the guidance of our experienced technical team.
+                        <br>We are pleased to offer you a <b>six-month internship</b> with <b>Sortiq Solutions Pvt. Ltd.</b> This internship is intended to provide you with hands-on industry exposure, real-time project experience, and professional skill development under the guidance of our experienced technical team.
                     </td>
                 </tr>
                 <tr>
@@ -112,9 +117,9 @@
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
                                      <strong style="margin-left: 20px;">Duration:</strong> 6 Months<br>
-                                    <strong style="margin-left: 20px;">Type:</strong> Free Internship<br>
+                                    <strong style="margin-left: 20px;">Type:</strong> Internship<br>
                                     <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($letter->student?->course_name ?? 'N/A') }}<br>
-                                    <strong style="margin-left: 20px;">Location:</strong> Mohali / Remote (based on project requirement)<br>
+                                    <strong style="margin-left: 20px;">Location:</strong> Mohali<br>
                                     <strong style="margin-left: 20px;">Start Date:</strong> {{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}<br>
                                     
                                 </td>
@@ -124,21 +129,11 @@
                         During this internship, you will be working on live projects, collaborating with our development team, and enhancing both your technical and professional competencies.
                     </td>
                 </tr>
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>2. Internship Fee / Maintenance Charges</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        This is a Free Internship program.<br>
-                        However, nominal maintenance and operational charges may be applicable to cover resources such as training infrastructure, mentorship, project tools, and administrative support.
-                    </td>
-                </tr>
+               
 
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>3. Performance Evaluation</b>
+                        <b>2. Performance Evaluation</b>
                     </td>
                 </tr>
                 <tr>
@@ -150,21 +145,6 @@
                                 <td style="font-size: 14px; line-height: 24px;">
                                     <b>• Technical skills and learning progress</b><br>
                                     <b>• Consistency and dedication</b><br>
-                                  
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                </table>
-                <pagebreak />
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;">
-                <tr>
-                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px; font-family:'Inter', sans-serif;">
-                       <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-                                <td style="font-size: 14px; line-height: 24px;">
                                     <b>• Project contribution</b><br>
                                     <b>• Professional conduct and discipline</b>
                                 </td>
@@ -172,9 +152,10 @@
                         </table>
                     </td>
                 </tr>
+                
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>4. Pre-Placement Offer (PPO)</b>
+                        <b>3. Pre-Placement Offer (PPO)</b>
                     </td>
                 </tr>
                 <tr>
@@ -183,9 +164,13 @@
                         The PPO, if offered, will be subject to company requirements and performance standards at that time.
                     </td>
                 </tr>
+                </table>
+                <pagebreak />
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;">
+                
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>5. Post-Internship Employment</b>
+                        <b>4. Post-Internship Employment</b>
                     </td>
                 </tr>
                 <tr>
@@ -195,7 +180,7 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>6. Terms & Conditions</b>
+                        <b>5. Terms & Conditions</b>
                     </td>
                 </tr>
                 <tr>

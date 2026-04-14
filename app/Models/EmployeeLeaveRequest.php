@@ -13,6 +13,7 @@ class EmployeeLeaveRequest extends Model
         'emp_code',
         'emp_name',
         'email',
+        'contact',
         'from_date',
         'to_date',
         'total_days',

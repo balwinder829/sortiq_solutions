@@ -90,7 +90,63 @@ class StudentAdditionalLetterController extends Controller
         return view('student_additional_letters.create', compact('colleges','students'));
     }
 
-    public function store(Request $request)
+public function store(Request $request)
+{
+    $data = $request->validate([
+        'internship_type' => [
+            'required',
+            Rule::in([
+                'free','stipend','offer','custom',
+                'mutual_consent','noc','training_consent',
+                'placement','internship','internship_with_package'
+            ]),
+        ],
+
+        // 👇 changed to array (multi student)
+        'student_id'      => 'required|array',
+        'student_id.*'    => 'exists:students_detail,id',
+
+        'subject'         => 'required_if:internship_type,custom|max:255',
+        'letter_content'  => 'required_if:internship_type,custom,stipend',
+        'issue_date'      => 'nullable|date',
+    ], [
+        // custom message kept
+        // (unique removed because now handled manually)
+    ]);
+
+    $created = 0;
+    $skipped = 0;
+
+    foreach ($request->student_id as $studentId) {
+
+        // ✅ keep your uniqueness logic (moved here)
+        $exists = StudentAdditionalLetter::where('student_id', $studentId)
+            ->where('internship_type', $request->internship_type)
+            ->exists();
+
+        if ($exists) {
+            $skipped++;
+            continue;
+        }
+
+        StudentAdditionalLetter::create([
+            'student_id'      => $studentId,
+            'internship_type' => $request->internship_type,
+            'subject'         => $request->subject,
+            'letter_content'  => $request->letter_content,
+            'issue_date'      => $request->issue_date 
+                                ? $request->issue_date 
+                                : Carbon::today()->toDateString(),
+        ]);
+
+        $created++;
+    }
+
+    return redirect()
+        ->route('student-additional-letters.index')
+        ->with('success', "$created letter(s) created successfully. $skipped skipped (already existed).");
+}
+    public function store13ap(Request $request)
     {
         $data = $request->validate([
             // 'internship_type' => 'required|in:free,stipend,offer,custom,mutual_consent,noc,training_consent,placement',
@@ -103,9 +159,15 @@ class StudentAdditionalLetterController extends Controller
             'subject'         => 'required_if:internship_type,custom|max:255',
             'student_id'      => 'required|exists:students_detail,id',
             'letter_content'  => 'required_if:internship_type,custom,stipend',
+            'issue_date'      => 'nullable|date',
         ], [
             'internship_type.unique' => 'This letter type already exists for this student.',
         ]);
+
+         // 👉 Set default date if not provided
+    $data['issue_date'] = $request->issue_date 
+        ? $request->issue_date 
+        : Carbon::today()->toDateString();
 
         StudentAdditionalLetter::create($data);
 
@@ -149,10 +211,14 @@ class StudentAdditionalLetterController extends Controller
             'subject'         => 'required_if:internship_type,custom|max:255',
             'student_id'      => 'required|exists:students_detail,id',
             'letter_content'  => 'required_if:internship_type,custom,stipend',
+            'issue_date'      => 'nullable|date',
         ], [
             'internship_type.unique' => 'This letter type already exists for this student.',
         ]);
 
+         // 👉 Set issue_date (same logic)
+        $data['issue_date'] = $request->input('issue_date', now()->toDateString());
+        
         $studentAdditionalLetter->update($data);
 
         return redirect()

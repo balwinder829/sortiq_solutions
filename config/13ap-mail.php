@@ -48,29 +48,6 @@ return [
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
-        
-           'gmail_sortiq' => [
-            'transport' => 'smtp',
-            'host' => env('SORTIQ_GMAIL_SMTP_HOST', 'smtp.gmail.com'),
-            'port' => env('SORTIQ_GMAIL_SMTP_PORT', 587),
-            'encryption' => env('SORTIQ_GMAIL_SMTP_ENCRYPTION', 'tls'),
-            'username' => env('SORTIQ_GMAIL_SMTP_USERNAME', env('SORTIQ_GMAIL_ADDRESS')),
-            'password' => env('SORTIQ_GMAIL_SMTP_PASSWORD'),
-            'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
-        ],
-
-        'gmail_hr' => [
-            'transport' => 'smtp',
-            'host' => env('HR_GMAIL_SMTP_HOST', 'smtp.gmail.com'),
-            'port' => env('HR_GMAIL_SMTP_PORT', 587),
-            'encryption' => env('HR_GMAIL_SMTP_ENCRYPTION', 'tls'),
-            'username' => env('HR_GMAIL_SMTP_USERNAME', env('HR_GMAIL_ADDRESS')),
-            'password' => env('HR_GMAIL_SMTP_PASSWORD'),
-            'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
-        ],
-        
 
         'ses' => [
             'transport' => 'ses',

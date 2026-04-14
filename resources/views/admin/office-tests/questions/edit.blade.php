@@ -64,7 +64,7 @@ Question
 
 
 {{-- Marks --}}
-
+<!-- 
 <div class="mb-4">
 
 <label class="form-label fw-semibold">
@@ -79,7 +79,7 @@ Marks
        min="0"
        value="{{ old('marks',$office_question->marks) }}">
 
-</div>
+</div> -->
 
 
 {{-- Question Order --}}

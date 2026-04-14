@@ -232,6 +232,7 @@ input:checked + .slider:before {
         <thead>
             <tr>
                 <th>ID</th>
+                <th>College ID</th>
                 <th>College Name/Place</th>
                 <th>State</th>
                 <th>District</th>
@@ -282,15 +283,16 @@ $(document).ready(function () {
         },
         columns: [
             { data: 0, name: 'id' },
-            { data: 1, name: 'college_name' },
-            { data: 2, name: 'state' },
-            { data: 3, name: 'district' },
-            { data: 4, name: 'students_count', orderable: true, searchable: false },
-            { data: 5, name: 'college_type' },
-            { data: 6, name: 'offer_training' },
-            { data: 7, name: 'training_in_year,' },
+            { data: 1, name: 'college_id' },
+            { data: 2, name: 'college_name' },
+            { data: 3, name: 'state' },
+            { data: 4, name: 'district' },
+            { data: 5, name: 'students_count', orderable: true, searchable: false },
+            { data: 6, name: 'college_type' },
+            { data: 7, name: 'offer_training' },
+            { data: 8, name: 'training_in_year,' },
             // { data: 8, name: 'call_status', orderable: false, searchable: false },
-            { data: 8, name: 'actions', orderable: false, searchable: false }
+            { data: 9, name: 'actions', orderable: false, searchable: false }
         ],
         pageLength: 50,
         lengthMenu: [5, 10, 25, 50, 100],

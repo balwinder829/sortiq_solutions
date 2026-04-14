@@ -78,12 +78,12 @@ Q{{ $index + 1 }}
 
 <div class="d-flex justify-content-between">
 
-<div class="text-muted">
+<!-- <div class="text-muted">
 
 <strong>Marks:</strong>
 {{ $question->marks ?? 0 }}
 
-</div>
+</div> -->
 
 <div class="text-muted">
 

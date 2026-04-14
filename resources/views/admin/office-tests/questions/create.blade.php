@@ -66,7 +66,7 @@ Question
 
 {{-- Marks --}}
 
-<div class="mb-4">
+<!-- <div class="mb-4">
 
 <label class="form-label fw-semibold">
 
@@ -80,7 +80,7 @@ Marks
        min="0"
        placeholder="Enter marks for this question">
 
-</div>
+</div> -->
 
 
 {{-- Question Order --}}

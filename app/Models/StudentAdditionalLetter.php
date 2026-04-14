@@ -11,7 +11,7 @@ class StudentAdditionalLetter extends Model
         'internship_type',
         'subject',
         'student_id',
-        // 'college_id',
+        'issue_date',
         // 'email',
         'letter_content'
     ];

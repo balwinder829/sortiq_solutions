@@ -35,6 +35,10 @@
                     <strong>Email:</strong>
                     <p>{{ $leave->email }}</p>
                 </div>
+                <div class="col-md-6">
+                    <strong>Contact:</strong>
+                    <p>{{ $leave->contact ?? 'N/A' }}</p>
+                </div>
 
                 <div class="col-md-6">
                     <strong>Status:</strong>

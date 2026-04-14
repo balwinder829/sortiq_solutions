@@ -209,7 +209,8 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
         } else {
 
             // 🔥 DEFAULT ORDER WHEN PAGE LOADS
-            $query->orderBy('students_count', 'desc');
+            // $query->orderBy('students_count', 'desc');
+            $query->orderBy('id', 'asc');
         }
 
         $start = (int) $request->input('start', 0);
@@ -235,6 +236,7 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
                 </label>';
             $data[] = [
                 $rowNum,
+                $college->id,
                 $college->college_name,
                 $college->state->name ?? '-',
                 $college->district->name ?? '-',

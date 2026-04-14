@@ -105,6 +105,7 @@ class StudentLeaveController extends Controller
                 \Carbon\Carbon::parse($leave->from_date)->format('d M Y') . ' - ' .
                 \Carbon\Carbon::parse($leave->to_date)->format('d M Y'),
                 $leave->total_days,
+                $leave->mentor,
                 $statusBadge,
                 $actions,
             ];

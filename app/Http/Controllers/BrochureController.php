@@ -63,7 +63,7 @@ class BrochureController extends Controller
             $query->whereNotNull('end_at')->where('end_at', '<', $now);
         }
 
-        $brochures = $query->latest()->paginate(20);
+        $brochures = $query->latest()->get();
 
         return view('brochures.index', compact('brochures'));
     }

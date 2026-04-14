@@ -65,6 +65,7 @@
             <th>Contact</th>
             <th>Dates</th>
             <th>Days</th>
+            <th>Mentors</th>
             <th>Status</th>
             <th>Actions</th>
         </tr>
@@ -99,7 +100,8 @@ $(function () {
             { data: 3 },
             { data: 4 },
             { data: 5 },
-            { data: 6 }
+            { data: 6 },
+            { data: 7 }
         ]
     });
 
