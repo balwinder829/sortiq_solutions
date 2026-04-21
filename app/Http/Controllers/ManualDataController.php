@@ -26,9 +26,9 @@ class ManualDataController extends Controller
 
      public function __construct()
     {
-        $this->middleware('permission:manual_data.view')->only('index');
+        $this->middleware('permission:manual_data.view')->only(['index','show','importForm','import']);
         $this->middleware('permission:manual_data.create')->only(['create','store']);
-        $this->middleware('permission:manual_data.edit')->only(['edit','update']);
+        $this->middleware('permission:manual_data.edit')->only(['edit','update','moveManualToEnquiries']);
         $this->middleware('permission:manual_data.delete')->only('destroy');
         // $this->middleware('permission:colleges.import')->only('showImport');
     }

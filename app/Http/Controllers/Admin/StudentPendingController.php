@@ -10,6 +10,13 @@ use App\Models\Student;
 
 class StudentPendingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:student_request.view')->only(['index','sendToSession']);
+        
+        
+    }
+
     public function index()
     {
         $students = StudentPendingRegistration::with([
@@ -64,14 +71,16 @@ public function sendToSession(Request $request)
                 'student_name'   => $joining->student_name,
                 'f_name'         => $joining->father_name,
                 'college_name'   => $joining->college_id,
-                'duration'       => $joining->duration,
-                'technology'     => $joining->course_id,
+                // 'duration'       => $joining->duration,
+                // 'technology'     => $joining->course_id,
                 'join_date'      => $joining->start_date,
                 'start_date'     => $joining->start_date,
                 'session'        => $request->session_id,
                 'contact'        => $joining->contact,
+                'email_id' => $joining->email ?? "",
 
                 // 🔥 tracking
+                'status'    => 'joined',
                 'source_type'    => 'pending_registration',
                 'source_id'      => $joining->id,
             ]);

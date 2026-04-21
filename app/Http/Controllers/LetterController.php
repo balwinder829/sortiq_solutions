@@ -66,7 +66,7 @@ class LetterController extends Controller
         }
 
         return view('letters.index', [
-            'letters' => $query->latest()->get(),
+            'letters' => $query->latest('updated_at')->get(),
             'selectedType' => $request->letter_type
         ]);
     }

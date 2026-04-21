@@ -232,6 +232,10 @@ class StudentController extends Controller
                 $query->where('gender', $request->gender);
             }
 
+            if ($request->filled('next_due_date')) {
+                $query->whereDate('next_due_date', $request->next_due_date)
+                      ->where('pending_fees', '>', 0);
+            }
             
             if (auth()->user()->role == 1) {
                 $activeSessionId = session('admin_session_id');
@@ -1062,7 +1066,9 @@ public function import(Request $request)
     {
         $ids = json_decode($request->ids, true);
          $isInternship = $request->boolean('is_internship');
-         // dd($isInternship);
+         $ismonthly = $request->boolean('is_monthly');
+         $is_logo_show = $request->boolean('is_logo_show');
+         // dd($request->request);
         if (!is_array($ids) || count($ids) === 0) {
             return back()->with('error', 'No students selected.');
         }
@@ -1079,7 +1085,7 @@ public function import(Request $request)
         // Generate (or reuse) PDFs and collect file paths
         $pdfPaths = [];
         foreach ($students as $student) {
-            $pdfPath = $this->generateConfirmationPdf($student, $isInternship);
+            $pdfPath = $this->generateConfirmationPdf($student, $isInternship, $ismonthly, $is_logo_show);
             $student->increment('download_count_confirmation');
             if (file_exists($pdfPath)) {
                 $pdfPaths[] = $pdfPath;
@@ -1194,7 +1200,6 @@ public function import(Request $request)
         // Generate (or reuse) PDFs and collect file paths
         $pdfPaths = [];
         foreach ($students as $student) {
-            // $pdfPath = $this->generateConfirmationPdf($student);
             $pdfPath = $this->generatePdf($student);
 
             if (file_exists($pdfPath)) {
@@ -1389,8 +1394,9 @@ public function import(Request $request)
         return back()->with('success', 'Certificates issued to selected students.');
     }
 
-    private function generateConfirmationPdf($student, $isInternship = false)
+    private function generateConfirmationPdf($student, $isInternship = false, $ismonthly = false, $is_logo_show = false)
     {
+        // dd($isInternship, $ismonthly, $is_logo_show);
      // Create folder path for today
         $date = Carbon::now()->format('Y-m-d');
         $folderPath = public_path("studentConfirmation/{$date}");
@@ -1451,7 +1457,7 @@ public function import(Request $request)
                 $view = "pdf.confirmation_detail";
             }
 
-            $html = view($view, compact('student','isInternship'))->render();
+            $html = view($view, compact('student','isInternship','ismonthly','is_logo_show'))->render();
         
             $mpdf->WriteHTML($html);
             $mpdf->Output($filePath, 'F');
@@ -1487,49 +1493,6 @@ public function import(Request $request)
                 </div>';
     }
 
-
-    private function generateConfirmationPdf_22dec($student)
-    {
-     // Create folder path for today
-        $date = Carbon::now()->format('Y-m-d');
-        $folderPath = public_path("studentConfirmation/{$date}");
-
-        if (!file_exists($folderPath)) {
-            mkdir($folderPath, 0777, true);
-        }
-
-        // Create PDF file name
-        $fileName = $student->id . '_' . preg_replace('/\s+/', '_', $student->student_name) . '.pdf';
-        $filePath = $folderPath . '/' . $fileName;
-
-        $regenerate = true;
-
-        // Check if file exists and whether student data changed
-        if (file_exists($filePath)) {
-            $fileModified = filemtime($filePath);
-            $studentUpdated = strtotime($student->updated_at);
-
-            // Only skip regeneration if PDF is newer than student update
-            if ($studentUpdated <= $fileModified) {
-                //$regenerate = false;
-            }
-        }
-
-        // Generate or overwrite PDF if needed
-        if ($regenerate) {
-            $pdf = Pdf::loadView('pdf.confirmation_detail', ['student' => $student])
-                      ->setPaper('a4', 'portrait')  // or 'portrait'
-                      ->setOption('dpi', 150)        // higher resolution
-                      ->setOption('defaultFont', 'sans-serif');
-
-            $pdf->save($filePath);
-        }
-
-        
-
-
-        return $filePath;
-    }
 
 private function generatePdf($student)
     {

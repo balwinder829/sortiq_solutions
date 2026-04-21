@@ -13,6 +13,15 @@ class EmployeeLeaveController extends Controller
     /**
      * List page
      */
+
+    public function __construct()
+    {
+        $this->middleware('permission:employee_leave.view')->only(['index','data','show']);
+        
+        $this->middleware('permission:employee_leave.edit')->only(['approve','reject']);
+        
+    }
+    
     public function index()
     {
         $employees = Employee::orderBy('emp_name')->get();

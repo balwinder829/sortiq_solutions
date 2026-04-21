@@ -24,10 +24,10 @@ class OfficeOnlineTestController extends Controller
 
 public function __construct()
 {
-    $this->middleware('permission:students_office_test.view')->only('index');
-    $this->middleware('permission:students_office_test.create')->only(['create','store']);
-    $this->middleware('permission:students_office_test.edit')->only(['edit','update']);
-    $this->middleware('permission:students_office_test.delete')->only('destroy');
+    $this->middleware('permission:online_exam.view')->only(['index','downloadPdf','results']);
+    $this->middleware('permission:online_exam.create')->only(['create','store']);
+    $this->middleware('permission:online_exam.edit')->only(['edit','update']);
+    $this->middleware('permission:online_exam.delete')->only('destroy');
 }
 
 public function downloadPdf($officeTestId)
@@ -186,6 +186,7 @@ public function downloadPdf($officeTestId)
         $data['access_key'] = Str::random(15);
 
         $data['created_by'] = auth()->id();
+        $data['status'] = 'unpublished';
 
         OfficeOnlineTest::create($data);
 
@@ -221,6 +222,19 @@ public function downloadPdf($officeTestId)
             'status' => 'required|in:draft,published,unpublished'
 
         ]);
+
+        // ✅ Check: prevent publishing without questions
+        if (
+        ($request->status === 'published' || $request->is_active == 1)
+            && !$office_online_test->questions()->exists()
+        ) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'status' => 'You cannot publish this test because no questions have been added.'
+                ]);
+        }
 
         $office_online_test->update($request->all());
 

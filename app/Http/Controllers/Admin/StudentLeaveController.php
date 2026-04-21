@@ -10,6 +10,13 @@ use App\Http\DataTables\DataTablesServerSide;
 
 class StudentLeaveController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:student_leave.view')->only(['index','data','show']);
+        
+        $this->middleware('permission:student_leave.edit')->only(['approve','reject']);
+        
+    }
     public function index()
     {
         $students = Student::orderBy('student_name')->get();

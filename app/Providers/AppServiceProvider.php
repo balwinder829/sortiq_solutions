@@ -153,7 +153,8 @@ class AppServiceProvider extends ServiceProvider
     View::composer('*', function ($view) {
 
         // get list of all sessions ordered by start_date
-        $sessions = \App\Models\StudentSession::orderBy('start_date', 'desc')->get();
+        // $sessions = \App\Models\StudentSession::orderBy('start_date', 'desc')->get();
+        $sessions = \App\Models\StudentSession::withCount('students')->orderBy('start_date', 'desc')->get();
 
         // find active session (if selected)
         $currentSession = null;

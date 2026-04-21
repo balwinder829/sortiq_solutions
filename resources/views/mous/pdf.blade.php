@@ -63,7 +63,9 @@ li {
 
                <tr>
                     <td colspan="2" align="left" style="font-size: 14px;  padding-bottom:5px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-                        <strong>Date: </strong> {{ \Carbon\Carbon::parse($mou->start_date)->format('d M Y') }},
+                        <strong>Date: </strong> {{ optional($mou->issue_date)
+    ? \Carbon\Carbon::parse($mou->issue_date)->format('d M Y')
+    : now()->format('d M Y') }}
                     </td>
                 </tr>
                 

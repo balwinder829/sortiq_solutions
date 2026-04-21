@@ -10,6 +10,13 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class FormEntryController extends Controller
 {
+
+    public function __construct()
+    {
+       
+        $this->middleware('permission:gmail_form_entries.view')->only(['index','data','export']);
+       
+    }
      public function index()
     {
         return view('form-entries.index');

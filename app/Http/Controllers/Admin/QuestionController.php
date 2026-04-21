@@ -19,7 +19,38 @@ class QuestionController extends Controller
     }
 
     // Store question with options
-    public function store(Request $request, $test_id) {
+    public function store(Request $request, $test_id)
+{
+    $request->validate([
+        'questions' => 'required|array|min:1',
+        'questions.*.question' => 'required|string',
+        'questions.*.options' => 'required|array|min:2',
+        'questions.*.options.*' => 'required|string',
+        'questions.*.correct_option' => 'required|integer',
+    ]);
+
+    foreach ($request->questions as $q) {
+
+        $question = Question::create([
+            'test_id' => $test_id,
+            'question' => $q['question']
+        ]);
+
+        foreach ($q['options'] as $index => $option_text) {
+            Option::create([
+                'question_id' => $question->id,
+                'option_text' => $option_text,
+                'is_correct' => ($index == $q['correct_option'])
+            ]);
+        }
+    }
+    return redirect()
+    ->route('admin.tests.show', $test_id)
+    ->with('success', 'Questions added successfully');
+
+    // return back()->with('success', 'All questions added successfully');
+}
+    public function store18ap(Request $request, $test_id) {
         $request->validate([
             'question'=>'required',
             'options'=>'required|array|min:2',

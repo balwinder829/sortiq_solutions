@@ -262,10 +262,11 @@
                         </div>
                     </td>
                     <td width="30%" align="right">
+                        @include('student_letters_footer_logos.footer_logos')
                         <!-- <div style="display:inline-block; width:100%;">
                             <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Agreed and Accepted</h4>
                         </div> -->
-                        <div style="display:inline-block; width:100%;">
+                        <!-- <div style="display:inline-block; width:100%;">
                              <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
                                 <tr>
                                     <td width="100%"><img src="{{ public_path('images/certificates_images/iso-certified-company-image.png') }}" style="width:160px; padding-right: 20px;"/></td>
@@ -274,7 +275,7 @@
                                     <td width="100%"><img src="{{ public_path('images/certificates_images/EN_legend_small.png') }}" style="width:145px;"/></td>
                                 </tr>
                              </table>
-                        </div>
+                        </div> -->
                     </td>
                 </tr>
             </table>

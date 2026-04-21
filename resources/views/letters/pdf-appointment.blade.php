@@ -247,6 +247,17 @@ body {
 						We welcome you again and look forward to a long and useful association.<br> Please sign and return to the undersigned the duplicate copy of this letter signifying your acceptance.
 					</td>
 				</tr>
+				    <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               font-family:'Inter', sans-serif;">
+
+                        <strong>Note: In the event that the notice period is not fully served, the final salary, experience letter, relieving letter, and other relevant documents will not be issued.</strong>
+ 
+                    </td>
+                </tr>
 				</table>
 				<pagebreak />
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:7px;">

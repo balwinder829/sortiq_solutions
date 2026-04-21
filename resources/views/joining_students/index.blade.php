@@ -68,7 +68,7 @@
         </select>
     </div>
 
-    <div class="col-md-2">
+    <!-- <div class="col-md-2">
         <select name="technology" class="form-control filter-input">
             <option value="">All Technology</option>
             @foreach($courses as $course)
@@ -78,7 +78,7 @@
                 </option>
             @endforeach
         </select>
-    </div>
+    </div> -->
 
     <div class="col-md-2">
         <select name="is_sent" class="form-control filter-input">
@@ -116,8 +116,8 @@
                 <th>Student Name</th>
                 <th>Father Name</th>
                 <th>College</th>
-                <th>Duration</th>
-                <th>Technology</th>
+                <th>Contact</th>
+                <th>Email</th>
                 <th>Date of Joining</th>
                 <th class="no-wrap">Joined At</th>
                 <th class="no-wrap">Action</th>
@@ -139,8 +139,10 @@
                     <td>{{ $student->student_name }}</td>
                     <td>{{ $student->father_name }}</td>
                     <td>{{ $student->collegeData->FullName ?? '-' }}</td>
-                    <td>{{ $student->durationData->name ?? '-' }}</td>
-                    <td>{{ $student->courseData->course_name ?? '-' }}</td>
+                     <td>{{ $student->contact ?? '-' }}</td>
+                     <td>{{ $student->email ?? '-' }}</td>
+                   <!--  <td>{{ $student->durationData->name ?? '-' }}</td>
+                    <td>{{ $student->courseData->course_name ?? '-' }}</td> -->
 
                     <td class="no-wrap">
                         {{ \Carbon\Carbon::parse($student->date_of_joining)->format('d M Y') }}

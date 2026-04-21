@@ -149,6 +149,12 @@
 </select>
 </div>
 
+{{-- Total Marks --}}
+<div class="col-md-6 mb-3">
+<label class="fw-bold">Total Marks</label>
+<input type="text" name="total_marks" class="form-control">
+</div>
+
 {{-- Description --}}
 <div class="col-md-12 mb-3">
 <label class="fw-bold">Description</label>

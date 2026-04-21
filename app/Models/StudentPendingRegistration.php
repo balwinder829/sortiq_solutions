@@ -11,9 +11,11 @@ class StudentPendingRegistration extends Model
     protected $fillable = [
         'student_name',
         'contact',
+        'email',
         'gender',
         'father_name',
         'college_id',
+        'college_name_input',
         'course_id',
         'is_sent_to_detail',
         'sent_to_detail_at',

@@ -491,6 +491,13 @@ Female
 
 </div>
 
+<div class="col-md-2">
+    <input type="date"
+        name="next_due_date"
+        class="form-control filterchange"
+        value="{{ request('next_due_date') }}">
+</div>
+
 
 
 {{-- Limit --}}
@@ -1017,11 +1024,18 @@ Copy to Session
         Check it for Internship Certificate
     </label>
 </div>
+<div class="form-check mb-2">
+    <input type="checkbox" class="form-check-input" id="islogoShow" name="is_logo_show">
+    <label class="form-check-label" for="islogoShow">
+        Show Letters Footer Logo 
+    </label>
+</div>
 
 <div class="mt-3 tble-bts">
 
     <!-- <button id="issueSelected" class="btn btn-primary">Confirm Student</button> -->
     <button id="downloadissueSelected" class="btn btn-primary">Download Confirm Letter</button>
+    <button id="downloadissueSelectedMonthWise" class="btn btn-primary">Download Confirm Letter (Month Name)</button>
     <button id="downloadReceipts" class="btn btn-warning">Download Receipts</button>
     <button id="moveSelected" class="btn btn-warning">Shift To Certificates</button>
     <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
@@ -1050,6 +1064,15 @@ Copy to Session
 <form id="bulkDownloadForm" method="POST" action="{{ route('students.downloadconfirmMultiple') }}" style="display:none;">
     @csrf
     <input type="hidden" name="is_internship">
+    <input type="hidden" name="is_monthly">
+    <input type="hidden" name="is_logo_show">
+    <input type="hidden" name="ids" id="bulkDownloadIds">
+</form>
+
+<form id="bulkDownloadFormMonthwise" method="POST" action="{{ route('students.downloadconfirmMultiple') }}" style="display:none;">
+    @csrf
+    <input type="hidden" name="is_internship">
+    <input type="hidden" name="is_logo_show">
     <input type="hidden" name="ids" id="bulkDownloadIds">
 </form>
 
@@ -1563,13 +1586,45 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
         pageBulkConfirm(ids, 'Download confirm letter(s) for selected student(s)?', function () {
 
              let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
+             let islogoShow = $('#islogoShow').is(':checked') ? 1 : 0;
 
             // set global hidden value
             $('#isInternshipHidden').val(isInternship);
 
             // copy value into each form before submit
             $('input[name="is_internship"]').val(isInternship);
+            $('input[name="is_monthly"]').val(0);
+            $('input[name="is_logo_show"]').val(islogoShow);
 
+            // Put JSON string of IDs into hidden input and submit form
+            $('#bulkDownloadIds').val(JSON.stringify(ids));
+            $('#bulkDownloadForm').submit();
+        });
+    });
+
+     $('#downloadissueSelectedMonthWise').click(function () {
+        var ids = getSelectedIds();
+
+        // if (ids.length === 0) {
+        //     alert('Select at least one student');
+        //     return;
+        // }
+
+        // if (!confirm('Download confirm letter(s) for selected student(s)?')) {
+        //     return;
+        // }
+        pageBulkConfirm(ids, 'Download confirm letter(s) for selected student(s)?', function () {
+
+             let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
+             let islogoShow = $('#islogoShow').is(':checked') ? 1 : 0;
+
+            // set global hidden value
+            $('#isInternshipHidden').val(isInternship);
+
+            // copy value into each form before submit
+            $('input[name="is_internship"]').val(isInternship);
+            $('input[name="is_logo_show"]').val(islogoShow);
+            $('input[name="is_monthly"]').val(1);
             // Put JSON string of IDs into hidden input and submit form
             $('#bulkDownloadIds').val(JSON.stringify(ids));
             $('#bulkDownloadForm').submit();

@@ -4,21 +4,31 @@
 
 <div class="container">
 
-<div class="row mb-2 align-items-end">
+
+<div class="row mb-3 align-items-end">
 
     {{-- LEFT: PAGE TITLE --}}
     <div class="col-md-8">
         <h1 class="page_heading">Employee Leave Requests</h1>
     </div>
 
+    {{-- RIGHT: ADD MENTOR BUTTON --}}
+    <div class="col-md-4">
+        <div class="d-flex justify-content-end  gap-2">
+           <!--  <a href="{{ route('workshops.export.excel') }}" class="btn btn-primary mb-3">
+                Export
+            </a> -->
+            <button class="btn btn-primary copy-link" 
+                    data-link="{{ route('employee.leave.apply') }}">
+                <i class="fa fa-link"></i> Copy Employee Leave Form Link
+            </button>
+        </div>
+    </div>
+
+
 
 </div>
-<div class="mb-3">
-    <button class="btn btn-primary copy-link" 
-            data-link="{{ route('employee.leave.apply') }}">
-        <i class="fa fa-link"></i> Copy Employee Leave Form Link
-    </button>
-</div>
+
 {{-- FILTERS --}}
 <div class="col-md-12 mb-3">
     <form class="row g-2 align-items-end">

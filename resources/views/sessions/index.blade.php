@@ -86,7 +86,7 @@
     </span>
 </td> -->
  <td>
-    @if($session->id == $activeSessionId)
+    
         <a href="{{ route('common_filtered_student', [
             'session' => $session->id
         ]) }}"
@@ -95,11 +95,7 @@
             {{ $session->students_count }}
         </span>
     </a>
-    @else
-        <span class="badge bg-success">
-            {{ $session->students_count }}
-        </span>
-    @endif
+     
 </td>  
 
  {{-- ONLINE --}}

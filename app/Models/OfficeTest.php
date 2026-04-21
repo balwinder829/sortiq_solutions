@@ -27,6 +27,7 @@ class OfficeTest extends Model
         'test_date',
         'exam_start_at',
         'exam_end_at',
+        'total_marks',
 
         'timer_type',
         'exam_mode',

@@ -22,11 +22,14 @@ class StudentRegistrationController extends Controller
     {
         $validated = $request->validate([
             'student_name' => 'required',
-            'contact' => 'required',
+            'contact' => 'required|max:10',
+            'email' => 'required',
             'gender' => 'required',
             'father_name' => 'required',
+            // 'college_name_input' => 'required',
             'college_id' => 'required|exists:colleges,id',
-            'course_id' => 'required',
+            // 'college_id' => 'required|exists:colleges,id',
+            // 'course_id' => 'required',
             'start_date' => 'required|date',
         ]);
 

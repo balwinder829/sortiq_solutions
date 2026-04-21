@@ -1,128 +1,158 @@
 @extends('layouts.app')
 
 @section('content')
-
 <div class="container my-5">
-
 <div class="card shadow-sm border-0 rounded-4">
 
-<div class="card-header bg-light border-0 rounded-top-4 py-3 d-flex justify-content-between align-items-center">
+<!-- <div class="card-header bg-light d-flex justify-content-between align-items-center">
+    <h4>Add Questions to: {{ $office_test->title }}</h4>
 
-<h4 class="mb-0 fw-semibold text-dark">
+    <a href="{{ route('admin.office-tests.office-questions.index',$office_test->id) }}"
+       class="btn text-white" style="background:#593bdb;">
+        ← Back
+    </a>
+</div> -->
 
-<i class="fas fa-question-circle text-primary me-2"></i>
+     <div class="card-header bg-light border-0 rounded-top-4 py-3 d-flex justify-content-between align-items-center">
+    
+    <h4 class="mb-0 fw-semibold text-dark">
+        <i class="fas fa-question-circle text-primary me-2"></i>
+        Add Questions to: <span class="text-primary">{{ $office_test->title }}</span>
+    </h4>
 
-Add Question to:
-<span class="text-primary">{{ $office_test->title }}</span>
-
-</h4>
-
-
-<a href="{{ route('admin.office-tests.office-questions.index',$office_test->id) }}"
-   class="btn text-white"
-   style="background-color:#593bdb;">
-
-<i class="fas fa-arrow-left me-1"></i>
-Back to Questions
-
-</a>
+    <a href="{{ route('admin.office-tests.office-questions.index',$office_test->id) }}" 
+       class="btn text-white" 
+       style="background-color: #593bdb;">
+        <i class="fas fa-arrow-left me-1"></i> Back to Tests
+    </a>
 
 </div>
 
+<div class="card-body">
 
-<div class="card-body p-4">
-
-@if(session('success'))
-<div class="alert alert-success">
-{{ session('success') }}
+@if ($errors->any())
+<div class="alert alert-danger">
+    <ul class="mb-0">
+        @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
 </div>
 @endif
 
-
-<form method="POST"
+<form id="questionForm" method="POST"
       action="{{ route('admin.office-tests.office-questions.store',$office_test->id) }}">
-
 @csrf
 
+<div id="questions-wrapper">
 
-{{-- Question --}}
+@php $oldQuestions = old('questions', [[]]); @endphp
 
-<div class="mb-4">
+@foreach($oldQuestions as $qIndex => $question)
+<div class="question-block border p-3 mb-3">
 
-<label class="form-label fw-semibold">
+    <h6>Question #{{ $loop->iteration }}</h6>
 
-Question
+    <textarea name="questions[{{ $qIndex }}][question]"
+              class="form-control mb-2 question-input"
+              placeholder="Enter question...">{{ $question['question'] ?? '' }}</textarea>
 
-</label>
+    <div class="text-danger small error-question"></div>
 
-<textarea name="question"
-          class="form-control"
-          rows="4"
-          required
-          placeholder="Enter the question..."></textarea>
+    <input type="number"
+           name="questions[{{ $qIndex }}][question_order]"
+           class="form-control mb-2"
+           placeholder="Order (optional)"
+           value="{{ $question['question_order'] ?? '' }}">
+
+    <!-- <input type="number"
+           name="questions[{{ $qIndex }}][marks]"
+           class="form-control mb-2"
+           placeholder="Marks (optional)"
+           value="{{ $question['marks'] ?? '' }}"> -->
+
+    <button type="button" class="btn btn-danger btn-sm remove-question">Remove</button>
+
+</div>
+@endforeach
 
 </div>
 
-
-{{-- Marks --}}
-
-<!-- <div class="mb-4">
-
-<label class="form-label fw-semibold">
-
-Marks
-
-</label>
-
-<input type="number"
-       name="marks"
-       class="form-control"
-       min="0"
-       placeholder="Enter marks for this question">
-
-</div> -->
-
-
-{{-- Question Order --}}
-
-<div class="mb-4">
-
-<label class="form-label fw-semibold">
-
-Question Order
-
-</label>
-
-<input type="number"
-       name="question_order"
-       class="form-control"
-       min="1"
-       placeholder="Example: 1">
-
-</div>
-
-
-<div class="text-end">
-
-<button type="submit"
-        class="btn text-white px-4 py-2"
-        style="background-color:#593bdb;">
-
-<i class="fas fa-plus-circle me-1"></i>
-
-Add Question
-
+<button type="button" id="add-question" class="btn btn-success mb-3">
+    + Add Question
 </button>
 
+<div class="text-end">
+    <button type="submit" class="btn btn-primary">
+        Save All
+    </button>
 </div>
-
 
 </form>
 
 </div>
-
+</div>
 </div>
 
-</div>
+<script>
+let qIndex = {{ count(old('questions', [[]])) }};
+
+// ADD
+document.getElementById('add-question').addEventListener('click', function(){
+
+    let html = `
+    <div class="question-block border p-3 mb-3">
+
+        <h6>Question #${qIndex + 1}</h6>
+
+        <textarea name="questions[${qIndex}][question]"
+                  class="form-control mb-2 question-input"
+                  placeholder="Enter question..."></textarea>
+
+        <div class="text-danger small error-question"></div>
+
+        <input type="number"
+               name="questions[${qIndex}][question_order]"
+               class="form-control mb-2"
+               placeholder="Order (optional)">
+
+        <button type="button" class="btn btn-danger btn-sm remove-question">Remove</button>
+    </div>`;
+
+    document.getElementById('questions-wrapper').insertAdjacentHTML('beforeend', html);
+    qIndex++;
+});
+
+// REMOVE
+document.addEventListener('click', function(e){
+    if(e.target.classList.contains('remove-question')){
+        e.target.closest('.question-block').remove();
+    }
+});
+
+// VALIDATION
+document.getElementById('questionForm').addEventListener('submit', function(e){
+
+    let valid = true;
+    let firstError = null;
+
+    document.querySelectorAll('.question-block').forEach(block => {
+
+        let question = block.querySelector('.question-input').value.trim();
+        block.querySelector('.error-question').innerText = '';
+
+        if(question === ''){
+            valid = false;
+            block.querySelector('.error-question').innerText = 'Question required';
+            if(!firstError) firstError = block;
+        }
+    });
+
+    if(!valid){
+        e.preventDefault();
+        firstError.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+});
+</script>
 
 @endsection

@@ -24,10 +24,12 @@ class HardDataController extends Controller
 
      public function __construct()
     {
-        $this->middleware('permission:hard_data.view')->only('index');
+        $this->middleware('permission:hard_data.view')->only(['index','show','importForm','import']);
         $this->middleware('permission:hard_data.create')->only(['create','store']);
-        $this->middleware('permission:hard_data.edit')->only(['edit','update']);
+        $this->middleware('permission:hard_data.edit')->only(['edit','update','moveManualToEnquiries']);
         $this->middleware('permission:hard_data.delete')->only('destroy');
+
+        
         // $this->middleware('permission:colleges.import')->only('showImport');
     }
 

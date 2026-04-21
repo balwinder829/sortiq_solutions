@@ -66,8 +66,10 @@ class JoiningStudentController extends Controller
             'student_name' => 'required',
             'father_name' => 'required',
             'college' => 'required',
-            'duration' => 'required',
-            'technology' => 'required',
+            'contact' => 'required|max:10',
+            'email' => 'required',
+            // 'duration' => 'required',
+            // 'technology' => 'required',
             'date_of_joining' => 'required|date',
         ]);
 
@@ -260,14 +262,17 @@ class JoiningStudentController extends Controller
                 'sno'            => $newSno, // ✅ added
                 'student_name'   => $joining->student_name,
                 'f_name'         => $joining->father_name,
+                'contact'         => $joining->contact,
+                'email_id'         => $joining->email ?? "",
                 'college_name'   => $joining->college,
-                'duration'       => $joining->duration,
-                'technology'     => $joining->technology,
+                // 'duration'       => $joining->duration,
+                // 'technology'     => $joining->technology,
                 'join_date'      => $joining->date_of_joining,
                 'start_date'     => $joining->date_of_joining,
                 'session'        => $request->session_id,
 
                 // 🔥 tracking
+                'status'    => 'joined',
                 'source_type'    => 'joining_student',
                 'source_id'      => $joining->id,
             ]);

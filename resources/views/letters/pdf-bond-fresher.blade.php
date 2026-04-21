@@ -21,10 +21,10 @@ li {
     margin: 0;
 }
 @page {
-    margin-top: 15mm; /* margin for all pages EXCEPT first */
+    margin-top: 12mm; /* margin for all pages EXCEPT first */
     margin-left: 0mm;
     margin-right: 0mm;
-    margin-bottom: 15mm;
+    margin-bottom: 12mm;
 }
 
 @page :first {
@@ -381,6 +381,20 @@ li {
                 <tr>
                     <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
                          <strong>c. Refund:</strong><br>
+                       <!-- <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                    • Upon successful completion of the bond, the Company shall refund the security deposit in full. Any outstanding dues will first be adjusted against this deposit.<br>
+                                </td>
+                            </tr>
+                        </table> -->
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px;padding-left:18; font-family:'Inter', sans-serif;">
+                         <!-- <strong>c. Refund:</strong><br> -->
                        <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td width="30"></td>
@@ -492,6 +506,18 @@ li {
                                 </td>
                             </tr>
                         </table>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               font-family:'Inter', sans-serif;">
+
+                        <strong>Note: In the event that the notice period is not fully served, the final salary, experience letter, relieving letter, and other relevant documents will not be issued.</strong>
+ 
                     </td>
                 </tr>
                  

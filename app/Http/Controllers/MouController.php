@@ -59,14 +59,17 @@ class MouController extends Controller
     {
         $query = Mou::with('college')->latest();
 
-        if ($request->status) {
-            if ($request->status === 'expired') {
-                $query->whereDate('end_date', '<', now());
-            } else {
-                $query->where('status', $request->status);
-            }
-        }
+        // if ($request->status) {
+        //     if ($request->status === 'expired') {
+        //         $query->whereDate('end_date', '<', now());
+        //     } else {
+        //         $query->where('status', $request->status);
+        //     }
+        // }
 
+        if ($request->mou_status) {
+            $query->where('mou_status', $request->mou_status);
+        }
         $mous = $query->get();
         return view('mous.index', compact('mous'));
     }
@@ -88,6 +91,9 @@ class MouController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'description'=> 'required|string|max:350',
+            // 'mou_status'=> 'required',
+            'mou_status' => 'required|in:generated,done,pending,email_sent',
+            'issue_date'=> 'required|date',
         ]);
 
         $exists = Mou::where('college_id', $request->college_id)
@@ -134,6 +140,8 @@ class MouController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'description'=> 'required|string|max:350',
+            'mou_status' => 'required|in:generated,done,pending,email_sent',
+            'issue_date'=> 'required|date',
         ]);
 
         $exists = Mou::where('college_id', $request->college_id)

@@ -491,6 +491,17 @@ li {
                         </table>
                     </td>
                 </tr>
+                <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               font-family:'Inter', sans-serif;">
+
+                        <strong>Note: In the event that the notice period is not fully served, the final salary, experience letter, relieving letter, and other relevant documents will not be issued.</strong>
+ 
+                    </td>
+                </tr>
                  
                 <tr>
                     <td colspan="2"

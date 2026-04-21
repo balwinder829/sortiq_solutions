@@ -8,9 +8,13 @@ use Illuminate\Http\Request;
 class AllowedIpController extends Controller
 {
     public function __construct()
-    {
-        $this->middleware('auth');
-    }
+{
+     $this->middleware('auth');
+    $this->middleware('permission:blocked_ip.view')->only(['index']);
+    $this->middleware('permission:blocked_ip.create')->only(['create','store']);
+    $this->middleware('permission:blocked_ip.edit')->only(['edit','update']);
+    $this->middleware('permission:blocked_ip.delete')->only('destroy');
+}
 
     public function index()
     {

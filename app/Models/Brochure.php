@@ -34,19 +34,36 @@ class Brochure extends Model
     //     });
     // }
 
+    // protected static function booted()
+    // {
+    //     static::creating(function ($model) {
+    //         $slug = Str::slug($model->title);
+
+    //         // fallback if title becomes empty (very rare case)
+    //         if (empty($slug)) {
+    //             $slug = 'brochure';
+    //         }
+
+    //         $token = $slug . '-' . now()->format('Ymd-His');
+
+    //         $model->share_token = $token;
+    //     });
+    // }
+
     protected static function booted()
     {
         static::creating(function ($model) {
-            $slug = Str::slug($model->title);
+            $baseSlug = Str::slug($model->title) ?: 'brochure';
 
-            // fallback if title becomes empty (very rare case)
-            if (empty($slug)) {
-                $slug = 'brochure';
+            $slug = $baseSlug;
+            $counter = 2;
+
+            while (static::where('share_token', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
             }
 
-            $token = $slug . '-' . now()->format('Ymd-His') . '-' . Str::random(4);
-
-            $model->share_token = $token;
+            $model->share_token = $slug;
         });
     }
 

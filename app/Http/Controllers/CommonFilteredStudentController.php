@@ -75,6 +75,10 @@ class CommonFilteredStudentController extends Controller
             $query->whereDate('created_at', today());
         }else{
             // Filters
+            if ($request->filled('session')) {
+                $activeSessionId = $request->session;
+                session(['admin_session_id' => $activeSessionId]);
+            }
             if ($request->filled('student_name')) {
                 $query->where('student_name', 'like', '%' . $request->student_name . '%');
             }

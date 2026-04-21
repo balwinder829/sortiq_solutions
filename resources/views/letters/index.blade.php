@@ -152,7 +152,7 @@ $(document).ready(function() {
     $('#lettersTable').DataTable({
         pageLength: 10,
         lengthMenu: [5,10,25,50,100],
-        order: []
+        order: [[6, 'desc']] 
     });
 });
 </script>

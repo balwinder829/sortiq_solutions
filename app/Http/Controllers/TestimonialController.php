@@ -8,13 +8,15 @@ use App\Http\DataTables\DataTablesServerSide;
 
 class TestimonialController extends Controller
 {
-    protected string $permissionPrefix = 'testimonials';
+    protected string $permissionPrefix = 'testimonial';
 
     protected array $permissionMap = [
         'index' => 'view',
         'create' => 'create',
         'store' => 'create',
         'destroy' => 'delete',
+        'edit' => 'edit',
+        'update' => 'edit',
     ];
 
     public function __construct()

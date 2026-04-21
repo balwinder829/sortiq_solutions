@@ -30,18 +30,36 @@ class CompanyProfile extends Model
     ];
 
     // Auto-generate share token
+    // protected static function booted()
+    // {
+    //     static::creating(function ($model) {
+    //         if (empty($model->share_token)) {
+    //             $model->share_token = Str::random(36);
+    //         }
+
+    //         if (is_null($model->download_count)) {
+    //             $model->download_count = 0;
+    //         }
+    //     });
+    // }
+
     protected static function booted()
     {
         static::creating(function ($model) {
-            if (empty($model->share_token)) {
-                $model->share_token = Str::random(36);
+            $baseSlug = Str::slug($model->title) ?: 'company_profile';
+
+            $slug = $baseSlug;
+            $counter = 2;
+
+            while (static::where('share_token', $slug)->exists()) {
+                $slug = $baseSlug . '-' . $counter;
+                $counter++;
             }
 
-            if (is_null($model->download_count)) {
-                $model->download_count = 0;
-            }
+            $model->share_token = $slug;
         });
     }
+      
 
     /**
      * Determine if the profile is currently visible.

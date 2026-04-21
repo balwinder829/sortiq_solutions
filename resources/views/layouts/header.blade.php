@@ -120,6 +120,7 @@
                             class="dropdown-item {{ session('admin_session_id') == $session->id ? 'active' : '' }}">
                         {{ ucwords($session->session_name) }}
                         ({{ \Carbon\Carbon::parse($session->start_date)->format('M Y') }})
+                        - ({{ $session->students_count }})
                     </button>
                 </form>
             </li>
@@ -330,9 +331,15 @@ $category = $categoryMap[$key] ?? 'Other';
 
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li>
+                                    @if(Auth::user()->role == 1)
                                     <a class="dropdown-item" href="{{ route('profile.index') }}">
                                         <i class="mdi mdi-account"></i> Profile
                                     </a>
+                                @else
+                                    <a class="dropdown-item disabled" href="javascript:void(0)">
+                                        <i class="mdi mdi-account"></i> Profile
+                                    </a>
+                                @endif
                                 </li>
                                 <li>
                                     <a class="dropdown-item" href="{{ route('logout') }}"

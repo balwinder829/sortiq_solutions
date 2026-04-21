@@ -3,14 +3,28 @@
 @section('content')
 
 <div class="container">
+<div class="row mb-3 align-items-end">
 
-<h1 class="page_heading mb-3">Student Leave Requests</h1>
-<div class="mb-3">
-    <button class="btn btn-primary copy-link" 
-            data-link="{{ route('student.leave.apply') }}">
-        <i class="fa fa-link"></i> Copy Student Leave Form Link
-    </button>
+    {{-- LEFT: PAGE TITLE --}}
+    <div class="col-md-6">
+        <h1 class="page_heading">Student Leave Requests</h1>
+    </div>
+
+    {{-- RIGHT: ADD MENTOR BUTTON --}}
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end  gap-2">
+          
+             <button class="btn btn-primary copy-link" 
+                    data-link="{{ route('student.leave.apply') }}">
+                <i class="fa fa-link"></i> Copy Student Leave Form Link
+            </button>
+        </div>
+    </div>
+
+
+
 </div>
+
 
 {{-- Filters --}}
 <div class="row mb-3">

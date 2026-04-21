@@ -1081,12 +1081,19 @@ return back()->with('success', "$count student(s) moved successfully");
         $links = $test->links()->with('college')->get();
 
          // Get last attempt date per college
-        $lastAttempts = StudentTest::where('test_id', $test->id)
-            ->selectRaw('college_id, MAX(created_at) as last_attempt')
-            ->groupBy('college_id')
-            ->pluck('last_attempt', 'college_id');
+        // $lastAttempts = StudentTest::where('test_id', $test->id)
+        //     // ->selectRaw('college_id, MAX(created_at) as last_attempt')
+        //     ->selectRaw('college_id, COUNT(*) as total_students, MAX(created_at) as last_attempt')
+        //     ->groupBy('college_id')
+        //     ->pluck('last_attempt', 'college_id');
 
-        return view('admin.tests.links', compact('test','links','lastAttempts'));
+        $collegeStats = StudentTest::where('test_id', $test->id)
+        ->selectRaw('college_id, COUNT(*) as total_students, MAX(created_at) as last_attempt')
+        ->groupBy('college_id')
+        ->get()
+        ->keyBy('college_id');
+
+        return view('admin.tests.links', compact('test','links','collegeStats'));
     }
 
     // public function downloadCertificates(Request $request, $testId)
@@ -1263,5 +1270,25 @@ return back()->with('success', "$count student(s) moved successfully");
         }
 
         return $filePath;
+    }
+
+    public function destroyLink($id)
+    {
+        $link = TestLink::findOrFail($id);
+
+        // Count students for this test + college
+        $count = StudentTest::where('test_id', $link->test_id)
+            ->where('college_id', $link->college_id)
+            ->count();
+
+        // ❌ Prevent delete if students exist
+        if ($count > 0) {
+            return back()->with('error', 'Cannot delete! Students have already attempted this test.');
+        }
+
+        // ✅ Safe to delete
+        $link->delete();
+
+        return back()->with('success', 'Link deleted successfully.');
     }
 }

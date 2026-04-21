@@ -18,13 +18,22 @@
 
     {{-- Filters --}}
     <form method="GET" class="row mb-3" id="filterForm">
-        <div class="col-md-4">
+       <!--  <div class="col-md-4">
             <select name="status" id="statusFilter" class="form-control">
                 <option value="">All Status</option>
                 <option value="draft" {{ request('status')=='draft'?'selected':'' }}>Draft</option>
                 <option value="sent" {{ request('status')=='sent'?'selected':'' }}>Sent</option>
                 <option value="received" {{ request('status')=='received'?'selected':'' }}>Received</option>
                 <option value="expired" {{ request('status')=='expired'?'selected':'' }}>Expired</option>
+            </select>
+        </div> -->
+         <div class="col-md-4">
+            <select name="mou_status" id="statusFilter" class="form-control">
+                <option value="">Mou Status</option>
+                <option value="generated" {{ request('mou_status')=='generated'?'selected':'' }}>Generated</option>
+                <option value="done" {{ request('mou_status')=='done'?'selected':'' }}>Done</option>
+                <option value="pending" {{ request('mou_status')=='pending'?'selected':'' }}>Pending</option>
+                <option value="email_sent" {{ request('mou_status')=='email_sent'?'selected':'' }}>Email Sent</option>
             </select>
         </div>
         <div class="col-md-3">
@@ -57,18 +66,23 @@
             <tr>
                 <td>{{ $mou->college->college_name }}</td>
                 <td>{{ $mou->mou_title }}</td>
-                <td>{{ $mou->created_at->format('d M Y') }}</td>
+                <td>{{ optional($mou->issue_date)->format('d M Y') ?? '-' }}</td>
                 <td>
                     {{ $mou->start_date->format('d M Y') }}
                     -
                     {{ $mou->end_date->format('d M Y') }}
                 </td>
-                <td>
+                <!-- <td>
                     @if($mou->is_expired)
                         <span class="badge bg-danger">Expired</span>
                     @else
                         <span class="badge bg-info">{{ ucfirst($mou->status) }}</span>
                     @endif
+                </td> -->
+                <td>
+                    
+                        <span class="badge bg-info">{{ ucfirst($mou->mou_status) }}</span>
+                    
                 </td>
                 <td>
                     <div class="d-flex gap-1">

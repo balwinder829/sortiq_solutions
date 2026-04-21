@@ -63,7 +63,10 @@ class StudentAdditionalLetterController extends Controller
         }
 
         return view('student_additional_letters.index', [
-            'letters' => $query->latest()->get()
+            // 'letters' => $query->latest()->get()
+            'letters' => $query->orderBy('updated_at', 'desc')->get()
+            // 'letters' => $query->orderBy('updated_at', 'desc')->get()
+
         ]);
     }
 

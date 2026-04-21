@@ -14,6 +14,8 @@ class JoiningStudent extends Model
     protected $fillable = [
         'student_name',
         'father_name',
+        'contact',
+        'email',
         'college',
         'duration',
         'technology',

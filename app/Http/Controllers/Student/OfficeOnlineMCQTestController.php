@@ -39,7 +39,7 @@ class OfficeOnlineMCQTestController extends Controller
             ->first();
         // dd($test);
         if (!$test) {
-            return redirect()->route('student.office-online.unavailable');
+            return redirect()->route('student.office-online.unavailable', $test->slug);
         }
 
         // Timing check
@@ -104,6 +104,11 @@ class OfficeOnlineMCQTestController extends Controller
 
         if (session('office_test_id') != $test->id) {
             abort(403);
+        }
+
+         if (!$test->questions()->exists()) {
+            // return redirect()->route('student.office-online.unavailable');
+            return redirect()->route('student.office-online.unavailable', $test->slug);
         }
 
         $studentTest = StudentOfficeOnlineTest::findOrFail(session('office_student_test_id'));

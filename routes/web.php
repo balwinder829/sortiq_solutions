@@ -157,7 +157,8 @@ use Spatie\Permission\PermissionRegistrar;
 
 use App\Models\ExternalAttendanceTest;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\AdsAnalyticsController;
+use App\Http\Controllers\Admin\TestAnalyticsController;
 
 
 // EMployee Leave Form show
@@ -350,8 +351,10 @@ Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth'])
     ->group(function () {
-
-
+Route::get('/ads-analytics', [AdsAnalyticsController::class, 'index'])
+    ->name('ads.analytics');
+Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
+    ->name('test.analytics');
  Route::get('/form-entries', [FormEntryController::class, 'index'])
         ->name('form-entries.index');
 
@@ -621,6 +624,18 @@ Route::prefix('office-online-exam')->name('student.office-online.')->group(funct
         );
 
     })->name('already.submitted');
+
+    Route::get('{slug}/unavailable', function ($slug) {
+
+        $test = \App\Models\OfficeOnlineTest::where('slug', $slug)
+            ->firstOrFail();
+
+        return view(
+            'student.office-online.test_unavailable',
+            compact('test')
+        );
+
+    })->name('unavailable');
    
 
     /* Autosave */
@@ -727,7 +742,7 @@ Route::get('office-exam/unavailable/{slug}', function ($slug) {
         ->firstOrFail();
 
     return view(
-        'student.office_exam.exam_unavailable',
+        'student.office-online.test_unavailable',
         compact('test')
     );
 
@@ -1666,6 +1681,9 @@ Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissi
             [TestController::class, 'regenerateLink']
         )->name('tests.regenerate-link');
 
+        Route::delete('/tests/links/{id}', [TestController::class, 'destroyLink'])
+        ->name('tests.links.destroy');
+
         Route::post(
             'tests/links/{link}/regenerate',
             [TestController::class, 'regenerateCollegeLink']
@@ -2139,6 +2157,12 @@ Route::middleware(['auth', 'role:1,3'])->group(function () {
 });
 Route::get('/b/{brochure}', [BrochureController::class, 'preview'])
     ->name('brochures.preview');
+
+// Route::get('/c/{company_profile}', [CompanyProfileController::class, 'preview'])
+//     ->name('company_profile.preview');
+    Route::get('/company_profile/preview/{token}', 
+    [CompanyProfileController::class, 'preview']
+)->name('company_profile.preview');
 Route::middleware(['auth'])->group(function () {
 
     Route::prefix('admin')->group(function () {
@@ -2206,9 +2230,9 @@ Route::middleware(['auth'])->group(function () {
          Route::get('/company_profile/download/{company_profile}', 
     [CompanyProfileController::class, 'download']
 )->name('company_profile.download');
-         Route::get('/company_profile/preview/{token}', 
-    [CompanyProfileController::class, 'preview']
-)->name('company_profile.preview');
+//          Route::get('/company_profile/preview/{token}', 
+//     [CompanyProfileController::class, 'preview']
+// )->name('company_profile.preview');
 
          Route::get('/company_profile/{company_profile}/admin-view',
             [CompanyProfileController::class, 'adminView'])
@@ -2314,8 +2338,8 @@ Route::get('/b/{brochure}/download', [BrochureController::class, 'download'])
 Route::get('/company_profile/view/{company_profile}', [CompanyProfileController::class, 'view'])
      ->name('company_profile.view');
 
-Route::get('/c/{company_profile}', [CompanyProfileController::class, 'preview'])
-    ->name('company_profile.preview');
+// Route::get('/c/{company_profile}', [CompanyProfileController::class, 'preview'])
+//     ->name('company_profile.preview');
 
 Route::get('/c/{company_profile}/download', [CompanyProfileController::class, 'download'])
     ->name('company_profile.secure.download');

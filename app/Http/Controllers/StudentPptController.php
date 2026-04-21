@@ -8,13 +8,14 @@ use Illuminate\Support\Str;
 
 class StudentPptController extends Controller
 {   
-    protected string $permissionPrefix = 'students_ppt';
+    protected string $permissionPrefix = 'student_ppt';
 
     protected array $permissionMap = [
         'index'        => 'view',
         'show'         => 'view',
         'download'         => 'view',
         'sendEmail'         => 'view',
+        'adminDownload'         => 'view',
          
 
         'create'       => 'create',

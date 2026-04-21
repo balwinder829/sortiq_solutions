@@ -10,6 +10,11 @@ use App\Models\OfficeOnlineOption;
 
 class OfficeOnlineQuestionController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('permission:online_exam.view')->only(['index','create','store','edit','update','destroy']);
+    }
     /*
     |--------------------------------------------------------------------------
     | Show Questions List
@@ -45,6 +50,48 @@ class OfficeOnlineQuestionController extends Controller
     |--------------------------------------------------------------------------
     */
     public function store(Request $request)
+{
+    $request->validate([
+        'office_online_test_id' => 'required|exists:office_online_tests,id',
+
+        'questions' => 'required|array|min:1',
+
+        'questions.*.question' => 'required|string',
+
+        'questions.*.options' => 'required|array|min:2',
+        'questions.*.options.*' => 'required|string',
+
+        'questions.*.correct_option' => 'required|integer',
+    ], [
+        'questions.*.question.required' => 'Question is required',
+        'questions.*.options.*.required' => 'All options are required',
+        'questions.*.correct_option.required' => 'Select correct answer',
+    ]);
+
+    foreach ($request->questions as $q) {
+
+        // ✅ Save Question
+        $question = OfficeOnlineQuestion::create([
+            'office_online_test_id' => $request->office_online_test_id,
+            'question' => $q['question'],
+            'type' => 'mcq',
+        ]);
+
+        // ✅ Save Options
+        foreach ($q['options'] as $key => $optionText) {
+            OfficeOnlineOption::create([
+                'office_online_question_id' => $question->id,
+                'option_text' => $optionText,
+                'is_correct' => ($q['correct_option'] == $key) ? 1 : 0
+            ]);
+        }
+    }
+
+    return redirect()
+        ->route('admin.office-online-questions.index', $request->office_online_test_id)
+        ->with('success', 'All questions added successfully!');
+}
+    public function store18ap(Request $request)
     {
         $request->validate([
             'office_online_test_id' => 'required|exists:office_online_tests,id',

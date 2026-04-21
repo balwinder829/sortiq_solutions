@@ -91,6 +91,42 @@
                 @enderror
             </div>
 
+            {{-- Issue Date --}}
+            <div class="form-group col-md-6">
+                <label>Issue Date</label>
+                <input
+                    type="date"
+                    name="issue_date"
+                    max="{{ now()->toDateString() }}"
+                    value="{{ old('issue_date', now()->toDateString()) }}"
+                    class="form-control @error('issue_date') is-invalid @enderror"
+                    required
+                >
+                @error('issue_date')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- MOU Status --}}
+            <div class="form-group col-md-6">
+                <label>MOU Status</label>
+                <select
+                    name="mou_status"
+                    id="mou_status"
+                    class="form-control @error('mou_status') is-invalid @enderror"
+                    required
+                >
+                    <option value="">Select MOU Status</option>
+                    <option value="generated" {{ old('mou_status')=='generated'?'selected':'' }}>Generated</option>
+                    <option value="done" {{ old('mou_status')=='done'?'selected':'' }}>Done</option>
+                    <option value="pending" {{ old('mou_status')=='pending'?'selected':'' }}>Pending</option>
+                    <option value="email_sent" {{ old('mou_status')=='email_sent'?'selected':'' }}>Email Sent/option>
+                </select>
+                @error('mou_status')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
 
             <div class="form-group col-md-12">
                 <label>Description</label>

@@ -15,7 +15,7 @@ class ManagementsLetterController extends Controller
 {
     use PdfLayoutTrait;
 
-    protected string $permissionPrefix = 'letters';
+    protected string $permissionPrefix = 'management_letters';
 
     protected array $permissionMap = [
         'index'      => 'view',

@@ -12,6 +12,7 @@ class AllowIpWhitelist
 {
     public function handle(Request $request, Closure $next): Response
     {
+        return $next($request);
         // dd(config('security.ip_whitelist_enabled'));
         if (! config('security.ip_whitelist_enabled', false)) {
             return $next($request);

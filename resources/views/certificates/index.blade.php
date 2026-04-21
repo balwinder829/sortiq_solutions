@@ -412,18 +412,19 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
             <tbody>
             @foreach ($students as $student)
              @php
-    $rowClass = '';
+               $rowClass = '';
 
-    if ($student->next_due_date) {
-        $nextDue = \Carbon\Carbon::createFromFormat('Y-m-d', $student->next_due_date)->startOfDay();
-        $today   = \Carbon\Carbon::today();
+                if ($student->next_due_date && $student->pending_fees > 0) {
+                    $pending_amnt = $student->pending_fees;
+                    $nextDue = \Carbon\Carbon::createFromFormat('Y-m-d', $student->next_due_date)->startOfDay();
+                    $today   = \Carbon\Carbon::today();
 
-        if ($nextDue->lt($today)) {
-            $rowClass = 'row-overdue';
-        } elseif ($nextDue->eq($today)) {
-            $rowClass = 'row-due-today';
-        }
-    }
+                    if ($nextDue->lt($today)) {
+                        $rowClass = 'row-overdue';
+                    } elseif ($nextDue->eq($today)) {
+                        $rowClass = 'row-due-today';
+                    }
+                }
 @endphp
 
 <tr class="{{ $rowClass }}">

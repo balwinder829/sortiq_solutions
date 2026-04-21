@@ -48,6 +48,7 @@
 <tr>
     <th>#</th>
     <th>College</th>
+    <th>Student Count</th>
     <th>Last Test Activity</th>
     <th>Student Link</th>
     <th>Action</th>
@@ -60,6 +61,9 @@
 
 @php
 $testUrl = route('student.test.slug',$link->slug);
+
+$count = $collegeStats[$link->college_id]->total_students ?? 0;
+
 @endphp
 
 <tr>
@@ -69,10 +73,13 @@ $testUrl = route('student.test.slug',$link->slug);
 <td>
     {{ $link->college->full_name ?? '-' }}
 </td>
+ <td>
+    {{ $collegeStats[$link->college_id]->total_students ?? 0 }}
+</td>
 
 <td>
-@if(isset($lastAttempts[$link->college_id]))
-    {{ \Carbon\Carbon::parse($lastAttempts[$link->college_id])->format('d M Y') }}
+@if(isset($collegeStats[$link->college_id]))
+    {{ \Carbon\Carbon::parse($collegeStats[$link->college_id]->last_attempt)->format('d M Y') }}
 @else
     -
 @endif
@@ -111,6 +118,18 @@ Copy </button>
 </button>
 
 </form>
+@if($count == 0)
+<form action="{{ route('admin.tests.links.destroy', $link->id) }}"
+      method="POST"
+      class="d-inline delete-form">
+    @csrf
+    @method('DELETE')
+
+    <button type="button" class="btn btn-sm btn-danger btn-delete">
+        Delete
+    </button>
+</form>
+@endif
 
 </div>
 
@@ -206,6 +225,33 @@ function confirmRegenerate(e) {
 
 }
 
+</script>
+<script>
+document.querySelectorAll('.btn-delete').forEach(button => {
+
+    button.addEventListener('click', function () {
+
+        let form = this.closest('form');
+
+        Swal.fire({
+            title: 'Delete Link?',
+            text: 'This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it'
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                form.submit();
+            }
+
+        });
+
+    });
+
+});
 </script>
 
 @endpush

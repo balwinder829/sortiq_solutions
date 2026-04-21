@@ -715,12 +715,12 @@
 </div>   
 </div>
 {{-- Buttons for selected students --}}
-<div class="form-check mb-2">
+<!-- <div class="form-check mb-2">
     <input type="checkbox" class="form-check-input" id="isInternship" name="is_internship">
     <label class="form-check-label" for="isInternship">
         Check it for Internship Certificate
     </label>
-</div>
+</div> -->
 
 <div class="mt-3 tble-bts">
 

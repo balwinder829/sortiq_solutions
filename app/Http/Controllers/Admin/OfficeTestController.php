@@ -167,6 +167,7 @@ public function downloadPdf($officeTestId)
             'trainer_id' => 'nullable',
 
             'title' => 'required',
+            'total_marks' => 'required',
             'description' => 'nullable',
 
             'test_date' => 'nullable|date',
@@ -185,7 +186,8 @@ public function downloadPdf($officeTestId)
         $data['access_key'] = Str::random(15);
 
         $data['created_by'] = auth()->id();
-
+        $data['status'] = 'unpublished';
+        
         OfficeTest::create($data);
 
         return redirect()
@@ -219,6 +221,16 @@ public function downloadPdf($officeTestId)
             'status' => 'required|in:draft,published,unpublished'
 
         ]);
+
+         // ✅ Prevent publish if no questions
+        if ($request->status === 'published' && !$office_test->questions()->exists()) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors([
+                    'status' => 'You cannot publish this test because no questions have been added.'
+                ]);
+        }
 
         $office_test->update($request->all());
 

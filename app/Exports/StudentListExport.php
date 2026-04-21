@@ -168,6 +168,12 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                 $query->where('gender', $request->gender);
             }
 
+            // Next Due Date Filter (IMPORTANT)
+            if ($request->filled('next_due_date')) {
+                $query->whereDate('next_due_date', $request->next_due_date)
+                      ->where('pending_fees', '>', 0);
+            }
+
             if (auth()->user()->role == 1) {
                 $query->where('session', session('admin_session_id'));
             }

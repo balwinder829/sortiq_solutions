@@ -171,10 +171,33 @@
 
 @push('scripts')
 <script>
-function copyShare(url){
+// function copyShare(url){
+//     navigator.clipboard.writeText(url)
+//         .then(() => alert("Share link copied"))
+//         .catch(() => prompt("Copy this link:", url));
+// }
+
+function copyShare(url) {
     navigator.clipboard.writeText(url)
-        .then(() => alert("Share link copied"))
-        .catch(() => prompt("Copy this link:", url));
+        .then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Copied!',
+                text: 'Share link copied to clipboard',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        })
+        .catch(() => {
+            Swal.fire({
+                icon: 'info',
+                title: 'Copy Link',
+                input: 'text',
+                inputValue: url,
+                confirmButtonText: 'Close'
+            });
+        });
 }
+
 </script>
 @endpush

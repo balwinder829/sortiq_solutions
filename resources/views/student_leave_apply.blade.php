@@ -1,71 +1,73 @@
 <!DOCTYPE html>
-
 <html>
 <head>
     <title>Student Leave Application</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* HERO BACKGROUND */
+        .hero-section {
+            padding:40px 0;
+            background:#f5f7fb; /* clean light background */
+        }
 
-<style>
-    .site-header{
-        position:absolute;
-        top:20px;
-        left:30px;
-        z-index:2000;
-    }
+        /* CARD */
+        .card{
+            border-radius:15px;
+            overflow:hidden;
+            background: rgba(255,255,255,0.95);
+        }
 
-    .site-header img{
-        height:55px;
-    }
+        /* HEADER */
+        .card-header{
+            background-color:#343957;
+            color:#fff;
+            border-radius:15px 15px 0 0;
+        }
 
-    .hero-section {
-        background:url('{{ asset("images/internship.avif") }}') center/cover no-repeat;
-        padding:120px 0 100px;
-        position:relative;
-        color:#fff;
-        z-index:1;
-    }
+        /* BUTTON */
+        .primary-btn{
+            background-color:#343957;
+            color:#fff;
+            border:none;
+            padding:10px 25px;
+        }
 
-    .hero-section::after {
-        content:'';
-        position:absolute;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        background:rgba(0,0,0,0.55);
-        z-index:-1;
-    }
-
-    .card{
-        border-radius:15px;
-        overflow:hidden;
-        background: rgba(255,255,255,0.95);
-    }
-</style>
-
+        .primary-btn:hover{
+            background-color:#2a2f4a;
+        }
+    </style>
 
 </head>
 
 <body>
 
-<!-- LOGO -->
-
-<div class="site-header">
-    <a href="/">
-        <img src="{{ asset('images/front_ss-logo.png') }}" alt="Logo">
-    </a>
-</div>
-
 <section class="hero-section">
-<div class="container mt-5">
-
+<div class="container">
 
 <div class="card shadow">
-    <div class="card-header text-white text-center" style="background-color:#343957;">
-        <h4>Student Leave Application</h4>
+
+    <!-- HEADER WITH LOGO + TO/CC -->
+   <div class="card-header d-flex align-items-center position-relative">
+
+    <!-- LEFT (LOGO) -->
+    <div class="d-flex align-items-center gap-2">
+        <img src="{{ asset('images/front_ss-logo.png') }}" style="height:35px;">
     </div>
+
+    <!-- CENTER TITLE -->
+    <div class="position-absolute w-100 text-center">
+        <strong>Student Leave Application</strong>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="ms-auto" style="font-size:13px; text-align:right;">
+        <div><strong>To:</strong> hr.sortiqsolutions@gmail.com</div>
+        <div><strong>CC:</strong> sortiqsolutions@gmail.com</div>
+    </div>
+
+</div>
 
     <div class="card-body">
 
@@ -98,30 +100,27 @@
             <!-- SNO + NAME -->
             <div class="row mb-3">
                 <div class="col">
-                    <label>Student No (SNO)</label>
-                    <input type="text" name="sno" id="sno" class="form-control" required>
+                    <input type="text" name="sno" id="sno" class="form-control" placeholder="Student No (SNO)" required>
                     <small class="text-danger" id="sno_error"></small>
                 </div>
 
                 <div class="col">
-                    <label>Student Name</label>
-                    <input type="text" name="student_name" id="student_name" class="form-control" readonly required>
+                    <input type="text" name="student_name" id="student_name" class="form-control" placeholder="Student Name" readonly required>
                 </div>
             </div>
 
+            <!-- CONTACT + MENTOR -->
             <div class="row mb-3">
-            <div class="col">
-                    <label>Contact</label>
-                    <input type="text" name="contact" class="form-control" required  placeholder="Enter Contact No.">
+                <div class="col">
+                    <input type="text" name="contact" class="form-control" placeholder="Contact Number" required>
                 </div>
-             <div class="col">
-                <label>Mentor</label>
-                <input type="text" name="mentor" class="form-control" placeholder="Enter mentor name">
+                <div class="col">
+                    <input type="text" name="mentor" class="form-control" placeholder="Mentor Name">
+                </div>
             </div>
-        </div>
+
             <!-- COURSE -->
             <div class="mb-3">
-                <label>Course</label>
                 <select name="course_id" class="form-control" required>
                     <option value="">Select Course</option>
                     @foreach($courses as $course)
@@ -130,48 +129,30 @@
                 </select>
             </div>
 
-            <!-- MENTOR -->
-           
-
             <!-- DAYS -->
             <div class="mb-3">
-                <label>Number of Days</label>
-                <input type="number" id="days" class="form-control" min="1">
+                <input type="number" id="days" class="form-control" placeholder="Number of Days" min="1">
             </div>
 
             <!-- DATES -->
             <div class="row mb-3">
                 <div class="col">
-                    <label>From Date</label>
                     <input type="date" name="from_date" class="form-control" required>
                 </div>
 
                 <div class="col" id="toDateDiv" style="display:none;">
-                    <label>To Date</label>
                     <input type="date" name="to_date" class="form-control" readonly>
                 </div>
             </div>
 
             <!-- REASON -->
             <div class="mb-3">
-                <label>Reason</label>
-                <textarea name="reason" class="form-control"></textarea>
-            </div>
-
-            <!-- EMAIL INFO -->
-            <div class="mb-3">
-                <label>To</label>
-                <input type="email" class="form-control" value="hr.sortiqsolutions@gmail.com" readonly>
-            </div>
-
-            <div class="mb-3">
-                <label>CC</label>
-                <input type="text" class="form-control" value="sortiqsolutions@gmail.com" readonly>
+                <textarea name="reason" class="form-control" placeholder="Reason"></textarea>
             </div>
 
             <!-- SUBMIT -->
             <div class="text-center">
-                <button class="btn text-white px-5" style="background-color:#343957;">
+                <button class="btn primary-btn px-5">
                     Apply Leave
                 </button>
             </div>
@@ -180,7 +161,6 @@
 
     </div>
 </div>
-
 
 </div>
 </section>
@@ -222,27 +202,48 @@ $('form').on('submit', function (e) {
 });
 
 // DAYS LOGIC
-$('#days, input[name="from_date"]').on('input change', function () {
+$('#days').on('input', function () {
 
     let days = parseInt($('#days').val());
     let fromDate = $('input[name="from_date"]').val();
 
-    if (!days || !fromDate) return;
-
-    let from = new Date(fromDate);
+    if (!days) return;
 
     if (days > 1) {
         $('#toDateDiv').show();
 
-        let to = new Date(from);
-        to.setDate(to.getDate() + days - 1);
+        if (fromDate) {
+            let from = new Date(fromDate);
+            let to = new Date(from);
 
-        $('input[name="to_date"]').val(to.toISOString().split('T')[0]);
+            to.setDate(to.getDate() + days - 1);
+
+            $('input[name="to_date"]').val(to.toISOString().split('T')[0]);
+        }
 
     } else {
         $('#toDateDiv').hide();
-        $('input[name="to_date"]').val(fromDate);
+        $('input[name="to_date"]').val('');
     }
+
+});
+$('input[name="from_date"]').on('change', function () {
+
+    let days = parseInt($('#days').val());
+
+    if (days > 1) {
+
+        let fromDate = $(this).val();
+        if (!fromDate) return;
+
+        let from = new Date(fromDate);
+        let to = new Date(from);
+
+        to.setDate(to.getDate() + days - 1);
+
+        $('input[name="to_date"]').val(to.toISOString().split('T')[0]);
+    }
+
 });
 </script>
 

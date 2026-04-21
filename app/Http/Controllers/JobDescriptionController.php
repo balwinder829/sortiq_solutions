@@ -10,10 +10,10 @@ class JobDescriptionController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:jd.view')->only('index');
-        $this->middleware('permission:jd.create')->only(['create','store']);
-        $this->middleware('permission:jd.edit')->only(['edit','update']);
-        $this->middleware('permission:jd.delete')->only('destroy');
+        $this->middleware('permission:job_description.view')->only('index');
+        $this->middleware('permission:job_description.create')->only(['create','store']);
+        $this->middleware('permission:job_description.edit')->only(['edit','update']);
+        $this->middleware('permission:job_description.delete')->only('destroy');
     }
 
     public function index()

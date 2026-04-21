@@ -24,14 +24,18 @@ class Mou extends Model
         'email_sent_to',
         'status',
         'description',
+        'issue_date',
+        'mou_status',
     ];
 
     protected $casts = [
 	    'start_date' => 'date',
 	    'end_date' => 'date',
+        'issue_date' => 'date',
 	    'email_sent_at' => 'datetime',
 	    'signed_received_at' => 'datetime',
 	    'created_at' => 'datetime',
+        'created_at' => 'datetime',
 	];
 
 

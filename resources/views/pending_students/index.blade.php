@@ -31,7 +31,8 @@
             <th>Name</th>
             <th>Father</th>
             <th>College</th>
-            <th>Course</th>
+            <th>Contact</th>
+            <th>Email</th>
             <th>Start Date</th>
         </tr>
     </thead>
@@ -51,7 +52,8 @@
             <td>{{ $student->student_name }}</td>
             <td>{{ $student->father_name }}</td>
             <td>{{ $student->collegeData->FullName ?? '-' }}</td>
-            <td>{{ $student->courseData->course_name ?? '-' }}</td>
+            <td>{{ $student->contact ?? '-' }}</td>
+            <td>{{ $student->email ?? '-' }}</td>
             <td>{{ \Carbon\Carbon::parse($student->start_date)->format('d M Y') }}</td>
         </tr>
         @endforeach

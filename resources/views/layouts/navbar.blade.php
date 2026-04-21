@@ -301,6 +301,12 @@ function isParent($routes)
                                 Hard Data
                             </a>
                         </li>
+
+                        <li class="{{ request()->routeIs('admin.test.analytics') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.test.analytics') }}">
+                                Test Analytics
+                            </a>
+                        </li>
                         
                          <!-- <li>
                             <a class="{{ isChildActive('admin.offline-tests.index') }}"
@@ -979,6 +985,11 @@ function isParent($routes)
                                 Testimonials
                             </a>
                         </li>
+                         <li class="{{ request()->routeIs('admin.ads.analytics') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.ads.analytics') }}">
+                                Ads Analytics
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -1322,7 +1333,7 @@ function isParent($routes)
 
                           {{-- Tests --}}
 
-                 @canany(['tests.view','offline_tests.view','test_categories.view','manual_data.view','external_attendance.view','hard_data.view'])
+                 @canany(['tests.view','offline_tests.view','test_categories.view','manual_data.view','external_attendance.view','hard_data.view','test_analytics.view'])
                 <li class="{{ isParent(['tests.*','admin.offline-tests*','test-categories.*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
@@ -1370,6 +1381,13 @@ function isParent($routes)
                         </li>
                         @endcan
 
+                        @can('test_analytics.view')
+                        <li class="{{ request()->routeIs('admin.test.analytics') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.test.analytics') }}">
+                                Test Analytics
+                            </a>
+                        </li>
+                         @endcan
                         
                          <!-- @can('offline_tests.view')
 
@@ -1484,7 +1502,7 @@ function isParent($routes)
 
 
 
-                @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view','student_registration_request.view'])
+                @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view','student_request.view','online_exam.view','student_leave.view'])
                 {{-- Student Main Admin --}}
                 <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
@@ -1551,6 +1569,16 @@ function isParent($routes)
                             </a>
                         </li>
                         @endcan  
+
+                        @can('accepted_letter.view')
+                        <li>
+                            <a class="{{ isChildActive('student-accepted-letters*') }}"
+                                href="{{ route('student-accepted-letters.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Accepted Letters
+                            </a>
+                        </li>
+                        @endcan 
                         @can('students_office_test.view')
                         <li>
                             <a class="{{ isChildActive('admin.office-tests*') }}"
@@ -1561,7 +1589,7 @@ function isParent($routes)
                         </li>
                         @endcan
 
-                        @can('students_office_online_test.view')
+                        @can('online_exam.view')
                         <li>
                             <a class="{{ isChildActive('admin.office-online-tests*') }}"
                                 href="{{ route('admin.office-online-tests.index') }}">
@@ -1572,7 +1600,7 @@ function isParent($routes)
 
 
                         @endcan   
-                        @can('student_registration_request.view')
+                        @can('student_request.view')
                         <li>
                             <a class="{{ isChildActive('admin.pending_request.index*') }}"
                                 href="{{ route('admin.pending_request.index') }}">
@@ -1580,7 +1608,16 @@ function isParent($routes)
                                 Registration Request
                             </a>
                         </li> 
-                        @endcan                      
+                        @endcan    
+                         @can('student_leave.view')
+                        <li>
+                            <a class="{{ isChildActive('admin.student.leave*') }}"
+                                href="{{ route('admin.student.leave.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Students Leaves
+                            </a>
+                        </li>   
+                         @endcan                  
                     </ul>
                 </li>   
                 @endcanany
@@ -1678,7 +1715,7 @@ function isParent($routes)
                         </li> 
                         @endcan 
 
-                        @can('student_cvs.view')
+                        @can('student_ppt.view')
                         <li class="{{ request()->routeIs('student_ppt.*') ? 'mm-active' : '' }}">
                             <a href="{{ route('student_ppt.index') }}">
                                 <span class="nav-text">Students PPT</span>
@@ -1810,7 +1847,7 @@ function isParent($routes)
 
                  {{-- Attendence --}}
               
-                @canany(['employees.view','attendance.view','letters.view','accepted_letters.view','salary_slips.view','job_description.view','employee_leave.view'])
+                @canany(['employees.view','attendance.view','letters.view','accepted_letters.view','salary_slips.view','job_description.view','employee_leave.view','management_letters.view'])
                 {{-- Attendence --}}
                 <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
@@ -1841,8 +1878,16 @@ function isParent($routes)
                                 Emp Official Letters
                             </a>
                         </li>
-                        @endcan   
-                        
+                        @endcan  
+                         @can('management_letters.view')
+                        <li>
+                            <a class="{{ isChildActive('managements_letters*') }}"
+                                href="{{ route('managements_letters.index') }}">
+                                Management Official Letters
+                            </a>
+                        </li> 
+                        @endcan 
+
                         @can('accepted_letters.view')
                          <li>
                             <a class="{{ isChildActive('accepted-letters*') }}"
@@ -2052,7 +2097,7 @@ function isParent($routes)
 
 
                  {{-- Ads Management --}}
-                 @canany(['pages.view','internship_registrations.view','services_registrations.view'])
+                 @canany(['pages.view','internship_registrations.view','services_registrations.view','ads_analytics.view','testimonial.view'])
                 <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
@@ -2085,12 +2130,19 @@ function isParent($routes)
                             </a>
                         </li>
                         @endcan
-                        @can('services_registrations.view')
+                        @can('testimonial.view')
                         <li class="{{ request()->routeIs('testimonials.*') ? 'mm-active' : '' }}">
                             <a href="{{ route('testimonials.index') }}">
                                 Testimonials
                             </a>
                         </li> 
+                        @endcan
+                         @can('ads_analytics.view')
+                        <li class="{{ request()->routeIs('admin.ads.analytics') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.ads.analytics') }}">
+                                Ads Analytics
+                            </a>
+                        </li>
                         @endcan
                     </ul>
                 </li>
@@ -2099,7 +2151,7 @@ function isParent($routes)
                 {{-- Gmail Form Entries --}}
                         
                  
-                 @can('gmail_form_enteries.view')
+                 @can('gmail_form_entries.view')
                         <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
                           <a href="{{ route('admin.form-entries.index') }}">
                               <i class="fas fa-file-alt"></i>
@@ -2107,6 +2159,45 @@ function isParent($routes)
                           </a>
                         </li>
                         @endcan
+
+                     {{-- Security --}}
+
+@canany(['blocked_ip.view','allowed_ip.view','activity.view'])
+                <li class="{{ isParent(['admin.blocked-ips.*','admin.system-activity*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Security</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['admin.blocked-ips.*','admin.system-activity*']) }}">
+                        @can('blocked_ip.view')
+                        <li class="{{ request()->routeIs('admin.blocked-ips.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.blocked-ips.index') }}">
+                                <i class="fas fa-ban"></i>
+                                <span class="nav-text">Blocked IPs</span>
+                            </a>
+                        </li>
+                        @endcan
+                        @can('allowed_ip.view')
+                        <li class="{{ request()->routeIs('admin.allowed-ips.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.allowed-ips.index') }}">
+                                <i class="fas fa-check-circle"></i>
+                                <span class="nav-text">Allowed IPs (Script Access)</span>
+                            </a>
+                        </li>
+                        @endcan
+
+                        {{-- System Activity (logins, page views, IP) --}}
+                        @can('activity.view')
+                        <li class="{{ request()->routeIs('admin.system-activity') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.system-activity') }}">
+                                <i class="fas fa-history"></i>
+                                <span class="nav-text">Activity</span>
+                            </a>
+                        </li>
+                        @endcan
+                    </ul>
+                </li>
+                @endcanany
 
                 @can('blocked_numbers.view')
                 <li class="{{ isParent(['blocked-numbers.*']) }}">
@@ -2116,7 +2207,7 @@ function isParent($routes)
                     </a>
                      
                 </li>
-@endcan
+            @endcan
 
 
 
@@ -2251,8 +2342,19 @@ function isParent($routes)
 
                 @endcanany
                          
-            
-               
+            @can('gmail_queries.view')
+             <li class="{{ isParent(['admin.gmail*']) }}">
+
+                    <a href="{{ route('admin.gmail.index') }}">
+
+                        <i class="fas fa-envelope"></i>
+
+                        <span class="nav-text">Gmail (Queries & HR)</span>
+
+                    </a>
+
+                </li>
+               @endcan 
                {{-- Logout --}}
                 <li>
                     <a href="{{ route('logout') }}"

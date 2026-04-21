@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class StudentsAcceptedLetterController extends Controller
 {
-    protected string $permissionPrefix = 'accepted_letters';
+    protected string $permissionPrefix = 'accepted_letter';
 
     protected array $permissionMap = [
         'index'   => 'view',

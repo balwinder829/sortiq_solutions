@@ -10,6 +10,12 @@ use Illuminate\Http\Request;
 
 class ActivityController extends Controller
 {
+    public function __construct()
+    {
+        
+        $this->middleware('permission:activity.view')->only(['index','leadTimeline','userTimeline']);
+        
+    }
     public function index1(Request $request)
     {
         $query = LeadActivityLog::with(['user', 'lead'])->latest();

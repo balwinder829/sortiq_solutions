@@ -41,8 +41,32 @@ class OfficeQuestionController extends Controller
         );
 
     }
-
     public function store(Request $request, OfficeTest $office_test)
+{
+    $request->validate([
+        'questions' => 'required|array|min:1',
+        'questions.*.question' => 'required|string',
+        'questions.*.question_order' => 'nullable|numeric|min:1',
+        'questions.*.marks' => 'nullable|numeric|min:0',
+    ]);
+
+    $lastOrder = $office_test->questions()->count();
+
+    foreach ($request->questions as $index => $q) {
+
+        OfficeQuestion::create([
+            'office_test_id' => $office_test->id,
+            'question' => $q['question'],
+            'marks' => $q['marks'] ?? null,
+            'question_order' => $q['question_order'] ?? ($lastOrder + $index + 1),
+        ]);
+    }
+
+    return redirect()
+        ->route('admin.office-tests.office-questions.index', $office_test->id)
+        ->with('success', 'Questions added successfully');
+}
+    public function store18april(Request $request, OfficeTest $office_test)
     {
 
         $request->validate([

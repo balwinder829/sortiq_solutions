@@ -188,7 +188,7 @@ Offline
 <div class="d-flex flex-column gap-1">
 
 <a 
-href="{{ route('student.office.enter',$test->slug) }}" 
+href="{{ route('student.office-online.enter',$test->slug) }}" 
 target="_blank"
 class="btn btn-sm btn-primary"
 >
@@ -197,7 +197,7 @@ Open Link
 
 <button 
 class="btn btn-sm btn-secondary"
-onclick="copyTestLink('{{ route('student.office.enter',$test->slug) }}', this)"
+onclick="copyTestLink('{{ route('student.office-online.enter',$test->slug) }}', this)"
 >
 Copy Link
 </button>
@@ -276,13 +276,13 @@ Download Answers
 
 
 {{-- Download PDF --}}
-<a href="{{ route('admin.office-online-tests.download.pdf',$test->id) }}"
+<!-- <a href="{{ route('admin.office-online-tests.download.pdf',$test->id) }}"
    class="btn btn-sm btn-outline-dark"
    title="Download Question Paper">
 
 <i class="fa fa-download"></i>
 
-</a>
+</a> -->
 
 
 {{-- Edit --}}

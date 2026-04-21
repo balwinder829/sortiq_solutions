@@ -47,8 +47,9 @@
                     </td>
                     <td>
                         <button type="button"
-                                class="btn btn-sm btn-outline-secondary"
-                                onclick="copyTestLink('{{ $url }}')">
+                                class="btn btn-sm btn-outline-secondary copy-link"
+                                data-link="{{ $url }}"
+                                >
                             Copy Link
                         </button>
                     </td>
@@ -71,5 +72,32 @@ function copyTestLink(url) {
         alert('❌ Failed to copy link');
     });
 }
+</script>
+<script>
+$(document).on('click', '.copy-link', function () {
+
+    let link = $(this).data('link');
+
+    navigator.clipboard.writeText(link).then(function () {
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied!',
+            text: 'Form link copied to clipboard',
+            timer: 1500,
+            showConfirmButton: false
+        });
+
+    }, function () {
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Failed!',
+            text: 'Could not copy link'
+        });
+
+    });
+
+});
 </script>
 @endpush
