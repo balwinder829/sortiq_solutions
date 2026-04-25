@@ -85,32 +85,14 @@
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">The candidate's performance will be closely evaluated by the management throughout the duration of the internship period regularly.</td>
                   </tr>
                </table>
-         <!--       <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
-                  <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Regards					</td>
-                  </tr>
-                  <tr>
-                     <td colspan="2">						
-						<img style="max-width: 200px; width:100%;" src="{{ public_path('images/confirmation_images/stamp-signatue.png') }}"/>					</td>
-                  </tr>
-               </table>
-               <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
-                  <tr>
-                     <td>
-                        <div style="display:inline-block; width:100%;">
-                           <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">HR Manager</h4>
-                           <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Priyanka</h4>
-                           <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">M: +91-9501381389</h4>
-                        </div>
-                     </td>
-                  </tr>
-               </table> -->
-
-               <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
+          @if(!empty($is_logo_show) && $is_logo_show)
+                  @include('student_letters_footer_logos.footer_content')
+                @else
+                  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
     <tr>
         
-        <!-- LEFT SIDE (OLD FOOTER) -->
-        <td width="{{ !empty($is_logo_show) && $is_logo_show ? '100%' : '100%' }}" valign="top">
+    
+         <td width="100%" valign="top">
             
             {{-- OLD FOOTER --}}
             <table width="100%" cellpadding="0" cellspacing="0">
@@ -122,7 +104,7 @@
                 <tr>
                     <td>
                         <img style="max-width: 200px; width:100%;" 
-                             src="{{ public_path('images/confirmation_images/stamp-signatue.png') }}"/>
+                             src="{{ public_path('images/certificates_images/certificate-stamp.png') }}"/>
                     </td>
                 </tr>
             </table>
@@ -130,40 +112,21 @@
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
                 <tr>
                     <td>
-                        <h4 style="margin:0;">HR Manager</h4>
-                        <h4 style="margin:0;">Priyanka</h4>
-                        <h4 style="margin:0;">M: +91-9501381389</h4>
+                        <h4 style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">HR Manager</h4>
+                        <h4 style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">Priyanka</h4>
+                        <h4 style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">M: +91-9501381389</h4>
                     </td>
                 </tr>
             </table>
 
         </td>
-
-        <!-- RIGHT SIDE (LOGOS) -->
-        @if(!empty($is_logo_show) && $is_logo_show)
-        <td width="30%" align="right">
-         @include('student_letters_footer_logos.footer_logos')
-            <!-- <table cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="padding: 0 5px;">
-                        <img src="{{ public_path('images/certificates_images/iso-certified-company-image.png') }}" width="80">
-                    </td>
-                    <td style="padding: 0 5px;">
-                        <img src="{{ public_path('images/certificates_images/MSME_small.png') }}" width="80">
-                    </td>
-                    <td style="padding: 0 5px;">
-                        <img src="{{ public_path('images/certificates_images/GF-min.png') }}" width="75">
-                    </td>
-                    <td style="padding: 0 5px;">
-                        <img src="{{ public_path('images/certificates_images/EN_legend_small.png') }}" width="75">
-                    </td>
-                </tr>
-            </table> -->
-        </td>
-        @endif
+        
 
     </tr>
 </table>
+                @endif
+                
+ 
 
             </div>
          </div>

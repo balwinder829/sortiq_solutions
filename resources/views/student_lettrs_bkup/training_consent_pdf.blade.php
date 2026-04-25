@@ -148,12 +148,65 @@
                     </td>
                 </tr>
                
-                  </table>
+                 
                 
                 
-                
-           
-              @include('student_letters_footer_logos.footer_content')
+                <!-- <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               padding-top:10px;
+                               font-family:'Inter', sans-serif;">
+                        We congratulate you and wish you a great career with us. We look forward to embarking on this next chapter together!
+                    </td>
+                </tr> -->
+                <tr><td height="10"></td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;"><strong>Warm Regards</strong>,</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Priyanka</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Manager – Human Resources</td></tr>
+                <!-- <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        Warm Regards,
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>Sortiq Solutions Pvt. Ltd.</b>
+
+                    </td>
+                </tr> -->
+            </table>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <tr>
+                    <td width="100%">
+                        <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br>
+                            <img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/>
+                            
+                        </div>
+                        <div style="display:inline-block; width:100%;">
+                            <br>
+                            <h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
+                        </div>
+                    </td>
+                    <td width="30%" align="right">
+                        <!-- <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Agreed and Accepted</h4>
+                        </div> -->
+                        <div style="display:inline-block; width:100%;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                                <tr>
+                                    <td width="100%"><img src="{{ public_path('images/certificates_images/EN_legend_small.png') }}" style="width:200px;"/></td>
+                                    <td width="100%"><img src="{{ public_path('images/certificates_images/iso-certified-company-image.webp') }}" style="width:200px;"/></td>
+                                    <td width="100%"><img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/></td>
+                                    <td width="100%"><img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </table>
             
         </div>
     </div>

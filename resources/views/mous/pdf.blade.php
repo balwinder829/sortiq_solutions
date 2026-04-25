@@ -237,13 +237,13 @@ li {
                 <div style="page-break-inside: avoid; break-inside: avoid;">
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:5px;">
                 <!-- CLAUSES -->
-                <tr><td height="20"></td></tr>               
+                <tr><td height="15"></td></tr>               
 
                 <!-- SIGN OFF -->
-                <tr><td height="25"></td></tr>
-                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;"><strong>Warm Regards</strong>,</td></tr>
+                <!-- <tr><td height="25"></td></tr> -->
+               <!--  <tr><td colspan="2" style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;"><strong>Warm Regards</strong>,</td></tr>
                 <tr><td colspan="2" style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">Priyanka</td></tr>
-                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">Manager – Human Resources</td></tr>
+                <tr><td colspan="2" style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">Manager – Human Resources</td></tr> -->
 
             </table>
 
@@ -253,13 +253,13 @@ li {
                     <td width="40%">
                         <div style="display:inline-block; width:100%;">
                             <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br>
-                            <img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/>
+                            <img src="{{ public_path('images/certificates_images/mou-stamp.png') }}" style="width:200px;"/>
                             
                         </div>
-                        <div style="display:inline-block; width:100%;">
+                       <!--  <div style="display:inline-block; width:100%;">
                             <br>
-                            <h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
-                        </div>
+                            <h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Director</h3>
+                        </div> -->
                     </td>
                      <td width="40%" align="right">
                         <div style="display:inline-block; width:100%;">

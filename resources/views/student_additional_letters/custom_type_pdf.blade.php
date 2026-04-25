@@ -99,50 +99,7 @@ body {
                          
             </div>
             <div style="page-break-inside: avoid; break-inside: avoid;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
-               <!--  <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       {!! $letter->letter_content !!}
-                    </td>
-                </tr> -->
-               
-
-                <!-- SIGN OFF -->
-                <tr><td height="25"></td></tr>
-                <tr><td style="font-family:Inter;font-size:14px;"><strong>Warm Regards</strong>,</td></tr>
-                <tr><td style="font-family:Inter;font-size:14px;">Priyanka</td></tr>
-                <tr><td style="font-family:Inter;font-size:14px;">Manager – Human Resources</td></tr>
-            </table>
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
-                <tr>
-                    <td width="100%">
-                        <div style="display:inline-block; width:100%;">
-                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br>
-                            <img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/>
-                            
-                        </div>
-                        <div style="display:inline-block; width:100%;">
-                            <br>
-                            <h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
-                        </div>
-                    </td>
-                    <td width="30%" align="right">
-                        <!-- <div style="display:inline-block; width:100%;">
-                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Agreed and Accepted</h4>
-                        </div> -->
-                        <!-- <div style="display:inline-block; width:100%;">
-                             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
-                                <tr>
-                                    <td width="100%"><img src="{{ public_path('images/certificates_images/iso-certified-company-image.png') }}" style="width:160px; padding-right: 20px;"/></td>
-                                    <td width="100%"><img src="{{ public_path('images/certificates_images/MSME_small.png') }}" style="width:170px; padding-right: 5px;"/></td>
-                                    <td width="100%"><img src="{{ public_path('images/certificates_images/GF-min.png') }}" style="width:150px; padding-right: 3px;"/></td>
-                                    <td width="100%"><img src="{{ public_path('images/certificates_images/EN_legend_small.png') }}" style="width:145px;"/></td>
-                                </tr>
-                             </table>
-                        </div> -->
-                    </td>
-                </tr>
-            </table>
+             @include('student_letters_footer_logos.footer_content')
         </div>
              
         </div>

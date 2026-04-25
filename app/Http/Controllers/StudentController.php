@@ -1182,8 +1182,11 @@ public function import(Request $request)
 
     public function downloadCertificateMultiple(Request $request)
     {
-        $ids = json_decode($request->ids, true);
 
+        $ids = json_decode($request->ids, true);
+        $isPursuing = $request->boolean('is_pursuing');
+
+        // dd($request->request);
         if (!is_array($ids) || count($ids) === 0) {
             return back()->with('error', 'No students selected.');
         }
@@ -1200,7 +1203,7 @@ public function import(Request $request)
         // Generate (or reuse) PDFs and collect file paths
         $pdfPaths = [];
         foreach ($students as $student) {
-            $pdfPath = $this->generatePdf($student);
+            $pdfPath = $this->generatePdf($student, $isPursuing);
 
             if (file_exists($pdfPath)) {
                 $pdfPaths[] = $pdfPath;
@@ -1494,8 +1497,9 @@ public function import(Request $request)
     }
 
 
-private function generatePdf($student)
+private function generatePdf($student, $isPursuing = false)
     {
+         
      // Create folder path for today
         $date = Carbon::now()->format('Y-m-d');
         $folderPath = public_path("student_certificate/{$date}");
@@ -1549,7 +1553,13 @@ private function generatePdf($student)
 
             $mpdf->SetHTMLFooter($this->getPDFFooter());
 
-            $html = view('pdf.student_certificate', compact('student'))->render();
+            if($isPursuing){
+                $view = "pdf.student_pursuing_certificate";
+            }else{
+                $view = "pdf.student_certificate";
+            }
+
+            $html = view($view, compact('student'))->render();
         
             $mpdf->WriteHTML($html);
             $mpdf->Output($filePath, 'F');
@@ -1559,7 +1569,7 @@ private function generatePdf($student)
         return $filePath;
     }
     
-    private function generatePdf_old($student)
+    private function gsaeneratePdf_old($student)
     {
      // Create folder path for today
         $date = Carbon::now()->format('Y-m-d');

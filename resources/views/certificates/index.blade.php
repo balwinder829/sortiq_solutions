@@ -518,6 +518,13 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
         </tbody>
         </table>
     </div>
+    {{-- Buttons for selected students --}}
+    <div class="form-check mb-2">
+    <input type="checkbox" class="form-check-input" id="isPursuing" name="is_pursuing">
+    <label class="form-check-label" for="isPursuing">
+        Check it if Pursuing
+    </label>
+</div>
 
     {{-- Multi-action buttons --}}
     <div class="mt-3">
@@ -539,6 +546,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 <form id="bulkDownloadForm" method="POST" action="{{ route('students.downloadCertificateMultiple') }}" style="display:none;">
     @csrf
     <input type="hidden" name="ids" id="bulkDownloadIds">
+    <input type="hidden" name="is_pursuing">
 </form>
 
 <form id="bulkDeleteForm" method="POST" action="{{ route('students.bulk.delete') }}">
@@ -900,7 +908,8 @@ $(document).ready(function () {
      // Download Confirm Letter(s)
     $('#downloadissueSelected').click(function () {
         var ids = getSelectedIds();
-
+        let isPursuing = $('#isPursuing').is(':checked') ? 1 : 0;
+        $('input[name="is_pursuing"]').val(isPursuing);
         // if (ids.length === 0) {
         //     alert('Select at least one student');
         //     return;

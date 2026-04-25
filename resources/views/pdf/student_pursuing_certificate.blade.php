@@ -88,14 +88,14 @@
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
 						This is to certify that <strong>{{ $title }}</strong> <strong>{{ ucwords($student->student_name) }}</strong> From <strong>{{ $collegename }}</strong>
-						Who has undertaken an internship program of <strong>{{ $courseName }}</strong> under technical department from <strong>{{ $sessionStart }}</strong>
+						Who is currently pursuing an internship program of <strong>{{ $courseName }}</strong> under technical department from <strong>{{ $sessionStart }}</strong>
 						to <strong>{{ $sessionEnd }}</strong> in <strong>{{ ucwords($sessionName) }}</strong> from the company <strong>"Sortiq Solutions Pvt. Ltd."</strong>
 					
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
-						During this period, he/she demonstrated a high level of professionalism, enthusiasm, and a strong commitment to learning. Throughout the internship, he/she has shown remarkable growth and contributed significantly to the assignment or task he/she worked on. He/she has gained valuable hands-on experience in the area of their interest and expertise.
+						During this period, he/she is demonstrating a high level of professionalism, enthusiasm, and a strong commitment to learning. Throughout the internship, he/she is showing remarkable growth and contributed significantly to the assignment or task he/she worked on. He/she is gaining valuable hands-on experience in the area of their interest and expertise.
 					</td>
 				</tr>
 				<tr>

@@ -40,10 +40,12 @@
          $relation = ($gender === 'female')
                          ? ($student->is_married ? 'W/O' : 'D/O')
                          : 'S/O';
+
+   
+       $format = $ismonthly ? 'F Y' : 'd F Y';
+
          use Carbon\Carbon;
          // Safe session values
-
-         $format = $ismonthly ? 'F Y' : 'd F Y';
          $sessionStart = optional($student->sessionData)->start_date 
           ? Carbon::parse($student->start_date)->format($format) 
           : '';
@@ -56,7 +58,6 @@
          // Safe duration
          $durationName = optional($student->durationData)->name ?? ''; 
          $sessionName = optional($student->sessionData)->session_display_name ?? ''; 
-
          @endphp	
          <div class="certi-body" style=" background:url('{{ public_path('images/certificates_images/bg-shape.jpg') }}')  no-repeat center; background-size:860px; padding-top: 60px;">
             <div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
@@ -72,29 +73,44 @@
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						To <br>						Training & Placement Officer <br>						{{ $collegename }}					</td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Subject: <strong>Confirmation of {{ ucwords($sessionName) }} Internship</strong>					</td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Subject: <strong>Confirmation of {{ ucwords($sessionName) }} Industrial {{ $isInternship ? 'Internship' : 'Training' }}</strong>					</td>
                   </tr>
                   <tr>
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Dear Sir/Madam,					</td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">						We are pleased to confirm that {{ $title }} <strong>{{ ucwords($student->student_name) }},</strong> {{ $relation }} <strong>{{ ucwords($student->father_name_with_title) }}</strong> student of your esteemed institution, has been enrolled in our <strong>{{ ucwords($sessionName) }}</strong> Internship Program for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>.					</td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">						We are pleased to confirm that {{ $title }} <strong>{{ ucwords($student->student_name) }},</strong> {{ $relation }} <strong>{{ ucwords($student->father_name_with_title) }}</strong> and a student of your esteemed institution, has been formally enrolled in our <strong>{{ ucwords($sessionName) }}</strong> industrial training for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>.					</td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">The candidate’s progress and performance will be closely evaluated by the management throughout the duration of the internship.</td>
-                  </tr>
-                  <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">We look forward to successful cooperation and appreciate your support.</td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align:justify;">The candidate's performance will be closely evaluated by the management throughout the duration of the internship period regularly.</td>
                   </tr>
                </table>
-                @if(!empty($is_logo_show) && $is_logo_show)
-                  @include('student_letters_footer_logos.footer_content')
-                @else
-                  <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
+         <!--       <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
+                  <tr>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">						Regards					</td>
+                  </tr>
+                  <tr>
+                     <td colspan="2">						
+						<img style="max-width: 200px; width:100%;" src="{{ public_path('images/confirmation_images/stamp-signatue.png') }}"/>					</td>
+                  </tr>
+               </table>
+               <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+                  <tr>
+                     <td>
+                        <div style="display:inline-block; width:100%;">
+                           <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">HR Manager</h4>
+                           <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Priyanka</h4>
+                           <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">M: +91-9501381389</h4>
+                        </div>
+                     </td>
+                  </tr>
+               </table> -->
+
+               <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
     <tr>
         
-    
-         <td width="100%" valign="top">
+        <!-- LEFT SIDE (OLD FOOTER) -->
+        <td width="{{ !empty($is_logo_show) && $is_logo_show ? '70%' : '100%' }}" valign="top">
             
             {{-- OLD FOOTER --}}
             <table width="100%" cellpadding="0" cellspacing="0">
@@ -106,7 +122,7 @@
                 <tr>
                     <td>
                         <img style="max-width: 200px; width:100%;" 
-                             src="{{ public_path('images/certificates_images/certificate-stamp.png') }}"/>
+                             src="{{ public_path('images/confirmation_images/stamp-signatue.png') }}"/>
                     </td>
                 </tr>
             </table>
@@ -114,20 +130,40 @@
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
                 <tr>
                     <td>
-                        <h4 style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">HR Manager</h4>
-                        <h4 style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">Priyanka</h4>
-                        <h4 style="font-size: 14px; line-height: 24px; font-family: 'Inter', sans-serif;">M: +91-9501381389</h4>
+                        <h4 style="margin:0;">HR Manager</h4>
+                        <h4 style="margin:0;">Priyanka</h4>
+                        <h4 style="margin:0;">M: +91-9501381389</h4>
                     </td>
                 </tr>
             </table>
 
         </td>
-        
+
+        <!-- RIGHT SIDE (LOGOS) -->
+        @if(!empty($is_logo_show) && $is_logo_show)
+        <td width="30%" align="right" valign="middle" style="white-space: nowrap;">
+            <table cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="padding: 0 5px;">
+                        <img src="{{ public_path('images/certificates_images/iso-certified-company-image.png') }}" width="80">
+                    </td>
+                    <td style="padding: 0 5px;">
+                        <img src="{{ public_path('images/certificates_images/MSME_small.png') }}" width="80">
+                    </td>
+                    <td style="padding: 0 5px;">
+                        <img src="{{ public_path('images/certificates_images/GF-min.png') }}" width="75">
+                    </td>
+                    <td style="padding: 0 5px;">
+                        <img src="{{ public_path('images/certificates_images/EN_legend_small.png') }}" width="75">
+                    </td>
+                </tr>
+            </table>
+        </td>
+        @endif
 
     </tr>
 </table>
-                @endif
-             
+
             </div>
          </div>
         

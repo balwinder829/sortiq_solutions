@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Internship Letter</title>
+    <title>Offer Letter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Katibeh&display=swap" rel="stylesheet">    
@@ -53,7 +53,7 @@
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" style="text-align: center;">
-                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Internship Letter</strong></h2>
+                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Offer Letter</strong></h2>
                     </td>
                 </tr>
             </table>
@@ -61,11 +61,11 @@
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
                         Date: <strong>
-                            {{ $letter->issue_date 
-                                ? \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') 
-                                : \Carbon\Carbon::now()->format('d M Y') 
-                            }}
-                        </strong>
+                                {{ $letter->issue_date 
+                                    ? \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') 
+                                    : \Carbon\Carbon::now()->format('d M Y') 
+                                }}
+                            </strong>
                     </td>
                 </tr>
                 <tr>
@@ -80,7 +80,7 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-    
+
                         @if($letter->student?->is_place)
                             {{ ucwords($letter->student?->place ?? '') }}
                         @else
@@ -94,13 +94,8 @@
                 </tr>
                 
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                        Dear <b>{{ ucwords($letter->student->student_name) }}</b>,
-                    </td>
-                </tr>
-                <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <br>We are pleased to offer you a <b>six-month internship</b> with <b>Sortiq Solutions Pvt. Ltd.</b> This internship is intended to provide you with hands-on industry exposure, real-time project experience, and professional skill development under the guidance of our experienced technical team.
+                        <br>It is with great pleasure that we extend to you an offer for a <b>six-month internship</b> with <strong> Sortiq Solutions Pvt. Ltd.</strong> This internship is designed to provide you with practical learning experiences, real-time project exposure, and professional growth under the mentorship of industry experts.
                     </td>
                 </tr>
                 <tr>
@@ -117,56 +112,63 @@
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
                                      <strong style="margin-left: 20px;">Duration:</strong> 6 Months<br>
-                                    <strong style="margin-left: 20px;">Type:</strong> Internship<br>
+                                    <strong style="margin-left: 20px;">Type:</strong> Free Internship<br>
                                     <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($letter->student?->course_name ?? 'N/A') }}<br>
-                                    <strong style="margin-left: 20px;">Location:</strong> Mohali<br>
+                                    <strong style="margin-left: 20px;">Location:</strong> Mohali / Remote (based on project requirement)<br>
                                     <strong style="margin-left: 20px;">Start Date:</strong> {{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}<br>
-                                    
                                 </td>
                             </tr>
                         </table>
                         <br>
-                        During this internship, you will be working on live projects, collaborating with our development team, and enhancing both your technical and professional competencies.
+                        During this internship, you will work on live projects, collaborate with our team, and enhance your technical and professional capabilities.
                     </td>
                 </tr>
-               
-
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>2. Performance Evaluation</b>
+                        <b>2. Pre-Placement Offer (PPO)</b>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px; font-family:'Inter', sans-serif;">
-                        Your performance during the internship will be evaluated based on:
+                        After the <b>first three months</b>, your performance will be evaluated based on: 
                        <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                    <b>• Technical skills and learning progress</b><br>
-                                    <b>• Consistency and dedication</b><br>
-                                    <b>• Project contribution</b><br>
-                                    <b>• Professional conduct and discipline</b>
+                                    • Technical skills<br>
+                                    • Consistency and dedication<br>
+                                    • Project contribution<br>
+                                    • Professional behavior
                                 </td>
                             </tr>
                         </table>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>3. Pre-Placement Offer (PPO)</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        Upon successful completion of six months of internship, and based on your performance, you may be considered for a Pre-Placement Offer (PPO) with Sortiq Solutions Pvt. Ltd.<br>
-                        The PPO, if offered, will be subject to company requirements and performance standards at that time.
+                        <br>
+                        Based on your evaluation, you may receive a <b>Pre-Placement Offer (PPO)</b> to continue with us under enhanced terms.
                     </td>
                 </tr>
                 </table>
                 <pagebreak />
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>3. Stipend (During PPO Phase)</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
+                         
+                        If selected for the PPO phase, you will receive a stipend ranging from:<br>
+                         <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td width="30"></td>
+                                <td style="font-size: 14px; line-height: 24px;">
+                                   <b> • ₹10,000 to ₹25,000 per month</b>
+                                </td>
+                            </tr>
+                        </table>
+                        The exact stipend will depend on your performance, skill set, and contribution during the initial internship period.
+                    </td>
+                </tr>
                 
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
@@ -175,14 +177,19 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        Candidates who perform exceptionally well during the internship and PPO phase may be considered for a full-time role, with compensation offered as per company policy and performance evaluation.
+                        
+                        Upon successful completion of the full six-month internship, you will be eligible for a full-time role with:<br>
+                        <b>Minimum Annual Package: ₹3,00,000 (Three Lakhs per Annum)</b><br>
+                        Higher compensation may be offered based on performance and company requirements.
                     </td>
                 </tr>
-                <tr>
+
+                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                         <b>5. Terms & Conditions</b>
                     </td>
                 </tr>
+
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;"> 
                        
@@ -190,35 +197,91 @@
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                    • Maintain punctuality, professionalism, and discipline throughout the internship.<br>
-                                    • All company data, internal information, and project details must be kept strictly confidential.<br>
-                                    • Adherence to company policies and guidelines is mandatory.<br>
-                                    • The company reserves the right to discontinue the internship in case of unsatisfactory performance, irregularity, or policy violations.
-                                     
+                                    • Maintain professionalism, punctuality, and discipline throughout the internship.<br>
+                                    • All company data, project information, and internal processes must remain confidential.<br>
+                                    • Adherence to company policies is mandatory.<br>
+                                    • The company reserves the right to discontinue the internship in case of policy violations or unsatisfactory performance.<br>
+                                    • If you are not regular during the internship, your internship will be discontinued as per the company guidelines.
                                 </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
+                
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        We are confident that this internship will be a valuable learning experience and help you build a strong foundation for your professional career.
+                        We are excited to welcome you to our organization and look forward to a productive association. Please confirm your acceptance of this offer at your earliest convenience.
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        Please confirm your acceptance of this offer at your earliest convenience.
+                        For any queries or additional information, feel free to contact us.
                     </td>
                 </tr>
             </table>
               
             
-           @include('student_letters_footer_logos.footer_content')
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <!-- <tr>
+                    <td colspan="2"
+                        style="font-size:14px;
+                               line-height:24px;
+                               padding-bottom:15px;
+                               padding-top:10px;
+                               font-family:'Inter', sans-serif;">
+                        We congratulate you and wish you a great career with us. We look forward to embarking on this next chapter together!
+                    </td>
+                </tr> -->
+                <tr><td height="10"></td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;"><strong>Warm Regards</strong>,</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Priyanka</td></tr>
+                <tr><td style="font-family:Inter;font-size:14px;">Manager – Human Resources</td></tr>
+                <!-- <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        Warm Regards,
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <b>Sortiq Solutions Pvt. Ltd.</b>
+
+                    </td>
+                </tr> -->
+            </table>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                <tr>
+                    <td width="100%">
+                        <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">For Sortiq Solutions Pvt. Ltd.</h4><br>
+                            <img src="{{ public_path('images/certificates_images/certificate-stamp.png') }}" style="width:200px;"/>
+                            
+                        </div>
+                        <div style="display:inline-block; width:100%;">
+                            <br>
+                            <h3 style="font-size: 16px; font-family: 'Inter', sans-serif;">Human Resource Department</h3>
+                        </div>
+                    </td>
+                    <td width="30%" align="right">
+                        <!-- <div style="display:inline-block; width:100%;">
+                            <h4 style="margin: 0; font-size: 16px; font-family: 'Inter', sans-serif;">Agreed and Accepted</h4>
+                        </div> -->
+                        <div style="display:inline-block; width:100%;">
+                             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
+                                <tr>
+                                    <td width="100%"><img src="{{ public_path('images/certificates_images/iso-certified-company-image.png') }}" style="width:160px; padding-right: 20px;"/></td>
+                                    <td width="100%"><img src="{{ public_path('images/certificates_images/MSME_small.png') }}" style="width:170px; padding-right: 5px;"/></td>
+                                    <td width="100%"><img src="{{ public_path('images/certificates_images/GF-min.png') }}" style="width:150px; padding-right: 3px;"/></td>
+                                    <td width="100%"><img src="{{ public_path('images/certificates_images/EN_legend_small.png') }}" style="width:145px;"/></td>
+                                </tr>
+                             </table>
+                        </div>
+                    </td>
+                </tr>
+            </table>
             
         </div>
     </div>
 </div>
 
 </body>
-
 </html>
