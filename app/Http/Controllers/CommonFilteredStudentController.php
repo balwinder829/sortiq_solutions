@@ -116,6 +116,10 @@ class CommonFilteredStudentController extends Controller
             if ($request->filled('batch_assign')) {
                 $query->where('batch_assign', $request->batch_assign);
             }
+
+            if ($request->filled('registration_fee')) {
+                $query->where('reg_fees', $request->registration_fee);
+            }
             // if ($request->filled('department')) {
             //     $query->where('department', $request->department);
             // }
@@ -140,6 +144,10 @@ class CommonFilteredStudentController extends Controller
 
             if ($request->filled('pg_offer')) {
                 $query->where('pg_offer', $request->pg_offer);
+            }
+
+            if ($request->filled('is_online')) {
+                $query->where('is_online', $request->is_online);
             }
 
             if ($request->filled('fee_filter')) {

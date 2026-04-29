@@ -10,8 +10,158 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="icon" type="image/jpeg" href="{{ asset('certificate_fav.jpeg') }}">
 
 <style>
+    /* Sticky CTA */
+.sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  padding: 10px;
+  z-index: 9998;
+
+  display: none;
+  gap: 10px;
+}
+
+/* Buttons */
+.sticky-cta a {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Colors */
+.apply-btn {
+  background: #ff6b00;
+}
+
+.call-btn {
+  background: #25D366;
+}
+
+
+/* Mobile only */
+@media (max-width: 768px) {
+  .sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  padding: 10px;
+  z-index: 9998;
+
+  display: flex;   /* ALWAYS visible */
+  gap: 10px;
+}
+body {
+  /*padding-bottom: 65px;*/
+  overflow-x: hidden;
+}
+}
+    .card {
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+    /* Section background */
+.urgency-section {
+  /*background: linear-gradient(135deg, #fff7f2, #ffffff);*/
+   background: linear-gradient(135deg, #ffece0, #f5f7fa);
+}
+
+/* Card base */
+.urgency-card {
+  border: none;
+  border-radius: 16px;
+  padding: 30px 20px;
+  transition: all 0.35s ease;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+
+/* Icon circle */
+.icon-box {
+  width: 65px;
+  height: 65px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  background: #fff3ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #ff5800;
+  transition: 0.3s;
+}
+
+/* Hover effect */
+.urgency-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 18px 40px rgba(255,88,0,0.2);
+}
+
+/* Icon animation on hover */
+.urgency-card:hover .icon-box {
+  background: #ff5800;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* Text */
+.urgency-card h5 {
+  font-weight: 600;
+  color: #00163e;
+}
+    .whatsapp-float {
+    position: fixed;
+    bottom: 80;
+    right: 20px;
+    background: #25D366;
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    z-index: 9999;
+
+    opacity: 0;
+    /*transform: translateY(20px);*/
+    transition: all .4s ease;
+}
+
+.sticky-cta {
+  box-sizing: border-box;
+}
+
+.sticky-cta a {
+  min-width: 0; /* important for flex overflow */
+}
+
+.whatsapp-float.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.whatsapp-float:hover {
+    background: #1ebe5d;
+}
 
 /* ========== LOGO HEADER ========= */
 .site-header{
@@ -23,7 +173,8 @@
 
 /* ========== HERO SECTION ========= */
 .hero-section {
-  background:url('https://sortiqsolutions.com/wp-content/uploads/2025/12/internship.avif') center/cover no-repeat;
+  /*background:url('https://sortiqsolutions.com/wp-content/uploads/2025/12/internship.avif') center/cover no-repeat;*/
+  background: url("{{ asset('images/internship.avif') }}") center/cover no-repeat;
   padding:120px 0 100px;
   position:relative;
   color:#fff;
@@ -44,10 +195,15 @@
 .hero-content h2{ font-size:42px;font-weight:800;margin-bottom:15px;}
 .hero-content p{ font-size:18px;margin-bottom:30px; }
 
+
 .hero-btn{
   background:#ff5800;
-  border:none;border-radius:40px;
-  color:#fff;padding:14px 35px;font-size:18px;font-weight:600;
+  width: auto!important;
+  border:none;
+  border-radius:12px;
+  color:#fff;
+  padding:10px 20px;
+  font-size:18px;font-weight:600;
   text-decoration:none;
 }
 
@@ -75,7 +231,7 @@ form input, form textarea{
 }
 
 form textarea{
-    height:150px !important;
+    height:100px !important;
     resize:none;
 }
 
@@ -85,7 +241,7 @@ form textarea{
     color:#fff;
     border:none;
     width:100%;
-    padding:15px;
+    padding:10px;
     font-size:17px;
     border-radius:10px;
     font-weight:600;
@@ -113,7 +269,7 @@ form textarea{
 .services-area{background:#00163e;}
 
 footer{
-  background:#00163e;text-align:center;color:#fff;padding:22px 0;font-size:14px;margin-top:0;
+  background:#00163e;text-align:center;color:#fff;padding:10px 0;font-size:14px;margin-top:0;
   border-top:1px solid rgba(255,255,255,0.3);
 }
 
@@ -123,8 +279,12 @@ footer{
   .hero-btn{margin:auto;display:block;width:200px;}
   .form-box{margin-top:35px;}
   .hero-content h2{font-size:30px;}
+  .hero-content h3{font-size:20px; }
   .hero-section{padding:80px 0;}
   .site-header img{height:45px;}
+}
+@media (max-width: 768px) {
+ 
 }
 
 /* ================= CERTIFICATE CAROUSEL ================= */
@@ -214,52 +374,26 @@ footer{
 .site-footer {
     background: #00163e;
     text-align: center;
-    padding: 25px 15px;
+    /*padding: 25px 15px;*/
     color: #fff;
     font-size: 15px;
     position: relative;
+    padding: 10px 0px;
+}
+.site-footer {
+    
+    /*font-size: 13px;*/
 }
 
-/* Footer WhatsApp Button - Right Side */
-.footer-whatsapp {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #25D366;
-    padding: 10px 18px;
-    border-radius: 30px;
-    color: #fff;
-    font-weight: 600;
-    text-decoration: none;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.site-footer p {
+  margin-bottom: 0;
 }
-
-.footer-whatsapp i {
-    font-size: 20px;
-}
-
-.footer-whatsapp:hover {
-    background: #1ebe5d;
-}
-
-/* Mobile Fix */
-@media (max-width: 600px) {
-    .footer-whatsapp {
-        position: static;
-        margin-top: 12px;
-        transform: none;
-        display: inline-block;
-    }
-}
+ 
 form input,
 form textarea,
 form select {
     width: 100%;
-    height: 52px;                /* 🔑 same height */
+    height: 42px;                /* 🔑 same height */
     padding: 0 16px;             /* 🔑 vertical handled by line-height */
     border-radius: 12px;
     border: 1px solid #dcdcdc;
@@ -268,10 +402,10 @@ form select {
     color: #333;
     outline: none;
     box-sizing: border-box;      /* 🔑 critical */
-    line-height: 52px;           /* 🔑 centers text vertically */
+    /*line-height: 52px;           /* 🔑 centers text vertically */*/
 }
 form textarea {
-    height: 150px !important;
+    height: 100px !important;
     padding: 14px 16px;
     line-height: normal;
     resize: none;
@@ -292,17 +426,140 @@ form select:focus {
     border-color: #ff6a00;
     box-shadow: 0 0 0 3px rgba(255,106,0,0.15);
 }
+/*********NEW CSS****************/
 
+.container {
+  max-width: 1200px;
+  width: 100%;
+}
+.whatsapp-float {
+  max-width: calc(100% - 40px);
+  white-space: nowrap;
+}
+.whatsapp-float {
+  white-space: normal;
+}
 
+.footer-cta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;   /* 🔥 KEY FIX */
+  gap: 15px;
+}
 
+.footer-left {
+  flex: 1 1 300px;
+}
+
+.footer-right {
+  flex: 1 1 300px;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .footer-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-right {
+    text-align: left;
+  }
+}
+
+/*.responsive-flex {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+*/
+.responsive-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;  /* normal case (1 line) */
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/*
+@media (max-width: 992px) {
+  .responsive-flex {
+    justify-content: center;    
+    text-align: center;
+  }
+}*/
+.hero-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 20px;
+  display: inline-block;   /* 🔥 KEY FIX */
+  text-align: left;        /* keeps text aligned with bullet */
+}
+
+.hero-content li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 6px;
+}
+
+/* custom bullet */
+.hero-content li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+@media (max-width: 1024px) {
+  .responsive-flex {
+    flex-direction: column;
+    align-items: center;   /* center all */
+    text-align: center;
+  }
+
+  .responsive-flex a {
+    margin-left: 0 !important; /* 🔥 overrides ms-auto */
+    margin-top: 10px;
+  }
+}
+
+/* Dark Section Background */
+.client-dark {
+  background: linear-gradient(135deg, #00163e, #002b6b);
+  color: #fff;
+}
+
+/* Cards inside dark section */
+.client-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  transition: all 0.3s ease;
+}
+
+/* Text color */
+.client-card h5 {
+  color: #fff;
+}
+
+/* Icons */
+.client-card i {
+  color: #ff8a3d;
+  transition: 0.3s;
+}
+
+/* Hover effect */
+.client-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255,255,255,0.1);
+}
+
+.client-card:hover i {
+  transform: scale(1.2);
+  color: #ff6b00;
+}
 </style>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-5X8PFCR5');</script>
-<!-- End Google Tag Manager -->
 </head>
 
 <body>
@@ -321,22 +578,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="container">
     <div class="row align-items-center">
 
-      <div class="col-lg-6 hero-content">
-        <h2>{{ $page->heading !== null && $page->heading !== '' 
+      <div class="col-lg-8 hero-content">
+        <h3>{{ $page->heading !== null && $page->heading !== '' 
     ? ucwords($page->heading) 
-    : 'Kickstart Your IT Career with Real Project Internship' }}</h2>
+    : 'Kickstart Your IT Career with Real Project Internship' }}</h3>
 
 
-    <p>{{ $page->content !== null && $page->content !== '' 
+    {!! $page->content !== null && $page->content !== '' 
     ? ucwords($page->content) 
-    : 'Work with experts, gain real project exposure & develop skills to become industry-ready.' }}</p>
-
-        <a href="tel:+919646522110" class="hero-btn">Call Now</a>
+    : 'Work with experts, gain real project exposure & develop skills to become industry-ready.' !!}
       
       </div>
 
       <!-- FORM -->
-      <div class="col-lg-5 offset-lg-1" id="form">
+      <div class="col-lg-4" id="form">
         <div class="form-box">
           <h3 class="text-center">Service Request</h3>
 
@@ -378,16 +633,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         {{-- Phone --}}
         <div class="col-md-6">
-            <input type="tel"
-                   name="phone"
-                   placeholder="Phone Number"
-                   value="{{ old('phone') }}"
-                   maxlength="10"
-                   pattern="[0-9]{10}"
-                   inputmode="numeric"
-                   oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                   placeholder="10 digit number"
-                   required>
+           <input type="tel"
+       name="phone"
+       placeholder="Phone Number"
+       value="{{ old('phone') }}"
+       maxlength="20"
+       inputmode="numeric"
+       pattern="[0-9]{1,20}"
+       oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+       required>
 
             @error('phone')
                 <small class="text-danger">{{ $message }}</small>
@@ -410,7 +664,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         {{-- Technology / Course --}}
         <div class="col-md-12">
-            <select name="technology" class="form-control" required>
+            <!-- <input type="text"
+                   name="technology"
+                   placeholder="Course Name"
+                   value="{{ old('technology') }}"
+                   required> -->
+                   <select name="technology" required>
+                        <option value="" disabled {{ old('technology') ? '' : 'selected' }}>
+                            Select Service Required
+                        </option>
+
+                        <option value="Website Development" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
+                            Website Development
+                        </option>
+
+                        <option value="E-commerce Development" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
+                            E-commerce Development
+                        </option>
+
+                        <option value="SEO Services" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
+                            SEO Services
+                        </option>
+
+                        <option value="Google Ads" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
+                            Google Ads
+                        </option>
+
+                        <option value="Social Media Marketing" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                            Social Media Marketing
+                        </option>
+                    </select>
+            <!-- <select name="technology" class="form-control" required>
                 <option value="" disabled selected>Select Technology / Domain</option>
 
                 @foreach($courses as $course)
@@ -419,7 +703,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         {{ $course->course_name }}
                     </option>
                 @endforeach
-            </select>
+            </select> -->
 
             @error('technology')
                 <small class="text-danger">{{ $message }}</small>
@@ -438,7 +722,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         {{-- Submit --}}
         <div class="col-12 text-center">
             <button type="submit" class="form-submit">
-                Submit Application
+                Get Free Quote
             </button>
         </div>
 
@@ -466,13 +750,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- WHY JOIN -->
+<!-- WHY JOIN -->
 <section class="section">
 <div class="container">
-<h2 class="section-title">Why Join This Internship?</h2>
+<h2 class="section-title">WHY CHOOSE US</h2>
 <div class="row g-4 text-center">
-<div class="col-md-4"><div class="info-box"><i class="bi bi-cpu"></i><h5>Live AI Projects</h5><p>Machine Learning, Python, Chatbots, Research Work.</p></div></div>
-<div class="col-md-4"><div class="info-box"><i class="bi bi-briefcase"></i><h5>Placement Support</h5><p>Resume, interviews & referral help.</p></div></div>
-<div class="col-md-4"><div class="info-box"><i class="bi bi-award"></i><h5>Certificate + Letter</h5><p>Experience letter with actual project exposure.</p></div></div>
+<div class="col-md-3"><div class="info-box"><i class="bi bi-cpu"></i><h5>Custom Website Solutions</h5></div></div>
+<div class="col-md-3"><div class="info-box"><i class="bi bi-briefcase"></i><h5>SEO & Marketing Experts</h5></div></div>
+<div class="col-md-2"><div class="info-box"><i class="bi bi-award"></i><h5>Fast Delivery</h5></div></div>
+<div class="col-md-2"><div class="info-box"><i class="bi bi-person-workspace"></i><h5>Dedicated Support</h5></div></div>
+<div class="col-md-2"><div class="info-box"><i class="bi bi-person-workspace"></i><h5>Affordable Pricing</h5></div></div>
 </div>
 </div>
 </section>
@@ -480,7 +767,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- AREAS -->
 <section class="internship-areas py-5 text-white services-area">
   <div class="container text-center">
-    <h2 class="fw-bold">Internship Areas</h2>
+    <h2 class="fw-bold">Services Areas</h2>
     <p>Choose your field & learn with real developers.</p>
 
   <div class="row mt-4 g-4 text-start mx-auto" style="max-width:900px;">
@@ -533,6 +820,340 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 </div>
 
+  </div>
+</section>
+<!-- 
+<section class="section">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">SERVICES SECTION</h2>
+
+    <div class="row g-4">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-people-fill fs-1 mb-3"></i>
+            <h5 class="card-title">Web Development</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-code-slash fs-1 mb-3"></i>
+            <h5 class="card-title">Business websites, custom web apps</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title"> E-commerce Development</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title">Shopify, WooCommerce stores</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title">SEO Services</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title">Rank your website on Google</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title">Digital Marketing</h5>
+          </div>
+        </div>
+      </div>
+       <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title">Ads, social media growth</h5>
+          </div>
+        </div>
+      </div>
+
+       <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title">Graphic Design</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title">Branding, creatives</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section> -->
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">SERVICES SECTION</h2>
+
+    <div class="row g-4">
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-globe fs-1 mb-3"></i>
+            <h5 class="card-title">Web Development</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-code-slash fs-1 mb-3"></i>
+            <h5 class="card-title">Business websites, custom web apps</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-cart-check fs-1 mb-3"></i>
+            <h5 class="card-title">E-commerce Development</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-shop fs-1 mb-3"></i>
+            <h5 class="card-title">Shopify, WooCommerce stores</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-graph-up-arrow fs-1 mb-3"></i>
+            <h5 class="card-title">SEO Services</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-search fs-1 mb-3"></i>
+            <h5 class="card-title">Rank your website on Google</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-megaphone fs-1 mb-3"></i>
+            <h5 class="card-title">Digital Marketing</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-bar-chart-line fs-1 mb-3"></i>
+            <h5 class="card-title">Ads, social media growth</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-palette fs-1 mb-3"></i>
+            <h5 class="card-title">Graphic Design</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-brush fs-1 mb-3"></i>
+            <h5 class="card-title">Branding, creatives</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="section urgency-section">
+  <div class="container">
+    <h2 class="section-title text-center mb-5">RESULTS / TRUST SECTION</h2>
+
+    <div class="row g-4">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card urgency-card text-center h-100">
+          <div class="card-body">
+            <div class="icon-box">
+              <i class="bi bi-globe2"></i>
+            </div>
+            <h5>100+ Websites Delivered</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card urgency-card text-center h-100">
+          <div class="card-body">
+            <div class="icon-box">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <h5>Clients Across India & Abroad</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card urgency-card text-center h-100">
+          <div class="card-body">
+            <div class="icon-box">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <h5>Proven Marketing Results</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">PROCESS SECTION</h2>
+
+    <div class="row g-4">
+
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-search fs-1 mb-3"></i>
+            <h5 class="card-title">Requirement Analysis</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-lightbulb fs-1 mb-3"></i>
+            <h5 class="card-title">Strategy Planning</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-gear fs-1 mb-3"></i>
+            <h5 class="card-title">Development / Execution</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-check-circle fs-1 mb-3"></i>
+            <h5 class="card-title">Delivery & Support</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<section class="section client-dark">
+  <div class="container">
+    <h2 class="section-title text-center mb-4 text-white">CLIENT BENEFITS</h2>
+
+    <div class="row g-4">
+
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card client-card h-100 text-center">
+          <div class="card-body">
+            <i class="bi bi-graph-up-arrow fs-1 mb-3"></i>
+            <h5 class="card-title">Increase website traffic</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card client-card h-100 text-center">
+          <div class="card-body">
+            <i class="bi bi-person-plus fs-1 mb-3"></i>
+            <h5 class="card-title">Generate more leads</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card client-card h-100 text-center">
+          <div class="card-body">
+            <i class="bi bi-eye fs-1 mb-3"></i>
+            <h5 class="card-title">Improve online visibility</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="card client-card h-100 text-center">
+          <div class="card-body">
+            <i class="bi bi-rocket fs-1 mb-3"></i>
+            <h5 class="card-title">Grow your business</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </section>
 
@@ -629,17 +1250,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!--</section>-->
 
 <!-- CONTACT INFO -->
-<section style="background:#00163e;">
+<!-- <section style="background:#00163e;">
   <div class="container">
     <div class="row align-items-center text-white py-5">
 
-      <!--<div class="col-md-6 justify-content-center gap-4 flex-wrap mb-3 mb-md-0">-->
-      <!--  <img width="80" src="https://sortiqsolutions.com/wp-content/uploads/2025/11/digital-marketing-logo-min.png">-->
-      <!--  <img width="60" src="https://sortiqsolutions.com/wp-content/uploads/2025/11/GF-min.png">-->
-      <!--  <img width="60" src="https://sortiqsolutions.com/wp-content/uploads/2025/11/upwork-logo-min.png">-->
-      <!--  <img width="60" src="https://sortiqsolutions.com/wp-content/uploads/2025/06/iso-certified-company-image.webp">-->
-      <!--  <img width="60" src="https://sortiqsolutions.com/wp-content/uploads/2025/11/EN_legend_small.png">-->
-      <!--</div>-->
+      
 
       <div class="col-md-12 text-md-end text-center">
         <p class="mb-1 fs-5 fw-semibold">E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072</p>
@@ -652,16 +1267,74 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     </div>
   </div>
+</section> -->
+<section style="background:#00163e;">
+  <div class="container">
+    <div class="row align-items-center text-white py-5">
+ 
+   <div class="col-md-6 mb-3 mb-md-0">
+
+      <div class="responsive-flex">
+
+        <!-- TEXT -->
+        <div>
+          <h3 style="color:#fff;"> Get Free Demo Today</h3>
+          <p style="color:#ccc; margin-bottom:0;">
+            Explore our software solutions & grow your business faster
+          </p>
+        </div>
+
+        <!-- BUTTON (push right) -->
+        <a href="#form"
+           class="ms-auto"
+           style="background:#ff6b00;color:#fff;padding:10px 20px;
+           border-radius:12px;text-decoration:none;white-space:nowrap;">
+           Request Demo
+        </a>
+
+      </div>
+
+    </div>
+
+      <!-- RIGHT SIDE (Existing Content) -->
+      <div class="col-md-6 text-center text-md-end">
+        <p class="mb-1 fs-5 fw-semibold">
+          E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072
+        </p>
+
+        <div class="d-flex justify-content-md-end justify-content-center gap-3 flex-wrap">
+          <span>
+            <a href="tel:9646522110" class="text-white text-decoration-none">
+              +91 9646522110 , +91 9501381389
+            </a>
+          </span>
+          <span>
+            <a href="mailto:sortiqsolutions@gmail.com" class="text-white text-decoration-none">
+              sortiqsolutions@gmail.com
+            </a>
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </section>
+<a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
+   class="whatsapp-float"
+   id="whatsappBtn"
+   target="_blank">
+   <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+</a>
+
 </body>
 <footer class="site-footer">
   <p>© 2025 | Sortiq Solutions Pvt. Ltd. | All Rights Reserved.</p>
 
-  <a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
+  <!-- <a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
      class="footer-whatsapp"
      target="_blank">
      <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-  </a>
+  </a> -->
 </footer>
 
 
@@ -708,4 +1381,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 </script>
- 
+ <script>
+window.addEventListener("scroll", function () {
+    const btn = document.getElementById("whatsappBtn");
+
+    if (window.scrollY > 200) {
+        btn.classList.add("show");
+    } else {
+        btn.classList.remove("show");
+    }
+});
+</script>
+ <script>
+window.addEventListener("scroll", function () {
+    const btn = document.getElementById("whatsappBtn");
+    btn.classList.add("show");
+    // if (window.scrollY > -20) {
+    //     btn.classList.add("show");
+    // } else {
+    //     btn.classList.remove("show");
+    // }
+});
+</script>

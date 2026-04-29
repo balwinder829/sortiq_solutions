@@ -177,7 +177,32 @@ class DashboardController extends Controller
                                     ->orderBy('event_date')
                                     ->get();
 
+            $topState = DB::table('students_detail as s')
+                ->join('colleges as c', 's.college_name', '=', 'c.id')
+                ->join('states as st', 'c.state_id', '=', 'st.id')
+                ->where('s.session', $activeSessionId)
+                ->select(
+                    'st.name as state',
+                    DB::raw('SUM(s.total_fees) as total')
+                )
+                ->groupBy('st.id', 'st.name')
+                ->orderByDesc('total')
+                ->first() 
+                ?: (object)['state' => '-', 'total' => 0];
 
+
+            $topDistrict = DB::table('students_detail as s')
+                ->join('colleges as c', 's.college_name', '=', 'c.id')
+                ->join('districts as d', 'c.district_id', '=', 'd.id')
+                ->where('s.session', $activeSessionId)
+                ->select(
+                    'd.name as district',
+                    DB::raw('SUM(s.total_fees) as total')
+                )
+                ->groupBy('d.id', 'd.name')
+                ->orderByDesc('total')
+                ->first() 
+                ?: (object)['district' => '-', 'total' => 0];
             // POPUP DISMISS RECORD (only for today)
             $todayNotification = EventNotification::today();
              /** FINALLY — RETURN VIEW **/
@@ -206,6 +231,8 @@ class DashboardController extends Controller
                 'feeconfirmSum',
                 'feecertificateSum',
                 'topCollegeData',
+                'topState',
+                'topDistrict',
                 'feeSums',
                 'todayNotification'
             ));

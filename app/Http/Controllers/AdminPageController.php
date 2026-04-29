@@ -46,7 +46,26 @@ class AdminPageController extends Controller
         }
     }
     
-    public function index()
+    public function index(Request $request)
+    {
+        $query = Page::query();
+
+        // Ads Type filter
+        if ($request->ads_type) {
+            $query->where('ads_type', $request->ads_type);
+        }
+
+        // Status filter
+        if ($request->status !== null && $request->status !== '') {
+            $query->where('is_active', $request->status);
+        }
+
+        $pages = $query->latest('updated_at')->get();
+
+        return view('pages.index', compact('pages'));
+    }
+
+    public function index27april()
     {
         $pages = Page::latest()->get();
         return view('pages.index', compact('pages'));
@@ -62,6 +81,7 @@ class AdminPageController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'slug'  => 'required|string|max:255|unique:pages,slug',
+            'ads_type' => 'required|in:internship,services,products,single product',
             'heading' => 'required|string|max:255',
             'location' => 'required|string|max:255',
         ]);
@@ -74,6 +94,7 @@ class AdminPageController extends Controller
             'location',
             'meta_title',
             'meta_description',
+            'ads_type',
             'meta_keywords',
             'banner_image',
             'featured_image',
@@ -94,6 +115,7 @@ class AdminPageController extends Controller
             'title' => 'required|string|max:255',
             'slug'  => 'required|string|max:255|unique:pages,slug,' . $page->id,
             'heading' => 'required|string|max:255',
+            'ads_type' => 'required|in:internship,services,products,single product',
             'location' => 'required|string|max:255',
         ]);
 
@@ -105,6 +127,7 @@ class AdminPageController extends Controller
             'location',
             'meta_title',
             'meta_description',
+            'ads_type',
             'meta_keywords',
             'banner_image',
             'featured_image',

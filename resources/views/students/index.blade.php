@@ -499,6 +499,16 @@ Female
 </div>
 
 
+{{-- Regsiteration Fee --}}
+<div class="col-md-2">
+
+<input type="number"
+name="registration_fee"
+class="form-control filterchangetext"
+placeholder="Regsiteration Fee"
+value="{{ request('registration_fee') }}">
+
+</div>
 
 {{-- Limit --}}
 <div class="col-md-1">
@@ -510,6 +520,7 @@ placeholder="limit"
 value="{{ request('limit') }}">
 
 </div>
+
 
 
 

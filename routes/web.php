@@ -1438,6 +1438,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/students/moveMultiple', [StudentController::class, 'moveMultipleToCertificate'])
     ->name('students.moveMultiple');
 
+        Route::post('/students/moveMultipletoConfirmation', [StudentController::class, 'moveMultipleToConfirmation'])
+    ->name('students.moveMultipleToConfirmation');
+
     // new routes for download certificate
 
     Route::post('/students/download-certificate-multiple', [StudentController::class, 'downloadCertificateMultiple'])

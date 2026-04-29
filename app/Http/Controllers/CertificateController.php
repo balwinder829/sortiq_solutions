@@ -142,6 +142,10 @@ public function index(Request $request)
             $query->where('department', $request->department);
         }
 
+        if ($request->filled('registration_fee')) {
+            $query->where('reg_fees', $request->registration_fee);
+        }
+
         if ($request->filled('fee_filter')) {
                 switch ($request->fee_filter) {
 

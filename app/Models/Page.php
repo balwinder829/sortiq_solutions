@@ -17,6 +17,7 @@ class Page extends Model
         'location',
         'meta_title',
         'meta_description',
+        'ads_type',
         'meta_keywords',
         'banner_image',
         'featured_image',

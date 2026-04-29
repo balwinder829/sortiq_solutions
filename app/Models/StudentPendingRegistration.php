@@ -18,7 +18,10 @@ class StudentPendingRegistration extends Model
         'college_name_input',
         'course_id',
         'is_sent_to_detail',
+        'course_name_input',
         'sent_to_detail_at',
+        'semester',
+        'study_mode',
         'start_date'
     ];
 

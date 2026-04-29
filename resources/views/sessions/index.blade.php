@@ -100,16 +100,26 @@
 
  {{-- ONLINE --}}
     <td>
+        <a href="{{ route('common_filtered_student', [
+            'session' => $session->id,'is_online' => 1
+        ]) }}"
+       class="text-decoration-none">
         <span class="badge bg-primary">
             {{ $session->online_students_count ?? 0 }}
         </span>
+        </a>
     </td>
 
     {{-- OFFLINE --}}
     <td>
+        <a href="{{ route('common_filtered_student', [
+            'session' => $session->id,'is_online' => 0
+        ]) }}"
+       class="text-decoration-none">
         <span class="badge bg-secondary">
             {{ $session->offline_students_count ?? 0 }}
         </span>
+    </a>
     </td>
 
                 <td class="text-center" style="width: 100px;">

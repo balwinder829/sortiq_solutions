@@ -213,6 +213,18 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
             </select>
         </div>
 
+
+{{-- Regsiteration Fee --}}
+<div class="col-md-2">
+
+<input type="number"
+name="registration_fee"
+class="form-control filterchangetext"
+placeholder="Regsiteration Fee"
+value="{{ request('registration_fee') }}">
+
+</div>
+
         {{-- Department --}}
       <!--   <div class="col-md-2">
             <select name="department" class="form-control" id="txtdepartment">
@@ -348,8 +360,16 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
         <!-- <div class="col-md-1 d-flex align-items-end">
             <button type="submit" class="btn btn-primary">Search</button>
         </div> -->
-       <div class="col-md-1 d-flex align-items-end">
+       <div class="col-md-3 d-flex align-items-end gap-2">
             <a href="{{ route('certificates.index') }}" class="btn btn-secondary">Reset</a>
+
+            <button type="button"
+                id="copySelected"
+                class="btn btn-success">
+
+                Copy to Session
+
+            </button>
         </div>
 </div>
 
@@ -532,6 +552,7 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
         <button id="downloadissueSelected" class="btn btn-primary">Download Certificates</button>
         <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
         <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
+        <button id="moveSelected" class="btn btn-warning">Shift To Confirmation</button>
     </div>
 
      
@@ -560,6 +581,61 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
     @csrf
     <input type="hidden" name="ids" id="bulkPlacementIds">
 </form>
+
+{{-- Move students to Certificates--}}
+<form id="bulkMoveStudent" method="POST" action="{{ route('students.moveMultipleToConfirmation') }}" style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkmove">
+</form>
+
+
+{{-- Move students to Placements--}}
+<form id="bulkPlacementForm" method="POST" action="{{ route('students.moveToPlacement') }}" style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkPlacementIds">
+</form>
+<!-- Copy Students Modal -->
+<div class="modal fade" id="copyStudentsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="copyStudentsForm" method="POST" action="{{ route('students.copy') }}">
+        @csrf
+
+        <input type="hidden" name="student_ids" id="copyStudentIds">
+
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Copy Students to Session</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="mb-3">
+                <label class="form-label">
+                    Session <span class="text-danger">*</span>
+                </label>
+                <select name="session" class="form-control" required>
+                    <option value="">-- Select Session --</option>
+                    @foreach($sessions as $session)
+                        <option value="{{ $session->id }}">
+                            {{ $session->session_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">
+                Copy
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+            </button>
+          </div>
+        </div>
+    </form>
+  </div>
+</div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
 @endsection
@@ -925,6 +1001,27 @@ $(document).ready(function () {
         });
     });
 
+    $('#copySelected').on('click', function () {
+
+        let ids = getSelectedIds();
+
+        // ❌ No student selected
+        // if (ids.length === 0) {
+        //     alert('Please select at least one student first');
+        //     return false;
+        // }
+         if (ids.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                text: 'Select at least one student'
+            });
+            return;
+        }
+        // ✅ Student(s) selected
+        $('#copyStudentIds').val(JSON.stringify(ids));
+        $('#copyStudentsModal').modal('show');
+    });
+
      $('#deleteSelected').click(function() {
             var ids = getSelectedIds();
 
@@ -964,6 +1061,33 @@ $(document).ready(function () {
 
                 $('#bulkPlacementIds').val(JSON.stringify(ids));
                 $('#bulkPlacementForm').submit();
+            });
+        });
+
+     $('#moveSelected').click(function () {
+
+            let ids = getSelectedIds();
+
+            if (ids.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Select at least one student'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Move selected students to Confirmation?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes'
+            }).then((result) => {
+
+                if (!result.isConfirmed) return;
+
+                $('#bulkmove').val(JSON.stringify(ids));
+                $('#bulkMoveStudent').submit();
             });
         });
 

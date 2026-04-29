@@ -58,12 +58,7 @@
 
     
 
-    <div class="form-group col-md-12">
-        <label>Content</label>
-        <textarea name="content"
-                  id="content"
-                  class="form-control">{{ old('content', $page->content) }}</textarea>
-    </div>
+   
 
     {{-- SEO --}}
    <!--  <div class="form-group col-md-6">
@@ -113,6 +108,41 @@
         </select>
     </div>
 
+    <div class="form-group col-md-6">
+        <label>Ads Type *</label>
+        <select name="ads_type" class="form-control" required>
+            <option value="">-- Select Type --</option>
+
+            <option value="internship" 
+                {{ old('ads_type', $page->ads_type) == 'internship' ? 'selected' : '' }}>
+                Internship
+            </option>
+
+            <option value="services" 
+                {{ old('ads_type', $page->ads_type) == 'services' ? 'selected' : '' }}>
+                Services
+            </option>
+
+            <option value="products" 
+                {{ old('ads_type', $page->ads_type) == 'products' ? 'selected' : '' }}>
+                Products
+            </option>
+
+            <option value="single product" 
+                {{ old('ads_type', $page->ads_type) == 'single product' ? 'selected' : '' }}>
+                Single Product
+            </option>
+
+        </select>
+    </div>
+
+     <div class="form-group col-md-12">
+        <label>Content</label>
+        <textarea name="content"
+                  id="content"
+                  class="form-control">{{ old('content', $page->content) }}</textarea>
+    </div>
+
 </div>
 
 <button class="btn btn-primary mt-3">Update</button>
@@ -125,6 +155,6 @@
 @push('scripts')
 <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
 <script>
-    // CKEDITOR.replace('content');
+    CKEDITOR.replace('content');
 </script>
 @endpush

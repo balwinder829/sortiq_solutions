@@ -20,12 +20,42 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <form method="GET" action="{{ route('pages.index') }}" id="filterForm">
+        <div class="row mb-3">
+
+            <div class="col-md-3">
+                <select name="ads_type" id="adsTypeFilter" class="form-control">
+                    <option value="">All Ads Type</option>
+                    <option value="internship" {{ request('ads_type')=='internship' ? 'selected' : '' }}>Internship</option>
+                    <option value="services" {{ request('ads_type')=='services' ? 'selected' : '' }}>Services</option>
+                    <option value="products" {{ request('ads_type')=='products' ? 'selected' : '' }}>Products</option>
+                    <option value="single product" {{ request('ads_type')=='single product' ? 'selected' : '' }}>Single Product</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <select name="status" id="statusFilter" class="form-control">
+                    <option value="">All Status</option>
+                    <option value="1" {{ request('status')=='1' ? 'selected' : '' }}>Active</option>
+                    <option value="0" {{ request('status')=='0' ? 'selected' : '' }}>Inactive</option>
+                </select>
+            </div>
+
+             <div class="col-md-3 d-flex align-items-end">
+                <a href="{{ route('pages.index') }}" class="btn btn-secondary">
+                    Reset
+                </a>
+            </div>
+
+        </div>
+    </form>
     <table id="pagesTable" class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>Title</th>
                 <th>Slug</th>
                 <th>Status</th>
+                <th>Ad Type</th>
                 <th>Created</th>
                 <th>Actions</th>
             </tr>
@@ -36,6 +66,7 @@
             <tr>
                 <td>{{ $page->title }}</td>
                 <td>{{ $page->slug }}</td>
+                <td>{{ ucwords($page->ads_type) }}</td>
                 <td>
                     <span class="badge {{ $page->is_active ? 'bg-success' : 'bg-danger' }}">
                         {{ $page->is_active ? 'Active' : 'Inactive' }}
@@ -106,5 +137,15 @@ $(document).ready(function() {
         lengthMenu: [5,10,25,50,100]
     });
 });
+</script>
+<script>
+document.getElementById('adsTypeFilter').addEventListener('change', function () {
+    document.getElementById('filterForm').submit();
+});
+
+document.getElementById('statusFilter').addEventListener('change', function () {
+    document.getElementById('filterForm').submit();
+});
+</script>
 </script>
 @endpush

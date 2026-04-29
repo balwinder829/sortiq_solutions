@@ -32,7 +32,7 @@
         $fmt = new \NumberFormatter('en_IN', \NumberFormatter::DECIMAL);
         $fmt->setAttribute(\NumberFormatter::FRACTION_DIGITS, 2);
     @endphp
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -43,7 +43,7 @@
         </a>
     </div>
     
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -54,7 +54,7 @@
         </a>
     </div>
     
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -65,7 +65,7 @@
         </a>
     </div>
     
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <!-- Row 2 -->
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -77,7 +77,7 @@
         </a>
     </div>
      
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <!-- Row 3 -->
          <a href="{{ route('students.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
@@ -89,7 +89,7 @@
         </a>
     </div>
     
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="{{ route('batches.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -100,7 +100,7 @@
         </a>
     </div>
      
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="{{ route('colleges.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -111,7 +111,7 @@
         </a>
     </div>
      
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="{{ route('trainers.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -122,7 +122,7 @@
         </a>
     </div>
      
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="{{ route('sessions.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -133,7 +133,7 @@
         </a>
     </div>
      
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="{{ route('courses.index') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -144,7 +144,7 @@
         </a>
     </div>
     
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="{{ route('admin.pendingfees.list') }}" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -155,7 +155,7 @@
         </a>
     </div>
      
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -166,7 +166,7 @@
         </a>
     </div>
      
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -177,7 +177,7 @@
         </a>
     </div>
      
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -188,7 +188,7 @@
         </a>
     </div>
     
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -200,7 +200,7 @@
         </a>
     </div>
     
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -212,7 +212,7 @@
     </div>
      
      <!-- @if(in_array($role, [1,4]))
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -227,7 +227,7 @@
 
 
     <!--  @if(in_array($role, [1,4]))
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -240,7 +240,7 @@
     @endif -->
 
     
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -251,10 +251,30 @@
         </a>
     </div>
     
+    <div class="col-12 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Highest Revenue State</h6>
+                <h3 class="fw-bold">
+                    Rs. {{ $fmt->format($topState->total ?? 0) }} - {{ $topState->state }}
+                </h3>
+            </div>
+        </div>
+    </div>
 
+    <div class="col-12 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Highest Revenue District</h6>
+                <h3 class="fw-bold">
+                    Rs. {{ $fmt->format($topDistrict->total ?? 0) }} - {{ $topDistrict->district }}
+                </h3>
+            </div>
+        </div>
+    </div>
 
     <!-- @if(in_array($role, [1,4]))
-    <div class="col-12 col-md-4">
+    <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
@@ -267,7 +287,7 @@
     @endif -->
 
      
-   <!--  <div class="col-12 col-md-4">
+   <!--  <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">

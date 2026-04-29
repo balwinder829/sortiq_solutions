@@ -53,7 +53,8 @@ class InternshipRegistrationController extends Controller
             // 'phone'      => 'required|string|max:50',
             'phone' => ['required', 'string', new NotBlockedNumber],
             'page_type'      => 'nullable|string',
-            'college'    => 'required|string|max:255',
+            // 'college'    => 'required|string|max:255',
+            'college_name'    => 'required|string|max:255',
             'slug'       => 'required|string|max:255',
             'technology' => [
                 'required',
@@ -72,8 +73,8 @@ class InternshipRegistrationController extends Controller
 
         $adminEmail = config('app.admin_email', 'admin@example.com');
 
-        Mail::to($adminEmail)
-            ->send(new InternshipRegistrationMail($registration));
+        // Mail::to($adminEmail)
+        //     ->send(new InternshipRegistrationMail($registration));
 
         return back()->with('success', 'Registration submitted successfully.');
     }

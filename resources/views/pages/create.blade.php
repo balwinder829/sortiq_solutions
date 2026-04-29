@@ -39,6 +39,25 @@
         <input type="text" name="location" class="form-control" required>
     </div>
 
+    <div class="form-group col-md-6">
+        <label>Ads Type *</label>
+        <select name="ads_type" class="form-control" required>
+            <option value="">-- Select Type --</option>
+            <option value="internship">Internship</option>
+            <option value="services">Services</option>
+            <option value="products">Products</option>
+            <option value="single product">Single Product</option>
+        </select>
+    </div>
+
+    <div class="form-group col-md-6">
+        <label>Status</label>
+        <select name="is_active" class="form-control">
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+        </select>
+    </div>
+
     <div class="form-group col-md-12">
         <label>Content</label>
         <textarea name="content" id="content" class="form-control"></textarea>
@@ -69,13 +88,7 @@
         <input type="text" name="featured_image" class="form-control">
     </div> -->
 
-    <div class="form-group col-md-6">
-        <label>Status</label>
-        <select name="is_active" class="form-control">
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-        </select>
-    </div>
+    
 
 </div>
 
@@ -89,6 +102,6 @@
 @push('scripts')
 <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
 <script>
-    // CKEDITOR.replace('content');
+    CKEDITOR.replace('content');
 </script>
 @endpush

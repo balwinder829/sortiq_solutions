@@ -51,7 +51,7 @@
 </div>
 
 {{-- Search / Filter Form --}}
-<form method="GET" action="{{ route('common_filtered_student') }}" class="mb-4">
+<form method="GET" action="{{ route('common_filtered_student') }}" id="filterForm" class="mb-4">
     <div class="row g-2">
         {{-- Student Name --}}
         <!-- <div class="col-md-2 col-6">
@@ -80,7 +80,7 @@
 
         {{-- College --}}
         <div class="col-md-2 col-6">
-            <select name="college_name" class="form-control collegeName" id="txtcollege">
+            <select name="college_name" class="form-control collegeName filterchange" id="txtcollege">
                 <option value="">--College--</option>
                 @foreach($colleges as $college)
                     <option value="{{ $college->id }}"
@@ -99,15 +99,15 @@
         {{-- Date Range --}}
         <div class="col-md-3">
             <div class="input-group">
-                <input type="date" name="start_date" class="form-control" 
+                <input type="date" name="start_date" class="form-control filterchange" 
                     value="{{ request('start_date') }}" placeholder="Start Date">
-                <input type="date" name="end_date" class="form-control" 
+                <input type="date" name="end_date" class="form-control filterchange" 
                     value="{{ request('end_date') }}" placeholder="End Date">
             </div>
         </div>
         {{-- Status --}}
         <div class="col-md-2 col-6">
-            <select name="status" class="form-control statusData">
+            <select name="status" class="form-control statusData filterchange">
                 <option value="" {{ request('status') == '' ? 'selected' : '' }}>--Status--</option>
 
                 @foreach($student_status as $s)
@@ -121,7 +121,7 @@
 
         {{-- Batches --}}
         <div class="col-md-2 col-6">
-            <select name="batch_assign" class="form-control technology" id="txttechnology">
+            <select name="batch_assign" class="form-control technology filterchange" id="txttechnology">
                 <option value="">--Batches--</option>
                 @foreach($batches as $batch)
                     <option value="{{ $batch->id }}"
@@ -134,7 +134,7 @@
 
          {{-- Technology / Course --}}
         <div class="col-md-2 col-6">
-            <select name="technology" class="form-control technology" id="txttechnology">
+            <select name="technology" class="form-control technology filterchange" id="txttechnology">
                 <option value="">--Technology--</option>
                 @foreach($courses as $course)
                     <option value="{{ $course->id }}"
@@ -147,7 +147,7 @@
 
         {{-- Part-Time Offer --}}
         <div class="col-md-2 col-6">
-            <select name="part_time_offer" class="form-control">
+            <select name="part_time_offer" class="form-control filterchange">
                 <option value="">--Part-Time Offer--</option>
                 <option value="1" {{ request('part_time_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('part_time_offer') === '0' ? 'selected' : '' }}>No</option>
@@ -156,7 +156,7 @@
 
         {{-- Placement Offer --}}
         <div class="col-md-2 col-6">
-            <select name="placement_offer" class="form-control">
+            <select name="placement_offer" class="form-control filterchange">
                 <option value="">--Placement Offer--</option>
                 <option value="1" {{ request('placement_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('placement_offer') === '0' ? 'selected' : '' }}>No</option>
@@ -165,7 +165,7 @@
 
         {{-- PG Offer --}}
         <div class="col-md-2 col-12">
-            <select name="pg_offer" class="form-control">
+            <select name="pg_offer" class="form-control filterchange">
                 <option value="">--PG Offer--</option>
                 <option value="1" {{ request('pg_offer') === '1' ? 'selected' : '' }}>Yes</option>
                 <option value="0" {{ request('pg_offer') === '0' ? 'selected' : '' }}>No</option>
@@ -173,7 +173,7 @@
         </div>
 
         <div class="col-md-3 col-6">
-            <select name="fee_filter" class="form-control">
+            <select name="fee_filter" class="form-control filterchange">
                 <option value="">-- Fee Related Filter --</option>
 
                 {{-- Fee Status --}}
@@ -212,7 +212,7 @@
 
 
         <div class="col-md-2 col-12">
-            <select name="gender" class="form-control">
+            <select name="gender" class="form-control filterchange">
                 <option value="">--Gender--</option>
 
                 <option value="male"
@@ -227,10 +227,45 @@
             </select>
         </div>
 
+        {{-- Study Mode --}}
+        <div class="col-md-2">
+
+        <select name="is_online"
+        class="form-control filterchange">
+
+        <option value="">--Study Mode--</option>
+
+        <option value="0"
+        {{ request('is_online')==='0'?'selected':'' }}>
+        Offline
+        </option>
+
+        <option value="1"
+        {{ request('is_online')==='1'?'selected':'' }}>
+        Online
+        </option>
+
+        </select>
+
+        </div>
+        
+{{-- Regsiteration Fee --}}
+<div class="col-md-2">
+
+<input type="number"
+name="registration_fee"
+class="form-control filterchangetext"
+placeholder="Regsiteration Fee"
+value="{{ request('registration_fee') }}">
+
+</div>
+
+
+
         <div class="col-md-1 col-12">
             <input type="number"
            name="limit"
-           class="form-control"
+           class="form-control filterchangetext"
            placeholder="limit (e.g. 100)"
            min="1"
            step="1"
@@ -239,21 +274,7 @@
        </div>
 
           {{-- Amount Range Slider --}}
-       <!--  <div class="col-md-4 col-12">
-            <label class="form-label fw-bold">Amount Range</label>
-
-            <div id="amountSlider"></div>
-
-            <div class="d-flex justify-content-between mt-2">
-                <span>Min: <strong id="amountMinText"></strong></span>
-                <span>Max: <strong id="amountMaxText"></strong></span>
-            </div>
-
-            {{-- Hidden inputs for GET --}}
-            <input type="hidden" name="amount_min" id="amountMin" value="{{ request('amount_min', 0) }}">
-            <input type="hidden" name="amount_max" id="amountMax" value="{{ request('amount_max', 200000) }}">
-        </div>
- -->
+        
          
          {{-- Amount Range Slider --}}
 <div class="col-md-4 col-12">
@@ -267,7 +288,7 @@
             <input type="text"
                    name="amount_min"
                    id="amountMin"
-                   class="form-control text-end"
+                   class="form-control text-end filterchange"
                    value="{{ request('amount_min', 0) }}">
         </div>
 
@@ -278,7 +299,7 @@
             <input type="text"
                    name="amount_max"
                    id="amountMax"
-                   class="form-control text-end"
+                   class="form-control text-end filterchange"
                    value="{{ request('amount_max', 200000) }}">
         </div>
     </div>
@@ -287,7 +308,7 @@
 	{{-- Buttons --}}
 	<div class="mt-2 tble-bts">
 		<button type="submit" class="btn" style="background-color: #6b51df; color: #fff;">Search</button>
-		<a href="{{ route('students.index') }}" class="btn btn-secondary">Reset</a>
+		<a href="{{ route('common_filtered_student') }}" class="btn btn-secondary">Reset</a>
         <a href="{{ route('students.export', request()->query()) }}"
            class="btn btn-primary">
              </i> Download Excel
@@ -1258,6 +1279,25 @@ $(document).ready(function () {
 
 });
 </script>
- 
+ <script>
+$(document).ready(function(){
+
+    let timer;
+
+    $('.filterchange').on('change', function(){
+
+        $('#filterForm').submit();
+        
+    });
+    $('.filterchangetext').on('input', function(){
+        clearTimeout(timer);
+
+        timer = setTimeout(function(){
+            $('#filterForm').submit();
+        }, 500); // waits 500ms after typing stops
+    });
+
+});
+</script>
 
 @endpush

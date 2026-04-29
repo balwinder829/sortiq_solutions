@@ -87,103 +87,110 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('student.register') }}">
-            @csrf
+        <!-- SHOW ERRORS -->
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
-            <!-- Student Info -->
-            <div class="row mb-3">
-                <div class="col">
-                    <input type="text" class="form-control" name="student_name" placeholder="Student Name" required>
-                </div>
 
-                <div class="col">
-                    <input type="text" class="form-control" name="father_name" placeholder="Father Name" required>
-                </div>
+<form method="POST" action="{{ route('student.register') }}">
+    @csrf
 
-                
-            </div>
-            <div class=" row mb-3">
-                <div class="col">
-                    <input type="text" class="form-control" name="contact" placeholder="Mobile Number" max="10" required minlength="10"
-                       maxlength="10"
-                       pattern="[0-9]{10}"
-                       title="Enter a valid 10-digit mobile number">
-                </div>
-                <div class="col">
-                    <input type="email" class="form-control" name="email" placeholder="Email" required>
-                </div>
-            </div>
+    <!-- Student Info -->
+    <div class="row mb-3">
+        <div class="col">
+            <input type="text" class="form-control" name="student_name"
+                   value="{{ old('student_name') }}"
+                   placeholder="Full Name" required>
+        </div>
 
-            <!-- Gender -->
-            <div class=" row mb-3">
-                 <div class="col">
-                    <select class="form-select" name="gender" required>
-                        <option value="">Select Gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
-                </div>
+        <div class="col">
+            <input type="text" class="form-control" name="father_name"
+                   value="{{ old('father_name') }}"
+                   placeholder="Father Name" required>
+        </div>
+    </div>
 
-                <!-- <div class="col">
-                    <input type="text" class="form-control" name="college_name_input" placeholder="College Full Name" required>
-                </div> -->
+    <div class="row mb-3">
+        <div class="col">
+            <input type="text" class="form-control" name="contact"
+                   value="{{ old('contact') }}"
+                   placeholder="Mobile Number"
+                   minlength="10"
+                   maxlength="10"
+                   pattern="[0-9]{10}"
+                   title="Enter a valid 10-digit mobile number"
+                   required>
+        </div>
 
-                  <div class="col">
-                    <select class="form-select select2" name="college_id" required>
-                        <option value="">Search College</option>
-                        @foreach($colleges as $college)
-                            <option value="{{ $college->id }}">
-                                {{ $college->FullName }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div> 
-            </div>
+        <div class="col">
+            <input type="email" class="form-control" name="email"
+                   value="{{ old('email') }}"
+                   placeholder="Email" required>
+        </div>
+    </div>
 
-            <!-- Father -->
-            
+    <!-- Gender -->
+    <div class="row mb-3">
+        <div class="col">
+            <select class="form-select" name="gender" required>
+                <option value="">Select Gender</option>
+                <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Male</option>
+                <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Female</option>
+            </select>
+        </div>
 
-            <!-- College (SELECT2 ENABLED) -->
-            <!-- <div class="row mb-3">
-                <select class="form-select select2" name="college_id" required>
-                    <option value="">Search College</option>
-                    @foreach($colleges as $college)
-                        <option value="{{ $college->id }}">
-                            {{ $college->FullName }}
-                        </option>
-                    @endforeach
-                </select>
-            </div> -->
+        <div class="col">
+            <input type="text" class="form-control" name="college_name_input"
+                   value="{{ old('college_name_input') }}"
+                   placeholder="College Name" required>
+        </div>
+    </div>
 
-            <!-- Course -->
-            <!-- <div class="mb-3">
-                <select class="form-select" name="course_id" required>
-                    @foreach($courses as $course)
-                        <option value="{{ $course->id }}">
-                            {{ $course->course_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div> -->
+    <div class="row mb-3">
+        <div class="col">
+            <input type="text" class="form-control" name="semester"
+                   value="{{ old('semester') }}"
+                   placeholder="Stream & Semester" required>
+        </div>
 
-            <!-- Start Date -->
-            <div class="row mb-3">
-                <div class="col">
-                    <small class="text-muted">Start Date</small>
-                    <input type="date" class="form-control" name="start_date" required>
-                </div>
-                <div class="col">
-                </div>
-            </div>
+        <div class="col">
+            <input type="text" class="form-control" name="course_name_input"
+                   value="{{ old('course_name_input') }}"
+                   placeholder="Technology / Domain" required>
+        </div>
+    </div>
 
-            <!-- Submit -->
-            <div class="text-center">
-                <button type="submit" class="btn primary-btn px-5">
-                    Submit
-                </button>
-            </div>
+    <div class="row mb-3">
+        <div class="col">
+            <select class="form-select" name="study_mode" required>
+                <option value="">Select Training Mode </option>
+                <option value="online" {{ old('study_mode') == 'online' ? 'selected' : '' }}>Online</option>
+                <option value="offline" {{ old('study_mode') == 'offline' ? 'selected' : '' }}>Offline</option>
+            </select>
+        </div>
 
-        </form>
+        <div class="col mb-2">
+            <small class="text-muted">Start Date</small>
+            <input type="date" class="form-control" name="start_date"
+                   value="{{ old('start_date') }}" required>
+        </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="text-center">
+        <button type="submit" class="btn primary-btn px-5 mt-10">
+            Submit
+        </button>
+    </div>
+
+</form>
     </div>
 </div>
 

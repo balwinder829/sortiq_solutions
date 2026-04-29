@@ -5,30 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class InternshipRegistration extends Model
+class ServicesRegistration extends Model
 {
     use SoftDeletes;
-
-    protected $table = 'internship_registrations';
 
     protected $fillable = [
         'full_name',
         'email',
         'phone',
-        'college',
-        'college_name',
+        'location',
         'technology',
         'message',
-        'status',
-        'page_type',
         'slug',
         'ip',
     ];
-
-    public function collegeData()
-    {
-        return $this->belongsTo(College::class, 'college', 'id')->withTrashed();
-    }
 
     public function courseData()
     {

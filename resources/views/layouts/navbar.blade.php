@@ -993,13 +993,34 @@ function isParent($routes)
                     </ul>
                 </li>
 
-                 {{-- Gmail Form Entries --}}
-                <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
-                  <a href="{{ route('admin.form-entries.index') }}">
-                      <i class="fas fa-file-alt"></i>
-                      <span class="nav-text">Gmail Form Entries</span>
-                  </a>
+                 <li class="{{ isParent(['admin.form-entries.*','admin.gmail*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Gmail</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['admin.form-entries.*','admin.gmail*']) }}">
+                        <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
+                          <a href="{{ route('admin.form-entries.index') }}">
+                              <i class="fas fa-file-alt"></i>
+                              <span class="nav-text">Gmail Form Entries</span>
+                          </a>
+                        </li>
+                        <li class="{{ isParent(['admin.gmail*']) }}">
+
+                            <a href="{{ route('admin.gmail.index') }}">
+
+                                <i class="fas fa-envelope"></i>
+
+                                <span class="nav-text">Gmail (Queries & HR)</span>
+
+                            </a>
+
+                        </li>
+                    </ul>
                 </li>
+
+                 {{-- Gmail Form Entries --}}
+                
                        
 
                 {{-- Blocked Numbers --}}
@@ -1150,17 +1171,7 @@ function isParent($routes)
                     </ul>
                 </li>
 
-                <li class="{{ isParent(['admin.gmail*']) }}">
-
-                    <a href="{{ route('admin.gmail.index') }}">
-
-                        <i class="fas fa-envelope"></i>
-
-                        <span class="nav-text">Gmail (Queries & HR)</span>
-
-                    </a>
-
-                </li>
+                
 
                {{-- Logout --}}
                 <li>
@@ -2149,15 +2160,44 @@ function isParent($routes)
                 @endcanany
 
                 {{-- Gmail Form Entries --}}
-                        
-                 
-                 @can('gmail_form_entries.view')
+                    @canany(['gmail_form_entries.view','gmail_queries.view'])    
+                  <li class="{{ isParent(['admin.form-entries.*','admin.gmail*']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-pen-to-square"></i>
+                        <span class="nav-text">Gmail</span>
+                    </a>
+                    <ul class="{{ showSubmenu(['admin.form-entries.*','admin.gmail*']) }}">
+                        @can('gmail_form_entries.view')
                         <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
                           <a href="{{ route('admin.form-entries.index') }}">
                               <i class="fas fa-file-alt"></i>
                               <span class="nav-text">Gmail Form Entries</span>
                           </a>
                         </li>
+                        @endcan
+                        @can('gmail_queries.view')
+                        <li class="{{ isParent(['admin.gmail*']) }}">
+
+                            <a href="{{ route('admin.gmail.index') }}">
+
+                                <i class="fas fa-envelope"></i>
+
+                                <span class="nav-text">Gmail (Queries & HR)</span>
+
+                            </a>
+
+                        </li>
+                        @endcan
+                    </ul>
+                </li>
+                 @endcanany
+                 @can('gmail_form_entries.view')
+                        <!-- <li class="{{ request()->routeIs('admin.form-entries.*') ? 'mm-active' : '' }}">
+                          <a href="{{ route('admin.form-entries.index') }}">
+                              <i class="fas fa-file-alt"></i>
+                              <span class="nav-text">Gmail Form Entries</span>
+                          </a>
+                        </li> -->
                         @endcan
 
                      {{-- Security --}}
@@ -2343,7 +2383,7 @@ function isParent($routes)
                 @endcanany
                          
             @can('gmail_queries.view')
-             <li class="{{ isParent(['admin.gmail*']) }}">
+            <!--  <li class="{{ isParent(['admin.gmail*']) }}">
 
                     <a href="{{ route('admin.gmail.index') }}">
 
@@ -2353,7 +2393,7 @@ function isParent($routes)
 
                     </a>
 
-                </li>
+                </li> -->
                @endcan 
                {{-- Logout --}}
                 <li>

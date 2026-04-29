@@ -66,6 +66,11 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             if ($request->filled('is_online')) {
                 $query->where('is_online', $request->is_online);
             }
+
+            if ($request->filled('registration_fee')) {
+                $query->where('reg_fees', $request->registration_fee);
+            }
+            
             if ($request->filled('technology')) {
                 // $query->where('technology', $request->technology);
                 $query->whereRaw(

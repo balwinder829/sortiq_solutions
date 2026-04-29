@@ -16,7 +16,7 @@ class FrontendPageController extends Controller
         $page = Page::where('slug', $slug)
             ->where('is_active', 1)
             ->firstOrFail();
-
+       
         /*
         |--------------------------------------------------------------------------
         | Slug → Blade map
@@ -31,16 +31,35 @@ class FrontendPageController extends Controller
 
         // $view = $bladeMap[$slug] ?? 'custom_pages_default_show';
         $type = null;
+        $type = $page->ads_type;
+
         $testimonials = collect(); 
-        if (str_contains($slug, 'internship')) {
+        // if (str_contains($slug, 'internship')) {
+        //     $view = 'internship-landing-page';
+        //     $type = 'internship';
+            
+        // } elseif (str_contains($slug, 'services')) {
+        //     $view = 'ads-landing-page';
+        //      $type = 'services';
+            
+        // } else {
+        //     $view = 'custom_pages_default_show';
+        // }
+
+        // ✅ View mapping based on ads_type
+        if ($type === 'internship') {
             $view = 'internship-landing-page';
-            $type = 'internship';
-            
-        } elseif (str_contains($slug, 'services')) {
+
+        } elseif ($type === 'services') {
             $view = 'ads-landing-page';
-             $type = 'services';
-            
-        } else {
+
+        } elseif ($type === 'products') {
+            $view = 'product-landing-page'; // optional (change if needed)
+
+        } elseif ($type === 'single product') {
+            $view = 'product-single-landing-page';
+
+        }else {
             $view = 'custom_pages_default_show';
         }
 

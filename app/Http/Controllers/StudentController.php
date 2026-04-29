@@ -127,6 +127,10 @@ class StudentController extends Controller
             if ($request->filled('is_online')) {
                 $query->where('is_online', $request->is_online);
             }
+
+            if ($request->filled('registration_fee')) {
+                $query->where('reg_fees', $request->registration_fee);
+            }
             // if ($request->filled('technology')) {
             //     $query->where('technology', $request->technology);
             // }
@@ -1304,6 +1308,43 @@ public function import(Request $request)
         }
 
         return back()->with('success', 'Student send to Certificate Section.');
+    }
+
+    public function moveMultipleToConfirmation(Request $request)
+    {
+        // Expecting JSON string or array in $request->ids
+        $idsPayload = $request->input('ids');
+        // dd($idsPayload);
+        if (empty($idsPayload)) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Decode possible JSON string
+        $ids = is_array($idsPayload) ? $idsPayload : json_decode($idsPayload, true);
+
+        if (!is_array($ids) || count($ids) === 0) {
+            return back()->with('error', 'Invalid selection.');
+        }
+
+        // Validate all selected students exist and pending fees = 0
+        foreach ($ids as $studentId) {
+            // $student = Student::find($studentId);
+            $student = Student::with(['sessionData', 'durationData','collegeData'])->find($studentId);
+            if (!$student) {
+                return back()->with('error', "Student (ID: {$studentId}) not found.");
+            }
+        }
+
+        // If we reach here, all students are OK — process each
+        foreach ($ids as $studentId) {
+            $student = Student::find($studentId);
+            if (!$student) continue; // defensive
+
+            $student->certificate_status = 0; // confirmation
+            $student->save();
+        }
+
+        return back()->with('success', 'Student sent back to Confirmation Section.');
     }
 
 
