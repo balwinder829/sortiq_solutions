@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductsRegistration;
+use App\Models\SingleProductRegistration;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Exports\ServicesRegistrationsExport;
@@ -10,10 +10,10 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Rules\NotBlockedNumber;
  use App\Http\DataTables\DataTablesServerSide;
 
-class ProductsRegistrationController extends Controller
+class SingleProductRegistrationController extends Controller
 {
 
-    protected string $permissionPrefix = 'products_registration';
+    protected string $permissionPrefix = 'single_product_registration';
 
     protected array $permissionMap = [
         'index'        => 'view',
@@ -44,7 +44,7 @@ class ProductsRegistrationController extends Controller
         // ✅ AJAX → DataTable
         if ($request->ajax()) {
 
-            $query = ProductsRegistration::with('courseData');
+            $query = SingleProductRegistration::with('courseData');
 
             // ✅ FILTERS
             if ($request->technology) {
@@ -64,11 +64,11 @@ class ProductsRegistrationController extends Controller
             ], function ($row) {
 
                 $actions = '
-                    <a href="' . route('products-registrations.show', $row->id) . '" class="btn btn-sm">
+                    <a href="' . route('single-product-registrations.show', $row->id) . '" class="btn btn-sm">
                         <i class="fa fa-eye"></i>
                     </a>
 
-                    <form action="' . route('products-registrations.destroy', $row->id) . '" 
+                    <form action="' . route('single-product-registrations.destroy', $row->id) . '" 
                           method="POST" 
                           style="display:inline-block;"
                           >
@@ -103,23 +103,23 @@ class ProductsRegistrationController extends Controller
             'course_name'
         ]);
 
-        $slugs = ProductsRegistration::select('slug')
+        $slugs = SingleProductRegistration::select('slug')
             ->distinct()
             ->orderBy('slug')
             ->pluck('slug');
 
-        return view('products-registrations.index', compact('technologies','slugs'));
+        return view('single-product-registrations.index', compact('technologies','slugs'));
     }
  
-    public function show(ProductsRegistration $products_registration)
+    public function show(SingleProductRegistration $single_product_registration)
     {
-        $services_registration = $products_registration;
-        return view('products-registrations.show', compact('services_registration'));
+        $services_registration = $single_product_registration;
+        return view('single-product-registrations.show', compact('services_registration'));
     }
 
-    public function destroy(ProductsRegistration $products_registration)
+    public function destroy(SingleProductRegistration $single_product_registration)
     {
-        $products_registration->delete();
+        $single_product_registration->delete();
 
         return back()->with('success', 'Registration deleted successfully');
     }
@@ -127,8 +127,8 @@ class ProductsRegistrationController extends Controller
     public function export(Request $request)
     {
         return Excel::download(
-            new ProductsRegistration($request),
-            'products_registration' . now()->format('Ymd_His') . '.xlsx'
+            new SingleProductRegistration($request),
+            'single_product_registrations_' . now()->format('Ymd_His') . '.xlsx'
         );
     }
 }

@@ -10,9 +10,9 @@
 </style>
 
 <div class="container">
-     <div class="row mb-2">
-        <div class="col-md-4">
-            <h1 class="page_heading">Services Registrations</h1>
+     <div class="row mb-6">
+        <div class="col-md-6">
+            <h1 class="page_heading">SIngle Products Registrations</h1>
         </div>
     </div>
 
@@ -36,7 +36,32 @@
                     </div>
 
                     <div class="col-md-4">
-                       <select name="technology" class="form-select filterchange">
+                        <select name="technology" required class="form-select filterchange">
+                        <option value="" disabled {{ old('technology') ? '' : 'selected' }}>
+                            Select Service Required
+                        </option>
+
+                        <option value="Website Development" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
+                            Website Development
+                        </option>
+
+                        <option value="E-commerce Development" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
+                            E-commerce Development
+                        </option>
+
+                        <option value="SEO Services" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
+                            SEO Services
+                        </option>
+
+                        <option value="Google Ads" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
+                            Google Ads
+                        </option>
+
+                        <option value="Social Media Marketing" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                            Social Media Marketing
+                        </option>
+                    </select>
+                       <!-- <select name="technology" class="form-select filterchange">
                             <option value="">All Technologies</option>
                             @foreach($technologies as $tech)
                                 <option value="{{ $tech->id }}"
@@ -44,13 +69,13 @@
                                     {{ $tech->course_name }}
                                 </option>
                             @endforeach
-                        </select>
+                        </select> -->
                     </div>
 
                      
 
-                    <div class="col-md-1 d-flex gap-2">
-                        <a href="{{ route('services-registrations.index') }}"
+                    <div class="col-md-2 d-flex gap-2">
+                        <a href="{{ route('single-product-registrations.index') }}"
                            class="btn btn-secondary w-100">Reset</a>
 
                         <a href="javascript:void(0)" id="exportBtn" class="btn btn-success w-100">
@@ -103,7 +128,7 @@ $(document).ready(function () {
         processing: true,
         serverSide: true,
         ajax: {
-            url: "{{ route('services-registrations.index') }}",
+            url: "{{ route('single-product-registrations.index') }}",
             data: function (d) {
                 d.slug       = $('select[name=slug]').val();
                 d.technology = $('select[name=technology]').val();
@@ -120,7 +145,7 @@ $(document).ready(function () {
             { data: 6 },
             { data: 7, orderable:false, searchable:false }
         ],
-        
+        // pageLength: 1
     });
 
     // ✅ FILTER CHANGE → NO RELOAD
@@ -153,7 +178,7 @@ $(document).ready(function () {
 
                 let form = $('<form>', {
                     method: 'POST',
-                    action: "{{ url('services-registrations') }}/" + id
+                    action: "{{ url('single-product-registrations') }}/" + id
                 });
 
                 form.append('@csrf');
@@ -182,7 +207,7 @@ $('#exportBtn').on('click', function () {
     if (technology) params.append('technology', technology);
     if (limit) params.append('limit', limit);
 
-    let url = "{{ route('services-registrations.export') }}?" + params.toString();
+    let url = "{{ route('single-product-registrations.export') }}?" + params.toString();
 
     window.location.href = url;
 });

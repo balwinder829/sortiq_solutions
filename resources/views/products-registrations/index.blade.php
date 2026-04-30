@@ -10,9 +10,9 @@
 </style>
 
 <div class="container">
-     <div class="row mb-2">
-        <div class="col-md-4">
-            <h1 class="page_heading">Services Registrations</h1>
+     <div class="row mb-6">
+        <div class="col-md-6">
+            <h1 class="page_heading">Products Registrations</h1>
         </div>
     </div>
 
@@ -36,7 +36,38 @@
                     </div>
 
                     <div class="col-md-4">
-                       <select name="technology" class="form-select filterchange">
+                       <select name="technology" required class="form-select filterchange">
+    
+                            <option value="" disabled {{ old('technology') ? '' : 'selected' }}>
+                                Select Product
+                            </option>
+
+                            <option value="Campusedgepro" {{ old('technology') == 'Campusedgepro' ? 'selected' : '' }}>
+                                Campusedgepro
+                            </option>
+
+                            <option value="BlogerzWorld" {{ old('technology') == 'BlogerzWorld' ? 'selected' : '' }}>
+                                BlogerzWorld
+                            </option>
+
+                            <option value="InventoryManageSuite" {{ old('technology') == 'InventoryManageSuite' ? 'selected' : '' }}>
+                                InventoryManageSuite
+                            </option>
+
+                            <option value="AllmartX" {{ old('technology') == 'AllmartX' ? 'selected' : '' }}>
+                                AllmartX
+                            </option>
+
+                            <option value="Prop99X" {{ old('technology') == 'Prop99X' ? 'selected' : '' }}>
+                                Prop99X
+                            </option>
+
+                            <option value="Siterankify" {{ old('technology') == 'Siterankify' ? 'selected' : '' }}>
+                                Siterankify
+                            </option>
+
+                        </select>
+                       <!-- <select name="technology" class="form-select filterchange">
                             <option value="">All Technologies</option>
                             @foreach($technologies as $tech)
                                 <option value="{{ $tech->id }}"
@@ -44,13 +75,13 @@
                                     {{ $tech->course_name }}
                                 </option>
                             @endforeach
-                        </select>
+                        </select> -->
                     </div>
 
                      
 
-                    <div class="col-md-1 d-flex gap-2">
-                        <a href="{{ route('services-registrations.index') }}"
+                    <div class="col-md-2 d-flex gap-2">
+                        <a href="{{ route('products-registrations.index') }}"
                            class="btn btn-secondary w-100">Reset</a>
 
                         <a href="javascript:void(0)" id="exportBtn" class="btn btn-success w-100">
@@ -83,7 +114,7 @@
                 <th>Location</th>
                 <th>Technology</th>
                 <th>Added Date</th>
-                <th>Actions</th>
+                <th width="100">Actions</th>
             </tr>
             </thead>
         </table>
@@ -103,7 +134,7 @@ $(document).ready(function () {
         processing: true,
         serverSide: true,
         ajax: {
-            url: "{{ route('services-registrations.index') }}",
+            url: "{{ route('products-registrations.index') }}",
             data: function (d) {
                 d.slug       = $('select[name=slug]').val();
                 d.technology = $('select[name=technology]').val();
@@ -120,7 +151,7 @@ $(document).ready(function () {
             { data: 6 },
             { data: 7, orderable:false, searchable:false }
         ],
-        
+        // pageLength: 25
     });
 
     // ✅ FILTER CHANGE → NO RELOAD
@@ -153,7 +184,7 @@ $(document).ready(function () {
 
                 let form = $('<form>', {
                     method: 'POST',
-                    action: "{{ url('services-registrations') }}/" + id
+                    action: "{{ url('products-registrations') }}/" + id
                 });
 
                 form.append('@csrf');
@@ -182,7 +213,7 @@ $('#exportBtn').on('click', function () {
     if (technology) params.append('technology', technology);
     if (limit) params.append('limit', limit);
 
-    let url = "{{ route('services-registrations.export') }}?" + params.toString();
+    let url = "{{ route('products-registrations.export') }}?" + params.toString();
 
     window.location.href = url;
 });

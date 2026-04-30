@@ -6,22 +6,132 @@
     <meta name="geo.placename" content="{{ $page->location }}">
     <meta name="geo.region" content="IN">
 @endif
-<title>Products | Sortiq Solutions Pvt Ltd</title>
+<title>Internship | Sortiq Solutions Pvt Ltd</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="{{ asset('certificate_fav.jpeg') }}">
 
 <style>
+    /* Sticky CTA */
+.sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  padding: 10px;
+  z-index: 9998;
 
+  display: none;
+  gap: 10px;
+}
+
+/* Buttons */
+.sticky-cta a {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Colors */
+.apply-btn {
+  background: #ff6b00;
+}
+
+.call-btn {
+  background: #25D366;
+}
+
+
+/* Mobile only */
+@media (max-width: 768px) {
+  .sticky-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  padding: 10px;
+  z-index: 9998;
+
+  display: flex;   /* ALWAYS visible */
+  gap: 10px;
+}
+body {
+  padding-bottom: 65px;
+  overflow-x: hidden;
+}
+}
+    .card {
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+    /* Section background */
+.urgency-section {
+  /*background: linear-gradient(135deg, #fff7f2, #ffffff);*/
+   background: linear-gradient(135deg, #ffece0, #f5f7fa);
+}
+
+/* Card base */
+.urgency-card {
+  border: none;
+  border-radius: 16px;
+  padding: 30px 20px;
+  transition: all 0.35s ease;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+
+/* Icon circle */
+.icon-box {
+  width: 65px;
+  height: 65px;
+  margin: 0 auto 15px;
+  border-radius: 50%;
+  background: #fff3ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #ff5800;
+  transition: 0.3s;
+}
+
+/* Hover effect */
+.urgency-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 18px 40px rgba(255,88,0,0.2);
+}
+
+/* Icon animation on hover */
+.urgency-card:hover .icon-box {
+  background: #ff5800;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* Text */
+.urgency-card h5 {
+  font-weight: 600;
+  color: #00163e;
+}
     .whatsapp-float {
     position: fixed;
-    bottom: 25px;
+    bottom: 80;
     right: 20px;
     background: #25D366;
     color: #fff;
-    padding: 14px 18px;
-    border-radius: 50px;
+    padding: 12px 18px;
+    border-radius: 12px;
     font-size: 16px;
     font-weight: 600;
     text-decoration: none;
@@ -32,8 +142,16 @@
     z-index: 9999;
 
     opacity: 0;
-    transform: translateY(20px);
+    /*transform: translateY(20px);*/
     transition: all .4s ease;
+}
+
+.sticky-cta {
+  box-sizing: border-box;
+}
+
+.sticky-cta a {
+  min-width: 0; /* important for flex overflow */
 }
 
 .whatsapp-float.show {
@@ -77,10 +195,14 @@
 .hero-content h2{ font-size:42px;font-weight:800;margin-bottom:15px;}
 .hero-content p{ font-size:18px;margin-bottom:30px; }
 
+
 .hero-btn{
   background:#ff5800;
-  border:none;border-radius:40px;
-  color:#fff;padding:14px 35px;font-size:18px;font-weight:600;
+  border:none;
+  border-radius:12px;
+  color:#fff;
+  padding:10px 20px;
+  font-size:18px;font-weight:600;
   text-decoration:none;
 }
 
@@ -146,7 +268,7 @@ form textarea{
 .services-area{background:#00163e;}
 
 footer{
-  background:#00163e;text-align:center;color:#fff;padding:22px 0;font-size:14px;margin-top:0;
+  background:#00163e;text-align:center;color:#fff;padding:10px 0;font-size:14px;margin-top:0;
   border-top:1px solid rgba(255,255,255,0.3);
 }
 
@@ -156,8 +278,12 @@ footer{
   .hero-btn{margin:auto;display:block;width:200px;}
   .form-box{margin-top:35px;}
   .hero-content h2{font-size:30px;}
+  .hero-content h3{font-size:20px; }
   .hero-section{padding:80px 0;}
   .site-header img{height:45px;}
+}
+@media (max-width: 768px) {
+ 
 }
 
 /* ================= CERTIFICATE CAROUSEL ================= */
@@ -247,47 +373,21 @@ footer{
 .site-footer {
     background: #00163e;
     text-align: center;
-    padding: 25px 15px;
+    /*padding: 25px 15px;*/
     color: #fff;
     font-size: 15px;
     position: relative;
+    padding: 10px 0px;
+}
+.site-footer {
+    
+    /*font-size: 13px;*/
 }
 
-/* Footer WhatsApp Button - Right Side */
-.footer-whatsapp {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #25D366;
-    padding: 10px 18px;
-    border-radius: 30px;
-    color: #fff;
-    font-weight: 600;
-    text-decoration: none;
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.site-footer p {
+  margin-bottom: 0;
 }
-
-.footer-whatsapp i {
-    font-size: 20px;
-}
-
-.footer-whatsapp:hover {
-    background: #1ebe5d;
-}
-
-/* Mobile Fix */
-@media (max-width: 600px) {
-    .footer-whatsapp {
-        position: static;
-        margin-top: 12px;
-        transform: none;
-        display: inline-block;
-    }
-}
+ 
 form input,
 form textarea,
 form select {
@@ -325,9 +425,102 @@ form select:focus {
     border-color: #ff6a00;
     box-shadow: 0 0 0 3px rgba(255,106,0,0.15);
 }
+/*********NEW CSS****************/
 
+.container {
+  max-width: 1200px;
+  width: 100%;
+}
+.whatsapp-float {
+  max-width: calc(100% - 40px);
+  white-space: nowrap;
+}
+.whatsapp-float {
+  white-space: normal;
+}
 
+.footer-cta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;   /* 🔥 KEY FIX */
+  gap: 15px;
+}
 
+.footer-left {
+  flex: 1 1 300px;
+}
+
+.footer-right {
+  flex: 1 1 300px;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .footer-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-right {
+    text-align: left;
+  }
+}
+
+/*.responsive-flex {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+*/
+.responsive-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;  /* normal case (1 line) */
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/*
+@media (max-width: 992px) {
+  .responsive-flex {
+    justify-content: center;    
+    text-align: center;
+  }
+}*/
+.hero-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto 20px;
+  display: inline-block;   /* 🔥 KEY FIX */
+  text-align: left;        /* keeps text aligned with bullet */
+}
+
+.hero-content li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 6px;
+}
+
+/* custom bullet */
+.hero-content li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+@media (max-width: 1024px) {
+  .responsive-flex {
+    flex-direction: column;
+    align-items: center;   /* center all */
+    text-align: center;
+  }
+
+  .responsive-flex a {
+    margin-left: 0 !important; /* 🔥 overrides ms-auto */
+    margin-top: 10px;
+  }
+}
 </style>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -346,7 +539,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- LOGO -->
 <div class="site-header">
-  <a href="/"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/ss-logo.png" alt="Sortiq"></a>
+  <a href="/"><img src="images/front_ss-logo.png" alt="Sortiq"></a>
+  <!-- <a href="/"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/ss-logo.png" alt="Sortiq"></a> -->
 </div>
 
 <!-- HERO -->
@@ -354,32 +548,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="container">
     <div class="row align-items-center">
 
-      <div class="col-lg-6 hero-content">
-        <h2>{{ $page->heading !== null && $page->heading !== '' 
+      <div class="col-lg-8 hero-content">
+         <h3>{{ $page->heading !== null && $page->heading !== '' 
     ? ucwords($page->heading) 
-    : 'Kickstart Your IT Career with Real Project Internship' }}</h2>
+    : 'Kickstart Your IT Career with Real Project Internship' }}</h3>
 
 
-    <p>{!! $page->content !== null && $page->content !== '' 
+    <!-- <p>{{ $page->content !== null && $page->content !== '' 
     ? ucwords($page->content) 
-    : 'Work with experts, gain real project exposure & develop skills to become industry-ready.' !!}</p>
+    : 'Work with experts, gain real project exposure & develop skills to become industry-ready.' }}</p>
+         -->
+
+    {!! $page->content !== null && $page->content !== '' 
+    ? ucwords($page->content) 
+    : 'Work with experts, gain real project exposure & develop skills to become industry-ready.' !!}
       
       </div>
 
       <!-- FORM -->
-      <div class="col-lg-5 offset-lg-1" id="form">
+      <div class="col-lg-4" id="form">
         <div class="form-box">
-          <h3 class="text-center">Service Request</h3>
-
-      
+          <h3 class="text-center">Register for Internship</h3>
 
  <form id="internshipForm"
       method="POST"
-      action="{{ route('services-registrations.store') }}">
+      action="{{ route('internship-registrations.store') }}">
 
     @csrf
+
+    <input type="hidden" name="page_type" value="internship">
     <input type="hidden" name="slug" value="{{ $page->slug }}">
-    <div class="row g-3">
+    <div class="row g-2">
 
         {{-- Full Name --}}
         <div class="col-md-6">
@@ -425,15 +624,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @enderror
         </div>
 
-      {{-- College --}}
-         <div class="col-md-6">
-            <input type="tel"
-                   name="location"
-                   placeholder="Location"
-                   value="{{ old('location') }}"
+       {{-- College --}}
+        <div class="col-md-6">
+            <input type="text"
+                   name="college_name"
+                   placeholder="College Name"
+                   value="{{ old('college') }}"
                    required>
+            <!-- <select name="college" class="form-control" required>
+                <option value="" disabled selected>Select College</option>
 
-            @error('location')
+                @foreach($colleges as $college)
+                    <option value="{{ $college->id }}"
+                        {{ old('college') == $college->id ? 'selected' : '' }}>
+                        {{ $college->FullName }}
+                    </option>
+                @endforeach
+            </select> -->
+
+            @error('college')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
@@ -441,7 +650,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         {{-- Technology / Course --}}
         <div class="col-md-12">
-            <select name="technology" class="form-control" required>
+            <!-- <select name="technology" class="form-control">
                 <option value="" disabled selected>Select Technology / Domain</option>
 
                 @foreach($courses as $course)
@@ -450,12 +659,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         {{ $course->course_name }}
                     </option>
                 @endforeach
-            </select>
+            </select> -->
+
+            <input type="text"
+                   name="technology"
+                   placeholder="Course Name"
+                   value="{{ old('technology') }}"
+                   required>
 
             @error('technology')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
+
+
         {{-- Message --}}
         <div class="col-md-12">
             <textarea name="message"
@@ -469,7 +686,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         {{-- Submit --}}
         <div class="col-12 text-center">
             <button type="submit" class="form-submit">
-                Submit Application
+                Enroll Now
             </button>
         </div>
 
@@ -499,15 +716,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- WHY JOIN -->
 <section class="section">
 <div class="container">
-<h2 class="section-title">Why Join This Internship?</h2>
+<h2 class="section-title">WHY CHOOSE US</h2>
 <div class="row g-4 text-center">
 <div class="col-md-3"><div class="info-box"><i class="bi bi-cpu"></i><h5>Live Projects</h5><p>Machine Learning, Python, Chatbots, Research Work.</p></div></div>
 <div class="col-md-3"><div class="info-box"><i class="bi bi-briefcase"></i><h5>Placement Assistance</h5><p>Resume, interviews & referral help.</p></div></div>
-<div class="col-md-3"><div class="info-box"><i class="bi bi-award"></i><h5>Resume + Interview Support</h5><p>Experience letter with actual project exposure.</p></div></div>
-<div class="col-md-3"><div class="info-box"><i class="bi bi-person-workspace"></i><h5>Industry Mentors</h5><p>Mentorship, career guidance, and real-world industry insights.</p></div></div>
+<div class="col-md-3"><div class="info-box"><i class="bi bi-award"></i><h5>Resume + Interview</h5><p>Experience letter with actual project exposure.</p></div></div>
+<div class="col-md-3"><div class="info-box"><i class="bi bi-person-workspace"></i><h5>Industry Mentors</h5><p>Mentorship, career guidance, and industry insights.</p></div></div>
 </div>
 </div>
 </section>
+
 
 <!-- AREAS -->
 <section class="internship-areas py-5 text-white services-area">
@@ -524,10 +742,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <li>Digital Marketing</li>
       <li>React JS</li>
       <li>Python</li>
-      <li>Graphics</li>
+      <li>HR & Finance</li>
       <li>Graphic Designing</li>
       <li>WordPress (PHP)</li>
        <li>Mobile Development</li>
+       <li>Business Analyst</li>
     </ul>
   </div>
 
@@ -552,9 +771,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <li>Machine Learning</li>
       <li>Data Science</li>
       <li>Shopify Dev</li>
-      <li>Cloud</li>
+      <li>Cloud Computing</li>
       <li>CodeIgniter</li>
-      <li>Testing</li>
+      <li>AutoCAD</li>
       <li>MERN Full Stack</li>
       <li>Node JS</li>
       <li>DevOps</li>
@@ -568,27 +787,92 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
-<!-- FEEDBACK -->
-<!-- <section class="section" style="background:#f7f7f7;">
-<div class="container">
-<h2 class="section-title">Student Feedback</h2>
-<div class="row g-4 text-center">
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/1.png"><p>"Got internship & placement in 2 months!"</p><strong>- Nitika</strong></div></div>
+<!-- TRUST/ SOCAIL PROOF -->
+<!-- TRUST / SOCIAL PROOF -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title text-center mb-4">TRUST / SOCIAL PROOF</h2>
+
+    <div class="row g-4">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-people-fill fs-1 mb-3"></i>
+            <h5 class="card-title"><h5 class="card-title">
+  <span class="counter" data-target="100">0</span>+ Students Trained</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-code-slash fs-1 mb-3"></i>
+            <h5 class="card-title">Live Projects Experience</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm">
+          <div class="card-body">
+            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
+            <h5 class="card-title">Industry-Level Training</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
 
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/6.png"><p>"Successfully placed at SortIQ Solutions after completing the internship."</p><strong>- Neha</strong></div></div>
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/8.png"><p>"Portfolio ready - boosted my confidence!"</p><strong>- Manish</strong></div></div>
+<section class="section urgency-section">
+  <div class="container">
+    <h2 class="section-title text-center mb-5">Limited Time Opportunity</h2>
 
+    <div class="row g-4">
 
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/2-1.png"><p>"Completed internship and secured placement at SortIQ Solutions based on excellent performance"</p><strong>- Anshika</strong></div></div>
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/4.png"><p>"Offered a full-time role at SortIQ Solutions after a successful internship journey."</p><strong>- Aman</strong></div></div>
+      <div class="col-md-4 col-sm-6">
+        <div class="card urgency-card text-center h-100">
+          <div class="card-body">
+            <div class="icon-box">
+              <i class="bi bi-calendar-check"></i>
+            </div>
+            <h5>Batch Starting Soon</h5>
+          </div>
+        </div>
+      </div>
 
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/3.png"><p>"Portfolio ready - boosted my confidence!"</p><strong>- Usha</strong></div></div>
-</div>
-</div>
-</section> -->
+      <div class="col-md-4 col-sm-6">
+        <div class="card urgency-card text-center h-100">
+          <div class="card-body">
+            <div class="icon-box">
+              <i class="bi bi-exclamation-circle"></i>
+            </div>
+            <h5>Limited Seats Only</h5>
+          </div>
+        </div>
+      </div>
 
-<!-- FEEDBACK -->
+      <div class="col-md-4 col-sm-6">
+        <div class="card urgency-card text-center h-100">
+          <div class="card-body">
+            <div class="icon-box">
+              <i class="bi bi-lightning-charge"></i>
+            </div>
+            <h5>Book Your Seat Today</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+ 
+
 <section class="section" style="background:#f7f7f7;">
 <div class="container">
 
@@ -607,6 +891,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @else
                 <img src="{{ asset('images/placeholder_avatar.png') }}">
             @endif
+
+             
 
             {{-- DESCRIPTION --}}
             <p>"{{ $item->description }}"</p>
@@ -629,49 +915,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 </div>
 </section>
-
-<!-- CERTIFICATIONS -->
-<!--<section class="section" style="background:#00163e;">-->
-<!--  <div class="container">-->
-
-<!--    <h2 class="section-title text-white">Global Certifications & Recognitions</h2>-->
-
-    <!--<div class="certi-slider">-->
-
-    <!--  <button class="certi-btn prev">&#10094;</button>-->
-
-      <!--<div class="certi-track">-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/15-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/12-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/4-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/9-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/10-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/8-300x300.png"></div>-->
-      <!--   <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/6-300x300.png"></div>-->
-      <!--    <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/14-300x300.png"></div>-->
-          
-      <!--     <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/elementor/thumbs/wix-partner-rendr7au0yttdewf0w3mmbcwpb2d3jpuj8vy8thjyc.png"></div>-->
-      <!--</div>-->
-
-    <!--  <button class="certi-btn next">&#10095;</button>-->
-
-    <!--</div>-->
-
-<!--  </div>-->
-<!--</section>-->
+ 
 
 <!-- CONTACT INFO -->
-<section style="background:#00163e;">
+<!-- <section style="background:#00163e;">
   <div class="container">
     <div class="row align-items-center text-white py-5">
 
-      <!--<div class="col-md-6 justify-content-center gap-4 flex-wrap mb-3 mb-md-0">-->
-      <!--  <img width="80" src="https://sortiqsolutions.com/wp-content/uploads/2025/11/digital-marketing-logo-min.png">-->
-      <!--  <img width="60" src="https://sortiqsolutions.com/wp-content/uploads/2025/11/GF-min.png">-->
-      <!--  <img width="60" src="https://sortiqsolutions.com/wp-content/uploads/2025/11/upwork-logo-min.png">-->
-      <!--  <img width="60" src="https://sortiqsolutions.com/wp-content/uploads/2025/06/iso-certified-company-image.webp">-->
-      <!--  <img width="60" src="https://sortiqsolutions.com/wp-content/uploads/2025/11/EN_legend_small.png">-->
-      <!--</div>-->
+ 
 
       <div class="col-md-12 text-md-end text-center">
         <p class="mb-1 fs-5 fw-semibold">E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072</p>
@@ -684,26 +935,90 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     </div>
   </div>
+</section> -->
+
+<section style="background:#00163e;">
+  <div class="container">
+    <div class="row align-items-center text-white py-5">
+
+      <!-- LEFT SIDE (Your CTA) -->
+      <!-- <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+        <h3 style="color:#fff;">Start Your IT Career Today</h3>
+        <p style="color:#ccc;">45 Days Industrial Training with Live Projects</p>
+        <a href="#form" 
+           style="background:#ff6b00;color:#fff;padding:10px 20px;
+           border-radius:12px;text-decoration:none;display:inline-block;">
+           Apply Now
+        </a>
+      </div> -->
+   <div class="col-md-5 mb-3 mb-md-0">
+
+  <div class="responsive-flex">
+
+    <!-- TEXT -->
+    <div>
+      <h3 style="color:#fff;">Start Your IT Career Today</h3>
+      <p style="color:#ccc; margin-bottom:0;">
+        45 Days Industrial Training with Live Projects
+      </p>
+    </div>
+
+    <!-- BUTTON (push right) -->
+    <a href="#form"
+       class="ms-auto"
+       style="background:#ff6b00;color:#fff;padding:10px 20px;
+       border-radius:12px;text-decoration:none;white-space:nowrap;">
+       Apply Now
+    </a>
+
+  </div>
+
+</div>
+
+      <!-- RIGHT SIDE (Existing Content) -->
+      <div class="col-md-7 text-center text-md-end">
+        <p class="mb-1 fs-5 fw-semibold">
+          E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072
+        </p>
+
+        <div class="d-flex justify-content-md-end justify-content-center gap-3 flex-wrap">
+          <span>
+            <a href="tel:9646522110" class="text-white text-decoration-none">
+              +91 9646522110 , +91 9501381389
+            </a>
+          </span>
+          <span>
+            <a href="mailto:sortiqsolutions@gmail.com" class="text-white text-decoration-none">
+              sortiqsolutions@gmail.com
+            </a>
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </section>
+
+<div class="sticky-cta">
+  <a href="#form" class="apply-btn">Apply Now</a>
+  <a href="tel:+919646522110" class="call-btn">Call Now</a>
+</div>
 <a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
-   class="whatsapp-float"
+   class="whatsapp-float show"
    id="whatsappBtn"
    target="_blank">
    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
 </a>
-</body>
 <footer class="site-footer">
-  <p>© 2025 | Sortiq Solutions Pvt. Ltd. | All Rights Reserved.</p>
+  <p>© 2026 | Sortiq Solutions Pvt. Ltd. | All Rights Reserved.</p>
 
-  <a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
-     class="footer-whatsapp"
-     target="_blank">
-     <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-  </a>
+  
 </footer>
+</body>
 
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -746,15 +1061,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 </script>
- <script>
+<script>
 window.addEventListener("scroll", function () {
     const btn = document.getElementById("whatsappBtn");
-
-    if (window.scrollY > 200) {
-        btn.classList.add("show");
-    } else {
-        btn.classList.remove("show");
-    }
+    btn.classList.add("show");
+    // if (window.scrollY > -20) {
+    //     btn.classList.add("show");
+    // } else {
+    //     btn.classList.remove("show");
+    // }
 });
 </script>
- 
+ <script id="counterjs">
+const counters = document.querySelectorAll('.counter');
+
+const startCounting = (counter) => {
+  const target = +counter.getAttribute('data-target');
+  let count = 0;
+
+  const update = () => {
+    const increment = target / 100;
+
+    if (count < target) {
+      count += increment;
+      counter.innerText = Math.ceil(count);
+      requestAnimationFrame(update);
+    } else {
+      counter.innerText = target;
+    }
+  };
+
+  update();
+};
+
+// Trigger when visible
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      startCounting(entry.target);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.5 });
+
+counters.forEach(counter => {
+  observer.observe(counter);
+});
+</script>

@@ -6,7 +6,7 @@
     <meta name="geo.placename" content="{{ $page->location }}">
     <meta name="geo.region" content="IN">
 @endif
-<title>Services | Sortiq Solutions Pvt Ltd</title>
+<title>Prop99X | Sortiq Solutions Pvt Ltd</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -173,7 +173,6 @@ body {
 
 /* ========== HERO SECTION ========= */
 .hero-section {
-  /*background:url('https://sortiqsolutions.com/wp-content/uploads/2025/12/internship.avif') center/cover no-repeat;*/
   background: url("{{ asset('images/internship.avif') }}") center/cover no-repeat;
   padding:120px 0 100px;
   position:relative;
@@ -468,13 +467,6 @@ form select:focus {
   }
 }
 
-/*.responsive-flex {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-*/
 .responsive-flex {
   display: flex;
   align-items: center;
@@ -482,13 +474,7 @@ form select:focus {
   flex-wrap: wrap;
   gap: 10px;
 }
-/*
-@media (max-width: 992px) {
-  .responsive-flex {
-    justify-content: center;    
-    text-align: center;
-  }
-}*/
+
 .hero-content ul {
   list-style: none;
   padding: 0;
@@ -559,6 +545,123 @@ form select:focus {
   transform: scale(1.2);
   color: #ff6b00;
 }
+
+.cta-section {
+  background: linear-gradient(135deg, #0d6efd, #6610f2);
+  padding: 80px 0;
+  border-radius: 10px;
+}
+
+.cta-section h2 {
+  font-weight: 700;
+}
+
+.cta-section .btn {
+  border-radius: 30px;
+  transition: 0.3s;
+}
+
+.cta-section .btn:hover {
+  transform: scale(1.05);
+}
+
+.benefit-card {
+  transition: all 0.3s ease;
+  border-width: 2px;
+  border-radius: 12px;
+}
+
+/* Hover lift */
+.benefit-card:hover {
+  transform: translateY(-8px);
+}
+
+/* Icon animation */
+.benefit-card i {
+  transition: 0.3s;
+}
+
+.benefit-card:hover i {
+  transform: scale(1.2);
+}
+
+/* Colored glow effects */
+.benefit-card.border-primary:hover {
+  box-shadow: 0 15px 35px rgba(13,110,253,0.2);
+}
+
+.benefit-card.border-success:hover {
+  box-shadow: 0 15px 35px rgba(25,135,84,0.2);
+}
+
+.benefit-card.border-warning:hover {
+  box-shadow: 0 15px 35px rgba(255,193,7,0.25);
+}
+
+.benefit-card.border-danger:hover {
+  box-shadow: 0 15px 35px rgba(220,53,69,0.2);
+}
+
+.benefit-card.border-info:hover {
+  box-shadow: 0 15px 35px rgba(13,202,240,0.2);
+}
+
+.how-card {
+  position: relative;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.how-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+/* Step badge (number circle) */
+.step-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0d6efd;
+  color: #fff;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Icon animation */
+.how-card i {
+  transition: 0.3s;
+}
+
+.how-card:hover i {
+  transform: scale(1.2);
+}
+
+.target-card {
+  border: none;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.target-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+}
+
+/* Icon animation */
+.target-card i {
+  transition: 0.3s;
+}
+
+.target-card:hover i {
+  transform: scale(1.2);
+}
 </style>
 </head>
 
@@ -599,7 +702,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
  <form id="internshipForm"
       method="POST"
-      action="{{ route('services-registrations.store') }}">
+      action="{{ route('products-registrations.store') }}">
 
     @csrf
     <input type="hidden" name="slug" value="{{ $page->slug }}">
@@ -671,39 +774,32 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                    required> -->
                    <select name="technology" required>
                         <option value="" disabled {{ old('technology') ? '' : 'selected' }}>
-                            Select Service Required
+                            Select Service
                         </option>
 
-                        <option value="Website Development" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
-                            Website Development
+                        <option value="Campusedgepro" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
+                            Campusedgepro
                         </option>
 
-                        <option value="E-commerce Development" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
-                            E-commerce Development
+                        <option value="BlogerzWorld" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
+                            BlogerzWorld
                         </option>
 
-                        <option value="SEO Services" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
-                            SEO Services
+                        <option value="InventoryManageSuite" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
+                            InventoryManageSuite
                         </option>
 
-                        <option value="Google Ads" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
-                            Google Ads
+                        <option value="AllmartX" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
+                            AllmartX
                         </option>
 
-                        <option value="Social Media Marketing" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
-                            Social Media Marketing
+                        <option value="Prop99X" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                            Prop99X
+                        </option>
+                        <option value="Siterankify" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                            Siterankify
                         </option>
                     </select>
-            <!-- <select name="technology" class="form-control" required>
-                <option value="" disabled selected>Select Technology / Domain</option>
-
-                @foreach($courses as $course)
-                    <option value="{{ $course->id }}"
-                        {{ old('technology') == $course->id ? 'selected' : '' }}>
-                        {{ $course->course_name }}
-                    </option>
-                @endforeach
-            </select> -->
 
             @error('technology')
                 <small class="text-danger">{{ $message }}</small>
@@ -722,7 +818,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         {{-- Submit --}}
         <div class="col-12 text-center">
             <button type="submit" class="form-submit">
-                Get Free Quote
+                Request Demo
             </button>
         </div>
 
@@ -749,439 +845,484 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
-<!-- WHY JOIN -->
-<!-- WHY JOIN -->
-<section class="section">
-<div class="container">
-<h2 class="section-title">WHY CHOOSE US</h2>
-<div class="row g-4 text-center">
-<div class="col-md-3"><div class="info-box"><i class="bi bi-cpu"></i><h5>Custom Website Solutions</h5></div></div>
-<div class="col-md-3"><div class="info-box"><i class="bi bi-briefcase"></i><h5>SEO & Marketing Experts</h5></div></div>
-<div class="col-md-2"><div class="info-box"><i class="bi bi-award"></i><h5>Fast Delivery</h5></div></div>
-<div class="col-md-2"><div class="info-box"><i class="bi bi-person-workspace"></i><h5>Dedicated Support</h5></div></div>
-<div class="col-md-2"><div class="info-box"><i class="bi bi-person-workspace"></i><h5>Affordable Pricing</h5></div></div>
-</div>
-</div>
-</section>
-
-<!-- AREAS -->
-<section class="internship-areas py-5 text-white services-area">
-  <div class="container text-center">
-    <h2 class="fw-bold">Services Areas</h2>
-    <p>Choose your field & learn with real developers.</p>
-
-  <div class="row mt-4 g-4 text-start mx-auto" style="max-width:900px;">
-
-  <div class="col-md-4">
-    <ul>
-      <li>Web Designing</li>
-      <li>Web Development</li>
-      <li>Digital Marketing</li>
-      <li>React JS</li>
-      <li>Python</li>
-      <li>Graphics</li>
-      <li>Graphic Designing</li>
-      <li>WordPress (PHP)</li>
-       <li>Mobile Development</li>
-    </ul>
-  </div>
-
-  <div class="col-md-4">
-    <ul>
-      <li>Java</li>
-      <li>.NET</li>
-      <li>HR & Finance</li>
-      <li>Networking</li>
-      <li>Android Dev</li>
-      <li>React Native</li>
-      <li>PHP Full Stack</li>
-      <li>Laravel</li>
-      <li>Software Testing</li>
-       <li>Flutter</li>
-    </ul>
-  </div>
-
-  <div class="col-md-4">
-    <ul>
-      <li>AI / ML</li>
-      <li>Machine Learning</li>
-      <li>Data Science</li>
-      <li>Shopify Dev</li>
-      <li>Cloud</li>
-      <li>CodeIgniter</li>
-      <li>Testing</li>
-      <li>MERN Full Stack</li>
-      <li>Node JS</li>
-      <li>DevOps</li>
-     
-     
-    </ul>
-  </div>
-
-</div>
-
-  </div>
-</section>
-<!-- 
-<section class="section">
+<section class="section about-section bg-light">
   <div class="container">
-    <h2 class="section-title text-center mb-4">SERVICES SECTION</h2>
+    <div class="row align-items-center g-5">
+
+      <!-- Text Content -->
+      <div class="col-md-6">
+        <h2 class="section-title mb-3">
+          Complete Real Estate ERP for Builders & Agents
+        </h2>
+
+        <p>
+          <strong>Prop99X</strong> by <strong>SortIQ Solutions</strong> is a modern property management ERP designed for real estate companies, builders, and brokers.
+        </p>
+
+        <p>
+          It simplifies property listings, lead management, sales tracking, and client communication—all from one centralized dashboard.
+        </p>
+
+        <a href="#" class="btn btn-primary mt-3">Request Demo</a>
+      </div>
+
+      <!-- Image / Illustration -->
+      <div class="col-md-6 text-center">
+        <img src="{{ asset('images/ads/campusedgepro.jpg') }}" alt="Campus ERP System" class="img-fluid rounded shadow">
+      </div>
+
+    </div>
+    <div class="text-center mt-5">
+      <p class="fw-semibold">
+        👉  Real estate ERP systems centralize sales, property management, and financial operations in one platform, improving efficiency and decision-making.
+      </p>
+    </div>
+  </div>
+</section>
+<section class="section features-section">
+  <div class="container">
+    
+    <h2 class="section-title text-center mb-5">
+      Everything You Need to Manage Properties
+    </h2>
 
     <div class="row g-4">
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-building fs-1 mb-3"></i>
+          <h5>Property Listing</h5>
+          <p>Property Listing & Management</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-people fs-1 mb-3"></i>
+          <h5>Lead & CRM</h5>
+          <p>Lead & CRM Management</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-person-check fs-1 mb-3"></i>
+          <h5>Buyer & Seller Tracking</h5>
+          <p>Buyer & Seller Tracking</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-diagram-3 fs-1 mb-3"></i>
+          <h5>Sales Pipeline</h5>
+          <p>Deal & Sales Pipeline Management</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-search fs-1 mb-3"></i>
+          <h5>Property Search</h5>
+          <p>Property Search with Filters</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-file-earmark-text fs-1 mb-3"></i>
+          <h5>Document Management</h5>
+          <p>Document & Agreement Management</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-credit-card fs-1 mb-3"></i>
+          <h5>Payment Tracking</h5>
+          <p>Payment & Installment Tracking</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-5">
+      <p class="fw-semibold">
+        👉 ERP helps manage listings, tenant interactions, and transactions efficiently in one system.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<section class="section benefits-section">
+  <div class="container">
+
+    <h2 class="section-title text-center mb-5">
+      Key Benefits for Property Management
+    </h2>
+
+    <div class="row g-4">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card benefit-card border-primary h-100 text-center">
           <div class="card-body">
-            <i class="bi bi-people-fill fs-1 mb-3"></i>
-            <h5 class="card-title">Web Development</h5>
+            <i class="bi bi-house fs-1 text-primary mb-3"></i>
+            <h5>Easy Property Listing</h5>
+            <p>Add and manage properties with complete details and images</p>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
+        <div class="card benefit-card border-success h-100 text-center">
           <div class="card-body">
-            <i class="bi bi-code-slash fs-1 mb-3"></i>
-            <h5 class="card-title">Business websites, custom web apps</h5>
+            <i class="bi bi-people fs-1 text-success mb-3"></i>
+            <h5>Lead Management</h5>
+            <p>Capture, track, and convert property inquiries</p>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
+        <div class="card benefit-card border-warning h-100 text-center">
           <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title"> E-commerce Development</h5>
+            <i class="bi bi-graph-up fs-1 text-warning mb-3"></i>
+            <h5>Sales Tracking</h5>
+            <p>Monitor deals, bookings, and revenue in real time</p>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
+        <div class="card benefit-card border-danger h-100 text-center">
           <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title">Shopify, WooCommerce stores</h5>
+            <i class="bi bi-search fs-1 text-danger mb-3"></i>
+            <h5>Smart Search</h5>
+            <p>Filter and find properties quickly with advanced search</p>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
+        <div class="card benefit-card border-info h-100 text-center">
           <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title">SEO Services</h5>
+            <i class="bi bi-file-earmark-text fs-1 text-info mb-3"></i>
+            <h5>Document Management</h5>
+            <p>Store agreements, documents, and client data securely</p>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
+        <div class="card benefit-card border-dark h-100 text-center">
           <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title">Rank your website on Google</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title">Digital Marketing</h5>
-          </div>
-        </div>
-      </div>
-       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title">Ads, social media growth</h5>
-          </div>
-        </div>
-      </div>
-
-       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title">Graphic Design</h5>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title">Branding, creatives</h5>
+            <i class="bi bi-lightning-charge fs-1 text-dark mb-3"></i>
+            <h5>Faster Closures</h5>
+            <p>Streamline processes to close deals faster</p>
           </div>
         </div>
       </div>
 
     </div>
-  </div>
-</section> -->
 
-<section class="section">
-  <div class="container">
-    <h2 class="section-title text-center mb-4">SERVICES SECTION</h2>
-
-    <div class="row g-4">
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-globe fs-1 mb-3"></i>
-            <h5 class="card-title">Web Development</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-code-slash fs-1 mb-3"></i>
-            <h5 class="card-title">Business websites, custom web apps</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-cart-check fs-1 mb-3"></i>
-            <h5 class="card-title">E-commerce Development</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-shop fs-1 mb-3"></i>
-            <h5 class="card-title">Shopify, WooCommerce stores</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-graph-up-arrow fs-1 mb-3"></i>
-            <h5 class="card-title">SEO Services</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-search fs-1 mb-3"></i>
-            <h5 class="card-title">Rank your website on Google</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-megaphone fs-1 mb-3"></i>
-            <h5 class="card-title">Digital Marketing</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-bar-chart-line fs-1 mb-3"></i>
-            <h5 class="card-title">Ads, social media growth</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-palette fs-1 mb-3"></i>
-            <h5 class="card-title">Graphic Design</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-brush fs-1 mb-3"></i>
-            <h5 class="card-title">Branding, creatives</h5>
-          </div>
-        </div>
-      </div>
-
-    </div>
   </div>
 </section>
 
-<section class="section urgency-section">
+<section class="section why-section bg-light">
   <div class="container">
-    <h2 class="section-title text-center mb-5">RESULTS / TRUST SECTION</h2>
+    
+    <h2 class="section-title text-center mb-5">
+      Why Choose Prop99X ERP?
+    </h2>
 
     <div class="row g-4">
 
       <div class="col-md-4 col-sm-6">
-        <div class="card urgency-card text-center h-100">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-database fs-1 mb-3 text-primary"></i>
+          <h5>Centralized Data</h5>
+          <p>Centralized Property & Client Data</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-graph-up fs-1 mb-3 text-success"></i>
+          <h5>Deal Tracking</h5>
+          <p>Real-Time Deal Tracking</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-lightning-charge fs-1 mb-3 text-warning"></i>
+          <h5>Automated Workflows</h5>
+          <p>Automated Workflows & Notifications</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-people fs-1 mb-3 text-danger"></i>
+          <h5>Multi-User Access</h5>
+          <p>Multi-User Access for Teams</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-cloud fs-1 mb-3 text-info"></i>
+          <h5>Cloud-Based Platform</h5>
+          <p>Cloud-Based & Secure Platform</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-arrows-expand fs-1 mb-3 text-dark"></i>
+          <h5>Scalable Solution</h5>
+          <p>Scalable for Agencies & Builders</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-5">
+      <p class="fw-semibold">
+        👉 Modern proptech platforms automate workflows like leasing, payments, and client management.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<section class="section features-section">
+  <div class="container">
+    
+    <h2 class="section-title text-center mb-5">
+      Complete Real Estate Modules
+    </h2>
+
+    <div class="row g-4">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-building fs-1 mb-3"></i>
+          <h5>Property Management</h5>
+          <p>Property Management</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-people fs-1 mb-3"></i>
+          <h5>CRM & Leads</h5>
+          <p>CRM & Lead Management</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-diagram-3 fs-1 mb-3"></i>
+          <h5>Sales & Booking</h5>
+          <p>Sales & Booking Management</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-credit-card fs-1 mb-3"></i>
+          <h5>Payments</h5>
+          <p>Payment & Installments</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-file-earmark-text fs-1 mb-3"></i>
+          <h5>Documents & Contracts</h5>
+          <p>Document & Contract Management</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-bar-chart-line fs-1 mb-3"></i>
+          <h5>Reports & Analytics</h5>
+          <p>Reports & Analytics</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-5">
+      <p class="fw-semibold">
+        👉 ERP modules connect sales, CRM, and financial tracking for real estate businesses.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<section class="section how-section">
+  <div class="container">
+
+    <h2 class="section-title text-center mb-5">
+      Simple Workflow, Powerful Results
+    </h2>
+
+    <div class="row g-4">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
           <div class="card-body">
-            <div class="icon-box">
-              <i class="bi bi-globe2"></i>
-            </div>
-            <h5>100+ Websites Delivered</h5>
+            <div class="step-badge">1</div>
+            <i class="bi bi-building fs-1 mb-3 text-primary"></i>
+            <h5>Add Property Listings</h5>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card urgency-card text-center h-100">
+        <div class="card how-card text-center h-100">
           <div class="card-body">
-            <div class="icon-box">
-              <i class="bi bi-people-fill"></i>
-            </div>
-            <h5>Clients Across India & Abroad</h5>
+            <div class="step-badge">2</div>
+            <i class="bi bi-people fs-1 mb-3 text-success"></i>
+            <h5>Capture Leads Automatically</h5>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card urgency-card text-center h-100">
+        <div class="card how-card text-center h-100">
           <div class="card-body">
-            <div class="icon-box">
-              <i class="bi bi-graph-up-arrow"></i>
-            </div>
-            <h5>Proven Marketing Results</h5>
+            <div class="step-badge">3</div>
+            <i class="bi bi-chat-dots fs-1 mb-3 text-warning"></i>
+            <h5>Manage Client Interactions</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
+          <div class="card-body">
+            <div class="step-badge">4</div>
+            <i class="bi bi-credit-card fs-1 mb-3 text-danger"></i>
+            <h5>Track Deals & Payments</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
+          <div class="card-body">
+            <div class="step-badge">5</div>
+            <i class="bi bi-bar-chart-line fs-1 mb-3 text-info"></i>
+            <h5>Analyze Performance</h5>
           </div>
         </div>
       </div>
 
     </div>
+
   </div>
 </section>
 
-<section class="section">
+<section class="section target-section">
   <div class="container">
-    <h2 class="section-title text-center mb-4">PROCESS SECTION</h2>
 
-    <div class="row g-4">
+    <h2 class="section-title text-center mb-5">
+      Built For
+    </h2>
 
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100 text-center shadow-sm">
+    <div class="row g-4 text-center">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card target-card bg-primary-subtle h-100">
           <div class="card-body">
-            <i class="bi bi-search fs-1 mb-3"></i>
-            <h5 class="card-title">Requirement Analysis</h5>
+            <i class="bi bi-person-badge fs-1 text-primary mb-3"></i>
+            <h5>Real Estate Agents</h5>
           </div>
         </div>
       </div>
 
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-md-4 col-sm-6">
+        <div class="card target-card bg-success-subtle h-100">
           <div class="card-body">
-            <i class="bi bi-lightbulb fs-1 mb-3"></i>
-            <h5 class="card-title">Strategy Planning</h5>
+            <i class="bi bi-people fs-1 text-success mb-3"></i>
+            <h5>Property Dealers & Brokers</h5>
           </div>
         </div>
       </div>
 
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-md-4 col-sm-6">
+        <div class="card target-card bg-warning-subtle h-100">
           <div class="card-body">
-            <i class="bi bi-gear fs-1 mb-3"></i>
-            <h5 class="card-title">Development / Execution</h5>
+            <i class="bi bi-building fs-1 text-warning mb-3"></i>
+            <h5>Builders & Developers</h5>
           </div>
         </div>
       </div>
 
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-md-4 col-sm-6">
+        <div class="card target-card bg-info-subtle h-100">
           <div class="card-body">
-            <i class="bi bi-check-circle fs-1 mb-3"></i>
-            <h5 class="card-title">Delivery & Support</h5>
+            <i class="bi bi-diagram-3 fs-1 text-info mb-3"></i>
+            <h5>Real Estate Agencies</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card target-card bg-danger-subtle h-100">
+          <div class="card-body">
+            <i class="bi bi-briefcase fs-1 text-danger mb-3"></i>
+            <h5>Property Consultants</h5>
           </div>
         </div>
       </div>
 
     </div>
+
   </div>
 </section>
 
 
-<section class="section client-dark">
+<section class="section cta-section text-center text-white">
   <div class="container">
-    <h2 class="section-title text-center mb-4 text-white">CLIENT BENEFITS</h2>
+    
+    <h2 class="mb-3">Ready to Manage Properties Smarter?</h2>
+    
+    <p class="mb-4">
+      Grow your real estate business with automation, insights, and full control using Prop99X.
+    </p>
 
-    <div class="row g-4">
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="#" class="btn btn-lg btn-light px-4 fw-bold">
+        Book Demo
+      </a>
 
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="card client-card h-100 text-center">
-          <div class="card-body">
-            <i class="bi bi-graph-up-arrow fs-1 mb-3"></i>
-            <h5 class="card-title">Increase website traffic</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="card client-card h-100 text-center">
-          <div class="card-body">
-            <i class="bi bi-person-plus fs-1 mb-3"></i>
-            <h5 class="card-title">Generate more leads</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="card client-card h-100 text-center">
-          <div class="card-body">
-            <i class="bi bi-eye fs-1 mb-3"></i>
-            <h5 class="card-title">Improve online visibility</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="card client-card h-100 text-center">
-          <div class="card-body">
-            <i class="bi bi-rocket fs-1 mb-3"></i>
-            <h5 class="card-title">Grow your business</h5>
-          </div>
-        </div>
-      </div>
-
+      <a href="#" class="btn btn-lg btn-outline-light px-4 fw-bold">
+        Contact Us
+      </a>
     </div>
+
   </div>
 </section>
 
-<!-- FEEDBACK -->
-<!-- <section class="section" style="background:#f7f7f7;">
-<div class="container">
-<h2 class="section-title">Student Feedback</h2>
-<div class="row g-4 text-center">
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/1.png"><p>"Got internship & placement in 2 months!"</p><strong>- Nitika</strong></div></div>
+ 
 
 
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/6.png"><p>"Successfully placed at SortIQ Solutions after completing the internship."</p><strong>- Neha</strong></div></div>
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/8.png"><p>"Portfolio ready - boosted my confidence!"</p><strong>- Manish</strong></div></div>
 
-
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/2-1.png"><p>"Completed internship and secured placement at SortIQ Solutions based on excellent performance"</p><strong>- Anshika</strong></div></div>
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/4.png"><p>"Offered a full-time role at SortIQ Solutions after a successful internship journey."</p><strong>- Aman</strong></div></div>
-
-<div class="col-md-4"><div class="info-box"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/3.png"><p>"Portfolio ready - boosted my confidence!"</p><strong>- Usha</strong></div></div>
-</div>
-</div>
-</section> -->
+ 
+ 
 
 <!-- FEEDBACK -->
 <section class="section" style="background:#f7f7f7;">
 <div class="container">
 
-<h2 class="section-title">Student Feedback</h2>
+<h2 class="section-title">Client's Feedback</h2>
 
 <div class="row g-4 text-center">
 
@@ -1219,55 +1360,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 </section>
 
-<!-- CERTIFICATIONS -->
-<!--<section class="section" style="background:#00163e;">-->
-<!--  <div class="container">-->
 
-<!--    <h2 class="section-title text-white">Global Certifications & Recognitions</h2>-->
-
-    <!--<div class="certi-slider">-->
-
-    <!--  <button class="certi-btn prev">&#10094;</button>-->
-
-      <!--<div class="certi-track">-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/15-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/12-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/4-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/9-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/10-300x300.png"></div>-->
-      <!--  <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/8-300x300.png"></div>-->
-      <!--   <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/6-300x300.png"></div>-->
-      <!--    <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/11/14-300x300.png"></div>-->
-          
-      <!--     <div class="certi-item"><img src="https://sortiqsolutions.com/wp-content/uploads/elementor/thumbs/wix-partner-rendr7au0yttdewf0w3mmbcwpb2d3jpuj8vy8thjyc.png"></div>-->
-      <!--</div>-->
-
-    <!--  <button class="certi-btn next">&#10095;</button>-->
-
-    <!--</div>-->
-
-<!--  </div>-->
-<!--</section>-->
-
-<!-- CONTACT INFO -->
-<!-- <section style="background:#00163e;">
-  <div class="container">
-    <div class="row align-items-center text-white py-5">
-
-      
-
-      <div class="col-md-12 text-md-end text-center">
-        <p class="mb-1 fs-5 fw-semibold">E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072</p>
-
-        <div class="d-flex justify-content-md-end justify-content-center gap-3">
-          <span> <a href="tel:9646522110" class="text-white text-decoration-none">+91 9646522110 , +91 9501381389</a></span>
-          <span> <a href="mailto:sortiqsolutions@gmail.com" class="text-white text-decoration-none">sortiqsolutions@gmail.com</a></span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section> -->
 <section style="background:#00163e;">
   <div class="container">
     <div class="row align-items-center text-white py-5">
@@ -1278,9 +1371,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <!-- TEXT -->
         <div>
-          <h3 style="color:#fff;"> Get Free Demo Today</h3>
+          <h3 style="color:#fff;">Get Free Software Demo</h3>
           <p style="color:#ccc; margin-bottom:0;">
-            Explore our software solutions & grow your business faster
+            List. Manage. Sell. All in One Place
           </p>
         </div>
 
@@ -1319,6 +1412,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </section>
+<div class="sticky-cta">
+  <a href="#form" class="apply-btn">Request Demo</a>
+</div>
 <a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
    class="whatsapp-float"
    id="whatsappBtn"
@@ -1328,13 +1424,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 </body>
 <footer class="site-footer">
-  <p>© 2025 | Sortiq Solutions Pvt. Ltd. | All Rights Reserved.</p>
+  <p>© 2026 | Sortiq Solutions Pvt. Ltd. | All Rights Reserved.</p>
 
-  <!-- <a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
-     class="footer-whatsapp"
-     target="_blank">
-     <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
-  </a> -->
 </footer>
 
 
@@ -1396,10 +1487,6 @@ window.addEventListener("scroll", function () {
 window.addEventListener("scroll", function () {
     const btn = document.getElementById("whatsappBtn");
     btn.classList.add("show");
-    // if (window.scrollY > -20) {
-    //     btn.classList.add("show");
-    // } else {
-    //     btn.classList.remove("show");
-    // }
+     
 });
 </script>

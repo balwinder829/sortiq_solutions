@@ -16,6 +16,8 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ReferenceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentTrainingController;
+use App\Http\Controllers\ProductsRegistrationController;
+use App\Http\Controllers\SingleProductRegistrationController;
 
 use App\Exports\StudentsExport;
 use App\Imports\StudentsImport;
@@ -139,6 +141,8 @@ use App\Http\Controllers\JobDescriptionController;
 use App\Http\Controllers\StudentRegistrationController;
 use App\Http\Controllers\StudentPptController;
 use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\ProductsRegistrationFrontController;
+use App\Http\Controllers\SingleProductRegistrationFrontController;
 use App\Http\Controllers\EmployeeLeaveController;
 use App\Http\Controllers\Admin\EmployeeLeaveController as AdminEmployeeLeaveController;
 use App\Http\Controllers\StudentLeaveController;
@@ -894,6 +898,12 @@ Route::get('services-registrations/create', [ServicesRegistrationController::cla
 Route::post('services-registrations', [ServicesRegistrationController::class, 'store'])
     ->name('services-registrations.store');
 
+Route::post('products-registrations', [ProductsRegistrationFrontController::class, 'store'])
+    ->name('products-registrations.store');
+
+Route::post('single-product-registrations', [SingleProductRegistrationFrontController::class, 'store'])
+    ->name('single-product-registrations.store');
+
 Route::resource(
     'internship-registrations',
     InternshipRegistrationController::class
@@ -988,6 +998,18 @@ Route::middleware(['auth'])->group(function () {
             ->name('services-registrations.export');
 
         Route::resource('services-registrations', ServicesRegistrationController::class)
+            ->only(['index', 'show', 'destroy']);
+
+        Route::get('products-registrations/export', [ProductsRegistrationController::class, 'export'])
+            ->name('products-registrations.export');
+
+        Route::resource('products-registrations', ProductsRegistrationController::class)
+            ->only(['index', 'show', 'destroy']);
+
+         Route::get('single-product-registrations/export', [SingleProductRegistrationController::class, 'export'])
+            ->name('single-product-registrations.export');
+
+        Route::resource('single-product-registrations', SingleProductRegistrationController::class)
             ->only(['index', 'show', 'destroy']);
 
         Route::resource('hods', HodController::class);

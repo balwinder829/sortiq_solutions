@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Models\ServicesRegistration;
 use Illuminate\Http\Request;
@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Rules\NotBlockedNumber;
  use App\Http\DataTables\DataTablesServerSide;
 
-class ServicesRegistrationController extends Controller
+class ProductsRegistrationController extends Controller
 {
 
     protected string $permissionPrefix = 'services_registrations';
@@ -220,8 +220,7 @@ public function index34(Request $request)
 
     public function create()
     {
-        abort('404');
-        // return view('services-registrations.create');
+        return view('services-registrations.create');
     }
 
     public function store(Request $request)

@@ -24,43 +24,41 @@ class FrontendPageController extends Controller
         */
         $colleges    = College::orderBy('college_display_name', 'asc')->get();
         $courses     = Course::orderBy('course_name', 'asc')->get();
-        // $bladeMap = [
-        //     'ads-landing-page'    => 'ads-landing-page',
-        //     'internship'    => 'internship-landing-page',
-        // ];
-
-        // $view = $bladeMap[$slug] ?? 'custom_pages_default_show';
+        
         $type = null;
         $type = $page->ads_type;
 
         $testimonials = collect(); 
-        // if (str_contains($slug, 'internship')) {
-        //     $view = 'internship-landing-page';
-        //     $type = 'internship';
-            
-        // } elseif (str_contains($slug, 'services')) {
-        //     $view = 'ads-landing-page';
-        //      $type = 'services';
-            
-        // } else {
-        //     $view = 'custom_pages_default_show';
-        // }
 
         // ✅ View mapping based on ads_type
         if ($type === 'internship') {
-            $view = 'internship-landing-page';
+            $view = 'ads_front_pages.internship-landing-page';
 
         } elseif ($type === 'services') {
-            $view = 'ads-landing-page';
+            $view = 'ads_front_pages.ads-landing-page';
 
         } elseif ($type === 'products') {
-            $view = 'product-landing-page'; // optional (change if needed)
+            $view = 'ads_front_pages.product-landing-page'; // optional (change if needed)
+            $type = 'services';
 
         } elseif ($type === 'single product') {
-            $view = 'product-single-landing-page';
+            // $view = 'product-single-landing-page';
+            $singleProductViews = [
+                'campusedgepro-demo'      => 'ads_front_pages.single_products.campusedgepro',
+                'siterankify-demo'      => 'ads_front_pages.single_products.siterankify',
+                'prop99X-demo'        => 'ads_front_pages.single_products.prop99X',
+                'inventorymanagesuite-demo'     => 'ads_front_pages.single_products.inventorymanagesuite',
+                'blogerzworld-demo'   => 'ads_front_pages.single_products.blogerzworld',
+                'allmartX-demo'  => 'ads_front_pages.single_products.allmartX',
+            ];
+
+            $view = $singleProductViews[$slug] ?? 'product-single-landing-page';
+
+            $type = 'services';
 
         }else {
             $view = 'custom_pages_default_show';
+            $type = 'services';
         }
 
         if ($type) {

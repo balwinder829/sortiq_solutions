@@ -6,7 +6,7 @@
     <meta name="geo.placename" content="{{ $page->location }}">
     <meta name="geo.region" content="IN">
 @endif
-<title>Internship | Sortiq Solutions Pvt Ltd</title>
+<title>Campus Edge Pro | Sortiq Solutions Pvt Ltd</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
@@ -63,7 +63,7 @@
   gap: 10px;
 }
 body {
-  padding-bottom: 65px;
+  /*padding-bottom: 65px;*/
   overflow-x: hidden;
 }
 }
@@ -173,7 +173,6 @@ body {
 
 /* ========== HERO SECTION ========= */
 .hero-section {
-  /*background:url('https://sortiqsolutions.com/wp-content/uploads/2025/12/internship.avif') center/cover no-repeat;*/
   background: url("{{ asset('images/internship.avif') }}") center/cover no-repeat;
   padding:120px 0 100px;
   position:relative;
@@ -198,6 +197,7 @@ body {
 
 .hero-btn{
   background:#ff5800;
+  width: auto!important;
   border:none;
   border-radius:12px;
   color:#fff;
@@ -467,13 +467,6 @@ form select:focus {
   }
 }
 
-/*.responsive-flex {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-*/
 .responsive-flex {
   display: flex;
   align-items: center;
@@ -481,13 +474,7 @@ form select:focus {
   flex-wrap: wrap;
   gap: 10px;
 }
-/*
-@media (max-width: 992px) {
-  .responsive-flex {
-    justify-content: center;    
-    text-align: center;
-  }
-}*/
+
 .hero-content ul {
   list-style: none;
   padding: 0;
@@ -521,14 +508,161 @@ form select:focus {
     margin-top: 10px;
   }
 }
+
+/* Dark Section Background */
+.client-dark {
+  background: linear-gradient(135deg, #00163e, #002b6b);
+  color: #fff;
+}
+
+/* Cards inside dark section */
+.client-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  transition: all 0.3s ease;
+}
+
+/* Text color */
+.client-card h5 {
+  color: #fff;
+}
+
+/* Icons */
+.client-card i {
+  color: #ff8a3d;
+  transition: 0.3s;
+}
+
+/* Hover effect */
+.client-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255,255,255,0.1);
+}
+
+.client-card:hover i {
+  transform: scale(1.2);
+  color: #ff6b00;
+}
+
+.cta-section {
+  background: linear-gradient(135deg, #0d6efd, #6610f2);
+  padding: 80px 0;
+  border-radius: 10px;
+}
+
+.cta-section h2 {
+  font-weight: 700;
+}
+
+.cta-section .btn {
+  border-radius: 30px;
+  transition: 0.3s;
+}
+
+.cta-section .btn:hover {
+  transform: scale(1.05);
+}
+
+.benefit-card {
+  transition: all 0.3s ease;
+  border-width: 2px;
+  border-radius: 12px;
+}
+
+/* Hover lift */
+.benefit-card:hover {
+  transform: translateY(-8px);
+}
+
+/* Icon animation */
+.benefit-card i {
+  transition: 0.3s;
+}
+
+.benefit-card:hover i {
+  transform: scale(1.2);
+}
+
+/* Colored glow effects */
+.benefit-card.border-primary:hover {
+  box-shadow: 0 15px 35px rgba(13,110,253,0.2);
+}
+
+.benefit-card.border-success:hover {
+  box-shadow: 0 15px 35px rgba(25,135,84,0.2);
+}
+
+.benefit-card.border-warning:hover {
+  box-shadow: 0 15px 35px rgba(255,193,7,0.25);
+}
+
+.benefit-card.border-danger:hover {
+  box-shadow: 0 15px 35px rgba(220,53,69,0.2);
+}
+
+.benefit-card.border-info:hover {
+  box-shadow: 0 15px 35px rgba(13,202,240,0.2);
+}
+
+.how-card {
+  position: relative;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.how-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+/* Step badge (number circle) */
+.step-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0d6efd;
+  color: #fff;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Icon animation */
+.how-card i {
+  transition: 0.3s;
+}
+
+.how-card:hover i {
+  transform: scale(1.2);
+}
+
+.target-card {
+  border: none;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.target-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+}
+
+/* Icon animation */
+.target-card i {
+  transition: 0.3s;
+}
+
+.target-card:hover i {
+  transform: scale(1.2);
+}
 </style>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-5X8PFCR5');</script>
-<!-- End Google Tag Manager -->
 </head>
 
 <body>
@@ -539,8 +673,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- LOGO -->
 <div class="site-header">
-  <a href="/"><img src="images/front_ss-logo.png" alt="Sortiq"></a>
-  <!-- <a href="/"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/ss-logo.png" alt="Sortiq"></a> -->
+  <a href="/"><img src="https://sortiqsolutions.com/wp-content/uploads/2025/12/ss-logo.png" alt="Sortiq"></a>
 </div>
 
 <!-- HERO -->
@@ -549,15 +682,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="row align-items-center">
 
       <div class="col-lg-8 hero-content">
-         <h3>{{ $page->heading !== null && $page->heading !== '' 
+        <h3>{{ $page->heading !== null && $page->heading !== '' 
     ? ucwords($page->heading) 
     : 'Kickstart Your IT Career with Real Project Internship' }}</h3>
 
-
-    <!-- <p>{{ $page->content !== null && $page->content !== '' 
-    ? ucwords($page->content) 
-    : 'Work with experts, gain real project exposure & develop skills to become industry-ready.' }}</p>
-         -->
 
     {!! $page->content !== null && $page->content !== '' 
     ? ucwords($page->content) 
@@ -568,17 +696,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <!-- FORM -->
       <div class="col-lg-4" id="form">
         <div class="form-box">
-          <h3 class="text-center">Register for Internship</h3>
+          <h3 class="text-center">Service Request</h3>
+
+      
 
  <form id="internshipForm"
       method="POST"
-      action="{{ route('internship-registrations.store') }}">
+      action="{{ route('products-registrations.store') }}">
 
     @csrf
-
-    <input type="hidden" name="page_type" value="internship">
     <input type="hidden" name="slug" value="{{ $page->slug }}">
-    <div class="row g-2">
+    <div class="row g-3">
 
         {{-- Full Name --}}
         <div class="col-md-6">
@@ -608,41 +736,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         {{-- Phone --}}
         <div class="col-md-6">
-            <input type="tel"
-                   name="phone"
-                   placeholder="Phone Number"
-                   value="{{ old('phone') }}"
-                   maxlength="10"
-                   pattern="[0-9]{10}"
-                   inputmode="numeric"
-                   oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                   placeholder="10 digit number"
-                   required>
+           <input type="tel"
+       name="phone"
+       placeholder="Phone Number"
+       value="{{ old('phone') }}"
+       maxlength="20"
+       inputmode="numeric"
+       pattern="[0-9]{1,20}"
+       oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+       required>
 
             @error('phone')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
 
-       {{-- College --}}
-        <div class="col-md-6">
-            <input type="text"
-                   name="college_name"
-                   placeholder="College Name"
-                   value="{{ old('college') }}"
+      {{-- College --}}
+         <div class="col-md-6">
+            <input type="tel"
+                   name="location"
+                   placeholder="Location"
+                   value="{{ old('location') }}"
                    required>
-            <!-- <select name="college" class="form-control" required>
-                <option value="" disabled selected>Select College</option>
 
-                @foreach($colleges as $college)
-                    <option value="{{ $college->id }}"
-                        {{ old('college') == $college->id ? 'selected' : '' }}>
-                        {{ $college->FullName }}
-                    </option>
-                @endforeach
-            </select> -->
-
-            @error('college')
+            @error('location')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
@@ -650,29 +767,44 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         {{-- Technology / Course --}}
         <div class="col-md-12">
-            <!-- <select name="technology" class="form-control">
-                <option value="" disabled selected>Select Technology / Domain</option>
-
-                @foreach($courses as $course)
-                    <option value="{{ $course->id }}"
-                        {{ old('technology') == $course->id ? 'selected' : '' }}>
-                        {{ $course->course_name }}
-                    </option>
-                @endforeach
-            </select> -->
-
-            <input type="text"
+            <!-- <input type="text"
                    name="technology"
                    placeholder="Course Name"
                    value="{{ old('technology') }}"
-                   required>
+                   required> -->
+                   <select name="technology" required>
+                        <option value="" disabled {{ old('technology') ? '' : 'selected' }}>
+                            Select Service
+                        </option>
+
+                        <option value="Campusedgepro" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
+                            Campusedgepro
+                        </option>
+
+                        <option value="BlogerzWorld" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
+                            BlogerzWorld
+                        </option>
+
+                        <option value="InventoryManageSuite" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
+                            InventoryManageSuite
+                        </option>
+
+                        <option value="AllmartX" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
+                            AllmartX
+                        </option>
+
+                        <option value="Prop99X" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                            Prop99X
+                        </option>
+                        <option value="Siterankify" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                            Siterankify
+                        </option>
+                    </select>
 
             @error('technology')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
-
-
         {{-- Message --}}
         <div class="col-md-12">
             <textarea name="message"
@@ -686,7 +818,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         {{-- Submit --}}
         <div class="col-12 text-center">
             <button type="submit" class="form-submit">
-                Enroll Now
+                Request Demo
             </button>
         </div>
 
@@ -713,113 +845,149 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
+<section class="section about-section bg-light">
+  <div class="container">
+    <div class="row align-items-center g-5">
+
+      <!-- Text Content -->
+      <div class="col-md-6">
+        <h2 class="section-title mb-3">
+          Complete ERP Solution for Schools & Colleges
+        </h2>
+
+        <p>
+          <strong>Campus Edge Pro</strong> by <strong>SortIQ Solutions</strong> is a modern, 
+          cloud-based campus management system designed to streamline every aspect 
+          of educational institutions—from admissions to alumni.
+        </p>
+
+        <p>
+          It connects students, teachers, parents, and administrators through a 
+          unified dashboard, reducing manual work and improving efficiency.
+        </p>
+
+        <a href="#" class="btn btn-primary mt-3">Request Demo</a>
+      </div>
+
+      <!-- Image / Illustration -->
+      <div class="col-md-6 text-center">
+        <img src="{{ asset('images/ads/campusedgepro.jpg') }}" alt="Campus ERP System" class="img-fluid rounded shadow">
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="section features-section">
+  <div class="container">
+    
+    <h2 class="section-title text-center mb-5">
+      Powerful Features for Smart Institutions
+    </h2>
+
+    <div class="row g-4">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-person-plus fs-1 mb-3"></i>
+          <h5>Student Admission & Enrollment</h5>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-calendar-check fs-1 mb-3"></i>
+          <h5>Attendance & Timetable Automation</h5>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-credit-card fs-1 mb-3"></i>
+          <h5>Online Fee & Finance Management</h5>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-file-earmark-text fs-1 mb-3"></i>
+          <h5>Examination & Result Processing</h5>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-book fs-1 mb-3"></i>
+          <h5>Library & Inventory Management</h5>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-bus-front fs-1 mb-3"></i>
+          <h5>Transport & Hostel Management</h5>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 <!-- WHY JOIN -->
-<section class="section">
-<div class="container">
-<h2 class="section-title">WHY CHOOSE US</h2>
-<div class="row g-4 text-center">
-<div class="col-md-3"><div class="info-box"><i class="bi bi-cpu"></i><h5>Live Projects</h5><p>Machine Learning, Python, Chatbots, Research Work.</p></div></div>
-<div class="col-md-3"><div class="info-box"><i class="bi bi-briefcase"></i><h5>Placement Assistance</h5><p>Resume, interviews & referral help.</p></div></div>
-<div class="col-md-3"><div class="info-box"><i class="bi bi-award"></i><h5>Resume + Interview</h5><p>Experience letter with actual project exposure.</p></div></div>
-<div class="col-md-3"><div class="info-box"><i class="bi bi-person-workspace"></i><h5>Industry Mentors</h5><p>Mentorship, career guidance, and real-world industry insights.</p></div></div>
-</div>
-</div>
-</section>
 
-
-<!-- AREAS -->
-<section class="internship-areas py-5 text-white services-area">
-  <div class="container text-center">
-    <h2 class="fw-bold">Internship Areas</h2>
-    <p>Choose your field & learn with real developers.</p>
-
-  <div class="row mt-4 g-4 text-start mx-auto" style="max-width:900px;">
-
-  <div class="col-md-4">
-    <ul>
-      <li>Web Designing</li>
-      <li>Web Development</li>
-      <li>Digital Marketing</li>
-      <li>React JS</li>
-      <li>Python</li>
-      <li>Graphics</li>
-      <li>Graphic Designing</li>
-      <li>WordPress (PHP)</li>
-       <li>Mobile Development</li>
-    </ul>
-  </div>
-
-  <div class="col-md-4">
-    <ul>
-      <li>Java</li>
-      <li>.NET</li>
-      <li>HR & Finance</li>
-      <li>Networking</li>
-      <li>Android Dev</li>
-      <li>React Native</li>
-      <li>PHP Full Stack</li>
-      <li>Laravel</li>
-      <li>Software Testing</li>
-       <li>Flutter</li>
-    </ul>
-  </div>
-
-  <div class="col-md-4">
-    <ul>
-      <li>AI / ML</li>
-      <li>Machine Learning</li>
-      <li>Data Science</li>
-      <li>Shopify Dev</li>
-      <li>Cloud</li>
-      <li>CodeIgniter</li>
-      <li>Testing</li>
-      <li>MERN Full Stack</li>
-      <li>Node JS</li>
-      <li>DevOps</li>
-     
-     
-    </ul>
-  </div>
-
-</div>
-
-  </div>
-</section>
-
-<!-- TRUST/ SOCAIL PROOF -->
-<!-- TRUST / SOCIAL PROOF -->
-<section class="section">
+<section class="section why-section bg-light">
   <div class="container">
-    <h2 class="section-title text-center mb-4">TRUST / SOCIAL PROOF</h2>
+    
+    <h2 class="section-title text-center mb-5">
+      Why Campus Edge Pro?
+    </h2>
 
     <div class="row g-4">
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-people-fill fs-1 mb-3"></i>
-            <h5 class="card-title"><h5 class="card-title">
-  <span class="counter" data-target="100">0</span>+ Students Trained
-</h5>+ Students Trained</h5>
-          </div>
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-speedometer2 fs-1 mb-3"></i>
+          <h5>Centralized Dashboard</h5>
+          <p>Manage all operations from a single unified dashboard.</p>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-code-slash fs-1 mb-3"></i>
-            <h5 class="card-title">Live Projects Experience</h5>
-          </div>
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-hand-thumbs-up fs-1 mb-3"></i>
+          <h5>User-Friendly Interface</h5>
+          <p>Simple and intuitive for students, staff, and admins.</p>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-mortarboard-fill fs-1 mb-3"></i>
-            <h5 class="card-title">Industry-Level Training</h5>
-          </div>
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-cloud-check fs-1 mb-3"></i>
+          <h5>Cloud-Based & Secure</h5>
+          <p>Access anytime with high-level data security.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-bar-chart-line fs-1 mb-3"></i>
+          <h5>Real-Time Reports</h5>
+          <p>Get instant analytics and performance insights.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-phone fs-1 mb-3"></i>
+          <h5>Mobile App Access</h5>
+          <p>Students, parents, and staff can access anytime.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card h-100 text-center shadow-sm p-3">
+          <i class="bi bi-sliders fs-1 mb-3"></i>
+          <h5>Fully Customizable</h5>
+          <p>Adapt features as per your institution’s needs.</p>
         </div>
       </div>
 
@@ -827,56 +995,225 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </section>
 
-
-<section class="section urgency-section">
+<section class="section benefits-section">
   <div class="container">
-    <h2 class="section-title text-center mb-5">Limited Time Opportunity</h2>
+
+    <h2 class="section-title text-center mb-5">
+      Transform Your Institution Digitally
+    </h2>
 
     <div class="row g-4">
 
       <div class="col-md-4 col-sm-6">
-        <div class="card urgency-card text-center h-100">
+        <div class="card benefit-card border-primary h-100 text-center">
           <div class="card-body">
-            <div class="icon-box">
-              <i class="bi bi-calendar-check"></i>
-            </div>
-            <h5>Batch Starting Soon</h5>
+            <i class="bi bi-clock fs-1 text-primary mb-3"></i>
+            <h5>Save Time</h5>
+            <p>Automate daily tasks and reduce manual effort.</p>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card urgency-card text-center h-100">
+        <div class="card benefit-card border-success h-100 text-center">
           <div class="card-body">
-            <div class="icon-box">
-              <i class="bi bi-exclamation-circle"></i>
-            </div>
-            <h5>Limited Seats Only</h5>
+            <i class="bi bi-chat-dots fs-1 text-success mb-3"></i>
+            <h5>Better Communication</h5>
+            <p>Connect parents, teachers & students seamlessly.</p>
           </div>
         </div>
       </div>
 
       <div class="col-md-4 col-sm-6">
-        <div class="card urgency-card text-center h-100">
+        <div class="card benefit-card border-warning h-100 text-center">
           <div class="card-body">
-            <div class="icon-box">
-              <i class="bi bi-lightning-charge"></i>
-            </div>
-            <h5>Book Your Seat Today</h5>
+            <i class="bi bi-file-earmark-minus fs-1 text-warning mb-3"></i>
+            <h5>Reduce Paperwork</h5>
+            <p>Minimize manual errors and paperwork.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card benefit-card border-danger h-100 text-center">
+          <div class="card-body">
+            <i class="bi bi-people fs-1 text-danger mb-3"></i>
+            <h5>Increase Productivity</h5>
+            <p>Enhance efficiency of staff and faculty.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card benefit-card border-info h-100 text-center">
+          <div class="card-body">
+            <i class="bi bi-graph-up fs-1 text-info mb-3"></i>
+            <h5>Real-Time Insights</h5>
+            <p>Make better decisions with live analytics.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card benefit-card border-info h-100 text-center">
+          <div class="card-body">
+            <i class="bi bi-shield-lock fs-1 text-info mb-3"></i>
+            <h5>Data Security</h5>
+            <p>Keep student and institutional data safe with advanced security measures.</p>
           </div>
         </div>
       </div>
 
     </div>
+
+  </div>
+</section>
+ 
+<section class="section how-section bg-light">
+  <div class="container">
+
+    <h2 class="section-title text-center mb-5">
+      Simple, Smart & Efficient Workflow
+    </h2>
+
+    <div class="row g-4">
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
+          <div class="card-body">
+            <div class="step-badge">1</div>
+            <i class="bi bi-person-plus fs-1 mb-3 text-primary"></i>
+            <h5>Manage Admissions Digitally</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
+          <div class="card-body">
+            <div class="step-badge">2</div>
+            <i class="bi bi-calendar-check fs-1 mb-3 text-success"></i>
+            <h5>Track Attendance & Academics</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
+          <div class="card-body">
+            <div class="step-badge">3</div>
+            <i class="bi bi-credit-card fs-1 mb-3 text-warning"></i>
+            <h5>Automate Fees & Payments</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
+          <div class="card-body">
+            <div class="step-badge">4</div>
+            <i class="bi bi-graph-up fs-1 mb-3 text-danger"></i>
+            <h5>Monitor Performance & Reports</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
+          <div class="card-body">
+            <div class="step-badge">5</div>
+            <i class="bi bi-phone fs-1 mb-3 text-info"></i>
+            <h5>Stay Connected via Mobile App</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </section>
 
+<section class="section target-section">
+  <div class="container">
+
+    <h2 class="section-title text-center mb-5">
+      Designed for Every Educational Institution
+    </h2>
+
+    <div class="row g-4 text-center">
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card target-card bg-primary-subtle h-100">
+          <div class="card-body">
+            <i class="bi bi-building fs-1 text-primary mb-3"></i>
+            <h5>Schools</h5>
+            <p>CBSE, ICSE, State Boards</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card target-card bg-success-subtle h-100">
+          <div class="card-body">
+            <i class="bi bi-mortarboard fs-1 text-success mb-3"></i>
+            <h5>Colleges & Universities</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card target-card bg-warning-subtle h-100">
+          <div class="card-body">
+            <i class="bi bi-person-video3 fs-1 text-warning mb-3"></i>
+            <h5>Coaching Institutes</h5>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-6">
+        <div class="card target-card bg-info-subtle h-100">
+          <div class="card-body">
+            <i class="bi bi-journal-text fs-1 text-info mb-3"></i>
+            <h5>Training Centers</h5>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+
+<section class="section cta-section text-center text-white">
+  <div class="container">
+    
+    <h2 class="mb-3">Ready to Digitize Your Campus?</h2>
+    
+    <p class="mb-4">
+      Experience the power of automation and smart management with Campus Edge Pro.
+    </p>
+
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <a href="#" class="btn btn-lg btn-light px-4 fw-bold">
+        Book Free Demo
+      </a>
+
+      <a href="#" class="btn btn-lg btn-outline-light px-4 fw-bold">
+        Contact Us
+      </a>
+    </div>
+
+  </div>
+</section>
  
 
+<!-- FEEDBACK -->
 <section class="section" style="background:#f7f7f7;">
 <div class="container">
 
-<h2 class="section-title">Student Feedback</h2>
+<h2 class="section-title">Client's Feedback</h2>
 
 <div class="row g-4 text-center">
 
@@ -891,8 +1228,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             @else
                 <img src="{{ asset('images/placeholder_avatar.png') }}">
             @endif
-
-             
 
             {{-- DESCRIPTION --}}
             <p>"{{ $item->description }}"</p>
@@ -915,68 +1250,38 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 </div>
 </section>
- 
 
-<!-- CONTACT INFO -->
-<!-- <section style="background:#00163e;">
-  <div class="container">
-    <div class="row align-items-center text-white py-5">
-
- 
-
-      <div class="col-md-12 text-md-end text-center">
-        <p class="mb-1 fs-5 fw-semibold">E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072</p>
-
-        <div class="d-flex justify-content-md-end justify-content-center gap-3">
-          <span> <a href="tel:9646522110" class="text-white text-decoration-none">+91 9646522110 , +91 9501381389</a></span>
-          <span> <a href="mailto:sortiqsolutions@gmail.com" class="text-white text-decoration-none">sortiqsolutions@gmail.com</a></span>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section> -->
 
 <section style="background:#00163e;">
   <div class="container">
     <div class="row align-items-center text-white py-5">
+ 
+   <div class="col-md-6 mb-3 mb-md-0">
 
-      <!-- LEFT SIDE (Your CTA) -->
-      <!-- <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-        <h3 style="color:#fff;">Start Your IT Career Today</h3>
-        <p style="color:#ccc;">45 Days Industrial Training with Live Projects</p>
-        <a href="#form" 
+      <div class="responsive-flex">
+
+        <!-- TEXT -->
+        <div>
+          <h3 style="color:#fff;">Get Free Software Demo</h3>
+          <p style="color:#ccc; margin-bottom:0;">
+            Campus, Inventory, E-commerce & More
+          </p>
+        </div>
+
+        <!-- BUTTON (push right) -->
+        <a href="#form"
+           class="ms-auto"
            style="background:#ff6b00;color:#fff;padding:10px 20px;
-           border-radius:12px;text-decoration:none;display:inline-block;">
-           Apply Now
+           border-radius:12px;text-decoration:none;white-space:nowrap;">
+           Request Demo
         </a>
-      </div> -->
-   <div class="col-md-5 mb-3 mb-md-0">
 
-  <div class="responsive-flex">
+      </div>
 
-    <!-- TEXT -->
-    <div>
-      <h3 style="color:#fff;">Start Your IT Career Today</h3>
-      <p style="color:#ccc; margin-bottom:0;">
-        45 Days Industrial Training with Live Projects
-      </p>
     </div>
 
-    <!-- BUTTON (push right) -->
-    <a href="#form"
-       class="ms-auto"
-       style="background:#ff6b00;color:#fff;padding:10px 20px;
-       border-radius:12px;text-decoration:none;white-space:nowrap;">
-       Apply Now
-    </a>
-
-  </div>
-
-</div>
-
       <!-- RIGHT SIDE (Existing Content) -->
-      <div class="col-md-7 text-center text-md-end">
+      <div class="col-md-6 text-center text-md-end">
         <p class="mb-1 fs-5 fw-semibold">
           E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072
         </p>
@@ -998,27 +1303,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 </section>
-
 <div class="sticky-cta">
-  <a href="#form" class="apply-btn">Apply Now</a>
-  <a href="tel:+919646522110" class="call-btn">Call Now</a>
+  <a href="#form" class="apply-btn">Request Demo</a>
 </div>
 <a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
-   class="whatsapp-float show"
+   class="whatsapp-float"
    id="whatsappBtn"
    target="_blank">
    <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
 </a>
-<footer class="site-footer">
-  <p>© 2025 | Sortiq Solutions Pvt. Ltd. | All Rights Reserved.</p>
 
-  
-</footer>
 </body>
+<footer class="site-footer">
+  <p>© 2026 | Sortiq Solutions Pvt. Ltd. | All Rights Reserved.</p>
+
+</footer>
 
 
-
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -1061,50 +1363,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 </script>
-<script>
+ <script>
+window.addEventListener("scroll", function () {
+    const btn = document.getElementById("whatsappBtn");
+
+    if (window.scrollY > 200) {
+        btn.classList.add("show");
+    } else {
+        btn.classList.remove("show");
+    }
+});
+</script>
+ <script>
 window.addEventListener("scroll", function () {
     const btn = document.getElementById("whatsappBtn");
     btn.classList.add("show");
-    // if (window.scrollY > -20) {
-    //     btn.classList.add("show");
-    // } else {
-    //     btn.classList.remove("show");
-    // }
-});
-</script>
- <script id="counterjs">
-const counters = document.querySelectorAll('.counter');
-
-const startCounting = (counter) => {
-  const target = +counter.getAttribute('data-target');
-  let count = 0;
-
-  const update = () => {
-    const increment = target / 100;
-
-    if (count < target) {
-      count += increment;
-      counter.innerText = Math.ceil(count);
-      requestAnimationFrame(update);
-    } else {
-      counter.innerText = target;
-    }
-  };
-
-  update();
-};
-
-// Trigger when visible
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      startCounting(entry.target);
-      observer.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.5 });
-
-counters.forEach(counter => {
-  observer.observe(counter);
+     
 });
 </script>

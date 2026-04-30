@@ -71,7 +71,7 @@
     @endphp
     <div class="col-md-6 mb-3">
         <label class="fw-bold">College</label>
-        <select name="college_ids[]" class="form-control select2"  multiple required>
+        <select name="college_ids[]" class="form-control select2 select2-ordered"  multiple required>
             @foreach($colleges as $col)
                 <option value="{{ $col->id }}" 
                         {{ in_array($col->id,$selectedColleges) ? 'selected' : '' }}>
@@ -189,7 +189,7 @@
 @endsection
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
+<!-- <script>
     $(document).ready(function () {
         $('.select2').select2({
             theme: 'bootstrap-5',
@@ -197,5 +197,46 @@
             allowClear: true
         });
     });
+</script> -->
+
+<script>
+$(document).ready(function () {
+
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        placeholder: "Search college name",
+        allowClear: true,
+        closeOnSelect: false
+    });
+
+    // 🔥 KEY FIX: reorder DOM on selection
+    $('.select2-ordered').on('select2:select', function (e) {
+        let element = $(this);
+        let selectedId = e.params.data.id;
+
+        let option = element.find('option[value="' + selectedId + '"]');
+
+        // move selected option to the end
+        option.detach();
+        element.append(option);
+
+        element.trigger('change.select2');
+    });
+
+    $('.select2-ordered').on('select2:unselect', function (e) {
+        let element = $(this);
+        let unselectedId = e.params.data.id;
+
+        let option = element.find('option[value="' + unselectedId + '"]');
+
+        // move unselected option back to top (optional)
+        option.detach();
+        element.prepend(option);
+
+        element.trigger('change.select2');
+    });
+
+});
 </script>
+
 @endpush
