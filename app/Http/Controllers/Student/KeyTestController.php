@@ -71,7 +71,7 @@ class KeyTestController extends Controller
             'course_type' => 'nullable|in:Degree,Diploma',
             'student_branch' => 'nullable',
             // 'class'          => 'required_if:course_type,Degree|nullable|in:BCA,MCA,BTech,BSc IT,BSc CS',
-            'class'          => 'nullable|in:BCA,MCA,BTech,BSc IT,BSc CS,Polytechnic,BSc',
+            'class'          => 'nullable|in:BCA,MCA,BTech,BSc IT,BSc CS,Polytechnic,BSc,B.Tech',
             'semester'    => 'nullable|integer|min:1|max:8',
             'student_branch'    => 'nullable',
         ], [

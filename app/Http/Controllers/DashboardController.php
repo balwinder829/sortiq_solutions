@@ -205,6 +205,33 @@ class DashboardController extends Controller
                 ?: (object)['district' => '-', 'total' => 0];
             // POPUP DISMISS RECORD (only for today)
             $todayNotification = EventNotification::today();
+
+            $topStateCount = DB::table('students_detail as s')
+                ->join('colleges as c', 's.college_name', '=', 'c.id')
+                ->join('states as st', 'c.state_id', '=', 'st.id')
+                ->where('s.session', $activeSessionId)
+                ->select(
+                    'st.name as state',
+                    DB::raw('COUNT(s.id) as total')
+                )
+                ->groupBy('st.id', 'st.name')
+                ->orderByDesc('total')
+                ->first() 
+                ?: (object)['state' => '-', 'total' => 0];
+
+
+            $topDistrictCount = DB::table('students_detail as s')
+                ->join('colleges as c', 's.college_name', '=', 'c.id')
+                ->join('districts as d', 'c.district_id', '=', 'd.id')
+                ->where('s.session', $activeSessionId)
+                ->select(
+                    'd.name as district',
+                    DB::raw('COUNT(s.id) as total')
+                )
+                ->groupBy('d.id', 'd.name')
+                ->orderByDesc('total')
+                ->first()
+                ?: (object)['district' => '-', 'total' => 0];
              /** FINALLY — RETURN VIEW **/
             return view('dashboard_admin', compact(
                 'allstudents',
@@ -233,6 +260,8 @@ class DashboardController extends Controller
                 'topCollegeData',
                 'topState',
                 'topDistrict',
+                'topStateCount',
+                'topDistrictCount',
                 'feeSums',
                 'todayNotification'
             ));

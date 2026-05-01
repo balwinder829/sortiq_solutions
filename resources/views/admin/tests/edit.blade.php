@@ -69,16 +69,41 @@
     @php
         $selectedColleges = $test->links->pluck('college_id')->toArray();
     @endphp
+    @php
+    $selectedColleges = $test->links()
+        ->orderBy('id') // or created_at
+        ->pluck('college_id')
+        ->toArray();
+
+    // Step 1: Selected in correct order
+    $selected = collect($selectedColleges)->map(function ($id) use ($colleges) {
+        return $colleges->firstWhere('id', $id);
+    })->filter();
+
+    // Step 2: Remaining colleges
+    $remaining = $colleges->whereNotIn('id', $selectedColleges);
+
+    // Step 3: Merge
+    $orderedColleges = $selected->concat($remaining);
+@endphp
     <div class="col-md-6 mb-3">
         <label class="fw-bold">College</label>
-        <select name="college_ids[]" class="form-control select2 select2-ordered"  multiple required>
+        <!-- <select name="college_ids[]" class="form-control select2 select2-ordered"  multiple required>
             @foreach($colleges as $col)
                 <option value="{{ $col->id }}" 
                         {{ in_array($col->id,$selectedColleges) ? 'selected' : '' }}>
                     {{ $col->FullName }}
                 </option>
             @endforeach
-        </select>
+        </select> -->
+        <select name="college_ids[]" class="form-control select2 select2-ordered" multiple required>
+    @foreach($orderedColleges as $col)
+        <option value="{{ $col->id }}"
+            {{ in_array($col->id, $selectedColleges) ? 'selected' : '' }}>
+            {{ $col->FullName }}
+        </option>
+    @endforeach
+</select>
     </div>
 
     {{-- Course --}}

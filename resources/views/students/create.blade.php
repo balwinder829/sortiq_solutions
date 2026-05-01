@@ -144,7 +144,7 @@
 
                     @foreach($student_status as $s)
                         <option value="{{ $s->status }}" 
-                            {{ old('status') == $s->status ? 'selected' : '' }}>
+                             {{ old('status', $student->status ?? 'joined') == $s->status ? 'selected' : '' }}>
                             {{ $s->name }}
                         </option>
                     @endforeach

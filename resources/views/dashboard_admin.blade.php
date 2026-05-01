@@ -194,7 +194,7 @@
                 <div class="card-body">
                     <h6 class="text-muted">Total Amount</h6>
                     
-                    <h3 class="fw-bold">Rs. {{ $fmt->format(optional($feeSums)->total_fees ?? 0) }}</h3>
+                    <h4 class="fw-bold">Rs. {{ $fmt->format(optional($feeSums)->total_fees ?? 0) }}</h4>
                 </div>
             </div>
         </a>
@@ -205,7 +205,7 @@
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Pending Amount</h6>
-                    <h3 class="fw-bold">Rs. {{ $fmt->format(optional($feeSums)->pending_fees ?? 0) }}</h3>
+                    <h4 class="fw-bold">Rs. {{ $fmt->format(optional($feeSums)->pending_fees ?? 0) }}</h4>
                 </div>
             </div>
         </a>
@@ -245,7 +245,7 @@
             <div class="card text-center shadow-sm h-100">
                 <div class="card-body">
                     <h6 class="text-muted">Highest Revenue College Wise</h6>
-                    <h3 class="fw-bold">Rs. {{ $fmt->format(optional($topCollegeData)->total_collected ?? 0) }} - {{ $topCollegeData->college_name_text }}</h3>
+                    <h4 class="fw-bold">Rs. {{ $fmt->format(optional($topCollegeData)->total_collected ?? 0) }} - {{ $topCollegeData->college_name_text }}</h4>
                 </div>
             </div>
         </a>
@@ -255,9 +255,9 @@
         <div class="card text-center shadow-sm h-100">
             <div class="card-body">
                 <h6 class="text-muted">Highest Revenue State</h6>
-                <h3 class="fw-bold">
+                <h4 class="fw-bold">
                     Rs. {{ $fmt->format($topState->total ?? 0) }} - {{ $topState->state }}
-                </h3>
+                </h4>
             </div>
         </div>
     </div>
@@ -266,13 +266,34 @@
         <div class="card text-center shadow-sm h-100">
             <div class="card-body">
                 <h6 class="text-muted">Highest Revenue District</h6>
-                <h3 class="fw-bold">
+                <h4 class="fw-bold">
                     Rs. {{ $fmt->format($topDistrict->total ?? 0) }} - {{ $topDistrict->district }}
-                </h3>
+                </h4>
             </div>
         </div>
     </div>
 
+    <div class="col-12 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Highest Students State</h6>
+                <h4 class="fw-bold">
+                    {{ $topStateCount->total ?? 0 }} - {{ $topStateCount->state }}
+                </h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+        <div class="card text-center shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Highest Students District</h6>
+                <h4 class="fw-bold">
+                    {{ $topDistrictCount->total ?? 0 }} - {{ $topDistrictCount->district }}
+                </h4>
+            </div>
+        </div>
+    </div>
     <!-- @if(in_array($role, [1,4]))
     <div class="col-12 col-md-3">
         <a href="#" class="text-decoration-none text-dark">

@@ -5,7 +5,6 @@
 <div class="container my-5">
     <h2 class="mb-4 text-center">Enter Your Details to Access Test</h2>
 
-```
 <div class="row justify-content-center">
     <div class="col-md-6">
 
@@ -90,8 +89,6 @@
 
     </div>
 </div>
-```
-
 </div>
 
 <script>
