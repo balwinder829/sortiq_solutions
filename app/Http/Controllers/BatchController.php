@@ -113,7 +113,7 @@ class BatchController extends Controller
         $query->orderBy('students_count', 'desc');
     } else {
         // Default order when no student_sort selected
-        $query->latest();
+        $query->latest('updated_at');
     }
 
     $batches  = $query->get();

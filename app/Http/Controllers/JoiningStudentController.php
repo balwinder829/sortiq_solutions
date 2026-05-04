@@ -294,7 +294,7 @@ class JoiningStudentController extends Controller
 
     public function export(Request $request)
 {
-    $fileName = 'joining-students-' . now()->format('Ymd_His') . '.xlsx';
+    $fileName = 'joining-students-' . now()->format('d_F') . '.xlsx';
 
     return Excel::download(
         new JoiningStudentsExport($request),

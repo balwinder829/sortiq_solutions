@@ -225,11 +225,19 @@
 <script>
 $(document).ready(function () {
 
-    $('#allTable, #pendingTable').DataTable({
+    $('#allTable').DataTable({
         paging: false,
         info: false,
         ordering: false,
-        searching: false
+        searching: false,
+         scrollX: true 
+    });
+    $('#pendingTable').DataTable({
+        paging: false,
+        info: false,
+        ordering: false,
+        searching: false,
+         // scrollX: true 
     });
 
     // Select all (per table)

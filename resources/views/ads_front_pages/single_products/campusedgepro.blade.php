@@ -702,7 +702,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
  <form id="internshipForm"
       method="POST"
-      action="{{ route('products-registrations.store') }}">
+      action="{{ route('single-product-registrations.store') }}">
 
     @csrf
     <input type="hidden" name="slug" value="{{ $page->slug }}">

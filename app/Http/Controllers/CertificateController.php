@@ -245,7 +245,8 @@ public function index(Request $request)
     //       });
     // });
 if (!$request->filled('fee_filter')) {
-        $query->orderBy('id', 'desc');
+        // $query->orderBy('id', 'desc');
+        $query->latest('updated_at');
     }
 
     $students = $query->get();

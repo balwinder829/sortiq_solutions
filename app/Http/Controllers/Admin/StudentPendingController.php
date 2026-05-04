@@ -22,7 +22,7 @@ class StudentPendingController extends Controller
         $students = StudentPendingRegistration::with([
             'collegeData',
             'courseData'
-        ])->latest()->get();
+        ])->latest('updated_at')->get();
 
         $sessionsList = StudentSession::where('status', 'active')
             ->orderBy('start_date', 'desc')

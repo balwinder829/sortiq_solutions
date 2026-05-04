@@ -22,7 +22,7 @@ class ProductsRegistrationFrontController extends Controller
             'phone' => ['required', 'string', new NotBlockedNumber],
             'location'   => 'required|string|max:255',
             'technology' => 'required|string|max:255',
-            'message'    => 'required|string',
+            'message'    => 'nullable|string',
             'slug'       => 'required|string|max:255',
         ]);
 
@@ -43,6 +43,6 @@ class ProductsRegistrationFrontController extends Controller
 
         ProductsRegistration::create($data);
 
-        return back()->with('success', 'Service request added successfully');
+        return back()->with('success', 'Request added successfully');
     }
 }

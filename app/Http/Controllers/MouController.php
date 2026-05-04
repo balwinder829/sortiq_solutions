@@ -57,7 +57,7 @@ class MouController extends Controller
 
     public function index(Request $request)
     {
-        $query = Mou::with('college')->latest();
+        $query = Mou::with('college')->latest('updated_at');
 
         // if ($request->status) {
         //     if ($request->status === 'expired') {

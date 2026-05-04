@@ -62,7 +62,7 @@ class StudentEvaluationController extends Controller
             'trainer' => function ($query) {
                 $query->withTrashed();
             }
-        ])->latest()->get();
+        ])->latest('updated_at')->get();
 
         return view('student_evaluations.index', compact('evaluations'));
     }

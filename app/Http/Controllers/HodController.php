@@ -52,7 +52,7 @@ class HodController extends Controller
             });
         })
         // ->orderBy('hod_name')
-        ->latest()
+        ->latest('updated_at')
         ->get();
 
     return view('hods.index', compact('hods', 'states'));

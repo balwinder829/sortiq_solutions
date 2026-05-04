@@ -172,7 +172,7 @@ class WorkshopController extends Controller
         //     $query->whereDate('date','<', today());
         // }
 
-        $query->orderBy('date', 'desc');
+        $query->orderBy('updated_at', 'desc');
         
         return DataTablesServerSide::response($request, $query, [
             'orderable'  => ['id','title','date','status'], // FIXED
@@ -361,10 +361,56 @@ class WorkshopController extends Controller
     }
 
     public function exportExcel(Request $request)
-    {
+    {   
+        $parts = [];
+
+        // State
+        if ($request->state_id) {
+            $stateName = State::find($request->state_id)?->name;
+            $parts[] = strtolower(str_replace(' ', '_', $stateName));
+        }
+
+        // District
+        if ($request->district_id) {
+            $districtName = District::find($request->district_id)?->name;
+            $parts[] = strtolower(str_replace(' ', '_', $districtName));
+        }
+
+        // College Type
+        if ($request->college_type !== null && $request->college_type !== '') {
+            $parts[] = $request->college_type == 1 ? 'degree' : 'diploma';
+        }
+
+        // Status
+        if ($request->status) {
+            $parts[] = strtolower($request->status);
+        }
+
+        // Workshop Type
+        if ($request->type) {
+            $parts[] = strtolower($request->type);
+        }
+
+        // Event Type
+        if ($request->event_type) {
+            $parts[] = strtolower($request->event_type);
+        }
+
+        // Date
+        if ($request->date && !$request->range) {
+            $parts[] = strtolower(\Carbon\Carbon::parse($request->date)->format('d_F'));
+        }
+
+         
+
+        // Always add current date at end
+        $parts[] = now()->format('d_F');
+
+        // Final filename
+        $fileName = 'workshops_' . implode('_', $parts) . '.xlsx';
         return Excel::download(
             new WorkshopsExport($request),
-            'workshops.xlsx'
+            $fileName
         );
     }
 

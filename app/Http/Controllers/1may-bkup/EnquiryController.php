@@ -1,0 +1,1348 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Enquiry;
+use App\Models\Student;
+use App\Models\StudentSession;
+use App\Models\User;
+use App\Models\College;
+use App\Models\Registration;
+use App\Models\EnquiryFollowup;
+use App\Models\EnquiryActivity;
+use App\Models\SalesStaff;
+use Illuminate\Http\Request;
+use Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\EnquiriesImport;
+use App\Notifications\LeadAssignedNotification;
+use Illuminate\Support\Facades\DB;
+use App\Exports\RegistrationsExport;
+use Carbon\Carbon;
+use App\Exports\EnquiriesExport;
+use App\Rules\NotBlockedNumber;
+
+class EnquiryController extends Controller
+{
+     protected array $permissionMap = [
+    'index' => [
+        'types'  => ['enquiries'],
+        'action' => 'view',
+    ],
+
+    'show' => [
+        'types'  => ['enquiries'],
+        'action' => 'view',
+    ],
+
+    'dashboard' => [
+        'types'  => ['enquiries'],
+        'action' => 'view',
+    ],
+
+    'create' => [
+        'types'  => ['enquiries'],
+        'action' => 'create',
+    ],
+
+    'store' => [
+        'types'  => ['enquiries'],
+        'action' => 'create',
+    ],
+
+    'edit' => [
+        'types'  => ['enquiries'],
+        'action' => 'edit',
+    ],
+
+    'assign' => [
+        'types'  => ['enquiries'],
+        'action' => 'edit',
+    ],
+
+    'convert' => [
+        'types'  => ['enquiries'],
+        'action' => 'edit',
+    ],
+
+    'update' => [
+        'types'  => ['enquiries'],
+        'action' => 'edit',
+    ],
+
+    'import' => [
+        'types'  => ['enquiries'],
+        'action' => 'import',
+    ],
+
+
+    'salespersonShow' => [
+        'types'  => ['salespersons'],
+        'action' => 'view',
+    ],
+
+    'salespersons' => [
+        'types'  => ['salespersons'], // ❗ only blocked allowed
+        'action' => 'view',
+    ],
+
+    'callDashboard' => [
+        'types'  => ['calls'], // ❗ only certificate allowed
+        'action' => 'view',
+    ],
+
+    'registeredIndex' => [
+        'types'  => ['registrations'],
+        'action' => 'view',
+    ],
+
+    'convertToStudent' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'edit',
+    ],
+
+    'bulkConvert' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'edit',
+    ],
+
+    'exportAll' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'view',
+    ],
+
+    'export' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'view',
+    ],
+
+    'exportPending' => [
+        'types'  => ['registrations', 'enquiries'],
+        'action' => 'view',
+    ],
+];
+
+public function __construct()
+{
+    $this->middleware('auth');
+
+    foreach ($this->permissionMap as $method => $config) {
+
+        $permissions = collect($config['types'] ?? [])
+            ->map(fn ($type) => "{$type}.{$config['action']}")
+            ->toArray();
+
+        if (empty($permissions)) {
+            continue;
+        }
+
+        $this->middleware(function ($request, $next) use ($permissions) {
+            abort_unless(
+                auth()->user()?->canAny($permissions),
+                403
+            );
+
+            return $next($request);
+        })->only($method);
+    }
+}
+
+
+// public function __construct()
+// {
+//     $this->middleware('auth');
+
+//     foreach ($this->permissionMap as $method => $config) {
+
+//         $permissions = collect($config['types'])
+//             ->map(fn ($type) => "{$type}.{$config['action']}")
+//             ->implode('|'); // OR logic
+
+//         $this->middleware("permission:{$permissions}")
+//              ->only($method);
+//     }
+// }
+
+     
+
+    // LIST WITH FILTER
+    // LIST WITH FILTER (ADMIN INDEX)
+public function index(Request $request)
+{   
+    $activeSessionNo = session('admin_session_id');
+    $query = Enquiry::enquiries()
+        ->where('session_id', $activeSessionNo);
+
+    // =========================
+    // ROLE BASED ACCESS
+    // =========================
+    // if (!auth()->user()->isAdmin()) {
+    //     $query->where('assigned_to', auth()->id());
+    // }
+
+    // ADMIN: Filter by salesperson
+    if (auth()->user()->isAdmin() && $request->filled('salesperson_id')) {
+        $query->where('assigned_to', $request->salesperson_id);
+    }
+
+
+    // =========================
+    // BASIC FILTERS (EXISTING)
+    // =========================
+    if ($request->filled('college')) {
+        $query->where('college', $request->college);
+    }
+
+    if ($request->filled('study')) {
+        $query->where('study', 'like', "%{$request->study}%");
+    }
+
+    if ($request->filled('semester')) {
+        $query->where('semester', $request->semester);
+    }
+
+    if ($request->filled('assigned_status')) {
+
+        if ($request->assigned_status === 'assigned') {
+            $query->whereNotNull('assigned_to');
+        }
+
+        if ($request->assigned_status === 'unassigned') {
+            $query->where(function($q) {
+                $q->whereNull('assigned_to')
+                  ->orWhere('assigned_to', '');
+            });
+        }
+    }
+
+
+
+    // =========================
+    // NEW FILTERS (DB ALIGNED)
+    // =========================
+    if ($request->filled('lead_status')) {
+        $query->where('lead_status', $request->lead_status);
+    }
+
+    if ($request->filled('call_status')) {
+        $query->where('last_call_status', $request->call_status);
+    }
+
+    if ($request->filled('source_type')) {
+        $query->where('source_type', $request->source_type);
+    }
+
+    if ($request->filled('registered')) {
+        if ($request->registered === 'yes') {
+            $query->whereNotNull('registered_at');
+        } elseif ($request->registered === 'no') {
+            $query->whereNull('registered_at');
+        }
+    }
+
+    // =========================
+    // DATE RANGE (CREATED AT)
+    // =========================
+    if ($request->filled('from_date') && $request->filled('to_date')) {
+        $query->whereBetween('created_at', [
+            $request->from_date . ' 00:00:00',
+            $request->to_date . ' 23:59:59',
+        ]);
+    }
+
+        // =========================
+    // QUICK DATE FILTER
+    // =========================
+        if ($request->filled('quick_date')) {
+
+            switch ($request->quick_date) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
+
+                case 'yesterday':
+                    $query->whereDate('created_at', today()->subDay());
+                    break;
+
+                case 'last7':
+                    $query->whereBetween('created_at', [
+                        now()->subDays(7)->startOfDay(),
+                        now()->endOfDay()
+                    ]);
+                    break;
+
+                case 'this_month':
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year);
+                    break;
+
+                case 'last_month':
+                    $query->whereMonth('created_at', now()->subMonth()->month)
+                          ->whereYear('created_at', now()->subMonth()->year);
+                    break;
+            }
+
+        }
+        // ===============================
+        // FOLLOW-UP FILTERS (SNAPSHOT)
+        // ===============================
+        if ($request->filled('followup_filter')) {
+
+            switch ($request->followup_filter) {
+
+                case 'today':
+                    $query->whereDate('next_followup_at', today());
+                    break;
+
+                case 'overdue':
+                    $query->whereNotNull('next_followup_at')
+                          ->where('next_followup_at', '<', now());
+                    break;
+
+                case 'upcoming':
+                    $query->whereDate('next_followup_at', '>', today());
+                    break;
+
+                case 'none':
+                    $query->whereNull('next_followup_at');
+                    break;
+            }
+        }
+
+
+    // =========================
+    // SORTING
+    // =========================
+    if ($request->filled('alpha')) {
+        $query->orderBy('name', 'asc');
+    } else {
+        $query->latest();
+    }
+
+    // =========================
+// COUNTS (BASED ON FILTERS)
+// =========================
+
+    $totalLeads = (clone $query)->count();
+
+    $assignedLeads = (clone $query)
+                    ->whereNotNull('assigned_to')
+                    ->count();
+
+    $unassignedLeads = (clone $query)
+                    ->where(function($q){
+                        $q->whereNull('assigned_to')
+                          ->orWhere('assigned_to','');
+                    })
+                    ->count();
+
+    $querySql = str_replace('?', '%s', $query->toSql());
+
+    // dd(vsprintf($querySql, $query->getBindings()));
+    // dd($query->toSql());
+    // =========================
+    // DATA
+    // =========================
+    $enquiries = $query->paginate(20)->appends($request->all());
+    // dd($enquiries);
+    $sales    = SalesStaff::where('status', 'active')->get();
+    $colleges = College::orderBy('college_name')->get();
+
+    return view('enquiries.index', compact(
+        'enquiries',
+        'sales',
+        'colleges',
+        'totalLeads',
+        'assignedLeads',
+        'unassignedLeads'
+    ));
+}
+
+    
+    // ADD MANUALLY
+    public function create()
+    {
+        $colleges = \App\Models\College::orderBy('college_name')->get();
+
+        return view('enquiries.create', compact('colleges'));
+    }
+
+    public function show(Enquiry $enquiry)
+{
+    $enquiry->load(['followups.user', 'activities.user']);
+
+    $callStatuses = DB::table('call_statuses')
+        ->orderBy('name')
+        ->get();
+
+    return view('enquiries.show', compact('enquiry', 'callStatuses'));
+}
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            // 'mobile' => 'required',
+            'mobile' => ['required', 'digits:10', new NotBlockedNumber],
+            'study' => 'required',
+            'semester' => 'required',
+             // 'college_id' => 'nullable|exists:colleges,id',
+        ]);
+
+        $activeSessionNo = session('admin_session_id');
+        // $validated['session'] = $activeSessionNo;
+
+        Enquiry::create([
+            'name' => $request->name,
+            'session_id' => $activeSessionNo,
+            'mobile' => $request->mobile,
+            'email' => $request->email,
+            'college' => $request->college,
+            'study' => $request->study,
+            'semester' => $request->semester,
+            'created_by' => auth()->id(),
+            'source' => 'manual',
+        ]);
+
+        return redirect()->route('enquiries.index');
+    }
+
+    public function edit($id)
+    {
+        $enquiry = Enquiry::findOrFail($id);
+        $colleges = College::all();
+         $sales = SalesStaff::where('status', 'active')->get();
+
+        return view('enquiries.edit', compact('enquiry', 'colleges','sales'));
+    }
+
+    public function update(Request $request, $id)
+    {
+
+        $validated = $request->validate([
+            'name' => 'required',
+            // 'mobile' => 'nullable',
+            'mobile' => ['required', 'digits:10', new NotBlockedNumber],
+            'email' => 'nullable|email',
+            'college' => 'nullable',
+            'study' => 'nullable',
+            'semester' => 'nullable',
+            'is_passout' => 'nullable',
+        ]);
+
+        $validated['session_id'] = session('admin_session_id');
+
+        
+        // $request->validate([
+        //     'name' => 'required',
+        //     'mobile' => 'nullable',
+        //     'email' => 'nullable|email',
+        //     'college' => 'nullable',
+        //     'study' => 'nullable',
+        //     'semester' => 'nullable',
+        //     'is_passout' => 'nullable',
+        // ]);
+
+        $enquiry = Enquiry::findOrFail($id);
+         if ($enquiry->assigned_to != $request->assigned_to) {
+            $salesUser = SalesStaff::find($request->assigned_to);
+             $salesUser->notify(new LeadAssignedNotification($enquiry));
+
+              \DB::table('enquiry_assignments')->insert([
+                            'enquiry_id'  => $id,
+                            'assigned_to' => $request->assigned_to,
+                            'assigned_by' => auth()->id(),
+                            'created_at'  => now(),
+                            'updated_at'  => now(),
+                        ]);
+
+        }
+        $enquiry->update($validated);
+        // $enquiry->update($request->all());
+
+        return redirect()->route('enquiries.index')
+                         ->with('success', 'Record updated successfully!');
+    }
+
+
+
+    // IMPORT
+    public function importForm()
+    {
+        return view('passouts.import');
+    }
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,xlsx,xls',
+        ]);
+
+        \DB::beginTransaction();
+
+        try {
+
+            $importer = new \App\Imports\EnquiriesImport(auth()->id(), 0);
+
+            \Maatwebsite\Excel\Facades\Excel::import($importer, $request->file('file'));
+
+            $failures = $importer->failures();
+
+            // ❗ IF VALIDATION FAIL → ROLLBACK + STOP
+            if ($failures->isNotEmpty()) {
+
+                \DB::rollBack();
+
+                $messages = [];
+
+                foreach ($failures as $failure) {
+                    $messages[] =
+                        "Row {$failure->row()} – {$failure->attribute()} – " .
+                        implode(', ', $failure->errors());
+                }
+
+                return back()->withErrors($messages);
+            }
+
+            \DB::commit();
+
+            // ✅ ONLY HERE counts are valid
+            $total    = $importer->totalRows;
+            $inserted = $importer->insertedRows;
+            $skipped  = $importer->skippedRows;
+
+            $message = "From {$total} rows: {$inserted} inserted successfully, {$skipped} skipped.";
+
+            $warnings = array_merge(
+                $importer->blockedNumbers,
+                $importer->duplicateEntries
+            );
+
+            if (!empty($warnings)) {
+                return back()
+                    ->with('success', $message)
+                    ->withErrors($warnings);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Throwable $e) {
+
+            \DB::rollBack();
+
+            return back()->withErrors([
+                'Import failed: ' . $e->getMessage()
+            ]);
+        }
+    }
+    public function i2mport(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,xlsx,xls'
+        ]);
+
+        $import = new EnquiriesImport(auth()->id(), 0);
+        Excel::import($import, $request->file('file'));
+        // dd($import->errors);
+        if (!empty($import->errors)) {
+            return back()->with('import_errors', $import->errors)
+                         ->with('success', 'Import completed with some issues.');
+        }
+
+        return back()->with('success', 'Import completed successfully!');
+    }
+
+
+    // ASSIGN MULTIPLE
+    // public function assign(Request $request)
+    // {
+    //     $request->validate([
+    //         'enquiry_ids' => 'required|array',
+    //         'salesperson_id' => 'required|exists:users,id'
+    //     ]);
+
+    //     Enquiry::whereIn('id', $request->enquiry_ids)
+    //         ->update(['assigned_to' => $request->salesperson_id]);
+
+    //     return response()->json(['message' => 'Assigned']);
+    // }
+
+    public function assign_nwbkp(Request $request)
+    {
+        $request->validate([
+            'enquiry_ids' => 'required|array',
+            'salesperson_id' => 'required|exists:users,id'
+        ]);
+
+        $salespersonId = $request->salesperson_id;
+        $reassigned = false;
+
+        foreach ($request->enquiry_ids as $id) {
+
+            $enquiry = Enquiry::find($id);
+
+            // Skip if already assigned to same salesperson
+            if ($enquiry->assigned_to == $salespersonId) {
+                continue;
+            }
+
+            // Detect reassignment
+            if (!is_null($enquiry->assigned_to)) {
+                $reassigned = true;
+            }
+
+            // Save assignment
+            \DB::table('enquiry_assignments')->insert([
+                'enquiry_id' => $id,
+                'assigned_to' => $salespersonId,
+                'assigned_by' => auth()->id(),
+                'previous_assigned_to' => $enquiry->assigned_to,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $enquiry->update([
+                'assigned_to' => $salespersonId,
+                'assigned_at' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'message' => $reassigned
+                ? 'Leads reassigned successfully'
+                : 'Leads assigned successfully'
+        ]);
+    }
+
+    public function assign(Request $request)
+    {
+
+        $request->validate([
+            'enquiry_ids' => 'required|array',
+            'salesperson_id' => 'required|exists:sales_staff,id'
+        ]);
+
+         // Get the sales user who will receive notifications
+        $salesUser = SalesStaff::find($request->salesperson_id);
+        // dd('here', $salesUser);
+        foreach ($request->enquiry_ids as $id) {
+
+           $enquiry = Enquiry::find($id);
+
+            // Skip if it's already assigned to this salesperson
+            if ($enquiry->assigned_to == $request->salesperson_id) {
+                continue;  // ❌ DO NOT create new assignment history
+            }
+
+            // Update assignment
+            $enquiry->update([
+                'assigned_to' => $request->salesperson_id,
+                 'assigned_at' => now(), 
+
+            ]);
+            // LOG ASSIGNMENT HISTORY
+            \DB::table('enquiry_assignments')->insert([
+                'enquiry_id'  => $id,
+                'assigned_to' => $request->salesperson_id,
+                'assigned_by' => auth()->id(),
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ]);
+        }
+        // ⭐ SEND NOTIFICATION (only for NEW assignments)
+        $salesUserassign = SalesStaff::find($request->salesperson_id);
+        $salesUserassign->notify(new LeadAssignedNotification($enquiry));
+        return response()->json(['message' => 'Assigned']);
+    }
+
+
+    // CONVERT TO STUDENT
+    public function convert(Enquiry $enquiry)
+    {
+        if ($enquiry->is_converted) {
+            return back()->withErrors(['msg' => 'Already converted']);
+        }
+
+        Student::create([
+            'enquiry_id' => $enquiry->id,
+            'student_name' => $enquiry->name,
+            'mobile' => $enquiry->mobile,
+            'email' => $enquiry->email,
+            'college_name' => $enquiry->college,
+        ]);
+
+        $enquiry->update(['is_converted' => 1]);
+
+        return back()->with('success', 'Converted to student');
+    }
+
+    public function pipeline()
+    {
+        $statuses = ['new', 'followup', 'closed', 'joined'];
+
+        $enquiries = Enquiry::orderBy('created_at', 'desc')->get()
+            ->groupBy('status');
+
+        return view('enquiries.pipeline', compact('statuses', 'enquiries'));
+    }
+
+
+    public function updateStatus(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:enquiries,id',
+            'status' => 'required|string'
+        ]);
+
+        $enquiry = Enquiry::find($request->id);
+        $enquiry->status = $request->status;
+        $enquiry->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function dashboard()
+    {
+        $today = now()->toDateString();
+
+        return view('enquiries.dashboard', [
+            'total'           => Enquiry::count(),
+            'today_followups' => EnquiryFollowup::whereDate('next_followup_date', $today)->count(),
+            'missed_followups'=> EnquiryFollowup::whereDate('next_followup_date', '<', $today)->count(),
+            'upcoming'        => EnquiryFollowup::whereDate('next_followup_date', '>', $today)->count(),
+
+            // Status distribution (new, followup, closed, joined)
+            'status_chart'    => Enquiry::selectRaw('status, COUNT(*) as total')->groupBy('status')->get(),
+
+            // Call status chart
+            'call_status_chart' => EnquiryFollowup::selectRaw('call_status, COUNT(*) as total')
+                ->groupBy('call_status')
+                ->orderBy('total', 'desc')
+                ->get(),
+        ]);
+    }
+
+    public function performance()
+    {
+        $employees = SalesStaff::where('status', 'active')->get();
+
+        foreach ($employees as $emp) {
+            $emp->followups = EnquiryActivity::where('user_id', $emp->id)
+                ->where('type', 'followup')
+                ->count();
+
+            $emp->calls = EnquiryFollowup::where('user_id', $emp->id)->count();
+
+            $emp->conversions = EnquiryActivity::where('user_id', $emp->id)
+                ->where('type', 'status_change')
+                ->where('new_value', 'joined')
+                ->count();
+        }
+
+        return view('enquiries.performance', compact('employees'));
+    }
+    // public function salespersons()
+    // {   
+    //     // Get all salespersons
+    //     $salespersons = User::where('role', 3)
+    //         ->withCount([
+    //             // Total leads assigned to salesperson
+    //             'enquiriesAssigned as total_leads' => function($q) {
+    //                 $q->whereNotNull('assigned_to');
+    //             },
+
+    //             // Leads assigned today
+    //             'enquiriesAssigned as today_leads' => function($q) {
+    //                 $q->whereDate('created_at', today());
+    //             },
+
+    //             // Follow-ups done today
+    //             'activities as today_followups' => function($q) {
+    //                 $q->where('type', 'followup')
+    //                   ->whereDate('created_at', today());
+    //             },
+
+    //             // Total follow-ups done
+    //             'activities as total_followups' => function($q) {
+    //                 $q->where('type', 'followup');
+    //             },
+    //         ])
+    //         ->get();
+
+    //     return view('enquiries.salespersons', compact('salespersons'));
+    // }
+
+public function salespersonShow(Request $request, $id)
+{
+    $salesperson = SalesStaff::findOrFail($id);
+
+    // Base query
+    $leadsQuery = Enquiry::where('assigned_to', $id);
+
+    // ============================
+    //  DATE FILTER (assigned_at)
+    // ============================
+    if ($request->filter_date == 'today') {
+        $leadsQuery->whereDate('assigned_at', today());
+    }
+    elseif ($request->filter_date == 'yesterday') {
+        $leadsQuery->whereDate('assigned_at', today()->subDay());
+    }
+    elseif ($request->filter_date == 'older') {
+        $leadsQuery->whereDate('assigned_at', '<', today()->subDay());
+    }
+
+    // ============================
+    // SEARCH FILTER (name / phone)
+    // ============================
+    if ($request->search) {
+        $leadsQuery->where(function($q) use ($request) {
+            $q->where('name', 'like', "%{$request->search}%")
+              ->orWhere('mobile', 'like', "%{$request->search}%");
+        });
+    }
+
+    // ============================
+    // DATE RANGE (Only if no quick date filter used)
+    // ============================
+    if (!$request->filter_date && $request->from_date && $request->to_date) {
+        $leadsQuery->whereBetween('assigned_at', [
+            $request->from_date . ' 00:00:00',
+            $request->to_date . ' 23:59:59'
+        ]);
+    }
+
+    // ============================
+    //  STATUS FILTER
+    // ============================
+    if ($request->status) {
+        $leadsQuery->where('lead_status', $request->status);
+    }
+
+    // ============================
+    // PAGINATION WITH FILTERS
+    // ============================
+    $leads = $leadsQuery->latest()->paginate(100)->appends($request->all());
+
+    // ============================
+    // TODAY FOLLOW-UP WORK
+    // ============================
+    $todayWork = EnquiryActivity::with('enquiry')
+        ->where('user_id', $id)
+        ->whereDate('created_at', today())
+        ->latest()
+        ->get();
+
+    return view('enquiries.show_salesperson', compact(
+        'salesperson',
+        'leads',
+        'todayWork'
+    ));
+}
+
+public function salespersons(Request $request)
+{
+    $sortBy  = $request->get('sort', 'name');
+    $sortDir = $request->get('dir', 'asc');
+
+    $salespersons = SalesStaff::withCount([
+            'enquiriesAssigned as total_leads',
+            'activities as total_followups' => function ($q) {
+                $q->where('type', 'followup');
+            },
+            'enquiriesAssigned as registered_leads' => function ($q) {
+                $q->where('lead_status', 'registered');
+            },
+        ])
+        ->withMax('activities', 'created_at')
+        ->get();
+
+    // ✅ SORT COLLECTION (THIS FIXES EVERYTHING)
+    $salespersons = $salespersons->sortBy(
+        fn ($item) => $item->{$sortBy} ?? '',
+        SORT_REGULAR,
+        $sortDir === 'desc'
+    );
+
+    return view('enquiries.salespersons', [
+        'salespersons' => $salespersons,
+        'sortBy' => $sortBy,
+        'sortDir' => $sortDir,
+        'query' => $request->query(), // preserve filters
+    ]);
+}
+
+    public function assignmentReport(Request $request)
+{
+    $salespersons = SalesStaff::where('status', 'active')->get();
+    $colleges = College::all();
+
+    $query = \DB::table('enquiry_assignments')
+        ->join('enquiries', 'enquiries.id', '=', 'enquiry_assignments.enquiry_id')
+        ->join('sales_staff', 'sales_staff.id', '=', 'enquiry_assignments.assigned_to')
+        ->leftJoin('colleges', 'colleges.id', '=', 'enquiries.college')
+        ->select(
+            'enquiries.name as enquiry_name',
+            'enquiries.mobile',
+             'colleges.college_name as college_name', 
+            'sales_staff.name as salesperson',
+             'sales_staff.id as salesperson_id', 
+            'enquiry_assignments.created_at'
+        );
+
+    // --------------------------
+    // QUICK FILTERS (Today, Yesterday, 7 Days)
+    // --------------------------
+
+    if ($request->filter == 'today') {
+        $query->whereDate('enquiry_assignments.created_at', today());
+    }
+
+    if ($request->filter == 'yesterday') {
+        $query->whereDate('enquiry_assignments.created_at', today()->subDay());
+    }
+
+    if ($request->filter == 'last7') {
+        $query->whereBetween('enquiry_assignments.created_at', [
+            today()->subDays(7),
+            today(),
+        ]);
+    }
+
+    // --------------------------
+    // CUSTOM DATE FILTER
+    // --------------------------
+    if ($request->filled('from_date') && $request->filled('to_date')) {
+        $query->whereBetween('enquiry_assignments.created_at', [
+            $request->from_date,
+            $request->to_date
+        ]);
+    }
+
+    // --------------------------
+    // FILTER BY SALESPERSON
+    // --------------------------
+    if ($request->filled('salesperson_id')) {
+
+        $query->where('enquiry_assignments.assigned_to', $request->salesperson_id);
+
+    }
+
+    // --------------------------
+    // FILTER BY COLLEGE
+    // --------------------------
+    if ($request->filled('college')) {
+        $query->where('enquiries.college', $request->college);
+    }
+
+    // FINAL DATA
+    $records = $query->orderBy('enquiry_assignments.created_at', 'desc')->paginate(25);
+
+    // Summary Cards
+    $summary = [
+        'today' => \DB::table('enquiry_assignments')->whereDate('created_at', today())->count(),
+        'yesterday' => \DB::table('enquiry_assignments')->whereDate('created_at', today()->subDay())->count(),
+        'last7' => \DB::table('enquiry_assignments')
+            ->whereBetween('created_at', [today()->subDays(7), today()])
+            ->count(),
+    ];
+
+    return view('enquiries.assignments', compact('records', 'summary', 'salespersons', 'colleges'));
+}
+
+    public function assignmentReportold(Request $request)
+    {
+        // Today
+        $assignedToday = \DB::table('enquiry_assignments')
+            ->whereDate('created_at', today())
+            ->count();
+
+        // Yesterday
+        $assignedYesterday = \DB::table('enquiry_assignments')
+            ->whereDate('created_at', today()->subDay())
+            ->count();
+
+        // List with filters
+        $query = \DB::table('enquiry_assignments')
+            ->join('enquiries', 'enquiries.id', '=', 'enquiry_assignments.enquiry_id')
+            ->join('sales_staff', 'sales_staff.id', '=', 'enquiry_assignments.assigned_to')
+            ->select('enquiries.name', 'enquiries.mobile', 'sales_staff.name as sales_name', 'enquiry_assignments.created_at');
+
+        // Filters
+        if ($request->filled('date')) {
+            $query->whereDate('enquiry_assignments.created_at', $request->date);
+        }
+
+        if ($request->filled('salesperson_id')) {
+            $query->where('enquiry_assignments.assigned_to', $request->salesperson_id);
+        }
+
+        $records = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        $salespersons = SalesStaff::where('status', 'active')->get();
+
+        return view('enquiries.assignments', compact(
+            'assignedToday',
+            'assignedYesterday',
+            'records',
+            'salespersons'
+        ));
+    }
+
+
+public function pendingFollowups(Request $request)
+{
+    if (!auth()->user()->isAdmin()) {
+        // abort(403);
+    }
+
+    $query = Enquiry::whereNotNull('assigned_to');
+
+    // ======================
+    // FOLLOW-UP TYPE FILTER
+    // ======================
+    if ($request->type === 'today') {
+        $query->whereDate('next_followup_at', today());
+    }
+    elseif ($request->type === 'missed') {
+        $query->whereDate('next_followup_at', '<', today());
+    }
+    elseif ($request->type === 'upcoming') {
+        $query->whereDate('next_followup_at', '>', today());
+    }
+
+    // ======================
+    // SALESPERSON FILTER
+    // ======================
+    if ($request->filled('salesperson_id')) {
+        $query->where('assigned_to', $request->salesperson_id);
+    }
+
+    // ======================
+    // LEAD STATUS FILTER
+    // ======================
+    if ($request->filled('lead_status')) {
+        $query->where('lead_status', $request->lead_status);
+    }
+
+    $enquiries = $query
+        ->orderBy('next_followup_at', 'asc')
+        ->paginate(25)
+        ->appends($request->all());
+
+    $sales = SalesStaff::where('status', 'active')->get();
+
+    // Summary cards
+    $summary = [
+        'today' => Enquiry::whereDate('next_followup_at', today())->count(),
+        'missed' => Enquiry::whereDate('next_followup_at', '<', today())->count(),
+        'upcoming' => Enquiry::whereDate('next_followup_at', '>', today())->count(),
+    ];
+
+    return view('enquiries.followup_enquiries', compact(
+        'enquiries',
+        'sales',
+        'summary'
+    ));
+}
+
+
+public function callDashboard(Request $request)
+{
+    if (!auth()->user()->isAdmin()) {
+        // abort(403);
+    }
+
+    // ======================
+    // BASE QUERY
+    // ======================
+    $callsQuery = EnquiryFollowup::query();
+
+    // ======================
+    // DATE FILTERS
+    // ======================
+    if ($request->quick_date === 'today') {
+        $callsQuery->whereDate('created_at', today());
+    }
+    elseif ($request->quick_date === 'yesterday') {
+        $callsQuery->whereDate('created_at', today()->subDay());
+    }
+    elseif ($request->quick_date === 'last7') {
+        $callsQuery->whereBetween('created_at', [now()->subDays(7), now()]);
+    }
+    elseif ($request->filled('from_date') && $request->filled('to_date')) {
+        $callsQuery->whereBetween('created_at', [
+            $request->from_date . ' 00:00:00',
+            $request->to_date . ' 23:59:59'
+        ]);
+    } else {
+        // Default: today
+        $callsQuery->whereDate('created_at', today());
+    }
+
+    // ======================
+    // SALESPERSON FILTER
+    // ======================
+    if ($request->filled('salesperson_id')) {
+        $callsQuery->where('user_id', $request->salesperson_id);
+    }
+
+    // ======================
+    // TOTAL CALLS
+    // ======================
+    $totalCalls = (clone $callsQuery)->count();
+
+    // ======================
+    // CALLS BY SALESPERSON
+    // ======================
+    $callsByUser = (clone $callsQuery)
+        ->selectRaw('user_id, COUNT(*) as total_calls')
+        ->groupBy('user_id')
+        ->with('user')
+        ->get();
+
+    // ======================
+    // CALL DETAILS (TABLE)
+    // ======================
+    $calls = (clone $callsQuery)
+        ->with(['user', 'enquiry'])
+        ->latest()
+        ->paginate(25)
+        ->appends($request->all());
+
+    $sales = SalesStaff::where('status', 'active')->get();
+
+    return view('enquiries.call_dashboard', compact(
+        'totalCalls',
+        'callsByUser',
+        'calls',
+        'sales'
+    ));
+}
+
+public function registeredIndex(Request $request)
+{   
+
+
+    $query = Registration::with(['enquiry.student', 'collector']);
+
+    /* ================= DATE RANGE FILTER ================= */
+    if ($request->from_date) {
+        $query->whereDate('registered_at', '>=', $request->from_date);
+    }
+
+    if ($request->to_date) {
+        $query->whereDate('registered_at', '<=', $request->to_date);
+    }
+
+    /* ================= SALESPERSON FILTER ================= */
+    if ($request->salesperson_id) {
+        $query->where('collected_by', $request->salesperson_id);
+    }
+
+    $allRegistrations = (clone $query)->latest('registered_at')->get();
+
+    $pendingRegistrations = (clone $query)
+        ->whereDoesntHave('enquiry.student')
+        ->latest('registered_at')
+        ->get();
+
+    $salesUsers = SalesStaff::where('status', 'active')->get();
+
+    $sessionsList = StudentSession::where('status', 'active')
+    ->orderBy('start_date', 'desc')
+    ->pluck('session_name', 'id');
+
+    return view('enquiries.registered-list', compact(
+        'allRegistrations',
+        'pendingRegistrations',
+        'sessionsList',
+        'salesUsers'
+    ));
+}
+
+
+private function createStudentFromEnquiry(\App\Models\Enquiry $enquiry, $amountPaid = null, $sessionId = null)
+{
+     // 🔒 Strong duplicate check
+    $studentExists = Student::where('enquiry_id', $enquiry->id)->exists();
+
+    if ($studentExists) {
+        return null; // ⛔ Skip if already exists
+    }
+
+    $lastSno = Student::orderBy('id', 'desc')->value('sno');
+    $newSno = is_numeric($lastSno) ? ((int)$lastSno + 1) : 1;
+    
+    $student = Student::create([
+        'student_name' => $enquiry->name,
+        'sno'            => $newSno,
+        'f_name'       => '',
+        'email_id'     => $enquiry->email,
+        'contact'      => $enquiry->mobile,
+        'college_name' => $enquiry->college,
+        'reg_fees'     => $amountPaid, // optional
+        'enquiry_id'   => $enquiry->id,
+        'session'      => $sessionId, // ✅ NEW
+        'source_type'    => 'enquiry',
+        'source_id'      => $enquiry->id,
+        'join_date'     => Carbon::now()->format('Y-m-d'),
+        'start_date'    => Carbon::now()->format('Y-m-d'),
+        'created_by'   => Auth::id(),
+    ]);
+
+    // ✅ Notify assigned sales user
+    
+    $salesUser = $enquiry->assignedTo;
+    $salesUserassign = SalesStaff::find($enquiry->assignedTo);
+    // if ($salesUserassign) {
+    //     $salesUserassign->notify(
+    //         new \App\Notifications\StudentRegisteredSalesNotification($student)
+    //     );
+    // }
+
+    return $student;
+}
+
+
+public function convertToStudent(Enquiry $enquiry)
+{
+    if ($enquiry->student) {
+        return back()->with('error', 'Already converted to student.');
+    }
+
+    // Get registration amount (latest payment)
+    $registration = Registration::where('enquiry_id', $enquiry->id)
+        ->latest('registered_at')
+        ->first();
+
+    $this->createStudentFromEnquiry(
+        $enquiry,
+        optional($registration)->amount_paid
+    );
+
+    EnquiryActivity::create([
+        'enquiry_id' => $enquiry->id,
+        'user_id'    => Auth::id(),
+        'type'       => 'converted_to_student',
+        'details'    => 'Converted manually (single)',
+    ]);
+
+    return back()->with('success', 'Student converted successfully.');
+}
+
+public function bulkConvert(Request $request)
+{
+    $request->validate([
+        'enquiry_ids' => 'required|array',
+         'session_id'  => 'required|exists:student_sessions,id',
+    ]);
+
+    \DB::transaction(function () use ($request) {
+
+        foreach ($request->enquiry_ids as $enquiryId) {
+
+            $enquiry = Enquiry::find($enquiryId);
+
+            if (! $enquiry || $enquiry->student) {
+                continue;
+            }
+
+            // Get latest registration payment
+            $registration = Registration::where('enquiry_id', $enquiry->id)
+                ->latest('registered_at')
+                ->first();
+
+            $this->createStudentFromEnquiry(
+                $enquiry,
+                optional($registration)->amount_paid,
+                $request->session_id
+            );
+
+            EnquiryActivity::create([
+                'enquiry_id' => $enquiry->id,
+                'user_id'    => Auth::id(),
+                'type'       => 'converted_to_student',
+                'details'    => 'Converted via bulk action',
+            ]);
+        }
+    });
+
+    return response()->json([
+        'message' => 'Selected registrations converted successfully'
+    ]);
+}
+
+
+public function bulkConvertl(Request $request)
+{
+    $request->validate([
+        'enquiry_ids' => 'required|array'
+    ]);
+
+    DB::transaction(function () use ($request) {
+        foreach ($request->enquiry_ids as $enquiryId) {
+            $enquiry = \App\Models\Enquiry::find($enquiryId);
+
+
+              $student = Student::create([
+                'student_name' => $enquiry->name,
+                'f_name'       => '',
+                'email_id'     => $enquiry->email,
+                'contact'      => $enquiry->mobile,
+                'college_name' => $enquiry->college,
+                'reg_fees'     => $request->amount_paid,
+                'enquiry_id'   => $enquiry->id,
+                'created_by'   => Auth::id(),
+            ]);
+
+            //Notify assigned sales user
+            $salesUser = $enquiry->assignedTo;
+            $salesUserassign = SalesStaff::find($enquiry->assignedTo);
+            if ($salesUserassign) {
+                $salesUserassign->notify(
+                    new \App\Notifications\StudentRegisteredSalesNotification($student)
+                );
+            }
+
+
+
+
+
+            if ($enquiry && !$enquiry->student) {
+                \App\Models\Student::create([
+                    'student_name' => $enquiry->name,
+                    'email_id'     => $enquiry->email,
+                    'contact'      => $enquiry->mobile,
+                    'college_name' => $enquiry->college,
+                    'enquiry_id'   => $enquiry->id,
+                    'created_by'   => auth()->id(),
+                ]);
+            }
+        }
+    });
+
+    return response()->json(['message' => 'Converted successfully']);
+}
+
+
+     
+
+
+    public function exportAll()
+    {
+        return Excel::download(new RegistrationsExport(false), 'all_registrations.xlsx');
+    }
+
+    public function exportPending()
+    {
+        return Excel::download(new RegistrationsExport(true), 'pending_registrations.xlsx');
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new EnquiriesExport($request->all(), 0),
+            'filtered-enquiries.xlsx'
+        );
+    }
+}

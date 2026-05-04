@@ -36,7 +36,7 @@ class SalesStaffController extends Controller
      */
     public function index(Request $request)
     {
-        $staff = SalesStaff::latest()->get();
+        $staff = SalesStaff::latest('updated_at')->get();
 
         return view('sales_staff.index', compact('staff'));
     }

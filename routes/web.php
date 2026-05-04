@@ -149,6 +149,8 @@ use App\Http\Controllers\StudentLeaveController;
 use App\Http\Controllers\Admin\StudentLeaveController as AdminStudentLeaveController;
 use App\Http\Controllers\Admin\GmailController;
 use App\Models\Student;
+use App\Http\Controllers\Admin\AnalyticsController  as AdminAnalyticsController;
+
 
 
 
@@ -932,6 +934,8 @@ Route::middleware(['auth'])->group(function () {
          Route::resource('student-ppt', StudentPptController::class)
         ->names('student_ppt');
 
+        Route::get('/all-analytics', [AdminAnalyticsController::class, 'index'])
+    ->name('admin.analytics');
     // Public preview via share token
     Route::get(
         'student-ppt/preview/{token}',

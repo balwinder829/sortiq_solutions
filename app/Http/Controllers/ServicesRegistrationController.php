@@ -233,7 +233,7 @@ public function index34(Request $request)
             'phone' => ['required', 'string', new NotBlockedNumber],
             'location'   => 'required|string|max:255',
             'technology' => 'required|string|max:255',
-            'message'    => 'required|string',
+            'message'    => 'nullable|string',
             'slug'       => 'required|string|max:255',
         ]);
 
@@ -274,7 +274,7 @@ public function index34(Request $request)
     {
         return Excel::download(
             new ServicesRegistrationsExport($request),
-            'services_registrations_' . now()->format('Ymd_His') . '.xlsx'
+            'services_registrations_' . now()->format('d_F') . '.xlsx'
         );
     }
 }

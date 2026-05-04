@@ -37,8 +37,8 @@ class StudentsAcceptedLetterController extends Controller
      */
     public function index()
     {
-        $letters = StudentsAcceptedLetter::latest()->get();
-
+        $letters = StudentsAcceptedLetter::latest('updated_at')->get();
+        
         return view('students_accepted_letters.index', compact('letters'));
     }
 

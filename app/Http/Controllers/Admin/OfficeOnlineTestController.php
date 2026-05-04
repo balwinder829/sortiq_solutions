@@ -113,7 +113,7 @@ public function downloadPdf($officeTestId)
     $tests->where('exam_mode',$request->exam_mode);
     }
 
-    $tests = $tests->latest()->get();
+    $tests = $tests->latest('updated_at')->get();
 
 
     $batches = Batch::orderBy('batch_name')->get();

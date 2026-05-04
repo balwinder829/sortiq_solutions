@@ -251,14 +251,15 @@ class StudentController extends Controller
             
             $query->where('certificate_status', 0);
             if (!$request->filled('fee_filter')) {
-                $query->orderBy('id', 'desc');
-            }
+                // $query->orderBy('id', 'desc');
+                 $query->latest('updated_at');
+            } 
 
             if ($request->filled('limit')) {
                 $query->limit($request->limit);
             }
             $students = $query->get();
-            //dd($request->all());
+            // dd($students);
             // $students = $query->orderBy('id', 'desc')->get();
 
             // $students = $query->paginate(10);
@@ -1108,7 +1109,12 @@ public function import(Request $request)
         }
 
         // Otherwise create ZIP
-        $zipFileName = 'confirmation_letters_' . time() . '.zip';
+        if($isInternship){
+            $zipFileName = 'internship_letters_' . time() . '.zip';
+        }else{
+            $zipFileName = 'confirmation_letters_' . time() . '.zip';
+        }
+        
         $zipFullPath = storage_path('app/' . $zipFileName);
 
         $zip = new ZipArchive();
@@ -1461,7 +1467,12 @@ public function import(Request $request)
 
         $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
 
-        $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_confirmation_letter.pdf";
+        if($isInternship){
+            $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_internship_letter.pdf";
+        }else{
+            $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_confirmation_letter.pdf";    
+        }
+        
 
         $filePath = $folderPath . '/' . $fileName;
 
@@ -2069,37 +2080,117 @@ private function generatePdf($student, $isPursuing = false)
 
     public function exportExcel(Request $request)
     {
-         // Check if any filters exist in request
-        // $isFiltered = !empty(array_filter($request->all()));
-        
-        // // Set filename based on condition
-        // $fileName = $isFiltered 
-        //     ? 'Students_Filtered_Data.xlsx' 
-        //     : 'Students_Data.xlsx';
-
-         // date format → 16_feb_2026
-        $date = strtolower(now()->format('d_M_Y'));
+         
+        // $date = strtolower(now()->format('d_F'));
 
         // default filename
-        $fileName = 'students_list_' . $date;
-        if ($request->filled('technology')) {
+        // $fileName = 'students_list_' . $date;
+        // if ($request->filled('technology')) {
 
-            $fileName = 'students_technology_' . $date;
+        //     $fileName = 'students_technology_' . $date;
+        // }
+        // if ($request->filled('gender')) {
+
+        //     $fileName = 'students_' . $request->gender . '_' . $date;
+        // }
+        // // change filename based on fee filter
+        // if ($request->filled('fee_filter')) {
+
+        //     $fileName = 'students_' . $request->fee_filter . '_' . $date;
+        // }
+
+        $date = strtolower(now()->format('d_F'));
+
+        $parts = ['students'];
+
+        // Basic filters
+        if ($request->filled('student_name')) {
+            $parts[] = Str::slug($request->student_name, '_');
         }
+
+        if ($request->filled('f_name')) {
+            $parts[] = 'fname_' . Str::slug($request->f_name, '_');
+        }
+
+        if ($request->filled('sno')) {
+            $parts[] = 'sno_' . $request->sno;
+        }
+
         if ($request->filled('gender')) {
-
-            $fileName = 'students_' . $request->gender . '_' . $date;
+            $parts[] = strtolower($request->gender);
         }
-        // change filename based on fee filter
+
+        if ($request->filled('session')) {
+            $parts[] = 'session_' . $request->session;
+        }
+
+        if ($request->filled('college_name')) {
+            $parts[] = Str::slug($request->college_name, '_');
+        }
+
+        if ($request->filled('email_id')) {
+            $parts[] = 'email';
+        }
+
+        // Status / flags
+        if ($request->filled('status')) {
+            $parts[] = strtolower($request->status);
+        }
+
+        if ($request->filled('is_intern')) {
+            $parts[] = $request->is_intern ? 'intern' : 'non_intern';
+        }
+
+        if ($request->filled('is_online')) {
+            $parts[] = $request->is_online ? 'online' : 'offline';
+        }
+
+        // Fees
+        if ($request->filled('registration_fee')) {
+            $parts[] = 'fee_' . $request->registration_fee;
+        }
+
         if ($request->filled('fee_filter')) {
-
-            $fileName = 'students_' . $request->fee_filter . '_' . $date;
+            $parts[] = $request->fee_filter;
         }
+
+        if ($request->filled('pending_fees') && $request->pending_fees == 1) {
+            $parts[] = 'pendingfees';
+        }
+
+        // Technology
+        if ($request->filled('technology')) {
+            $parts[] = Str::slug($request->technology, '_');
+        }
+
+         
+
+        // Offers
+        if ($request->filled('part_time_offer')) {
+            $parts[] = 'parttime';
+        }
+
+        if ($request->filled('placement_offer')) {
+            $parts[] = 'placement';
+        }
+
+        if ($request->filled('pg_offer')) {
+            $parts[] = 'pg';
+        }
+
+         
+
+         
+        // Final filename
+        $fileName = implode('_', $parts) . '_' . $date . '.xlsx';
+
+        // Prevent too long filename
+        $fileName = substr($fileName, 0, 150);
 
 
         return Excel::download(
             new StudentListExport($request),
-             $fileName . '.xlsx'
+             $fileName
         );
     }
 

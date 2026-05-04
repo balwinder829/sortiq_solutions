@@ -48,7 +48,7 @@ class TestCategoryController extends Controller
     /* LIST ALL */
     public function index()
     {
-        $categories = TestCategory::latest()->get();
+        $categories = TestCategory::latest('updated_at')->get();
         return view('test_categories.index', compact('categories'));
     }
 

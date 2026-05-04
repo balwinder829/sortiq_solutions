@@ -129,7 +129,7 @@ public function index(Request $request)
         }
 
         // ✅ LATEST RECORDS FIRST
-        $query->latest('id');
+        $query->latest('updated_at');
 
         return DataTablesServerSide::response($request, $query, [
             'orderable'  => ['id','student_name','student_email','created_at'],
@@ -320,7 +320,7 @@ public function exportExcel(Request $request)
     }
 
     // ✅ Always add datetime
-    $fileName .= '-' . Carbon::now()->format('d-m-Y_H-i');
+    $fileName .= '-' . Carbon::now()->format('d_F');
 
     return \Maatwebsite\Excel\Facades\Excel::download(
         new \App\Exports\ManualDataExport($request),

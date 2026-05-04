@@ -21,6 +21,7 @@ use App\Exports\RegistrationsExport;
 use Carbon\Carbon;
 use App\Exports\EnquiriesExport;
 use App\Rules\NotBlockedNumber;
+use Illuminate\Support\Str;
 
 class EnquiryController extends Controller
 {
@@ -316,7 +317,7 @@ public function index(Request $request)
     if ($request->filled('alpha')) {
         $query->orderBy('name', 'asc');
     } else {
-        $query->latest();
+        $query->latest('updated_at');
     }
 
     // =========================
@@ -1329,20 +1330,90 @@ public function bulkConvertl(Request $request)
 
 
     public function exportAll()
-    {
-        return Excel::download(new RegistrationsExport(false), 'all_registrations.xlsx');
+    {   
+        $fileName = 'all_registrations_' . now()->format('d_F') . '.xlsx';
+        return Excel::download(new RegistrationsExport(false), $fileName);
     }
 
     public function exportPending()
-    {
-        return Excel::download(new RegistrationsExport(true), 'pending_registrations.xlsx');
+    {   
+        $fileName = 'pending_registrations' . now()->format('d_F') . '.xlsx';
+        return Excel::download(new RegistrationsExport(true), $fileName);
     }
 
     public function export(Request $request)
-    {
+    {   
+
+         $parts = [];
+
+    // College
+    if ($request->filled('college')) {
+        $parts[] = Str::slug($request->college, '_');
+    }
+
+    // Study
+    if ($request->filled('study')) {
+        $parts[] = Str::slug($request->study, '_');
+    }
+
+    // Semester
+    if ($request->filled('semester')) {
+        $parts[] = 'sem_' . $request->semester;
+    }
+
+    // Assigned Status
+    if ($request->filled('assigned_status')) {
+        $parts[] = $request->assigned_status; // assigned / unassigned
+    }
+
+    // Lead Status
+    if ($request->filled('lead_status')) {
+        $parts[] = Str::slug($request->lead_status, '_');
+    }
+
+    // Call Status
+    if ($request->filled('call_status')) {
+        $parts[] = Str::slug($request->call_status, '_');
+    }
+
+    // Source Type
+    if ($request->filled('source_type')) {
+        $parts[] = Str::slug($request->source_type, '_');
+    }
+
+    // Registered
+    if ($request->filled('registered')) {
+        $parts[] = $request->registered; // yes / no
+    }
+
+    // Date Range
+    if ($request->filled('from_date') && $request->filled('to_date')) {
+        $from = Carbon::parse($request->from_date)->format('d_M');
+        $to   = Carbon::parse($request->to_date)->format('d_M');
+        $parts[] = strtolower($from . '_to_' . $to);
+    }
+
+    // Quick Date
+    // if ($request->filled('quick_date')) {
+    //     $parts[] = $request->quick_date;
+    // }
+
+    // Followup
+    if ($request->filled('followup_filter')) {
+        $parts[] = 'followup_' . $request->followup_filter;
+    }
+
+    // Always append today's date
+    $parts[] = now()->format('d_F');
+
+    // Build filename
+    $fileName = 'enquiries_' . implode('_', $parts) . '.xlsx';
+
+    // Optional: limit length (important!)
+    $fileName = substr($fileName, 0, 120);
         return Excel::download(
             new EnquiriesExport($request->all(), 0),
-            'filtered-enquiries.xlsx'
+            $fileName
         );
     }
 }

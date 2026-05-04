@@ -190,13 +190,16 @@ if ($request->filled('percent_range')) {
 
     public function export(Request $request)
     {
+         $date = strtolower(now()->format('d_F'));
+          $parts = ['fee_status'];
+         $fileName = implode('_', $parts) . '_' . $date . '.xlsx';
         return Excel::download(
             new FeeStatusExport(
                 $request->college_id,
                 $request->course_id,
                 $request->percent_range
             ),
-            'fee-status.xlsx'
+            $fileName
         );
     }
 

@@ -69,7 +69,7 @@
                     </select>
                 </div>
 
-                <div class="col-md-1 d-flex gap-2">
+                <div class="col-md-2 d-flex gap-2">
                     <a href="{{ route('internship-registrations.index') }}"
                        class="btn btn-secondary w-100">Reset</a>
 

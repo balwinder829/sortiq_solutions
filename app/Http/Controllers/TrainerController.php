@@ -130,6 +130,7 @@ class TrainerController extends Controller
             $trainersQuery->whereRaw('FIND_IN_SET(?, technology)', [$request->course]);
         }
 
+        $trainersQuery = $trainersQuery->latest('updated_at');
         return DataTablesServerSide::response($request, $trainersQuery, [
             'orderable'  => ['id', 'username', 'name', 'gender', 'phone', 'email', 'technology'],
             'searchable' => ['username', 'name', 'email', 'phone'],

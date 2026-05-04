@@ -69,6 +69,8 @@ class CourseController extends Controller
             if ($request->student_filter == 'desc') {
                 $query->orderBy('students_count', 'desc');
             }
+        }else{
+            $query->orderBy('updated_at', 'desc');
         }
         return DataTablesServerSide::response($request, $query, [
             'orderable'  => ['id', 'course_name'],

@@ -136,6 +136,8 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
             if ($request->student_filter == 'more') {
                 $query->having('students_count', '>', 0);
             }
+        }else{
+            $query->orderBy('updated_at', 'desc');
         }
 
         $total = $query->count();
@@ -508,7 +510,7 @@ public function exportExcel(Request $request)
     $fileName = implode('_', $fileNameParts);
     $fileName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $fileName);
 
-    $fileName .= '_' . now()->format('Ymd_His') . '.xlsx';
+    $fileName .= '_' . now()->format('d_F') . '.xlsx';
 
     return Excel::download(
         new CollegesExport(

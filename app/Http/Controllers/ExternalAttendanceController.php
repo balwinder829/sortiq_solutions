@@ -132,7 +132,7 @@ class ExternalAttendanceController extends Controller
     }
 
     return view('admin.external-attendance.index', [
-        'tests'     => $tests->latest()->get(),
+        'tests'     => $tests->latest('updated_at')->get(),
         'colleges'  => College::all(),
         'courses'   => Course::all(),
         'semesters' => Semester::all(),

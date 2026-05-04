@@ -305,7 +305,7 @@ public function index(Request $request)
     {
         return Excel::download(
             new InternshipRegistrationsExport($request),
-            'internship_registrations_' . now()->format('Ymd_His') . '.xlsx'
+            'internship_registrations_' . now()->format('d_F') . '.xlsx'
         );
     }
 }
