@@ -169,6 +169,63 @@ function isParent($routes)
                             </a>
                         </li>
 
+                         {{-- Sales --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'leads']) }}"
+                               class="{{ request('tab') == 'leads' ? 'mm-active' : '' }}">
+                                Sales
+                            </a>
+                        </li>
+
+                        {{-- Mentors --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'trainers']) }}"
+                               class="{{ request('tab') == 'trainers' ? 'mm-active' : '' }}">
+                                Mentors
+                            </a>
+                        </li>
+
+                        {{-- Students --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'students']) }}"
+                               class="{{ request('tab') == 'students' ? 'mm-active' : '' }}">
+                                Students
+                            </a>
+                        </li>
+
+                        {{-- Company General --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'company']) }}"
+                               class="{{ request('tab') == 'company' ? 'mm-active' : '' }}">
+                                Company General
+                            </a>
+                        </li>
+
+
+                        {{-- Ads Management --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'ads']) }}"
+                               class="{{ request('tab') == 'ads' ? 'mm-active' : '' }}">
+                                Ads Management
+                            </a>
+                        </li>
+
+                        {{-- HR Management --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'hr']) }}"
+                               class="{{ request('tab') == 'hr' ? 'mm-active' : '' }}">
+                                HR Management
+                            </a>
+                        </li>
+
+                         {{-- Security --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'security']) }}"
+                               class="{{ request('tab') == 'security' ? 'mm-active' : '' }}">
+                                Security
+                            </a>
+                        </li>
+
                         {{-- Tests --}}
                         <li>
                             <a href="{{ route('admin.analytics', ['tab' => 'tests']) }}"
@@ -184,39 +241,6 @@ function isParent($routes)
                                 Workshops
                             </a>
                         </li>
-
-                        {{-- Leads --}}
-                        <li>
-                            <a href="{{ route('admin.analytics', ['tab' => 'leads']) }}"
-                               class="{{ request('tab') == 'leads' ? 'mm-active' : '' }}">
-                                Leads
-                            </a>
-                        </li>
-
-                        {{-- Passout Leads --}}
-                        <li>
-                            <a href="{{ route('admin.analytics', ['tab' => 'passouts']) }}"
-                               class="{{ request('tab') == 'passouts' ? 'mm-active' : '' }}">
-                                Passouts
-                            </a>
-                        </li>
-
-                        {{-- Staff --}}
-                        <li>
-                            <a href="{{ route('admin.analytics', ['tab' => 'staff']) }}"
-                               class="{{ request('tab') == 'staff' ? 'mm-active' : '' }}">
-                                Staff
-                            </a>
-                        </li>
-
-                        {{-- Mentors --}}
-                        <li>
-                            <a href="{{ route('admin.analytics', ['tab' => 'trainers']) }}"
-                               class="{{ request('tab') == 'trainers' ? 'mm-active' : '' }}">
-                                Mentors
-                            </a>
-                        </li>
-
                     </ul>
                 </li>
 

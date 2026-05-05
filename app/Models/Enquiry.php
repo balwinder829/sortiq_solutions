@@ -79,4 +79,8 @@ class Enquiry extends Model
     {
         return $query->where('is_passout', 1);
     }
+    public function salesStaff()
+    {
+        return $this->belongsTo(SalesStaff::class, 'assigned_to');
+    }
 }

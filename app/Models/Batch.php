@@ -77,6 +77,11 @@ class Batch extends Model
         return Course::whereIn('id', $ids)->get();
     }
 
+    public function mentor()
+    {
+        return $this->belongsTo(Trainer::class, 'batch_assign');
+    }
+
 
 
 }

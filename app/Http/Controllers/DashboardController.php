@@ -75,8 +75,8 @@ class DashboardController extends Controller
             $sessions = StudentSession::all();
 
             //new added
-            $totalConfirmed = Student::where('certificate_status', 1)->where('session', $activeSessionId)->count();
-            $totalCertificate = Student::where('certificate_status', 2)->where('session', $activeSessionId)->count();
+            $totalConfirmed = Student::where('certificate_status', 0)->where('session', $activeSessionId)->count();
+            $totalCertificate = Student::where('certificate_status', 1)->where('send_to_close', 0)->where('session', $activeSessionId)->count();
 
 
             // new

@@ -1354,7 +1354,7 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
 
 // Protected Enquiry CRUD
     Route::prefix('admin')
-    ->middleware(['auth', 'enquiry.otp'])   // admin users only
+    ->middleware(['auth'])   // admin users only
     ->group(function () {
         Route::resource('enquiries', EnquiryController::class);
         Route::post('enquiries/import', [EnquiryController::class, 'import'])

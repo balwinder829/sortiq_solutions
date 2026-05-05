@@ -26,6 +26,62 @@
         <li class="nav-item">
             <button class="nav-link active"
                     data-bs-toggle="tab"
+                    data-bs-target="#tab-leads"
+                    data-tab="leads">
+                Sales
+            </button>
+        </li>
+         <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-trainers"
+                    data-tab="trainers">
+                Mentors
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-students"
+                    data-tab="students">
+                Students
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-company"
+                    data-tab="company">
+                Company General
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-ads"
+                    data-tab="ads">
+                Ads Management
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-hr"
+                    data-tab="hr">
+                HR Management
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-security"
+                    data-tab="security">
+                Security
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
                     data-bs-target="#tab-tests"
                     data-tab="tests">
                 Tests
@@ -40,65 +96,647 @@
                 Workshops
             </button>
         </li>
-        <li class="nav-item">
-            <button class="nav-link"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-leads"
-                    data-tab="leads">
-                Sales
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-passouts"
-                    data-tab="passouts">
-                Passouts
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-staff"
-                    data-tab="staff">
-                Staff
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-trainers"
-                    data-tab="trainers">
-                Mentors
-            </button>
-        </li>
-
-        {{-- 3 DUMMY TABS --}}
-       <!--  <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-users" data-tab="users">
-                Users
-            </button>
-        </li>
-
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-courses" data-tab="courses">
-                Courses
-            </button>
-        </li>
-
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-reports" data-tab="reports">
-                Reports
-            </button>
-        </li> -->
 
     </ul>
 
     {{-- ================= TAB CONTENT ================= --}}
     <div class="tab-content">
 
+         {{-- ================= LEADS TAB ================= --}}
+        <div class="tab-pane fade show active" id="tab-leads">
+
+            <div class="row gx-3 gy-2">
+
+                {{-- Total Leads --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Leads</h6>
+                            <h3>{{ $totalLeads }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                 {{-- Assigned --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Assigned Leads</h6>
+                            <h3>{{ $assignedLeads }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Unassigned --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Unassigned Leads</h6>
+                            <h3>{{ $unassignedLeads }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Manual Data --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Manual Data</h6>
+                            <h3>{{ $manualDataCount }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Hard Data --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Hard Data</h6>
+                            <h3>{{ $hardDataCount }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                 
+
+                {{-- Passout Leads --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Passout Leads</h6>
+                            <h3>{{ $passoutLeads }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+               
+
+                {{-- Sales Team --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Sales Team</h6>
+                            <h3>{{ $totalStaff }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 {{-- Sales Team --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Active Member</h6>
+                            <h3>{{ $activeStaff }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 {{-- Sales Team --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Inactive Member</h6>
+                            <h3>{{ $inactiveStaff }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Total Registrations --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Registrations</h6>
+                            <h3>{{ $totalRegistrations }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Pending Registrations --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Pending Registrations</h6>
+                            <h3>{{ $pendingRegistrations }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Top Performer --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Top Performer</h6>
+                            <h5>{{ $topPerformer->salesStaff->name ?? '-' }}</h5>
+                            <small>{{ $topPerformer->total ?? 0 }} registrations</small>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Lowest Performer --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Lowest Performer</h6>
+                            <h5>{{ $lowestPerformer->salesStaff->name ?? '-' }}</h5>
+                            <small>{{ $lowestPerformer->total ?? 0 }} registrations</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- ================= TRAINER TAB ================= --}}
+        <div class="tab-pane fade" id="tab-trainers">
+
+            <div class="row gx-3 gy-2">
+                <!-- Total Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Mentors</h6>
+                            <h3>{{ $totalTrainers }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Active Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                             <h6>Active Mentors</h6>
+                            <h3>{{ $activeTrainers }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Inactive Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                             <h6>Inactive Mentors</h6>
+                            <h3>{{ $inactiveTrainers }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 {{-- Total Batches --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Batches</h6>
+                            <h3>{{ $totalBatches }}</h3>
+                        </div>
+                    </div>
+                </div>
+                
+
+                {{-- Online --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Online Batches</h6>
+                            <h3>{{ $onlineBatches }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Offline --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Offline Batches</h6>
+                            <h3>{{ $offlineBatches }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 {{-- Top Mentor --}}
+                <div class="col-md-6 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Top Mentor</h6>
+                            <h5>{{ $topMentor->mentor->name ?? '-' }}</h5>
+                            <small>{{ $topMentor->total ?? 0 }} batches</small>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Lowest Mentor --}}
+                <div class="col-md-6 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Lowest Mentor</h6>
+                            <h5>{{ $lowestMentor->mentor->name ?? '-' }}</h5>
+                            <small>{{ $lowestMentor->total ?? 0 }} batches</small>
+                        </div>
+                    </div>
+                    </div>
+
+
+            </div>
+
+        </div>
+        {{-- ================= STUDENT TAB ================= --}}
+        <div class="tab-pane fade" id="tab-students">
+
+            <div class="row gx-3 gy-2">
+                <!-- Total Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Students</h6>
+                            <h3>{{ $allstudents->total_students }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Active Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                             <h6>Online Students</h6>
+                            <h3>{{ $allstudents->online_students ?? 0 }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Inactive Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                             <h6>Offline Students</h6>
+                            <h3>{{ $allstudents->offline_students ?? 0 }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 {{-- Total Confirmed Students --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Total Confirmed Students</h6>
+                            <h3 class="fw-bold">{{ $totalConfirmed }}</h3>
+                        </div>
+                    </div>
+                </div>
+                
+
+                {{-- Total Certificate --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Total Certificate</h6>
+                    <h3 class="fw-bold">{{ $totalCertificate }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Total Closed --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Total Closed</h6>
+                    <h3 class="fw-bold">{{ $totalClosed }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Placed Student --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Placed Student</h6>
+                    <h3 class="fw-bold">{{ $placedStudents }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Placed Student --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Pending Registration Student</h6>
+                    <h3 class="fw-bold">{{ $totalPendingRegistrations }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Placed Student --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Joined Student</h6>
+                    <h3 class="fw-bold">{{ $totalJoinedStudents }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+         {{-- ================= COMPANY TAB ================= --}}
+        <div class="tab-pane fade" id="tab-company">
+
+            <div class="row gx-3 gy-2">
+                <!-- Total Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Events</h6>
+                             <h3 class="fw-bold">{{ $totalEvents }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Active Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Employee Events</h6>
+                            <h3 class="fw-bold">{{ $employeeEvents }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <!-- Inactive Trainers -->
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">College Events</h6>
+                            <h3 class="fw-bold">{{ $collegeEvents }}</h3>
+                        </div>
+                    </div>
+                </div>
+                 
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Student Memory Events</h6>
+                            <h3 class="fw-bold">{{ $studentEvents }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                 
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6 class="text-muted">Upcoming Events</h6>
+                            <h3 class="fw-bold">{{ $upcomingEventsCount }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- ================= ADS TAB ================= --}}
+        <div class="tab-pane fade" id="tab-ads">
+
+            <div class="row gx-3 gy-2">
+
+                {{-- Pages --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Total Pages</h6>
+                            <h3>{{ $totalPages }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Services --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Service Entries</h6>
+                            <h3>{{ $serviceEntries }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Internship --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Internship Entries</h6>
+                            <h3>{{ $internshipEntries }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Product --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Product Entries</h6>
+                            <h3>{{ $productEntries }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Single Product --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Single Product Entries</h6>
+                            <h3>{{ $singleProductEntries }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Services Today --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Service (Today)</h6>
+                            <h3>{{ $todayService }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Services Yesterday --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Service (Yesterday)</h6>
+                            <h3>{{ $yesterdayService }}</h3>
+                        </div>
+                    </div>
+                </div>
+                {{-- Services Today --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Internship (Today)</h6>
+                            <h3>{{ $todayInternship }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Services Yesterday --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Internship (Yesterday)</h6>
+                            <h3>{{ $yesterdayInternship }}</h3>
+                        </div>
+                    </div>
+                </div>
+                {{-- Services Today --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Products (Today)</h6>
+                            <h3>{{ $todayProduct }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Services Yesterday --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Products (Yesterday)</h6>
+                            <h3>{{ $yesterdayProduct }}</h3>
+                        </div>
+                    </div>
+                </div>
+                {{-- Services Today --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Single Product (Today)</h6>
+                            <h3>{{ $todaySingleProduct }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Services Yesterday --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Single Product (Yesterday)</h6>
+                            <h3>{{ $yesterdaySingleProduct }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- ================= HR TAB ================= --}}
+        <div class="tab-pane fade" id="tab-hr">
+
+            <div class="row gx-3 gy-2">
+
+                {{-- Pages --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Total Employees</h6>
+                            <h3>{{ $totalEmployees }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Services --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Active</h6>
+                            <h3>{{ $activeEmployees }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Internship --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                             <h6>Inactive</h6>
+                            <h3>{{ $inactiveEmployees }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Internship --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Resigned</h6>
+                            <h3>{{ $resignedEmployees }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Terminated</h6>
+                            <h3>{{ $terminatedEmployees }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+
+        </div>
+        {{-- ================= HR TAB ================= --}}
+        <div class="tab-pane fade" id="tab-security">
+
+            <div class="row gx-3 gy-2">
+
+                {{-- Pages --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Blocked IPs</h6>
+                            <h3>{{ $blockedIps }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Services --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Allowed IPs</h6>
+                            <h3>{{ $allowedIps }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Internship --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                               <h6>Blocked Numbers</h6>
+                                <h3>{{ $blockedNumbers }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Internship --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Total Users</h6>
+                            <h3>{{ $totalUsers }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                            <div class="card-body">
+                            <h6>Terminated</h6>
+                            <h3>{{ $terminatedEmployees }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+
+        </div>
         {{-- ================= TEST TAB ================= --}}
-        <div class="tab-pane fade show active" id="tab-tests">
+        <div class="tab-pane fade" id="tab-tests">
 
             <div class="row g-3">
 
@@ -288,83 +926,7 @@
 
         </div>
 
-        {{-- ================= LEADS TAB ================= --}}
-        <div class="tab-pane fade" id="tab-leads">
-
-            <div class="row g-3">
-
-                <!-- Total Leads -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Total Leads</h6>
-                            <h3>{{ $totalLeads }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Assigned Leads -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Assigned Leads</h6>
-                            <h3>{{ $assignedLeads }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Unassigned Leads -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Unassigned Leads</h6>
-                            <h3>{{ $unassignedLeads }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-
-        {{-- ================= PASSOUT LEADS TAB ================= --}}
-        <div class="tab-pane fade" id="tab-passouts">
-
-            <div class="row g-3">
-
-                <!-- Total -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Total Passout Leads</h6>
-                            <h3>{{ $totalPassoutLeads }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Assigned -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Assigned</h6>
-                            <h3>{{ $assignedPassoutLeads }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Unassigned -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Unassigned</h6>
-                            <h3>{{ $unassignedPassoutLeads }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
+    
         {{-- ================= SALES STAFF TAB ================= --}}
         <div class="tab-pane fade" id="tab-staff">
 
@@ -403,44 +965,7 @@
             </div>
 
         </div>
-        {{-- ================= TRAINER TAB ================= --}}
-        <div class="tab-pane fade" id="tab-trainers">
-
-            <div class="row g-3">
-
-                <!-- Total Trainers -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Total Trainers</h6>
-                            <h3>{{ $totalTrainers }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Active Trainers -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Active Trainers</h6>
-                            <h3>{{ $activeTrainers }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Inactive Trainers -->
-                <div class="col-md-4">
-                    <div class="card text-center shadow-sm">
-                        <div class="card-body">
-                            <h6>Inactive Trainers</h6>
-                            <h3>{{ $inactiveTrainers }}</h3>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
+        
         {{-- ================= DUMMY TABS ================= --}}
         @foreach(['users','courses','reports'] as $dummy)
         <div class="tab-pane fade" id="tab-{{ $dummy }}">
