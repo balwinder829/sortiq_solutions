@@ -11,6 +11,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="{{ asset('certificate_fav.jpeg') }}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <style>
     /* Sticky CTA */
@@ -669,9 +670,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                    placeholder="Course Name"
                    value="{{ old('technology') }}"
                    required> -->
-                   <select name="technology" required>
+                   <select name="technology">
                         <option value="" disabled {{ old('technology') ? '' : 'selected' }}>
-                            Select Service Required
+                            Select Service
                         </option>
 
                         <option value="Website Development" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
@@ -692,6 +693,56 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
                         <option value="Social Media Marketing" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
                             Social Media Marketing
+                        </option>
+                        <option value="App Development" {{ old('technology') == 'App Development' ? 'selected' : '' }}>
+                            App Development
+                        </option>
+                        <option value="Web Designing" {{ old('technology') == 'Web Designing' ? 'selected' : '' }}>
+                            Web Designing
+                        </option>
+
+                        <option value="Web Development" {{ old('technology') == 'Web Development' ? 'selected' : '' }}>
+                            Web Development
+                        </option>
+
+                        <option value="Digital Marketing" {{ old('technology') == 'Digital Marketing' ? 'selected' : '' }}>
+                            Digital Marketing
+                        </option>
+
+                        <option value="MERN Stack Development" {{ old('technology') == 'MERN Stack Development' ? 'selected' : '' }}>
+                            MERN Stack Development
+                        </option>
+
+                        <option value="PHP Development" {{ old('technology') == 'PHP Development' ? 'selected' : '' }}>
+                            PHP Development
+                        </option>
+
+                        <option value="Graphic Designing" {{ old('technology') == 'Graphic Designing' ? 'selected' : '' }}>
+                            Graphic Designing
+                        </option>
+
+                        <option value="Shopify & WooCommerce Stores" {{ old('technology') == 'Shopify & WooCommerce Stores' ? 'selected' : '' }}>
+                            Shopify & WooCommerce Stores
+                        </option>
+
+                        <option value="Business Websites & Custom Web Apps" {{ old('technology') == 'Business Websites & Custom Web Apps' ? 'selected' : '' }}>
+                            Business Websites & Custom Web Apps
+                        </option>
+
+                        <option value="CRM Implementation" {{ old('technology') == 'CRM Implementation' ? 'selected' : '' }}>
+                            CRM Implementation
+                        </option>
+
+                        <option value="API Integration" {{ old('technology') == 'API Integration' ? 'selected' : '' }}>
+                            API Integration
+                        </option>
+
+                        <option value="Custom Software Development" {{ old('technology') == 'Custom Software Development' ? 'selected' : '' }}>
+                            Custom Software Development
+                        </option>
+
+                        <option value="Database Management" {{ old('technology') == 'Database Management' ? 'selected' : '' }}>
+                            Database Management
                         </option>
                     </select>
             <!-- <select name="technology" class="form-control" required>
@@ -1054,7 +1105,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <div class="icon-box">
               <i class="bi bi-globe2"></i>
             </div>
-            <h5>100+ Websites Delivered</h5>
+            <h5>400+ Websites Delivered</h5>
           </div>
         </div>
       </div>
@@ -1249,8 +1300,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     </div>
 
+    @include('ads_front_pages.footer_address')
+
       <!-- RIGHT SIDE (Existing Content) -->
-      <div class="col-md-6 text-center text-md-end">
+      <!-- <div class="col-md-6 text-center text-md-end">
         <p class="mb-1 fs-5 fw-semibold">
           E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072
         </p>
@@ -1267,16 +1320,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </a>
           </span>
         </div>
-      </div>
+      </div> -->
 
     </div>
   </div>
 </section>
-<a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
+<a href="https://wa.me/919855755683?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
    class="whatsapp-float"
    id="whatsappBtn"
    target="_blank">
-   <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+   <i class="fa-brands fa-whatsapp"></i>
 </a>
 
 </body>

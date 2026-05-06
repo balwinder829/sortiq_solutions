@@ -3,11 +3,14 @@
 @section('title', 'Edit Student')
 
 @section('content')
-<div class="content-body">
-    <div class="container-fluid">
+<div class="content">
+    <div class="container">
         <div class="row">
             <div class="col-12">          
                 <div class="card">
+                    <form method="POST" action="{{ route('certificates.update', $student->id) }}">
+                            @csrf
+                            @method('PUT')
                     <div class="card-header">
                         <h4 class="card-title">Edit Student Detail- SNo- {{ $student->sno }}</h4><div class="form-check ms-3">
                             <input type="hidden" name="is_place" value="0">
@@ -37,6 +40,17 @@
                                 Married Status
                             </label>
                         </div>
+
+                        <div class="ms-3">
+                            <label class="form-label mb-0 fw-bold">
+                                Certificate Issue Date
+                            </label>
+
+                            <input type="date"
+                                   name="certificate_issue_date"
+                                   class="form-control"
+                                   value="{{ old('certificate_issue_date', $student->certificate_issue_date) }}">
+                        </div>
                     </div>
                     
                     <div class="card-body">
@@ -56,9 +70,7 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('certificates.update', $student->id) }}">
-                            @csrf
-                            @method('PUT')
+                        
 
                             <div class="form-row">
                                 <!-- Student Name -->
@@ -126,6 +138,18 @@
                                      onpaste="handlePaste(event)"
                                     oninput="sanitizeContact(this)"
                                         >
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <label>Other Contact No</label>
+                                    <input type="text" name="alternative_phone" class="form-control" 
+                                    minlength="10"
+                                   
+                                   pattern="[0-9]{10}"
+                                   title="Enter a valid 10-digit mobile number"
+                                     onpaste="handlePaste(event)"
+                                        oninput="sanitizeContact(this)"
+                                        value="{{ old('alternative_phone', $student->alternative_phone) }}">
                                 </div>
 
                                 <!-- Email -->
@@ -338,6 +362,18 @@
             <option value="1" {{ $student->is_placed == 1 ? 'selected' : '' }}>Placed</option>
         </select>
     </div>
+
+    <div class="form-group col-md-6">
+                <label>Address</label>
+                <textarea name="address"
+                          class="form-control"
+                          rows="3"
+                          >{{ old('address', $student->address) }}</textarea>
+
+                @error('address')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
 
  
 

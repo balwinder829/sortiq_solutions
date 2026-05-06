@@ -135,8 +135,20 @@
                                    pattern="[0-9]{10}"
                                    title="Enter a valid 10-digit mobile number"
                                      onpaste="handlePaste(event)"
-           oninput="sanitizeContact(this)"
+                                        oninput="sanitizeContact(this)"
                                         value="{{ old('contact', $student->contact) }}">
+                                </div>
+
+                                <div class="form-group col-md-6">
+                                    <label>Other Contact No</label>
+                                    <input type="text" name="alternative_phone" class="form-control" 
+                                    minlength="10"
+                                   
+                                   pattern="[0-9]{10}"
+                                   title="Enter a valid 10-digit mobile number"
+                                     onpaste="handlePaste(event)"
+                                        oninput="sanitizeContact(this)"
+                                        value="{{ old('alternative_phone', $student->alternative_phone) }}">
                                 </div>
 
                                 <!-- Email -->
@@ -222,21 +234,6 @@
                                     @error('pending_fees') <small class="text-danger">{{ $message }}</small> @enderror
                                 </div>
 
-
-                                 
-
-                                <div class="form-group col-md-6" id="pending_next_due_date">
-                                    <label>Pending Fees Due Date</label>
-                                    <input type="date" name="next_due_date" class="form-control"
-                                        value="{{ old('next_due_date', $student->next_due_date) }}">
-                                        <small class="text-danger d-none" id="due_date_error">
-                                            Next due date must be after the registered date.
-                                        </small>
-                                </div>
-
-                                
-
-
                                 <!-- Department -->
                                     <!--  -->
 
@@ -274,6 +271,15 @@
                                         value="{{ old('end_date', $student->end_date) }}">
                                         <small class="text-danger d-none" id="end_error">
                                             Sunday is not allowed
+                                        </small>
+                                </div>
+
+                                <div class="form-group col-md-6" id="pending_next_due_date">
+                                    <label>Pending Fees Due Date</label>
+                                    <input type="date" name="next_due_date" class="form-control"
+                                        value="{{ old('next_due_date', $student->next_due_date) }}">
+                                        <small class="text-danger d-none" id="due_date_error">
+                                            Next due date must be after the registered date.
                                         </small>
                                 </div>
 
@@ -400,6 +406,18 @@
                         👁
                     </span>
                 </div>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Address</label>
+                <textarea name="address"
+                          class="form-control"
+                          rows="3"
+                          >{{ old('address', $student->address) }}</textarea>
+
+                @error('address')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
                             </div>
 

@@ -10,6 +10,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="{{ asset('certificate_fav.jpeg') }}">
 
 <style>
@@ -777,28 +778,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             Select Service
                         </option>
 
-                        <option value="Campusedgepro" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
+                        <option value="Campusedgepro" {{ old('technology') == 'Website Development' ? 'selected' : 'selected' }}>
                             Campusedgepro
                         </option>
 
-                        <option value="BlogerzWorld" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
-                            BlogerzWorld
-                        </option>
-
-                        <option value="InventoryManageSuite" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
-                            InventoryManageSuite
-                        </option>
-
-                        <option value="AllmartX" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
-                            AllmartX
-                        </option>
-
-                        <option value="Prop99X" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
-                            Prop99X
-                        </option>
-                        <option value="Siterankify" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
-                            Siterankify
-                        </option>
+                        
                     </select>
 
             @error('technology')
@@ -852,11 +836,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <!-- Text Content -->
       <div class="col-md-6">
         <h2 class="section-title mb-3">
-          Complete ERP Solution for Schools & Colleges
+          Complete ERP Solution for Schools & Colleges Management
         </h2>
 
         <p>
-          <strong>Campus Edge Pro</strong> by <strong>SortIQ Solutions</strong> is a modern, 
+          <strong>Campus Edge Pro</strong> by  SortIQ Solutions is a modern, 
           cloud-based campus management system designed to streamline every aspect 
           of educational institutions—from admissions to alumni.
         </p>
@@ -1128,6 +1112,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
 
+      <div class="col-md-4 col-sm-6">
+        <div class="card how-card text-center h-100">
+          <div class="card-body">
+            <div class="step-badge">6</div>
+            <i class="bi bi-chat-dots fs-1 mb-3 text-secondary"></i>
+            <h5>Send Notifications & Alerts Instantly</h5>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -1142,7 +1136,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <div class="row g-4 text-center">
 
-      <div class="col-md-3 col-sm-6">
+      <!-- <div class="col-md-3 col-sm-6">
         <div class="card target-card bg-primary-subtle h-100">
           <div class="card-body">
             <i class="bi bi-building fs-1 text-primary mb-3"></i>
@@ -1150,9 +1144,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <p>CBSE, ICSE, State Boards</p>
           </div>
         </div>
-      </div>
+      </div> -->
 
-      <div class="col-md-3 col-sm-6">
+      <div class="col-md-4 col-sm-6">
         <div class="card target-card bg-success-subtle h-100">
           <div class="card-body">
             <i class="bi bi-mortarboard fs-1 text-success mb-3"></i>
@@ -1161,7 +1155,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
 
-      <div class="col-md-3 col-sm-6">
+      <div class="col-md-4 col-sm-6">
         <div class="card target-card bg-warning-subtle h-100">
           <div class="card-body">
             <i class="bi bi-person-video3 fs-1 text-warning mb-3"></i>
@@ -1170,7 +1164,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
       </div>
 
-      <div class="col-md-3 col-sm-6">
+      <div class="col-md-4 col-sm-6">
         <div class="card target-card bg-info-subtle h-100">
           <div class="card-body">
             <i class="bi bi-journal-text fs-1 text-info mb-3"></i>
@@ -1200,9 +1194,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         Book Free Demo
       </a>
 
-      <a href="#" class="btn btn-lg btn-outline-light px-4 fw-bold">
+     <!--  <a href="#" class="btn btn-lg btn-outline-light px-4 fw-bold">
         Contact Us
-      </a>
+      </a> -->
+      <a href="tel:+919876543210" class="btn btn-lg btn-outline-light px-4 fw-bold">
+       Contact Us
+    </a>
     </div>
 
   </div>
@@ -1281,9 +1278,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 
       <!-- RIGHT SIDE (Existing Content) -->
-      <div class="col-md-6 text-center text-md-end">
+      @include('ads_front_pages.footer_address')
+    <!--   <div class="col-md-6 text-center text-md-end">
         <p class="mb-1 fs-5 fw-semibold">
-          E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072
+          E-51, Second Floor, Phase - 8, Industrial Area, S.A.S. Nagar, Mohali, Punjab 160071
         </p>
 
         <div class="d-flex justify-content-md-end justify-content-center gap-3 flex-wrap">
@@ -1298,7 +1296,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </a>
           </span>
         </div>
-      </div>
+      </div> -->
 
     </div>
   </div>
@@ -1310,7 +1308,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
    class="whatsapp-float"
    id="whatsappBtn"
    target="_blank">
-   <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+   <i class="fa-brands fa-whatsapp"></i>
 </a>
 
 </body>

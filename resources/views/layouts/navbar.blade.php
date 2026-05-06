@@ -264,25 +264,10 @@ function isParent($routes)
 
                  {{-- Colleges Locations --}}
                 <li class="{{ isParent(['states*','districts*']) }}">
-                    <a class="has-arrow" href="javascript:void(0)">
-                         <i class="fas fa-university"></i>
+                    <a href="{{ route('states.index') }}">
+                        <i class="fas fa-university"></i>
                         <span class="nav-text">Colleges Locations</span>
                     </a>
-                    <ul class="{{ showSubmenu(['states*','districts*']) }}">
-                       {{-- Colleges --}}
-                        <li class="{{ isParent(['states*']) }}">
-                            <a href="{{ route('states.index') }}">
-                                <!-- <i class="fa-regular fa-file-lines"></i> -->
-                                <span class="nav-text">Colleges States</span>
-                            </a>
-                        </li> 
-                        <li class="{{ isParent(['districts*']) }}">
-                            <a href="{{ route('districts.index') }}">
-                                <!-- <i class="fa-regular fa-file-lines"></i> -->
-                                <span class="nav-text">Colleges Districts</span>
-                            </a>
-                        </li> 
-                    </ul>
                 </li>
 
                 {{-- Colleges --}}
@@ -1353,35 +1338,16 @@ function isParent($routes)
                         </li>
 
                         @endcan
-                        @canany(['districts.view','states.view'])
+                        @canany(['states.view','districts.view'])
 
-                        {{-- Colleges Locations --}}
-                            <li class="{{ isParent(['states*','districts*']) }}">
-                                <a class="has-arrow" href="javascript:void(0)">
-                                     <i class="fas fa-university"></i>
-                                    <span class="nav-text">Colleges Locations</span>
-                                </a>
-                                <ul class="{{ showSubmenu(['states*','districts*']) }}">
-                                   {{-- Colleges --}}
-                                   @can('states.view')
-                                    <li class="{{ isParent(['states*']) }}">
-                                        <a href="{{ route('states.index') }}">
-                                            <!-- <i class="fa-regular fa-file-lines"></i> -->
-                                            <span class="nav-text">Colleges States</span>
-                                        </a>
-                                    </li> 
-                                     @endcan  
-                                            @can('districts.view')
-                                    <li class="{{ isParent(['districts*']) }}">
-                                        <a href="{{ route('districts.index') }}">
-                                            <!-- <i class="fa-regular fa-file-lines"></i> -->
-                                            <span class="nav-text">Colleges Districts</span>
-                                        </a>
-                                    </li> 
-                                     @endcan 
-                                </ul>
-                            </li>
-                        @endcanany  
+                        <li class="{{ isParent(['states*','districts*']) }}">
+                            <a href="{{ route('states.index') }}">
+                                <i class="fas fa-university"></i>
+                                <span class="nav-text">Colleges Locations</span>
+                            </a>
+                        </li>
+
+                        @endcanany 
 
                     @canany(['colleges.view','mous.view','hods.view','tests.view','offline_tests.view','test_categories.view','external_attendance.view','test_analytics.view'])
                         {{-- Colleges --}}

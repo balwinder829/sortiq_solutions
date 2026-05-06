@@ -20,8 +20,30 @@ class StateController extends Controller
         // $this->middleware('permission:colleges.import')->only('showImport');
     }
 
-    public function index(){
-        return view('states.index');
+    // public function index(){
+    //     return view('states.index');
+    // }
+
+    public function index(Request $request)
+    {
+        $states = State::orderBy('name')->get();
+
+        // 👉 If AJAX request → return only partial
+        if ($request->ajax() || $request->get('ajax')) {
+
+            if ($request->get('tab') == 'districts') {
+                return view('districts.districts_table', compact('states'));
+            }
+
+            return view('states.states_table');
+        }
+
+        // 👉 Normal load
+        return view('states.master', compact('states'));
+    }
+    public function index5may(){
+        $states = State::orderBy('name')->get(); // needed for district filter
+        return view('states.master', compact('states'));
     }
     
     public function data(Request $request)
@@ -77,7 +99,7 @@ class StateController extends Controller
         State::create($validated);
 
         return redirect()
-            ->route('states.index')
+            ->route('states.index', ['tab' => 'states'])
             ->with('success','State created successfully');
     }
 
@@ -120,7 +142,7 @@ class StateController extends Controller
         $state->update($validated);
 
         return redirect()
-            ->route('states.index')
+            ->route('states.index', ['tab' => 'states'])
             ->with('success','State updated successfully');
     }
 
@@ -132,7 +154,7 @@ class StateController extends Controller
     // {
     //     $state->delete();
     //     return redirect()
-    //         ->route('states.index')
+    //         ->route('states.index', ['tab' => 'states'])
     //         ->with('success','State deleted successfully');
     // }
 }

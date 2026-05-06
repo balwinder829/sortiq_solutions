@@ -56,6 +56,12 @@ class Student extends Authenticatable
         'last_login',
         'source_type',
         'source_id',
+        'alternative_phone',
+        'address',
+        'certificate_issue_date',
+        'confirmation_issue_date',
+        'internship_issue_date',
+        'pursuing_issue_date',
     ];
 
      // Automatically hash password when setting it

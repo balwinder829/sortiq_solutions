@@ -354,7 +354,9 @@ class StudentController extends Controller
             'email_id'       => 'required|email',
             // 'contact'        => 'nullable|string|max:15',
             'contact' => ['nullable', 'string', new NotBlockedNumber],
+            'alternative_phone' => ['nullable', 'string', new NotBlockedNumber],
 
+            'address'         => 'nullable|string',
             'gender'         => 'required|string',
             // 'college_name'   => 'required|string',
             'college_name' => 'required_if:is_place,0|nullable|string',
@@ -543,6 +545,9 @@ class StudentController extends Controller
             'email_id'       => 'nullable',
             // 'contact'        => 'required|string|max:15',
             'contact' => ['nullable', 'string', new NotBlockedNumber],
+            'alternative_phone' => ['nullable', 'string', new NotBlockedNumber],
+
+            'address'         => 'nullable|string',
             'gender'         => 'required|string',
             // 'college_name'   => 'required|string',   // not college_id
             // 'session'        => 'required|string',   // not session_id
@@ -1073,7 +1078,17 @@ public function import(Request $request)
          $isInternship = $request->boolean('is_internship');
          $ismonthly = $request->boolean('is_monthly');
          $is_logo_show = $request->boolean('is_logo_show');
-         // dd($request->request);
+
+         $collegeName = null;
+
+        if ($request->filled('college_name')) {
+            $college = \App\Models\College::find($request->college_name);
+
+            if ($college) {
+                $collegeName = strtolower(str_replace(' ', '_', $college->FullName));
+            }
+        }
+         // dd($collegeName, $request->request);
         if (!is_array($ids) || count($ids) === 0) {
             return back()->with('error', 'No students selected.');
         }
@@ -1109,11 +1124,20 @@ public function import(Request $request)
         }
 
         // Otherwise create ZIP
-        if($isInternship){
-            $zipFileName = 'internship_letters_' . time() . '.zip';
-        }else{
-            $zipFileName = 'confirmation_letters_' . time() . '.zip';
+        $date = strtolower(date('d_F'));
+
+        $baseName = $isInternship ? 'internship_letters' : 'confirmation_letters';
+
+        if ($collegeName) {
+            $zipFileName = "{$baseName}_{$collegeName}_{$date}.zip";
+        } else {
+            $zipFileName = "{$baseName}_{$date}.zip";
         }
+        // if($isInternship){
+        //     $zipFileName = 'internship_letters_' . date('d_F') . '.zip';
+        // }else{
+        //     $zipFileName = 'confirmation_letters_' . date('d_F') . '.zip';
+        // }
         
         $zipFullPath = storage_path('app/' . $zipFileName);
 
@@ -1192,7 +1216,8 @@ public function import(Request $request)
 
     public function downloadCertificateMultiple(Request $request)
     {
-
+        // dd($request);
+        // dd($request->all());
         $ids = json_decode($request->ids, true);
         $isPursuing = $request->boolean('is_pursuing');
 
@@ -1203,6 +1228,16 @@ public function import(Request $request)
 
         // Ensure IDs are integers
         $ids = array_map('intval', $ids);
+       
+        $collegeName = null;
+
+        if ($request->filled('college_name')) {
+            $college = \App\Models\College::find($request->college_name);
+
+            if ($college) {
+                $collegeName = strtolower(str_replace(' ', '_', $college->FullName));
+            }
+        }
 
         $students = Student::whereIn('id', $ids)->get();
 
@@ -1212,7 +1247,11 @@ public function import(Request $request)
 
         // Generate (or reuse) PDFs and collect file paths
         $pdfPaths = [];
-        foreach ($students as $student) {
+        // $forceUpdate = $request->force_update == 1;
+        
+        foreach ($students as $student) {            
+             // ✅ Case 1: empty → set
+           
             $pdfPath = $this->generatePdf($student, $isPursuing);
 
             if (file_exists($pdfPath)) {
@@ -1231,8 +1270,16 @@ public function import(Request $request)
             ]);
         }
 
+         $date = strtolower(date('d_F'));
+
+        $baseName = $isPursuing ? 'pursuing_certificate_letters_' : 'certificate_letters_';
+        if ($collegeName) {
+            $zipFileName = "{$baseName}_{$collegeName}_{$date}.zip";
+        } else {
+            $zipFileName = "{$baseName}_{$date}.zip";
+        }
         // Otherwise create ZIP
-        $zipFileName = 'certificate_letters_' . time() . '.zip';
+        // $zipFileName = 'certificate_letters_' . time() . '.zip';
         $zipFullPath = storage_path('app/' . $zipFileName);
 
         $zip = new ZipArchive();
@@ -1248,6 +1295,57 @@ public function import(Request $request)
         }
 
         return back()->with('error', 'Could not create ZIP file.');
+    }
+
+    public function updateCertificateIssueDateMultiple(Request $request)
+    {
+       
+        // dd($request->all());
+        $ids = json_decode($request->ids, true);
+       
+
+        // dd($request->request);
+        if (!is_array($ids) || count($ids) === 0) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Ensure IDs are integers
+        $ids = array_map('intval', $ids);
+        $issueDate = $request->issue_date;
+        $forceUpdate = $request->force_update;
+        
+        $students = Student::whereIn('id', $ids)->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'Selected students not found.');
+        }
+
+        $forceUpdate = $request->boolean('force_update'); // best way
+
+        $field = 'certificate_issue_date';
+        foreach ($students as $student) {            
+             // ✅ Case 1: empty → set
+            if (empty($student->$field)) {
+                 
+                $student->$field = $issueDate;
+                $student->save();
+                continue;
+            }
+
+            // ✅ Case 2: force update → overwrite
+            if ($forceUpdate) {
+                 
+                $student->$field = $issueDate;
+                $student->save();
+            }
+             
+            $student->save();
+           
+        }
+            return redirect()
+            ->route('certificates.index')
+            ->with('success', "Issue Date Updated successfully.");
+          
     }
 
     public function moveMultipleToCertificate(Request $request)

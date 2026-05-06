@@ -14,6 +14,7 @@
 /* 🔴 OVERDUE */
 table.table-striped.dataTable tbody tr.row-overdue > * {
     background-color: red !important;
+    color: white!important;
 }
 
 /* 🟡 DUE TODAY */
@@ -540,11 +541,17 @@ value="{{ request('registration_fee') }}">
     </div>
     {{-- Buttons for selected students --}}
     <div class="form-check mb-2">
-    <input type="checkbox" class="form-check-input" id="isPursuing" name="is_pursuing">
-    <label class="form-check-label" for="isPursuing">
-        Check it if Pursuing
-    </label>
-</div>
+        <input type="checkbox" class="form-check-input" id="isPursuing" name="is_pursuing">
+        <label class="form-check-label" for="isPursuing">
+            Check it if Pursuing
+        </label>
+    </div>
+    <div class="form-check mb-2">
+        <input type="checkbox" class="form-check-input" id="forceIssueDate" name="force_update" value="1">
+        <label class="form-check-label" for="forceIssueDate">
+            Overwrite Issue Date
+        </label>
+    </div>
 
     {{-- Multi-action buttons --}}
     <div class="mt-3">
@@ -553,6 +560,7 @@ value="{{ request('registration_fee') }}">
         <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
         <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
         <button id="moveSelected" class="btn btn-warning">Shift To Confirmation</button>
+        <button id="updateIssueDate" class="btn btn-warning">Update Issue Date</button>
     </div>
 
      
@@ -564,9 +572,17 @@ value="{{ request('registration_fee') }}">
     <input type="hidden" name="ids" id="bulkIds">
 </form>
 
+<form id="bulkIssueDateForm" method="POST" action="{{ route('students.updateCertificateIssueDateMultiple') }}" style="display:none;">
+    @csrf
+        <input type="hidden" name="ids" id="bulkIssueIds">
+        <input type="hidden" name="issue_date" id="issueDateInput">
+        <input type="hidden" name="force_update" id="forceUpdateInput">
+</form>
+
 <form id="bulkDownloadForm" method="POST" action="{{ route('students.downloadCertificateMultiple') }}" style="display:none;">
     @csrf
     <input type="hidden" name="ids" id="bulkDownloadIds">
+    <input type="hidden" name="college_name" value="{{ request('college_name') }}">
     <input type="hidden" name="is_pursuing">
 </form>
 
@@ -981,6 +997,49 @@ $(document).ready(function () {
         $('#bulkIssueForm').submit(); // normal submit -> page reload
     });
 
+    $('#updateIssueDate').click(function () {
+
+        var ids = getSelectedIds();
+        let forceUpdate = $('#forceIssueDate').is(':checked') ? 1 : 0;
+        $('#forceUpdateInput').val(forceUpdate);
+
+        if (ids.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                text: 'Select at least one student'
+            });
+            return;
+        }
+
+        // 🔥 Ask for custom date
+        Swal.fire({
+            title: 'Select Issue Date',
+            input: 'date',
+            inputLabel: 'Issue Date',
+            inputValue: new Date().toISOString().split('T')[0],
+            showCancelButton: true,
+            confirmButtonText: 'Update'
+        }).then((result) => {
+
+            if (!result.isConfirmed) return;
+
+            let issueDate = result.value;
+
+            if (!issueDate) {
+                Swal.fire('Error', 'Please select a date', 'error');
+                return;
+            }
+
+            // ✅ set hidden input
+            $('#issueDateInput').val(issueDate);
+
+            // ✅ set IDs
+            $('#bulkIssueIds').val(JSON.stringify(ids));
+
+            // submit form
+            $('#bulkIssueDateForm').submit();
+        });
+    });
      // Download Confirm Letter(s)
     $('#downloadissueSelected').click(function () {
         var ids = getSelectedIds();

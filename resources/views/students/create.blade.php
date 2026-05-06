@@ -131,6 +131,20 @@
             </div>
 
             <div class="form-group col-md-6">
+                <label>Other Contact No</label>
+                <input type="text" class="form-control" 
+                       name="alternative_phone" value="{{ old('alternative_phone') }}"
+                       minlength="10"
+                       
+                       pattern="[0-9]{10}"
+                       title="Enter a valid 10-digit mobile number"
+                       onpaste="handlePaste(event)"
+           oninput="sanitizeContact(this)"
+                       >
+                @error('alternative_phone') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
                 <label>Email</label>
                 <input type="email" required name="email_id" class="form-control"
                        value="{{ old('email_id') }}">
@@ -225,13 +239,7 @@
                 @error('reg_due_amount') <small class="text-danger">{{ $message }}</small> @enderror
             </div> -->
 
-            <div class="form-group col-md-6" id="pending_next_due_date">
-                <label>Pending Fees Due Date</label>
-                <input type="date" name="next_due_date" class="form-control" value="{{ old('next_due_date') }}">
-                <small class="text-danger d-none" id="due_date_error">
-                    Next due date must be after the registered date.
-                </small>
-            </div>
+            
 
 
             <div class="form-group col-md-6">
@@ -281,6 +289,14 @@
                     Sunday is not allowed
                 </small>
                  @error('end_date') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6" id="pending_next_due_date">
+                <label>Pending Fees Due Date</label>
+                <input type="date" name="next_due_date" class="form-control" value="{{ old('next_due_date') }}">
+                <small class="text-danger d-none" id="due_date_error">
+                    Next due date must be after the registered date.
+                </small>
             </div>
 
             <div class="form-group col-md-6">
@@ -364,6 +380,18 @@
                     @endforeach
                 </select>
                 @error('reference') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Address</label>
+                <textarea name="address"
+                          class="form-control"
+                          rows="3"
+                          >{{ old('address') }}</textarea>
+
+                @error('address')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
             </div>
         </div>
          <!-- <div class="form-group" style="margin-top: 3%; margin-left: 1%;"> -->

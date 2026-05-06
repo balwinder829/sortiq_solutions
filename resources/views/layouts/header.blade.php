@@ -73,8 +73,28 @@
     max-width: 260px; /* keep inside the dropdown */
     display: block;
 }
+.notification-scroll {
+    max-height: 400px;   /* adjust height as you want */
+    overflow-y: auto;
+}
 
+/* Optional: smooth scrollbar */
+.notification-scroll::-webkit-scrollbar {
+    width: 6px;
+}
 
+.notification-scroll::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+#notificationTabs .nav-link {
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+#notificationTabs {
+    border-bottom: 1px solid #eee;
+}
 </style>
 <div class="header">
     <div class="header-content">
@@ -170,7 +190,9 @@ $categoryMap = [
 <li class="nav-item dropdown mx-2">
 
     <a class="nav-link dropdown-toggle position-relative" href="#"
-       data-bs-toggle="dropdown" aria-expanded="false">
+   data-bs-toggle="dropdown"
+   data-bs-auto-close="outside"
+   aria-expanded="false">
 
         <i class="mdi {{ $unreadCount > 0 ? 'mdi-bell shaking-bell unread-glow' : 'mdi-bell-outline' }} bell-icon"></i>
 
@@ -179,7 +201,7 @@ $categoryMap = [
         @endif
     </a>
 
-    <ul class="dropdown-menu dropdown-menu-end p-0" style="width: 330px;">
+    <ul class="dropdown-menu dropdown-menu-end p-0 notification-scroll" style="width: 330px;">
 
         {{-- HEADER --}}
         <li class="dropdown-header p-2 fw-bold d-flex justify-content-between">
@@ -194,7 +216,7 @@ $categoryMap = [
             @endif
         </li>
         <li class="px-2 pb-2">
-    <select id="notificationFilter" class="form-select form-select-sm">
+    <!-- <select id="notificationFilter" class="form-select form-select-sm">
         <option value="all">All</option>
         <option value="Registered Students">Registered Students</option>
         <option value="Batch Assigned">Batch Assigned</option>
@@ -204,7 +226,36 @@ $categoryMap = [
         <option value="BIN Ready">BIN Ready</option>
         <option value="Low Leads">Low Leads</option>
         <option value="Interviews">Interviews</option>
-    </select>
+    </select> -->
+    <ul class="nav nav-tabs px-2 pt-2" id="notificationTabs">
+        <li class="nav-item">
+            <button class="nav-link active" data-category="all">All</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-category="Registered Students">Students</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-category="Batch Assigned">Batch</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-category="Sales Followups">Followups</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-category="Fees">Fees</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-category="Events">Events</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-category="BIN Ready">BIN Ready</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-category="Low Leads">Low Leads</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-category="Interviews">Interviews</button>
+        </li>
+    </ul>
 </li>
 
         <li><hr class="dropdown-divider m-0"></li>
@@ -378,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<script>
+<!-- <script>
 document.addEventListener('change', function(e){
 
     if(e.target.id !== 'notificationFilter') return;
@@ -394,6 +445,35 @@ document.addEventListener('change', function(e){
 
         item.style.display =
             item.dataset.category === val ? '' : 'none';
+    });
+});
+
+
+</script> -->
+
+<script>
+document.addEventListener('click', function(e){
+
+    if(!e.target.matches('#notificationTabs .nav-link')) return;
+
+    // Remove active class
+    document.querySelectorAll('#notificationTabs .nav-link')
+        .forEach(tab => tab.classList.remove('active'));
+
+    // Add active to clicked tab
+    e.target.classList.add('active');
+
+    let category = e.target.dataset.category;
+
+    document.querySelectorAll('.notification-item').forEach(item => {
+
+        if(category === 'all'){
+            item.style.display = '';
+        } else {
+            item.style.display =
+                item.dataset.category === category ? '' : 'none';
+        }
+
     });
 });
 </script>

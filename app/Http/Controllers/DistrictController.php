@@ -97,7 +97,7 @@ class DistrictController extends Controller
     District::create($validated);
 
     return redirect()
-        ->route('districts.index')
+        ->route('states.index', ['tab' => 'districts'])
         ->with('success', 'District created successfully');
 }
 
@@ -152,7 +152,7 @@ public function update(Request $request, $id)
     $district->update($validated);
 
     return redirect()
-        ->route('districts.index')
+        ->route('states.index', ['tab' => 'districts'])
         ->with('success', 'District updated successfully');
 }
 
@@ -163,7 +163,7 @@ public function update(Request $request, $id)
     {
         $district->delete();
         return redirect()
-            ->route('districts.index')
+            ->route('states.index', ['tab' => 'districts'])
             ->with('success','District deleted successfully');
     }
 }

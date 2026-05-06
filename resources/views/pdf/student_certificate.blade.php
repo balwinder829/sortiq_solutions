@@ -55,6 +55,10 @@
 		    ? Carbon::parse($student->end_date)->format('d F Y')
 		    : '';
 
+		   $issue_date = optional($student->certificate_issue_date)
+		    ? Carbon::parse($student->certificate_issue_date)->format('d-m-Y')
+		    : \Carbon\Carbon::now()->format('d-m-Y');
+
 		// Safe college
 		$collegename = optional($student->collegeData)->college_name ?? '';
 
@@ -80,7 +84,7 @@
 				</tr>
 				<tr>
 					<td colspan="2" align="right" style="font-size: 14px; line-height: 24px; text-align:right; font-family: 'Inter', sans-serif;">
-						<strong>Date: </strong>{{ \Carbon\Carbon::now()->format('d-m-Y') }}
+						<strong>Date: </strong>{{ $issue_date }}
 					</td>
 				</tr>
 			</table>

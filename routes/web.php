@@ -1472,6 +1472,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/students/download-certificate-multiple', [StudentController::class, 'downloadCertificateMultiple'])
     ->name('students.downloadCertificateMultiple');
 
+    Route::post('/students/update_issue-date', [StudentController::class, 'updateCertificateIssueDateMultiple'])
+    ->name('students.updateCertificateIssueDateMultiple');
+
     Route::get('/admin/pending-students', [StudentController::class, 'pendingStudents'])
         ->name('admin.pendingstudents.list');
 

@@ -232,21 +232,21 @@ public function index34(Request $request)
             // 'phone'      => 'required|string|max:50',
             'phone' => ['required', 'string', new NotBlockedNumber],
             'location'   => 'required|string|max:255',
-            'technology' => 'required|string|max:255',
+            'technology' => 'nullable|string|max:255',
             'message'    => 'nullable|string',
             'slug'       => 'required|string|max:255',
         ]);
 
         // Prevent duplicate email + technology
-        $exists = ServicesRegistration::where('email', $data['email'])
-            ->where('technology', $data['technology'])
-            ->exists();
+        // $exists = ServicesRegistration::where('email', $data['email'])
+        //     ->where('technology', $data['technology'])
+        //     ->exists();
 
-        if ($exists) {
-            return back()
-                ->withErrors(['email' => 'This email is already registered for this technology.'])
-                ->withInput();
-        }
+        // if ($exists) {
+        //     return back()
+        //         ->withErrors(['email' => 'This email is already registered for this technology.'])
+        //         ->withInput();
+        // }
 
         // Add server-side data (SAFE)
         $data['ip_address'] = $request->ip();

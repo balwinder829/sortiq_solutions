@@ -11,6 +11,7 @@
 /* 🔴 OVERDUE */
 table.table-striped.dataTable tbody tr.row-overdue > * {
     background-color: red !important;
+    color: white!important;
 }
 
 /* 🟡 DUE TODAY */
@@ -1077,6 +1078,7 @@ Copy to Session
     <input type="hidden" name="is_internship">
     <input type="hidden" name="is_monthly">
     <input type="hidden" name="is_logo_show">
+    <input type="hidden" name="college_name" value="{{ request('college_name') }}">
     <input type="hidden" name="ids" id="bulkDownloadIds">
 </form>
 
@@ -1084,6 +1086,7 @@ Copy to Session
     @csrf
     <input type="hidden" name="is_internship">
     <input type="hidden" name="is_logo_show">
+    <input type="hidden" name="college_name" value="{{ request('college_name') }}">
     <input type="hidden" name="ids" id="bulkDownloadIds">
 </form>
 

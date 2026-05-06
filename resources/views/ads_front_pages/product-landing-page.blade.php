@@ -10,6 +10,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="{{ asset('certificate_fav.jpeg') }}">
 
 <style>
@@ -679,26 +680,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             Select Service
                         </option>
 
-                        <option value="Campusedgepro" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
+                        <option value="Campusedgepro" {{ old('technology') == 'Campusedgepro' ? 'selected' : '' }}>
                             Campusedgepro
                         </option>
 
-                        <option value="BlogerzWorld" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
+                        <option value="BlogerzWorld" {{ old('technology') == 'BlogerzWorld' ? 'selected' : '' }}>
                             BlogerzWorld
                         </option>
 
-                        <option value="InventoryManageSuite" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
+                        <option value="InventoryManageSuite" {{ old('technology') == 'InventoryManageSuite' ? 'selected' : '' }}>
                             InventoryManageSuite
                         </option>
 
-                        <option value="AllmartX" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
+                        <option value="AllmartX" {{ old('technology') == 'AllmartX' ? 'selected' : '' }}>
                             AllmartX
                         </option>
 
-                        <option value="Prop99X" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                        <option value="Prop99X" {{ old('technology') == 'Prop99X' ? 'selected' : '' }}>
                             Prop99X
                         </option>
-                        <option value="Siterankify" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                        <option value="Siterankify" {{ old('technology') == 'Siterankify' ? 'selected' : '' }}>
                             Siterankify
                         </option>
                     </select>
@@ -752,176 +753,70 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <section class="section">
 <div class="container">
 <h2 class="section-title">WHY CHOOSE US</h2>
-<div class="row g-4 text-center">
-<div class="col-md-2"><div class="info-box"><i class="bi bi-laptop"></i></i><h5>Live Project Experience</h5></div></div>
+<div class="row g-2 text-center">
+<div class="col-md-2"><div class="info-box"><i class="bi bi-laptop"></i></i><h5>Live Projects</h5></div></div>
 <div class="col-md-3"><div class="info-box"><i class="bi bi-people"></i><h5>Industry Expert Team</h5></div></div>
 <div class="col-md-3"><div class="info-box"><i class="bi bi-speedometer2"></i><h5>Fast & Quality Delivery</h5></div></div>
-<div class="col-md-2"><div class="info-box"><i class="bi bi-currency-dollar"></i><h5>Affordable Pricing</h5></div></div>
-<div class="col-md-2"><div class="info-box"><i class="bi bi-headset"></i><h5>Dedicated Support</h5></div></div>
+<div class="col-md-2"><div class="info-box"><i class="bi bi-currency-dollar"></i><h5>LowCost</h5></div></div>
+<div class="col-md-2"><div class="info-box"><i class="bi bi-headset"></i><h5>24*7 Support</h5></div></div>
 </div>
 </div>
 </section>
-
-<!-- AREAS -->
-<!-- <section class="internship-areas py-5 text-white services-area">
-  <div class="container text-center">
-    <h2 class="fw-bold">Services Areas</h2>
-    <p>Choose your field & learn with real developers.</p>
-
-  <div class="row mt-4 g-4 text-start mx-auto" style="max-width:900px;">
-
-  <div class="col-md-4">
-    <ul>
-      <li>Web Designing</li>
-      <li>Web Development</li>
-      <li>Digital Marketing</li>
-      <li>React JS</li>
-      <li>Python</li>
-      <li>Graphics</li>
-      <li>Graphic Designing</li>
-      <li>WordPress (PHP)</li>
-       <li>Mobile Development</li>
-    </ul>
-  </div>
-
-  <div class="col-md-4">
-    <ul>
-      <li>Java</li>
-      <li>.NET</li>
-      <li>HR & Finance</li>
-      <li>Networking</li>
-      <li>Android Dev</li>
-      <li>React Native</li>
-      <li>PHP Full Stack</li>
-      <li>Laravel</li>
-      <li>Software Testing</li>
-       <li>Flutter</li>
-    </ul>
-  </div>
-
-  <div class="col-md-4">
-    <ul>
-      <li>AI / ML</li>
-      <li>Machine Learning</li>
-      <li>Data Science</li>
-      <li>Shopify Dev</li>
-      <li>Cloud</li>
-      <li>CodeIgniter</li>
-      <li>Testing</li>
-      <li>MERN Full Stack</li>
-      <li>Node JS</li>
-      <li>DevOps</li>
-     
-     
-    </ul>
-  </div>
-
-</div>
-
-  </div>
-</section> -->
-
-
-<!-- <section class="section">
+ 
+ <section class="section urgency-section">
   <div class="container">
-    <h2 class="section-title text-center mb-4">SERVICES SECTION</h2>
+    <h2 class="section-title text-center mb-5">WHY TRUST OUR PRODUCTS</h2>
 
     <div class="row g-4">
 
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-md-3 col-sm-6">
+        <div class="card urgency-card text-center h-100">
           <div class="card-body">
-            <i class="bi bi-globe fs-1 mb-3"></i>
-            <h5 class="card-title">Web Development</h5>
+            <div class="icon-box">
+              <i class="bi bi-box-seam"></i>
+            </div>
+            <h5>100+ Projects Delivered</h5>
           </div>
         </div>
       </div>
 
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-md-3 col-sm-6">
+        <div class="card urgency-card text-center h-100">
           <div class="card-body">
-            <i class="bi bi-code-slash fs-1 mb-3"></i>
-            <h5 class="card-title">Business websites, custom web apps</h5>
+            <div class="icon-box">
+              <i class="bi bi-people-fill"></i>
+            </div>
+            <h5>100+ Happy Customers</h5>
           </div>
         </div>
       </div>
 
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-md-3 col-sm-6">
+        <div class="card urgency-card text-center h-100">
           <div class="card-body">
-            <i class="bi bi-cart-check fs-1 mb-3"></i>
-            <h5 class="card-title">E-commerce Development</h5>
+            <div class="icon-box">
+              <i class="bi bi-star-fill"></i>
+            </div>
+            <h5>5-Star Customer Reviews</h5>
           </div>
         </div>
       </div>
 
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
+      <div class="col-md-3 col-sm-6">
+        <div class="card urgency-card text-center h-100">
           <div class="card-body">
-            <i class="bi bi-shop fs-1 mb-3"></i>
-            <h5 class="card-title">Shopify, WooCommerce stores</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-graph-up-arrow fs-1 mb-3"></i>
-            <h5 class="card-title">SEO Services</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-search fs-1 mb-3"></i>
-            <h5 class="card-title">Rank your website on Google</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-megaphone fs-1 mb-3"></i>
-            <h5 class="card-title">Digital Marketing</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-bar-chart-line fs-1 mb-3"></i>
-            <h5 class="card-title">Ads, social media growth</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-palette fs-1 mb-3"></i>
-            <h5 class="card-title">Graphic Design</h5>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-sm-6 col-md-4">
-        <div class="card h-100 text-center shadow-sm">
-          <div class="card-body">
-            <i class="bi bi-brush fs-1 mb-3"></i>
-            <h5 class="card-title">Branding, creatives</h5>
+            <div class="icon-box">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <h5>Premium Quality Assurance</h5>
           </div>
         </div>
       </div>
 
     </div>
   </div>
-</section> -->
-
+</section>
+<!-- 
 <section class="section urgency-section">
   <div class="container">
     <h2 class="section-title text-center mb-5">TRUST SECTION</h2>
@@ -974,7 +869,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     </div>
   </div>
-</section>
+</section> -->
 
 <section class="section products-section">
   <div class="container">
@@ -1283,9 +1178,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
 
     </div>
-
+@include('ads_front_pages.footer_address')
       <!-- RIGHT SIDE (Existing Content) -->
-      <div class="col-md-6 text-center text-md-end">
+      <!-- <div class="col-md-6 text-center text-md-end">
         <p class="mb-1 fs-5 fw-semibold">
           E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072
         </p>
@@ -1302,7 +1197,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </a>
           </span>
         </div>
-      </div>
+      </div> -->
 
     </div>
   </div>
@@ -1310,11 +1205,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="sticky-cta">
   <a href="#form" class="apply-btn">Request Demo</a>
 </div>
-<a href="https://wa.me/919646522110?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
+<a href="https://wa.me/919855755683?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
    class="whatsapp-float"
    id="whatsappBtn"
    target="_blank">
-   <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+   <i class="fa-brands fa-whatsapp"></i>
 </a>
 
 </body>

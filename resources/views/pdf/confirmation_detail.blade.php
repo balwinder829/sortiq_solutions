@@ -53,6 +53,11 @@
          $sessionEnd = optional($student->sessionData)->end_date
           ? Carbon::parse($student->end_date)->format($format)
           : '';
+
+           $issue_date = optional($student->confirmation_issue_date)
+          ? Carbon::parse($student->confirmation_issue_date)->format('d-m-Y')
+          : \Carbon\Carbon::now()->format('d-m-Y');
+          
          // Safe college
          $collegename = optional($student->collegeData)->college_name ?? '';
          // Safe duration

@@ -10,6 +10,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="{{ asset('certificate_fav.jpeg') }}">
 
 <style>
@@ -800,7 +801,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <div class="card-body">
             <i class="bi bi-people-fill fs-1 mb-3"></i>
             <h5 class="card-title"><h5 class="card-title">
-  <span class="counter" data-target="100">0</span>+ Students Trained</h5>
+  <span class="counter" data-target="5000">0</span>+ Students Trained</h5>
           </div>
         </div>
       </div>
@@ -951,7 +952,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
            Apply Now
         </a>
       </div> -->
-   <div class="col-md-5 mb-3 mb-md-0">
+   <div class="col-md-6 mb-3 mb-md-0">
 
   <div class="responsive-flex">
 
@@ -974,9 +975,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 
 </div>
-
+@include('ads_front_pages.footer_address')
       <!-- RIGHT SIDE (Existing Content) -->
-      <div class="col-md-7 text-center text-md-end">
+      <!-- <div class="col-md-7 text-center text-md-end">
         <p class="mb-1 fs-5 fw-semibold">
           E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072
         </p>
@@ -993,7 +994,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </a>
           </span>
         </div>
-      </div>
+      </div> -->
 
     </div>
   </div>
@@ -1007,7 +1008,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
    class="whatsapp-float show"
    id="whatsappBtn"
    target="_blank">
-   <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+   <i class="fa-brands fa-whatsapp"></i>
 </a>
 <footer class="site-footer">
   <p>© 2026 | Sortiq Solutions Pvt. Ltd. | All Rights Reserved.</p>

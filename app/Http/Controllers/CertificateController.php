@@ -336,6 +336,10 @@ if (!$request->filled('fee_filter')) {
             'email_id'       => 'nullable|email',
             // 'contact'        => 'required|string|max:15',
             'contact' => ['required', 'string', new NotBlockedNumber],
+            'alternative_phone' => ['nullable', 'string', new NotBlockedNumber],
+
+            'address'         => 'nullable|string',
+            'certificate_issue_date'         => 'nullable|date',
             'gender'         => 'required|string',
             // 'college_name'   => 'required|string',   // not college_id
             // 'technology'     => 'required|string',   // not technology_id
