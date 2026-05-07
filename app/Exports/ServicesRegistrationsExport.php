@@ -35,9 +35,9 @@ class ServicesRegistrationsExport implements FromCollection, WithHeadings, Shoul
                 return [
                     'Full Name'   => $row->full_name,
                     'Email'      => $row->email,
-                    'Phone'      => $row->phone,
+                    'Phone'      => "'".$row->phone,
                     'Location'   => $row->location,
-                    'Technology' => $row->courseData->course_name ?? '-',
+                    'Technology' => $row->technology ?? '-',
                     'Message'    => $row->message,
                     'Date' => optional($row->created_at)->format('d-m-Y'),
                 ];

@@ -37,29 +37,33 @@
 
                     <div class="col-md-4">
                         <select name="technology" required class="form-select filterchange">
-                        <option value="" disabled {{ old('technology') ? '' : 'selected' }}>
-                            Select Service Required
-                        </option>
+                        <option value="" {{ old('technology') ? '' : 'selected' }}>
+                                Select Product
+                            </option>
 
-                        <option value="Website Development" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
-                            Website Development
-                        </option>
+                            <option value="Campusedgepro" {{ old('technology') == 'Campusedgepro' ? 'selected' : '' }}>
+                                Campusedgepro
+                            </option>
 
-                        <option value="E-commerce Development" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
-                            E-commerce Development
-                        </option>
+                            <option value="BlogerzWorld" {{ old('technology') == 'BlogerzWorld' ? 'selected' : '' }}>
+                                BlogerzWorld
+                            </option>
 
-                        <option value="SEO Services" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
-                            SEO Services
-                        </option>
+                            <option value="InventoryManageSuite" {{ old('technology') == 'InventoryManageSuite' ? 'selected' : '' }}>
+                                InventoryManageSuite
+                            </option>
 
-                        <option value="Google Ads" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
-                            Google Ads
-                        </option>
+                            <option value="AllmartX" {{ old('technology') == 'AllmartX' ? 'selected' : '' }}>
+                                AllmartX
+                            </option>
 
-                        <option value="Social Media Marketing" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
-                            Social Media Marketing
-                        </option>
+                            <option value="Prop99X" {{ old('technology') == 'Prop99X' ? 'selected' : '' }}>
+                                Prop99X
+                            </option>
+
+                            <option value="Siterankify" {{ old('technology') == 'Siterankify' ? 'selected' : '' }}>
+                                Siterankify
+                            </option>
                     </select>
                        <!-- <select name="technology" class="form-select filterchange">
                             <option value="">All Technologies</option>

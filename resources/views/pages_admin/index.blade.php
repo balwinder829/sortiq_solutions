@@ -34,14 +34,16 @@
                         @endforeach
                     </select>
                 </div>
+ 
 
                 <div class="col-md-3">
                     <select name="college" class="form-select filterchange select2">
                         <option value="">All Colleges</option>
+
                         @foreach($colleges as $college)
-                            <option value="{{ $college->id }}"
-                                {{ request('college') == $college->id ? 'selected' : '' }}>
-                                {{ $college->FullName }}
+                            <option value="{{ $college }}"
+                                {{ request('college') == $college ? 'selected' : '' }}>
+                                {{ $college }}
                             </option>
                         @endforeach
                     </select>
@@ -50,10 +52,11 @@
                 <div class="col-md-3">
                     <select name="technology" class="form-select filterchange">
                         <option value="">All Technologies</option>
+
                         @foreach($technologies as $tech)
-                            <option value="{{ $tech->id }}"
-                                {{ request('technology') == $tech->id ? 'selected' : '' }}>
-                                {{ $tech->course_name }}
+                            <option value="{{ $tech }}"
+                                {{ request('technology') == $tech ? 'selected' : '' }}>
+                                {{ $tech }}
                             </option>
                         @endforeach
                     </select>

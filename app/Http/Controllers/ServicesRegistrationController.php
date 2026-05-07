@@ -9,6 +9,7 @@ use App\Exports\ServicesRegistrationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Rules\NotBlockedNumber;
  use App\Http\DataTables\DataTablesServerSide;
+ use Illuminate\Support\Str;
 
 class ServicesRegistrationController extends Controller
 {
@@ -44,7 +45,7 @@ class ServicesRegistrationController extends Controller
         // ✅ AJAX → DataTable
         if ($request->ajax()) {
 
-            $query = ServicesRegistration::with('courseData');
+            $query = ServicesRegistration::with('courseData')->latest();
 
             // ✅ FILTERS
             if ($request->technology) {
@@ -90,7 +91,7 @@ class ServicesRegistrationController extends Controller
                     e($row->email),
                     e($row->phone ?? '-'),
                     e($row->location ?? '-'),
-                    e(optional($row->courseData)->course_name),
+                    e(optional($row->courseData)->course_name ?? $row->technology ?? '-'),
                     $row->created_at->format('d M Y'),
                     $actions
                 ];
@@ -271,10 +272,26 @@ public function index34(Request $request)
     }
 
     public function export(Request $request)
-    {
+    {   
+        $fileName = 'services_registrations';
+
+        if ($request->technology) {
+            $fileName .= '_' . Str::slug($request->technology, '_');
+            // $fileName .= '_' . $request->technology;
+        }
+
+        if ($request->slug) {
+            $fileName .= '_' . $request->slug;
+        }
+
+        if ($request->limit) {
+            $fileName .= '_limit_' . $request->limit;
+        }
+         $fileName .= '_' . now()->format('d_F') . '.xlsx';
+
         return Excel::download(
             new ServicesRegistrationsExport($request),
-            'services_registrations_' . now()->format('d_F') . '.xlsx'
+            $fileName
         );
     }
 }

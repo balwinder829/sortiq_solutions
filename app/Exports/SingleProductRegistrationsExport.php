@@ -2,13 +2,13 @@
 
 namespace App\Exports;
 
-use App\Models\ProductsRegistration;
+use App\Models\SingleProductRegistration;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class ProductsRegistrationsExport implements FromCollection, WithHeadings, ShouldAutoSize
+class SingleProductRegistrationsExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
     protected $request;
 
@@ -19,7 +19,7 @@ class ProductsRegistrationsExport implements FromCollection, WithHeadings, Shoul
 
     public function collection(): Collection
     {
-        return ProductsRegistration::with('courseData')
+        return SingleProductRegistration::with('courseData')
             ->when($this->request->technology, function ($query) {
                 $query->where('technology', $this->request->technology);
             })
@@ -39,7 +39,7 @@ class ProductsRegistrationsExport implements FromCollection, WithHeadings, Shoul
                     'Location'   => $row->location,
                     'Technology' => $row->technology ?? '-',
                     'Message'    => $row->message,
-                    'Date' => optional($row->created_at)->format('d-m-Y'),
+                    'Date' => optional($row->created_at)->format('d F Y'),
                 ];
             });
     }

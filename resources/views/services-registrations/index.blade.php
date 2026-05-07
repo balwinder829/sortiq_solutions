@@ -38,12 +38,75 @@
                     <div class="col-md-4">
                        <select name="technology" class="form-select filterchange">
                             <option value="">All Technologies</option>
-                            @foreach($technologies as $tech)
-                                <option value="{{ $tech->id }}"
-                                    {{ request('technology') == $tech->id ? 'selected' : '' }}>
-                                    {{ $tech->course_name }}
-                                </option>
-                            @endforeach
+                            <option value="Website Development" {{ old('technology') == 'Website Development' ? 'selected' : '' }}>
+                                Website Development
+                            </option>
+
+                            <option value="E-commerce Development" {{ old('technology') == 'E-commerce Development' ? 'selected' : '' }}>
+                                E-commerce Development
+                            </option>
+
+                            <option value="SEO Services" {{ old('technology') == 'SEO Services' ? 'selected' : '' }}>
+                                SEO Services
+                            </option>
+
+                            <option value="Google Ads" {{ old('technology') == 'Google Ads' ? 'selected' : '' }}>
+                                Google Ads
+                            </option>
+
+                            <option value="Social Media Marketing" {{ old('technology') == 'Social Media Marketing' ? 'selected' : '' }}>
+                                Social Media Marketing
+                            </option>
+                            <option value="App Development" {{ old('technology') == 'App Development' ? 'selected' : '' }}>
+                                App Development
+                            </option>
+                            <option value="Web Designing" {{ old('technology') == 'Web Designing' ? 'selected' : '' }}>
+                                Web Designing
+                            </option>
+
+                            <option value="Web Development" {{ old('technology') == 'Web Development' ? 'selected' : '' }}>
+                                Web Development
+                            </option>
+
+                            <option value="Digital Marketing" {{ old('technology') == 'Digital Marketing' ? 'selected' : '' }}>
+                                Digital Marketing
+                            </option>
+
+                            <option value="MERN Stack Development" {{ old('technology') == 'MERN Stack Development' ? 'selected' : '' }}>
+                                MERN Stack Development
+                            </option>
+
+                            <option value="PHP Development" {{ old('technology') == 'PHP Development' ? 'selected' : '' }}>
+                                PHP Development
+                            </option>
+
+                            <option value="Graphic Designing" {{ old('technology') == 'Graphic Designing' ? 'selected' : '' }}>
+                                Graphic Designing
+                            </option>
+
+                            <option value="Shopify & WooCommerce Stores" {{ old('technology') == 'Shopify & WooCommerce Stores' ? 'selected' : '' }}>
+                                Shopify & WooCommerce Stores
+                            </option>
+
+                            <option value="Business Websites & Custom Web Apps" {{ old('technology') == 'Business Websites & Custom Web Apps' ? 'selected' : '' }}>
+                                Business Websites & Custom Web Apps
+                            </option>
+
+                            <option value="CRM Implementation" {{ old('technology') == 'CRM Implementation' ? 'selected' : '' }}>
+                                CRM Implementation
+                            </option>
+
+                            <option value="API Integration" {{ old('technology') == 'API Integration' ? 'selected' : '' }}>
+                                API Integration
+                            </option>
+
+                            <option value="Custom Software Development" {{ old('technology') == 'Custom Software Development' ? 'selected' : '' }}>
+                                Custom Software Development
+                            </option>
+
+                            <option value="Database Management" {{ old('technology') == 'Database Management' ? 'selected' : '' }}>
+                                Database Management
+                            </option>
                         </select>
                     </div>
 

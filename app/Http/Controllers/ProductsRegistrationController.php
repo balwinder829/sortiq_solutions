@@ -5,15 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\ProductsRegistration;
 use Illuminate\Http\Request;
 use App\Models\Course;
-use App\Exports\ServicesRegistrationsExport;
+use App\Exports\ProductsRegistrationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Rules\NotBlockedNumber;
  use App\Http\DataTables\DataTablesServerSide;
+ use Illuminate\Support\Str;
 
 class ProductsRegistrationController extends Controller
 {
 
-    protected string $permissionPrefix = 'products_registration';
+    protected string $permissionPrefix = 'products_registrations';
 
     protected array $permissionMap = [
         'index'        => 'view',
@@ -44,7 +45,8 @@ class ProductsRegistrationController extends Controller
         // ✅ AJAX → DataTable
         if ($request->ajax()) {
 
-            $query = ProductsRegistration::with('courseData');
+            $query = ProductsRegistration::with('courseData')
+            ->latest();
 
             // ✅ FILTERS
             if ($request->technology) {
@@ -126,9 +128,24 @@ class ProductsRegistrationController extends Controller
 
     public function export(Request $request)
     {
+        $fileName = 'products_registration';
+
+        if ($request->technology) {
+            $fileName .= '_' . Str::slug($request->technology, '_');
+        }
+
+        if ($request->slug) {
+            $fileName .= '_' . Str::slug($request->slug, '_');
+        }
+
+        if ($request->limit) {
+            $fileName .= '_limit_' . $request->limit;
+        }
+
+        $fileName .= '_' . now()->format('d_F') . '.xlsx';
         return Excel::download(
-            new ProductsRegistration($request),
-            'products_registration' . now()->format('Ymd_His') . '.xlsx'
+            new ProductsRegistrationsExport($request),
+            $fileName
         );
     }
 }

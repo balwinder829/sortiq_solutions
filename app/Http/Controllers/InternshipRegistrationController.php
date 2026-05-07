@@ -13,6 +13,8 @@ use App\Exports\InternshipRegistrationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Rules\NotBlockedNumber;
 use App\Http\DataTables\DataTablesServerSide;
+use Illuminate\Support\Str;
+
 
 class InternshipRegistrationController extends Controller
 {
@@ -91,10 +93,11 @@ public function index(Request $request)
         $query = InternshipRegistration::with([
             'collegeData' => fn($q) => $q->withTrashed(),
             'courseData' => fn($q) => $q->withTrashed()
-        ]);
+        ])
+        ->latest();
 
         if ($request->college) {
-            $query->where('college', $request->college);
+            $query->where('college_name', $request->college);
         }
 
         if ($request->technology) {
@@ -134,8 +137,8 @@ public function index(Request $request)
                 e($row->full_name),
                 e($row->email),
                 e($row->phone ?? '-'),
-                e(optional($row->collegeData)->FullName ?? '-'),
-                e(optional($row->courseData)->course_name),
+                e(optional($row->collegeData)->FullName ?? $row->college_name ?? '-'),
+                e(optional($row->courseData)->course_name ?? $row->technology ?? '-'),
                 $row->created_at->format('d M Y'),
                 $actions
             ];
@@ -143,8 +146,19 @@ public function index(Request $request)
     }
 
     // NORMAL VIEW (UNCHANGED)
-    $colleges = College::orderBy('college_display_name')->get();
-    $technologies = Course::orderBy('course_name')->get();
+    // $colleges = College::orderBy('college_display_name')->get();
+    // $technologies = Course::orderBy('course_name')->get();
+    $colleges = InternshipRegistration::select('college_name')
+        ->whereNotNull('college_name')
+        ->distinct()
+        ->orderBy('college_name')
+        ->pluck('college_name');
+
+    $technologies = InternshipRegistration::select('technology')
+        ->whereNotNull('technology')
+        ->distinct()
+        ->orderBy('technology')
+        ->pluck('technology');
     $slugs = InternshipRegistration::select('slug')->distinct()->pluck('slug');
 
     return view('pages_admin.index', compact('colleges','technologies','slugs'));
@@ -302,10 +316,33 @@ public function index(Request $request)
     }
 
     public function export(Request $request)
-    {
+    {   
+          $fileName = 'internship_registrations';
+
+        if ($request->college) {
+            $fileName .= '_' . Str::slug($request->college, '_');
+        }
+
+        if ($request->technology) {
+            $fileName .= '_' . Str::slug($request->technology, '_');
+        }
+
+        if ($request->slug) {
+            $fileName .= '_' . Str::slug($request->slug, '_');
+        }
+
+        if ($request->status) {
+            $fileName .= '_' . Str::slug($request->status, '_');
+        }
+
+        if ($request->limit) {
+            $fileName .= '_limit_' . $request->limit;
+        }
+
+        $fileName .= '_' . now()->format('d_F') . '.xlsx';
         return Excel::download(
             new InternshipRegistrationsExport($request),
-            'internship_registrations_' . now()->format('d_F') . '.xlsx'
+            $fileName
         );
     }
 }

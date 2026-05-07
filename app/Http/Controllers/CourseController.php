@@ -76,11 +76,12 @@ class CourseController extends Controller
             'orderable'  => ['id', 'course_name'],
             'searchable' => ['course_name'],
         ], function ($course, $index, $start) {
+            $countNo = $start + $index + 1;
             $studentLink = '<a href="' . route('common_filtered_student', ['technology' => $course->id]) . '" class="text-decoration-none"><span class="badge bg-success">' . (int) $course->students_count . '</span></a>';
             $actions = '<a href="' . route('courses.edit', $course->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ';
             $actions .= '<form action="' . route('courses.destroy', $course->id) . '" method="POST" style="display:inline-block;">' . csrf_field() . method_field('DELETE') . '<button type="submit" class="btn btn-sm" title="Delete" data-swal-confirm="Are you sure?"><i class="fa fa-trash"></i></button></form>';
             return [
-                $course->id,
+                $countNo,
                 e($course->course_name),
                 $studentLink,
                 $actions,

@@ -1050,12 +1050,12 @@ function isParent($routes)
 
 
                  {{-- Ads Management --}}
-                <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*']) }}">
+                <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*','products-registrations*','single-product-registrations*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
                         <span class="nav-text">Ads Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['internship-registrations*','pages*','services-registrations*']) }}">
+                    <ul class="{{ showSubmenu(['internship-registrations*','pages*','services-registrations*','products-registrations*','single-product-registrations*']) }}">
                         <li>
                             <a class="{{ isChildActive('pages.*') }}"
                                 href="{{ route('pages.index') }}">
@@ -1074,6 +1074,21 @@ function isParent($routes)
                                 Services Entries
                             </a>
                         </li>
+                        
+                        <li>
+                            <a class="{{ isChildActive('products-registrations*') }}"
+                                href="{{ route('products-registrations.index') }}">
+                                Products Entries
+                            </a>
+                        </li>
+                        
+                        <li>
+                            <a class="{{ isChildActive('single-product-registrations*') }}"
+                                href="{{ route('single-product-registrations.index') }}">
+                                Single Products Entries
+                            </a>
+                        </li>
+                        
                          <li class="{{ request()->routeIs('testimonials.*') ? 'mm-active' : '' }}">
                             <a href="{{ route('testimonials.index') }}">
                                 Testimonials
@@ -1315,6 +1330,100 @@ function isParent($routes)
                             </ul>
                         </li>
                         @endcanany
+
+                        {{-- Analytics --}}
+                        @can('all_analytics.view')
+                <li class="{{ isParent(['admin.analytics']) }}">
+                    <a class="has-arrow" href="javascript:void(0)">
+                        <i class="fas fa-chart-line"></i>
+                        <span class="nav-text">Analytics</span>
+                    </a>
+
+                    <ul class="{{ showSubmenu(['admin.analytics']) }}">
+
+                        {{-- Overview --}}
+                        <li>
+                            <a href="{{ route('admin.analytics') }}"
+                               class="{{ request()->routeIs('admin.analytics') && !request('tab') ? 'mm-active' : '' }}">
+                                Overview
+                            </a>
+                        </li>
+
+                         {{-- Sales --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'leads']) }}"
+                               class="{{ request('tab') == 'leads' ? 'mm-active' : '' }}">
+                                Sales
+                            </a>
+                        </li>
+
+                        {{-- Mentors --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'trainers']) }}"
+                               class="{{ request('tab') == 'trainers' ? 'mm-active' : '' }}">
+                                Mentors
+                            </a>
+                        </li>
+
+                        {{-- Students --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'students']) }}"
+                               class="{{ request('tab') == 'students' ? 'mm-active' : '' }}">
+                                Students
+                            </a>
+                        </li>
+
+                        {{-- Company General --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'company']) }}"
+                               class="{{ request('tab') == 'company' ? 'mm-active' : '' }}">
+                                Company General
+                            </a>
+                        </li>
+
+
+                        {{-- Ads Management --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'ads']) }}"
+                               class="{{ request('tab') == 'ads' ? 'mm-active' : '' }}">
+                                Ads Management
+                            </a>
+                        </li>
+
+                        {{-- HR Management --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'hr']) }}"
+                               class="{{ request('tab') == 'hr' ? 'mm-active' : '' }}">
+                                HR Management
+                            </a>
+                        </li>
+
+                         {{-- Security --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'security']) }}"
+                               class="{{ request('tab') == 'security' ? 'mm-active' : '' }}">
+                                Security
+                            </a>
+                        </li>
+
+                        {{-- Tests --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'tests']) }}"
+                               class="{{ request('tab') == 'tests' ? 'mm-active' : '' }}">
+                                Tests
+                            </a>
+                        </li>
+
+                        {{-- Workshops --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'workshops']) }}"
+                               class="{{ request('tab') == 'workshops' ? 'mm-active' : '' }}">
+                                Workshops
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                @endcan
 
                         @can('sessions.view')
                             {{-- Sessions --}}
@@ -2211,13 +2320,13 @@ function isParent($routes)
 
 
                  {{-- Ads Management --}}
-                 @canany(['pages.view','internship_registrations.view','services_registrations.view','ads_analytics.view','testimonial.view'])
-                <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*']) }}">
+                 @canany(['pages.view','internship_registrations.view','services_registrations.view','ads_analytics.view','testimonial.view','single_product_registrations.view','products_registrations.view'])
+                <li class="{{ isParent(['internship-registrations*','pages*','services-registrations*','products-registrations*','single-product-registrations*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-pen-to-square"></i>
                         <span class="nav-text">Ads Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['internship-registrations*','pages*','services-registrations*']) }}">
+                    <ul class="{{ showSubmenu(['internship-registrations*','pages*','services-registrations*','products-registrations*','single-product-registrations*']) }}">
                         @can('pages.view')
                         <li>
                             <a class="{{ isChildActive('pages.*') }}"
@@ -2241,6 +2350,22 @@ function isParent($routes)
                             <a class="{{ isChildActive('services-registrations*') }}"
                                 href="{{ route('services-registrations.index') }}">
                                 Services Entries
+                            </a>
+                        </li>
+                        @endcan
+                        @can('products_registrations.view')
+                        <li>
+                            <a class="{{ isChildActive('products-registrations*') }}"
+                                href="{{ route('products-registrations.index') }}">
+                                Products Entries
+                            </a>
+                        </li>
+                        @endcan
+                        @can('single_product_registrations.view')
+                        <li>
+                            <a class="{{ isChildActive('single-product-registrations*') }}"
+                                href="{{ route('single-product-registrations.index') }}">
+                                Single Products Entries
                             </a>
                         </li>
                         @endcan

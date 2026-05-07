@@ -24,7 +24,7 @@ class InternshipRegistrationsExport implements FromCollection, WithHeadings, Sho
                 $q->where('page_type', $this->request->page_type)
             )
             ->when($this->request->college, fn ($q) =>
-                $q->where('college', $this->request->college)
+                $q->where('college_name', $this->request->college)
             )
             ->when($this->request->technology, fn ($q) =>
                 $q->where('technology', $this->request->technology)
@@ -45,8 +45,13 @@ class InternshipRegistrationsExport implements FromCollection, WithHeadings, Sho
                     'Full Name'   => $row->full_name,
                     'Email'      => $row->email,
                     'Phone'      => $row->phone,
-                    'College'    => $row->collegeData->college_display_name ?? '-',
-                    'Technology' => $row->courseData->course_name ?? '-',
+                    'College'     => optional($row->collegeData)->college_display_name 
+                        ?? $row->college_name 
+                        ?? '-',
+
+                    'Technology'  => optional($row->courseData)->course_name 
+                                        ?? $row->technology 
+                                        ?? '-',
                     // 'Page Type'  => $row->page_type,
                     'Status'     => $row->status,
                     'Message'    => $row->message,

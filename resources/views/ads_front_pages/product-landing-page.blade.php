@@ -677,7 +677,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                    required> -->
                    <select name="technology" required>
                         <option value="" disabled {{ old('technology') ? '' : 'selected' }}>
-                            Select Service
+                            Select Product
                         </option>
 
                         <option value="Campusedgepro" {{ old('technology') == 'Campusedgepro' ? 'selected' : '' }}>
@@ -699,6 +699,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <option value="Prop99X" {{ old('technology') == 'Prop99X' ? 'selected' : '' }}>
                             Prop99X
                         </option>
+
                         <option value="Siterankify" {{ old('technology') == 'Siterankify' ? 'selected' : '' }}>
                             Siterankify
                         </option>
