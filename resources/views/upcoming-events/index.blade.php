@@ -20,9 +20,10 @@
         </div>
     </div>
     
-    <table class="table table-bordered">
+    <table class="table table-bordered" id="eventTable">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Name</th>
                 <th>Date</th>
                 <th>Notify</th>
@@ -33,6 +34,7 @@
         <tbody>
         @foreach($upcomingEvents as $event)
             <tr>
+                <td></td>
                 <td>{{ $event->name }}</td>
                 <td>{{ $event->event_date->format('d M Y') }}</td>
                 <td>{{ $event->notify ? 'Yes' : 'No' }}</td>
@@ -110,4 +112,30 @@
         </tbody>
     </table>
 </div>
+<script>
+$(document).ready(function() {
+     var table = $('#eventTable').DataTable({
+        "pageLength": 50,
+        "lengthMenu": [5, 10, 25, 50, 100],
+        columnDefs: [
+                {
+                    targets: 0, // first column
+                    searchable: false,
+                    orderable: false
+                }
+            ]
+        });
+
+        table.on('draw.dt', function () {
+            var PageInfo = table.page.info();
+
+            table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                cell.innerHTML = PageInfo.start + i + 1;
+            });
+        }).draw();
+    new bootstrap.Tooltip(document.body, {
+        selector: '[data-bs-toggle="tooltip"]'
+    });
+});
+</script>
 @endsection

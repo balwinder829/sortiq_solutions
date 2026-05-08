@@ -69,7 +69,7 @@ class CvController extends Controller
         }
 
         // $cvs = $query->latest()->get();
-        $cvs = $query->latest()->paginate(100);
+        $cvs = $query->latest()->get();
         
         $available_tech = Cv::select('technology')->distinct()->pluck('technology')->sort();
         $available_status = ['Fresher', 'Experienced'];

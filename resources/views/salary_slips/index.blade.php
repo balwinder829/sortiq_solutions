@@ -25,6 +25,7 @@
     <table id="salarySlipsTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Employee</th>
                 <th>Emp Code</th>
                 <th>Month</th>
@@ -35,6 +36,7 @@
         <tbody>
             @foreach($slips as $slip)
             <tr>
+                <td></td>
                 <td>{{ $slip->emp_name }}</td>
                 <td>{{ $slip->emp_code ?? '-' }}</td>
                 <td>{{ $slip->month }} {{ $slip->year }}</td>
@@ -76,7 +78,22 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#salarySlipsTable').DataTable({
         pageLength: 10,
         lengthMenu: [5,10,25,50,100]
-    });
+        columnDefs: [
+                {
+                    targets: 1, // first column
+                    searchable: false,
+                    orderable: false
+                }
+            ]
+        });
+
+        table.on('draw.dt', function () {
+            var PageInfo = table.page.info();
+
+            table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
+                cell.innerHTML = PageInfo.start + i + 1;
+            });
+        }).draw();
 });
 </script>
 @endpush

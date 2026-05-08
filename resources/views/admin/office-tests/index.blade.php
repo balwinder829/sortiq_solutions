@@ -322,13 +322,27 @@ class="btn btn-sm btn-outline-danger">
 
 $(document).ready(function(){
 
-$('#officeTestTable').DataTable({
+var table = $('#officeTestTable').DataTable({
 
-pageLength:25,
-lengthMenu:[10,25,50,100]
+    pageLength:25,
+    lengthMenu:[10,25,50,100],
+    columnDefs: [
+        {
+            targets: 0, // first column
+            searchable: false,
+            orderable: false
+        }
+    ]
 
 });
 
+table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 
 </script>

@@ -214,9 +214,10 @@ class WorkshopController extends Controller
             } else {
                 $dateText = 'in ' . $diff . ' days';
             }
+            $rowNum = $start + $index + 1;
 
             return [
-                $workshop->id,                                // ID
+                $rowNum,
                 e($workshop->title),                          // Title (using name column)
                 e(optional($workshop->college)->FullName),   // College
                 // $workshop->date?->format('d M Y'),

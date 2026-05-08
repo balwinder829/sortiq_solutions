@@ -111,7 +111,7 @@ public function index(Request $request)
         return DataTablesServerSide::response($request, $query, [
             'orderable'  => ['id','full_name','email'],
             'searchable' => ['full_name','email','phone'],
-        ], function ($row) {
+        ], function ($row, $index, $start) {
 
             $actions = '
                 <a href="' . route('internship-registrations.show', $row->id) . '" class="btn btn-sm">
@@ -132,8 +132,9 @@ public function index(Request $request)
                 </form>
             ';
 
+            $rowNum = $start + $index + 1;
             return [
-                $row->id,
+                $rowNum,
                 e($row->full_name),
                 e($row->email),
                 e($row->phone ?? '-'),

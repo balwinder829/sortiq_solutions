@@ -57,6 +57,7 @@
     <table id="lettersTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Type</th>
                 <th>Emp Code</th>
                 <th>Name</th>
@@ -71,6 +72,8 @@
         <tbody>
             @foreach($letters as $letter)
             <tr>
+                <td></td>
+                
                 <td>
                     <span class="badge bg-info">
                         {{ ucfirst(str_replace('_',' ', $letter->letter_type)) }}
@@ -149,11 +152,26 @@
 
 <script>
 $(document).ready(function() {
-    $('#lettersTable').DataTable({
+   var table = $('#lettersTable').DataTable({
         pageLength: 10,
         lengthMenu: [5,10,25,50,100],
-        order: [[6, 'desc']] 
+        order: [[6, 'desc']] ,
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
     });
+
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 </script>
 <script>

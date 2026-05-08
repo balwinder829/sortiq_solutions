@@ -49,7 +49,7 @@ class BlockedNumberController extends Controller
     {
         $blockedNumbers = BlockedNumber::with('logs')
             ->latest('blocked_at')
-            ->paginate(20);
+            ->get();
 
         return view('blocked-numbers.index', compact('blockedNumbers'));
     }

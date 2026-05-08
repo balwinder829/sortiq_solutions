@@ -616,7 +616,6 @@ Copy to Session
         <thead class="table-light">
             <tr>
                 <th><input type="checkbox" id="checkAll"></th>
-                <th class="text-center" width="100px">#</th>
                 <th class="text-center" width="100px">Serial No.</th>
                 <th class="text-center">Name</th>
                 <th class="text-center">Father Name</th>
@@ -670,7 +669,6 @@ Copy to Session
 <tr class="{{ $rowClass }}">
 <td><input type="checkbox" class="record_checked" value="{{ $student->id }}" data-email="{{ $student->email_count_confirmation }}"
        data-receipt="{{ $student->count_receipt_download }}" data-pending_fees="{{ $student->pending_fees }}"></td>
-                <td></td>
                 <td>{{ $student->sno }}</td>
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
@@ -1080,7 +1078,6 @@ Copy to Session
     <input type="hidden" name="is_internship">
     <input type="hidden" name="is_monthly">
     <input type="hidden" name="is_logo_show">
-    <input type="hidden" name="college_name" value="{{ request('college_name') }}">
     <input type="hidden" name="ids" id="bulkDownloadIds">
 </form>
 
@@ -1088,7 +1085,6 @@ Copy to Session
     @csrf
     <input type="hidden" name="is_internship">
     <input type="hidden" name="is_logo_show">
-    <input type="hidden" name="college_name" value="{{ request('college_name') }}">
     <input type="hidden" name="ids" id="bulkDownloadIds">
 </form>
 
@@ -1417,13 +1413,6 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
         'pagingType': "full_numbers", 
         "lengthMenu": [10,15,20, 25, 50, 100],
         "scrollX": true,
-        columnDefs: [
-            {
-                targets: 1, // first column
-                searchable: false,
-                orderable: false
-            }
-        ]
 //         "rowCallback": function(row, data) {
 
 //     let nextDueDate = data[14];
@@ -1444,16 +1433,6 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
 // }
 
     });
-
-    // ✅ Dynamic serial number
-table.on('draw.dt', function () {
-    var PageInfo = table.page.info();
-
-    table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
-        cell.innerHTML = PageInfo.start + i + 1;
-    });
-}).draw();
-
 
      // ✅ Save page whenever page changes
     table.on('page.dt', function () {

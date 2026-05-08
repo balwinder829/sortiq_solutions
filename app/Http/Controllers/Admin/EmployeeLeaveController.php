@@ -109,9 +109,9 @@ class EmployeeLeaveController extends Controller
                                 <i class="fa fa-times"></i>
                             </a>';
             }
-
+            $rowNum = $start + $index + 1;
             return [
-                $leave->id,
+                $rowNum,
                 e($leave->emp_name) . ' (' . e($leave->emp_code) . ')',
                 e($leave->email),
                 \Carbon\Carbon::parse($leave->from_date)->format('d M Y') . ' - ' .

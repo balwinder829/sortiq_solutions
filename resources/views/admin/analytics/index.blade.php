@@ -3,7 +3,7 @@
 @section('content')
 
 <style>
-.nav-tabs .nav-link {
+/*.nav-tabs .nav-link {
     background:#f4f6f9;
     border:1px solid #dee2e6;
     margin-right:5px;
@@ -13,9 +13,36 @@
     background:#ffffff;
     border-bottom:2px solid #0d6efd;
     font-weight:600;
+}*/
+.nav-tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    border-bottom:none;
+}
+
+.nav-tabs .nav-item{
+    margin:0;
+}
+
+.nav-tabs .nav-link{
+    background:#f4f6f9;
+    border:1px solid #dee2e6;
+    border-radius:6px 6px 0 0;
+    white-space:nowrap;
+    padding:10px 18px;
+}
+
+.nav-tabs .nav-link.active{
+    background:#ffffff;
+    border-bottom:2px solid #0d6efd;
+    font-weight:600;
 }
 </style>
-
+@php
+        $fmt = new \NumberFormatter('en_IN', \NumberFormatter::DECIMAL);
+        $fmt->setAttribute(\NumberFormatter::FRACTION_DIGITS, 2);
+    @endphp
 <div class="container mt-4">
 
     <h4 class="mb-4">📊 Analytics Dashboard</h4>
@@ -94,6 +121,14 @@
                     data-bs-target="#tab-workshops"
                     data-tab="workshops">
                 Workshops
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#student-finance"
+                    data-tab="student-finance">
+                Student Finance
             </button>
         </li>
 
@@ -676,7 +711,7 @@
             </div>
 
         </div>
-        {{-- ================= HR TAB ================= --}}
+        {{-- ================= SECURITY TAB ================= --}}
         <div class="tab-pane fade" id="tab-security">
 
             <div class="row gx-3 gy-2">
@@ -918,6 +953,65 @@
                         <div class="card-body">
                             <h6>Upcoming</h6>
                             <h3>{{ $future }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+         {{-- ================= STUDENT FINANCE TAB ================= --}}
+        <div class="tab-pane fade" id="student-finance">
+
+            <div class="row gx-3 gy-2">
+
+                {{-- Total Leads --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Amount</h6>
+                            <h3>Rs. {{ $fmt->format(optional($feeSums)->total_fees ?? 0) }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                 {{-- Assigned --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Pending Amount</h6>
+                            <h3>Rs. {{ $fmt->format(optional($feeSums)->pending_fees ?? 0) }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Unassigned --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Highest Revenue College Wise</h6>
+                            <h4>Rs. {{ $fmt->format(optional($topCollegeData)->total_collected ?? 0) }} - {{ $topCollegeData->college_name_text }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Manual Data --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Highest Revenue State</h6>
+                            <h4>Rs. {{ $fmt->format($topState->total ?? 0) }} - {{ $topState->state }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Hard Data --}}
+                <div class="col-md-3 col-sm-6 col-12">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Highest Revenue District</h6>
+                            <h4>Rs. {{ $fmt->format($topDistrict->total ?? 0) }} - {{ $topDistrict->district }}</h4>
                         </div>
                     </div>
                 </div>

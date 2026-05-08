@@ -26,6 +26,7 @@
     <table id="evaluationTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Student</th>
                 <th>Trainer</th>
                 <th>Attendance</th>
@@ -37,6 +38,7 @@
         <tbody>
             @foreach($evaluations as $ev)
             <tr>
+                <td></td>
                 <td>{{ ucwords($ev->student?->student_name) }}</td>
                 <td>{{ ucwords($ev->trainer?->name) }}</td>
                 <td>{{ $ev->attendance_percentage }}%</td>
@@ -105,7 +107,24 @@
 
 <script>
 $(function(){
-    $('#evaluationTable').DataTable();
+    var table = $('#evaluationTable').DataTable({
+         columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
+    });
+
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
+ 
 </script>
 @endpush

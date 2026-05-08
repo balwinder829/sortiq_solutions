@@ -52,6 +52,7 @@
     <table class="table table-bordered table-striped" id="mouTable">
         <thead>
             <tr>
+                <th>#</th>
                 <th>College</th>
                 <th>Title</th>
                 <th>Issue Date</th>
@@ -64,6 +65,7 @@
         <tbody>
         @foreach($mous as $mou)
             <tr>
+                <td>{{ $loop->iteration }}</td>
                 <td>{{ $mou->college->college_name }}</td>
                 <td>{{ $mou->mou_title }}</td>
                 <td>{{ optional($mou->issue_date)->format('d M Y') ?? '-' }}</td>

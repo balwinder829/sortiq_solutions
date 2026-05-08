@@ -139,7 +139,7 @@ class CollegeCallController extends Controller
             return DataTablesServerSide::response($request, $query, [
                 'orderable'  => ['id'],
                 'searchable' => ['college_name'],
-            ], function ($college) use ($activeSessionId) {
+            ], function ($college, $index, $start) use ($activeSessionId) {
 
                 /*
                 |------------- CALL COUNT -------------
@@ -209,9 +209,10 @@ class CollegeCallController extends Controller
 
                 $checkbox = '<input type="checkbox" class="record_checkbox" value="'.$college->id.'">';
 
+                $rowNum = $start + $index + 1;
                 return [
                     $checkbox,
-                    $college->id,
+                    $rowNum,
                     e($college->full_name),
                     $callCountHtml,
                     $calledTo,

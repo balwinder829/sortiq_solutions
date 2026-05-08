@@ -105,7 +105,9 @@ class EmployeeController extends Controller
             $actions .= '<a href="' . route('salary-structure.create', $emp->id) . '" class="btn btn-sm" title="Update Salary Amount"><i class="fas fa-money-bill-wave"></i></a> ';
             $actions .= '<a href="' . route('employees.edit', $emp) . '" class="btn btn-sm" title="Edit Employee"><i class="fas fa-edit"></i></a> ';
             $actions .= '<form action="' . route('employees.destroy', $emp) . '" method="POST" style="display:inline;">' . csrf_field() . method_field('DELETE') . '<button type="submit" class="btn btn-sm" title="Delete Employee" data-swal-confirm="Delete employee?"><i class="fas fa-trash"></i></button></form>';
+            $rowNum = $start + $index + 1;
             return [
+                $rowNum,
                 e($emp->emp_code),
                 e($emp->emp_name),
                 e($emp->position),

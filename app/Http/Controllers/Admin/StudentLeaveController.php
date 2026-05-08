@@ -77,7 +77,7 @@ class StudentLeaveController extends Controller
         return DataTablesServerSide::response($request, $query, [
             'orderable'  => ['id','student_name','from_date','status'],
             'searchable' => ['student_name','sno','contact'],
-        ], function ($leave) {
+        ], function ($leave, $index, $start) {
 
             $statusBadge = match($leave->status) {
                 'approved' => '<span class="badge bg-success">Approved</span>',
@@ -105,8 +105,9 @@ class StudentLeaveController extends Controller
                             </a>';
             }
 
+            $rowNum = $start + $index + 1;
             return [
-                $leave->id,
+                $rowNum,
                 e($leave->student_name) . ' (SNO: ' . e($leave->sno) . ')',
                 e($leave->contact ?? '-'),
                 \Carbon\Carbon::parse($leave->from_date)->format('d M Y') . ' - ' .

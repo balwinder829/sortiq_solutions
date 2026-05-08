@@ -105,7 +105,7 @@
             <tbody>
                 @foreach($expenses as $expense)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    <td></td>
                     <td>{{ \Carbon\Carbon::parse($expense->expense_date)->format('d M Y') }}</td>
                     <td>{{ $expense->title }}</td>
                     <td>{{ $expense->quantity }}</td>
@@ -150,10 +150,25 @@
 @push('scripts')
 <script>
 $(document).ready(function () {
-    $('#expenseTable').DataTable({
+    var table = $('#expenseTable').DataTable({
         pageLength: 25,
-        order: []
-    });
+        order: [],
+        columnDefs: [
+                {
+                    targets: 0, // first column
+                    searchable: false,
+                    orderable: false
+                }
+            ]
+        });
+
+        table.on('draw.dt', function () {
+            var PageInfo = table.page.info();
+
+            table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                cell.innerHTML = PageInfo.start + i + 1;
+            });
+        }).draw();
 
     $('.filter-change').on('change', function(){
         $('#filterForm').submit();

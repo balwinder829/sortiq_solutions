@@ -399,7 +399,8 @@ value="{{ request('registration_fee') }}">
             <tr>
             <tr>
                 <th><input type="checkbox" id="checkAll"></th>
-                <th class="text-center">ID</th>
+                <th class="text-center">#</th>
+                <th class="text-center" width="100px">Serial No.</th>
                 <th class="text-center">Name</th>
                 <th class="text-center">Father Name</th>
                 <th class="text-center">Gender</th>
@@ -460,7 +461,8 @@ value="{{ request('registration_fee') }}">
                         title="Certificate not eligible"
                     >
                 </td>
-                <td>{{ $loop->iteration }}</td>
+                <td></td>
+                <td>{{ $student->sno }}</td>
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
@@ -874,6 +876,13 @@ $(document).ready(function () {
         'pagingType': "full_numbers", 
         "lengthMenu": [5, 10, 25, 50, 100],
         "scrollX": true,
+        columnDefs: [
+            {
+                targets: 1, // first column
+                searchable: false,
+                orderable: false
+            }
+        ],
        rowCallback: function (row, data) {
 
         // Correct way to access API inside callback
@@ -895,6 +904,13 @@ $(document).ready(function () {
     }
     });
 
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
     // ✅ Save page whenever page changes
     table.on('page.dt', function () {
         sessionStorage.setItem(

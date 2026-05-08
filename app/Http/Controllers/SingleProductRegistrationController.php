@@ -62,7 +62,7 @@ class SingleProductRegistrationController extends Controller
             return DataTablesServerSide::response($request, $query, [
                 'orderable'  => ['id','full_name','email'],
                 'searchable' => ['full_name','email','phone'],
-            ], function ($row) {
+            ], function ($row, $index, $start) {
 
                 $actions = '
                     <a href="' . route('single-product-registrations.show', $row->id) . '" class="btn btn-sm">
@@ -84,9 +84,9 @@ class SingleProductRegistrationController extends Controller
 
                     
                 ';
-
+                $rowNum = $start + $index + 1;
                 return [
-                    $row->id,
+                    $rowNum,
                     e($row->full_name),
                     e($row->email),
                     e($row->phone ?? '-'),

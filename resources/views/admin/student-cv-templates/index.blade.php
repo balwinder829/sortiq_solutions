@@ -28,7 +28,7 @@ Add Template
 <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
-<table class="table table-bordered table-striped">
+<table class="table table-bordered table-striped" id="project_table">
 
 <thead>
 <tr>
@@ -109,5 +109,33 @@ onclick="return confirm('Delete template?')">
 </table>
 
 </div>
+<script>
+    $(document).ready(function() {
+    var table = $('#project_table').DataTable({
+        pageLength: 10,
+        lengthMenu: [5,10,25,50,100],
+        paging: true,       
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
+        
+    });
 
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
+    new bootstrap.Tooltip(document.body, {
+        selector: '[data-bs-toggle="tooltip"]'
+    });
+    
+});
+</script>
 @endsection

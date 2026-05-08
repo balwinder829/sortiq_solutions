@@ -241,6 +241,13 @@ function isParent($routes)
                                 Workshops
                             </a>
                         </li>
+                        {{-- Student Finance --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'student-finance']) }}"
+                               class="{{ request('tab') == 'student-finance' ? 'mm-active' : '' }}">
+                                Student Finance
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -1419,6 +1426,13 @@ function isParent($routes)
                             <a href="{{ route('admin.analytics', ['tab' => 'workshops']) }}"
                                class="{{ request('tab') == 'workshops' ? 'mm-active' : '' }}">
                                 Workshops
+                            </a>
+                        </li>
+                        {{-- Student Finance --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'student-finance']) }}"
+                               class="{{ request('tab') == 'student-finance' ? 'mm-active' : '' }}">
+                                Student Finance
                             </a>
                         </li>
                     </ul>

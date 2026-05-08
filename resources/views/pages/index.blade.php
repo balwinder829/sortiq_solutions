@@ -52,6 +52,7 @@
     <table id="pagesTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Title</th>
                 <th>Slug</th>
                 <th>Status</th>
@@ -64,6 +65,7 @@
         <tbody>
             @foreach($pages as $page)
             <tr>
+                <td></td>
                 <td>{{ $page->title }}</td>
                 <td>{{ $page->slug }}</td>
                 <td>{{ ucwords($page->ads_type) }}</td>
@@ -132,10 +134,25 @@
 
 <script>
 $(document).ready(function() {
-    $('#pagesTable').DataTable({
+    var table = $('#pagesTable').DataTable({
         pageLength: 10,
-        lengthMenu: [5,10,25,50,100]
-    });
+        lengthMenu: [5,10,25,50,100],
+        columnDefs: [
+                {
+                    targets: 0, // first column
+                    searchable: false,
+                    orderable: false
+                }
+            ]
+        });
+
+        table.on('draw.dt', function () {
+            var PageInfo = table.page.info();
+
+            table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                cell.innerHTML = PageInfo.start + i + 1;
+            });
+        }).draw();
 });
 </script>
 <script>

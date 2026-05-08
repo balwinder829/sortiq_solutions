@@ -118,7 +118,7 @@
             <tbody>
                 @foreach($jobs as $job)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    <td></td>
                     <td>{{ $job->name }}</td>
                     <td>{{ $job->job_type ?? '-' }}</td>
                     <td>{{ $job->shift ?? '-' }}</td>
@@ -167,10 +167,24 @@
 @push('scripts')
 <script>
 $(document).ready(function () {
-    $('#jobTable').DataTable({
+    var table = $('#jobTable').DataTable({
         pageLength: 25,
-        order: [[0,'desc']]
+        order: [[0,'desc']],
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
     });
+     table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 </script>
 <script>

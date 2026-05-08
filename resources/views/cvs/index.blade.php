@@ -70,6 +70,7 @@
     <table id="cvsTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Employee Name</th>
                 <th>Mobile</th>
                 <th>Email</th>
@@ -82,6 +83,7 @@
         <tbody>
             @foreach($cvs as $cv)
             <tr>
+                <td></td>
                 <td>{{ $cv->employee_name }}</td>
                 <td>{{ $cv->email }}</td>
                 <td>{{ $cv->phone_number }}</td>
@@ -136,7 +138,7 @@
         </tbody>
     </table>
     
-    {{ $cvs->links('pagination::bootstrap-5') }}
+
 
 </div>
 @endsection
@@ -152,13 +154,25 @@
         .catch(() => prompt("Copy this link:", url));
 }
 $(document).ready(function() {
-    $('#cvsTable').DataTable({
+    var table = $('#cvsTable').DataTable({
         pageLength: 10,
         lengthMenu: [5,10,25,50,100],
-        paging: false,       
-        info: false,           
-        lengthChange: false
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
     });
+
+     table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 
     new bootstrap.Tooltip(document.body, {
         selector: '[data-bs-toggle="tooltip"]'

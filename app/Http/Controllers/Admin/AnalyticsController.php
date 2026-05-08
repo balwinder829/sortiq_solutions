@@ -532,6 +532,68 @@ class AnalyticsController extends Controller
 
         // Total Users (excluding admin role = 1)
         $totalUsers = \App\Models\User::whereIn('role', [4, 5, 8])->count();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STUDENT FINANACE
+        |--------------------------------------------------------------------------
+        */
+
+        $feeSums = Student::where('session', $activeSessionNo)
+                ->selectRaw('
+                    SUM(COALESCE(total_fees, 0)) AS total_fees,
+                    SUM(COALESCE(pending_fees, 0)) AS pending_fees,
+                    SUM(COALESCE(total_fees, 0) - COALESCE(pending_fees, 0)) AS collected
+                ')
+                ->first();
+
+        $topCollegeData = DB::table('students_detail')
+            ->join('colleges', 'colleges.id', '=', 'students_detail.college_name')
+            ->select(
+                'students_detail.college_name',
+                'colleges.college_name as college_name_text',
+                DB::raw('COUNT(students_detail.id) as total_students'),
+                DB::raw('SUM(students_detail.total_fees - students_detail.pending_fees) as total_collected')
+            )
+            ->where('students_detail.session', $activeSessionNo)
+            ->groupBy('students_detail.college_name', 'colleges.college_name')
+            ->orderByDesc('total_students')
+            ->first() 
+            ?: (object) [
+                'college_name'      => null,
+                'college_name_text' => '',
+                'total_students'    => 0,
+                'total_collected'   => 0
+            ];
+
+            $topState = DB::table('students_detail as s')
+                ->join('colleges as c', 's.college_name', '=', 'c.id')
+                ->join('states as st', 'c.state_id', '=', 'st.id')
+                ->where('s.session', $activeSessionNo)
+                ->select(
+                    'st.name as state',
+                    DB::raw('SUM(s.total_fees) as total')
+                )
+                ->groupBy('st.id', 'st.name')
+                ->orderByDesc('total')
+                ->first() 
+                ?: (object)['state' => '-', 'total' => 0];
+
+
+            $topDistrict = DB::table('students_detail as s')
+                ->join('colleges as c', 's.college_name', '=', 'c.id')
+                ->join('districts as d', 'c.district_id', '=', 'd.id')
+                ->where('s.session', $activeSessionNo)
+                ->select(
+                    'd.name as district',
+                    DB::raw('SUM(s.total_fees) as total')
+                )
+                ->groupBy('d.id', 'd.name')
+                ->orderByDesc('total')
+                ->first() 
+                ?: (object)['district' => '-', 'total' => 0];
+
         /*
         |--------------------------------------------------------------------------
         | SEND DATA
@@ -631,6 +693,11 @@ class AnalyticsController extends Controller
             'allowedIps',
             'blockedNumbers',
             'totalUsers',
+            // STUDENT FINANCE
+            'topDistrict',
+            'topState',
+            'topCollegeData',
+            'feeSums',
         ));
     }
 }

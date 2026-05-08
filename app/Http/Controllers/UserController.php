@@ -158,8 +158,9 @@ if (!$user->hasRole('Admin')) {
             } else {
                 $actions .= '<form action="' . route('users.restore', $user->id) . '" method="POST" style="display:inline;">' . csrf_field() . '<button type="submit" class="btn btn-sm btn-success" title="Restore"><i class="fa fa-undo"></i></button></form>';
             }
+            $rowNum = $start + $index + 1;
             return [
-                $user->id,
+                $rowNum,
                 ucwords($user->name ?? ''),
                 $usernameCell,
                 $roleHtml,

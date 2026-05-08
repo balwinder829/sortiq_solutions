@@ -48,7 +48,7 @@ class TestimonialController extends Controller
             return DataTablesServerSide::response($request, $query, [
                 'orderable'  => ['id','name'],
                 'searchable' => ['name','description'],
-            ], function ($row) {
+            ], function ($row, $index, $start) {
 
                 $image = $row->image && file_exists(public_path($row->image))
                 ? '<img src="'.asset($row->image).'" width="60" height="60" style="object-fit:cover;border-radius:6px;">'
@@ -72,9 +72,9 @@ class TestimonialController extends Controller
                         </button>
                     </form>
                 ';
-
+                $rowNum = $start + $index + 1;
                 return [
-                    $row->id,
+                    $rowNum,
                     e($row->name),
                     $image,
                     e($row->type),

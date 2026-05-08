@@ -79,7 +79,7 @@
     @endphp
 
     <tr>
-        <td>{{ $emp->id }}</td>
+        <td> </td>
         <td>{{ $emp->emp_name }} <span class="badge bg-secondary">Employee</span></td>
         <td>{{ $emp->email }}</td>
 
@@ -118,7 +118,7 @@
     @endphp
 
     <tr>
-        <td>{{ $trainer->id }}</td>
+        <td> </td>
         <td>{{ $trainer->name }} <span class="badge bg-primary">Trainer</span></td>
         <td>{{ $trainer->email ?? '—' }}</td>
 
@@ -157,7 +157,7 @@
     @endphp
 
     <tr>
-        <td>{{ $staff->id }}</td>
+        <td> </td>
         <td>{{ $staff->name }} <span class="badge bg-primary">Sales</span></td>
         <td>{{ $staff->email ?? '—' }}</td>
 
@@ -200,11 +200,25 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#attendanceTable').DataTable({
+   var table =  $('#attendanceTable').DataTable({
         "pageLength": 10,
         "lengthMenu": [5, 10, 25, 50],
+         columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
         // "scrollX": true
     });
+   table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 </script>
 <script>

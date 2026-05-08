@@ -24,6 +24,7 @@
     <table id="techTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Name</th>
                 <th>Category</th>
                 <th>Status</th>
@@ -57,7 +58,8 @@ $(document).ready(function() {
             { data: 0 },
             { data: 1 },
             { data: 2 },
-            { data: 3, orderable: false, searchable: false }
+            { data: 3 },
+            { data: 4, orderable: false, searchable: false }
         ],
         pageLength: 10,
         lengthMenu: [5,10,25,50,100]

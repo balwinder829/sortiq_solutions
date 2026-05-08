@@ -146,8 +146,10 @@ class TrainerController extends Controller
             $offlineBat = '<div class="batch-circle" style="background:#fd7e14" title="Offline Batches">' . (int) ($trainer->offline_batches_count ?? 0) . '</div>';
             $todayBat = '<div class="batch-circle batch-link" data-id="' . $trainer->id . '" data-name="' . e($trainer->name ?? 'N/A') . '" data-type="remaining" title="View Today\'s Remaining Batches">' . (int) ($trainer->today_remaining_batches_count ?? 0) . '</div>';
             $actions = '<a href="' . route('trainers.edit', $trainer->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a>';
+
+            $rowNum = $start + $index + 1;
             return [
-                $trainer->id,
+                $rowNum,
                 e($trainer->username ?? ''),
                 ucwords($trainer->name ?? ''),
                 ucfirst($trainer->gender ?? '-'),

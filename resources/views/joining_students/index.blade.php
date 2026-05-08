@@ -135,7 +135,7 @@
                         @endif
                     </td>
 
-                    <td>{{ $loop->iteration }}</td>
+                    <td></td>
                     <td>{{ $student->student_name }}</td>
                     <td>{{ $student->father_name }}</td>
                     <td>{{ $student->collegeData->FullName ?? '-' }}</td>
@@ -194,12 +194,27 @@ let selectedIds = new Set();
 
 // DataTable
 $(document).ready(function () {
-    $('#studentsTable').DataTable({
+    var table  = $('#studentsTable').DataTable({
         paging: true,
         info: true,
         ordering: false,
-        searching: true
+        searching: true,
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
     });
+
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 
 $('.filter-input').on('change keyup', function () {

@@ -131,7 +131,7 @@
             </div>
 
             <div class="form-group col-md-6">
-                <label>Other Contact No</label>
+                <label>Alternate No</label>
                 <input type="text" class="form-control" 
                        name="alternative_phone" value="{{ old('alternative_phone') }}"
                        minlength="10"

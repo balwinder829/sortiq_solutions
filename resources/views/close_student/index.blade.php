@@ -161,7 +161,7 @@
             @foreach ($students as $student)
             <tr>
                 <td><input type="checkbox" class="record_checked" value="{{ $student->id }}"></td>
-                <td>{{ $loop->iteration }}</td>
+                <td></td>
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
@@ -250,9 +250,23 @@ $(document).ready(function () {
         "displayStart": savedPage ? (savedPage * pageLength) : 0,
         'pagingType': "full_numbers", 
         "lengthMenu": [5, 10, 25, 50, 100],
-        "scrollX": true
+        "scrollX": true,
+        columnDefs: [
+            {
+                targets: 1, // first column
+                searchable: false,
+                orderable: false
+            }
+        ],
     });
 
+     table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
      // ✅ Save page whenever page changes
     table.on('page.dt', function () {
         sessionStorage.setItem(

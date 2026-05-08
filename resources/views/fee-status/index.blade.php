@@ -7,16 +7,21 @@
 /* 🔴 OVERDUE */
 table.table-striped.dataTable tbody tr.row-50 > * {
 background-color: red !important;
+color: white!important;
 }
 
 /* 🟡 50-80 */
 table.table-striped.dataTable tbody tr.row-80 > * {
 background-color: yellow !important;
+color: white!important;
+
 }
 
 /* 🟠 80-99 */
 table.table-striped.dataTable tbody tr.row-90 > * {
 background-color: orange !important;
+color: white!important;
+
 }
 
 /* ⚪ 100 */
@@ -274,6 +279,7 @@ Export
 <thead>
 
 <tr>
+<th>#</th>
 <th>Student</th>
 <th>SNo</th>
 <th>College</th>
@@ -310,7 +316,7 @@ $rowClass = 'row-100';
 @endphp
 
 <tr class="{{ $rowClass }}">
-
+<td></td>
 <td>{{ ucwords($student->student_name) }}</td>
 
 <td>{{ $student->sno }}</td>
@@ -380,10 +386,25 @@ href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
 $(document).ready(function(){
 
-$('#feeStatusTable').DataTable({
+var table = $('#feeStatusTable').DataTable({
 pageLength:10,
-lengthMenu:[10,15,20,25,50,100]
+lengthMenu:[10,15,20,25,50,100],
+columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
 });
+
+table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 
 });
 

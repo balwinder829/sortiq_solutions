@@ -145,8 +145,10 @@ public function index(Request $request)
                         </button>
                         </form>';
 
+            $rowNum = $start + $index + 1;
+
             return [
-                $data->id,
+                $rowNum,
                 e($data->student_name),
                 e(optional($data->college)->FullName),
                 e($data->student_email),

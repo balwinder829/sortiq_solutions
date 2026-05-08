@@ -76,6 +76,7 @@
     <table id="lettersTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Letter Type</th>
                 <th>Student Name</th>
                 <th>Email</th>
@@ -89,6 +90,7 @@
         <tbody>
             @foreach($letters as $letter)
             <tr>
+                <td></td>
                 <td>
                     @php
                     $types = [
@@ -160,13 +162,27 @@
 
 <script>
 $(document).ready(function() {
-    $('#lettersTable').DataTable({
+    var table = $('#lettersTable').DataTable({
 
         pageLength: 10,
         lengthMenu: [5,10,25,50,100],
         // order: [[4, 'desc']] 
         ordering:false,
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
     });
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 </script>
 <script>

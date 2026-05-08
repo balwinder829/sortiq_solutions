@@ -12,6 +12,7 @@
     <table id="studentsTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>S. No.</th>
                 <th>Name</th>
                 <th>Email</th>
@@ -25,6 +26,7 @@
         <tbody>
             @foreach($students as $student)
                 <tr>
+                    <td></td>
                     <td>{{ $student->sno ?? '-' }}</td>
                     <td>{{ $student->student_name }}</td>
                     <td>{{ $student->email_id }}</td>
@@ -57,9 +59,27 @@
 @push('scripts')
 <script>
 $(document).ready(function () {
-    $('#studentsTable').DataTable({
-        pageLength: 100
+   var table = $('#studentsTable').DataTable({
+        paging: true,
+        info: true,
+        ordering: false,
+        searching: true,
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
     });
+
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 </script>
 @endpush

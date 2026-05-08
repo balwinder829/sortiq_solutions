@@ -55,7 +55,7 @@
             <tbody>
                 @foreach($companyPpts as $cp)
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
+                        <td></td>
 
                         {{-- Preview --}}
                         
@@ -168,14 +168,29 @@ function copyShare(url){
 }
 
 $(document).ready(function () {
-    $('#companyPptTable').DataTable({
+    var table = $('#companyPptTable').DataTable({
         pageLength: 10,
         ordering: true,
         order: [[0, 'desc']],
         columnDefs: [
             { orderable: false, targets: [1,5] }
+        ],
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
         ]
     });
+
+     table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 </script>
 @endpush

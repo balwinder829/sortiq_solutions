@@ -42,7 +42,7 @@ class JobDescriptionController extends Controller
         return DataTablesServerSide::response($request, $query, [
             'orderable' => ['id','title','job_type','last_date','status'],
             'searchable' => ['title','job_type','status'],
-        ], function ($jd) {
+        ], function ($jd, $index, $start) {
 
             $statusBadge = '<span class="badge bg-secondary">'.ucfirst($jd->status).'</span>';
             $formattedDate = $jd->last_date 
@@ -73,8 +73,9 @@ class JobDescriptionController extends Controller
                         </button>
                         </form>';
 
+            $rowNum = $start + $index + 1;
             return [
-                $jd->id,
+                $rowNum,
                 e($jd->title),
                 ucfirst($jd->job_type),
                 $formattedDate,

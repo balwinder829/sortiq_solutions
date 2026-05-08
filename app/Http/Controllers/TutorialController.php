@@ -48,7 +48,7 @@ class TutorialController extends Controller
     
     public function index()
     {
-        $tutorials = Tutorial::latest()->paginate(100);
+        $tutorials = Tutorial::latest()->get();
         return view('tutorials.index', compact('tutorials'));
     }
 

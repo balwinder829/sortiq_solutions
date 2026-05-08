@@ -30,6 +30,7 @@
     <table id="projectsTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Project Name</th>
                 <th>Tech Stack</th>
                 <th>Guthub Link</th>
@@ -40,6 +41,7 @@
         <tbody>
             @foreach($projects as $project)
             <tr>
+                <td></td>
                 <td>{{ $project->name }}</td>
                 <td>{{ $project->tech_stack }}</td>
                 <td>{{ $project->github_link }}</td>
@@ -70,7 +72,7 @@
             @endforeach
         </tbody>
     </table>
-    {{ $projects->links('pagination::bootstrap-5') }}
+    
 </div>
 @endsection
 
@@ -86,13 +88,30 @@
  -->
 <script>
 $(document).ready(function() {
-    $('#projectsTable').DataTable({
+    var table = $('#projectsTable').DataTable({
         pageLength: 10,
         lengthMenu: [5,10,25,50,100],
-         paging: false,       
-        info: false,           
-        lengthChange: false
+         // paging: false,       
+        // info: false,           
+        // lengthChange: false,
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
     });
+
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
+ 
+
 
     new bootstrap.Tooltip(document.body, {
         selector: '[data-bs-toggle="tooltip"]'

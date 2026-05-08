@@ -22,6 +22,7 @@
     <table id="lettersTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Name</th>
                 <th>Emp Code</th>
                 <!-- <th>Email</th> -->
@@ -32,6 +33,7 @@
         <tbody>
             @foreach($letters as $letter)
             <tr>
+                <td></td>
                 <td>{{ $letter->employee->emp_name ?? '-' }}</td>
                 <td>{{ $letter->employee->emp_code ?? '-' }}</td>
                 <td>
@@ -74,11 +76,26 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#lettersTable').DataTable({
+    var table = $('#lettersTable').DataTable({
         pageLength: 100,
         lengthMenu: [5,10,25,50,100],
-        order:[]
+        order:[],
+        columnDefs: [
+            {
+                targets: 0, // first column
+                searchable: false,
+                orderable: false
+            }
+        ]
     });
+
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+    }).draw();
 });
 </script>
 @endpush

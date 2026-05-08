@@ -72,6 +72,7 @@
     <table id="questionsTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Round</th>
                 <th>Question</th>
                 <th>Experience</th>
@@ -83,6 +84,7 @@
         <tbody>
             @foreach($questions as $q)
             <tr>
+                <td></td>
                 <td>
                     <span class="badge bg-info">
                         {{ strtoupper($q->round_type) }}
@@ -132,10 +134,25 @@
 
 <script>
 $(document).ready(function() {
-    $('#questionsTable').DataTable({
+    var table = $('#questionsTable').DataTable({
         pageLength: 10,
-        lengthMenu: [5,10,25,50,100]
-    });
+        lengthMenu: [5,10,25,50,100],
+        columnDefs: [
+                {
+                    targets: 0, // first column
+                    searchable: false,
+                    orderable: false
+                }
+            ]
+        });
+
+        table.on('draw.dt', function () {
+            var PageInfo = table.page.info();
+
+            table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                cell.innerHTML = PageInfo.start + i + 1;
+            });
+        }).draw();
 });
 </script>
 <script>

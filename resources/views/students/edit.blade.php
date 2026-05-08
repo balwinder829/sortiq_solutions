@@ -3,7 +3,7 @@
 @section('title', 'Edit Student')
 
 @section('content')
-<div class="content-body">
+<div class="content">
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">   
@@ -140,7 +140,7 @@
                                 </div>
 
                                 <div class="form-group col-md-6">
-                                    <label>Other Contact No</label>
+                                    <label>Alternate No</label>
                                     <input type="text" name="alternative_phone" class="form-control" 
                                     minlength="10"
                                    

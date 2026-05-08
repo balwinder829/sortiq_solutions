@@ -322,7 +322,7 @@
                             </td>
                         @endif
 
-                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $enquiries->firstItem() + $loop->index }}</td>
                         <td>{{ $enquiry->name }}</td>
                         <td>{{ $enquiry->mobile }}</td>
                         <td>{{ $enquiry->email }}</td>

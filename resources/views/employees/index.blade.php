@@ -74,6 +74,7 @@
     <table id="employeesTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Emp Code</th>
                 <th>Name</th>
                 <th>Position</th>
@@ -112,7 +113,8 @@ $(document).ready(function() {
             { data: 3 },
             { data: 4 },
             { data: 5 },
-            { data: 6, orderable: false, searchable: false }
+            { data: 6 },
+            { data: 7, orderable: false, searchable: false }
         ],
         pageLength: 10,
         lengthMenu: [5,10,25,50,100]

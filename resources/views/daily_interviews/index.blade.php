@@ -125,6 +125,7 @@
     <table id="interviewsTable" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>#</th>
                 <th>Candidate</th>
                 <th>Technology</th>
                 <th>Type</th>
@@ -138,6 +139,7 @@
         <tbody>
             @foreach($interviews as $interview)
             <tr>
+                <td></td>
                 <td>{{ $interview->candidate_name }}</td>
                 <td>{{ $interview->technology }}</td>
                 <td>{{ $interview->interview_type }}</td>
@@ -200,13 +202,25 @@
 {{-- Include your necessary scripts --}}
 <script>
 $(document).ready(function() {
-     $('#interviewsTable').DataTable({
+     var table = $('#interviewsTable').DataTable({
         "pageLength": 50,
         "lengthMenu": [5, 10, 25, 50, 100],
-        paging: false,       
-        info: false,           
-        lengthChange: false
-    });
+        columnDefs: [
+                {
+                    targets: 0, // first column
+                    searchable: false,
+                    orderable: false
+                }
+            ]
+        });
+
+        table.on('draw.dt', function () {
+            var PageInfo = table.page.info();
+
+            table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                cell.innerHTML = PageInfo.start + i + 1;
+            });
+        }).draw();
     new bootstrap.Tooltip(document.body, {
         selector: '[data-bs-toggle="tooltip"]'
     });

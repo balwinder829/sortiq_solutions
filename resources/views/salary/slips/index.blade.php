@@ -52,6 +52,7 @@
                     <th>
                         <input type="checkbox" id="selectAll">
                     </th>
+                    <th>#</th>
                     <th>Emp Code</th>
                     <th>Name</th>
                     <th>Month</th>
@@ -70,6 +71,7 @@
                                value="{{ $slip->id }}"
                                class="row-check">
                     </td>
+                     <td></td>
                     <td>{{ $slip->emp_code }}</td>
                     <td>{{ $slip->emp_name }}</td>
                     <td>{{ date('F', mktime(0,0,0,$slip->month,1)) }}</td>
@@ -117,10 +119,25 @@
 <script>
 $(document).ready(function() {
 
-    $('#salaryTable').DataTable({
+    var table = $('#salaryTable').DataTable({
         pageLength: 10,
-        lengthMenu: [5,10,25,50,100]
-    });
+        lengthMenu: [5,10,25,50,100],
+        columnDefs: [
+                    {
+                        targets: 1, // first column
+                        searchable: false,
+                        orderable: false
+                    }
+                ]
+            });
+
+            table.on('draw.dt', function () {
+                var PageInfo = table.page.info();
+
+                table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
+                    cell.innerHTML = PageInfo.start + i + 1;
+                });
+            }).draw();
 
     // Select / Deselect all rows
     $('#selectAll').on('change', function () {

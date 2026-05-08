@@ -274,10 +274,11 @@ class CollegeEmailController extends Controller
             //         Retry
             //     </button>
             // ';
+            $rowNum = $start + $index + 1;
 
             return [
                 $checkbox,
-                $college->id,
+                $rowNum,
                 e($college->full_name),
                 $emailCount,
                 $sentTo,

@@ -71,7 +71,9 @@ class TechnologyController extends Controller
 
             $actions .= '<a href="' . route('technologies.edit', $tech) . '" class="btn btn-sm" title="Edit"><i class="fas fa-edit"></i></a> ';
             $actions .= '<form action="' . route('technologies.destroy', $tech) . '" method="POST" style="display:inline;">' . csrf_field() . method_field('DELETE') . '<button type="submit" class="btn btn-sm" title="Delete" data-swal-confirm="Delete this technology?"><i class="fas fa-trash"></i></button></form>';
+            $rowNum = $start + $index + 1;
             return [
+                $rowNum,
                 e($tech->name),
                 $category,
                 $status,
