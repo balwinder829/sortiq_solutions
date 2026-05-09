@@ -554,7 +554,12 @@ value="{{ request('registration_fee') }}">
             Overwrite Issue Date
         </label>
     </div>
-
+    <div class="form-check mb-2">
+        <input type="checkbox" class="form-check-input" id="isInternship" name="is_internship" value="1">
+        <label class="form-check-label" for="isInternship">
+            Is Internship
+        </label>
+    </div>
     {{-- Multi-action buttons --}}
     <div class="mt-3">
         <!-- <button id="issueSelected" class="btn btn-primary">Issue Certificate</button> -->
@@ -1060,7 +1065,9 @@ $(document).ready(function () {
     $('#downloadissueSelected').click(function () {
         var ids = getSelectedIds();
         let isPursuing = $('#isPursuing').is(':checked') ? 1 : 0;
+        let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
         $('input[name="is_pursuing"]').val(isPursuing);
+        $('input[name="is_internship"]').val(isInternship);
         // if (ids.length === 0) {
         //     alert('Select at least one student');
         //     return;
