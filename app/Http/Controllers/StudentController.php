@@ -1220,7 +1220,7 @@ public function import(Request $request)
         // dd($request->all());
         $ids = json_decode($request->ids, true);
         $isPursuing = $request->boolean('is_pursuing');
-
+        $isInternship = $request->boolean('is_internship');
         // dd($request->request);
         if (!is_array($ids) || count($ids) === 0) {
             return back()->with('error', 'No students selected.');
@@ -1252,7 +1252,7 @@ public function import(Request $request)
         foreach ($students as $student) {            
              // ✅ Case 1: empty → set
            
-            $pdfPath = $this->generatePdf($student, $isPursuing);
+            $pdfPath = $this->generatePdf($student, $isPursuing, $isInternship);
 
             if (file_exists($pdfPath)) {
                 $pdfPaths[] = $pdfPath;
@@ -1647,7 +1647,7 @@ public function import(Request $request)
     }
 
 
-private function generatePdf($student, $isPursuing = false)
+private function generatePdf($student, $isPursuing = false, $isInternship = false)
     {
          
      // Create folder path for today
@@ -1702,10 +1702,14 @@ private function generatePdf($student, $isPursuing = false)
             $mpdf->SetHTMLHeader($this->getPDFHeader());
 
             $mpdf->SetHTMLFooter($this->getPDFFooter());
-
-            if($isPursuing){
+            
+            if($isPursuing && $isInternship == false){
                 $view = "pdf.student_pursuing_certificate";
-            }else{
+            } else if($isPursuing == true && $isInternship == true){
+                $view = "pdf.student_pursuing_internship_certificate";
+            } else if($isPursuing == false && $isInternship == true){
+                $view = "pdf.student_internship_certificate";
+            } else{
                 $view = "pdf.student_certificate";
             }
 
