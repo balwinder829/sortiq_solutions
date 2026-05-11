@@ -63,7 +63,7 @@ class ManualDataImport implements
             },
 
             '*.student_name'   => 'required|string|max:255',
-            '*.student_email'  => 'required|email|max:255',
+            '*.student_email'  => 'nullable|email|max:255',
 
             '*.student_mobile' => [
                 'required',
@@ -71,10 +71,10 @@ class ManualDataImport implements
                 new NotBlockedNumber
             ],
 
-            '*.gender'       => 'required|in:male,female',
-            '*.course_type'  => 'required|in:Degree,Diploma',
-            '*.class'        => 'required|in:BCA,MCA,BTech,BSc,BSc IT,BSc CS,Polytechnic',
-            '*.semester'     => 'required|integer|min:1|max:8',
+            '*.gender'       => 'nullable|in:male,female',
+            '*.course_type'  => 'nullable|in:Degree,Diploma',
+            '*.class'        => 'nullable|in:BCA,MCA,BTech,BSc,BSc IT,BSc CS,Polytechnic',
+            '*.semester'     => 'nullable|integer|min:1|max:8',
         ];
     }
 

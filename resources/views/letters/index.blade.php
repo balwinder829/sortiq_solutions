@@ -102,7 +102,8 @@
                     {{ \Carbon\Carbon::parse($letter->updated_at)->format('d M Y') }}
                 </td>
 
-                <td class="d-flex gap-1">
+                <td>
+                    <div class="d-flex gap-1">
                     <a href="{{ route('letters.edit', $letter) }}" class="btn btn-sm">
                         <i class="fas fa-edit"></i>
                     </a>
@@ -132,6 +133,7 @@
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>
+                </div>
                 </td>
             </tr>
             @endforeach
@@ -155,7 +157,7 @@ $(document).ready(function() {
    var table = $('#lettersTable').DataTable({
         pageLength: 10,
         lengthMenu: [5,10,25,50,100],
-        order: [[6, 'desc']] ,
+        ordering: false,
         columnDefs: [
             {
                 targets: 0, // first column
