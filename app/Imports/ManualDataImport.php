@@ -71,10 +71,11 @@ class ManualDataImport implements
                 new NotBlockedNumber
             ],
 
-            '*.gender'       => 'nullable|in:male,female',
-            '*.course_type'  => 'nullable|in:Degree,Diploma',
-            '*.class'        => 'nullable|in:BCA,MCA,BTech,BSc,BSc IT,BSc CS,Polytechnic',
-            '*.semester'     => 'nullable|integer|min:1|max:8',
+            // REMOVE strict validation
+            '*.gender'       => 'nullable|string',
+            '*.course_type'  => 'nullable|string',
+            '*.class'        => 'nullable|string',
+            '*.semester'     => 'nullable',
         ];
     }
 
@@ -121,6 +122,40 @@ class ManualDataImport implements
             return null;
         }
 
+        /* -------- CLEAN OPTIONAL VALUES -------- */
+
+        $gender = strtolower(trim($row['gender'] ?? ''));
+
+        if (!in_array($gender, ['male', 'female'])) {
+            $gender = null;
+        }
+
+        $courseType = trim($row['course_type'] ?? '');
+
+        if (!in_array($courseType, ['Degree', 'Diploma'])) {
+            $courseType = null;
+        }
+
+        $class = trim($row['class'] ?? '');
+
+        if (!in_array($class, [
+            'BCA',
+            'MCA',
+            'BTech',
+            'BSc',
+            'BSc IT',
+            'BSc CS',
+            'Polytechnic'
+        ])) {
+            $class = null;
+        }
+
+        $semester = $row['semester'] ?? null;
+
+        if (!is_numeric($semester) || $semester < 1 || $semester > 8) {
+            $semester = null;
+        }
+
         /* -------- INSERT -------- */
         $this->insertedRows++;
 
@@ -130,16 +165,17 @@ class ManualDataImport implements
             'student_name'   => $row['student_name'],
             'student_email'  => $row['student_email'],
             'student_mobile' => $row['student_mobile'],
-            'gender'         => strtolower($row['gender']),
-            'course_type'    => $row['course_type'],
-            'class'          => $row['class'],
-            'semester'       => $row['semester'],
+              'gender'         => $gender,
+            'course_type'    => $courseType,
+            'class'          => $class,
+            'semester'       => $semester,
             'source'         => 'manual',
         ]);
     }
 
     public function onError(Throwable $e)
     {
+        // dd($e->getMessage());
         // Hide system errors
     }
 }
