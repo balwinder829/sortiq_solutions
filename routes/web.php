@@ -1057,6 +1057,18 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/students/make_interns', [StudentController::class, 'makeInterns'])->name('students.make_interns');
 
         Route::post('/students/move-to-placement', [StudentController::class, 'moveToPlacement'])->name('students.moveToPlacement');
+        
+        Route::post('/students/toggle-certificate-sent', [CertificateController::class, 'toggleCertificateSent']
+        )->name('students.toggleCertificateSent');
+
+        Route::post('/students/bulk-certificate-status', [CertificateController::class, 'bulkCertificateStatus']
+        )->name('students.bulkCertificateStatus');
+
+        Route::post('/students/toggle-certificate-sent', [StudentController::class, 'toggleConfirmationSent']
+        )->name('students.toggleConfirmationSent');
+
+        Route::post('/students/bulk-certificate-status', [StudentController::class, 'bulkConfirmationStatus']
+        )->name('students.bulkConfirmationStatus');
 
 
         // Route::post(

@@ -114,9 +114,125 @@ function isParent($routes)
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+@media (min-width: 991px){
+/* DESKTOP SIDEBAR COLLAPSE */
+
+body.menu-toggle .quixnav {
+    width: 80px !important;
+}
+
+body.menu-toggle .quixnav .nav-text,
+body.menu-toggle .quixnav .has-arrow:after,
+body.menu-toggle .quixnav ul ul {
+    display: none !important;
+}
+
+body.menu-toggle .content-body {
+    margin-left: 80px !important;
+}
+
+body.menu-toggle .header {
+    padding-left: 80px !important;
+}/*
+.nav-control{
+    cursor:pointer;
+    font-size:20px;
+    color:#6c757d;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:0.3s;
+}
+
+.nav-control:hover{
+    color:#593bdb;
+}*/
+/*.nav-control{
+    cursor:pointer;
+    font-size:20px;
+    color:#6c757d;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all .3s ease;
+}
+
+.nav-control:hover{
+    color:#593bdb;
+}*/
+.nav-control{
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+
+    width: auto !important;
+    height: auto !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.nav-control i{
+    font-size: 22px;
+    color: #6c757d;
+    transition: .3s;
+}
+
+.nav-control:hover i{
+    color: #593bdb;
+}
+ 
+.sidebar-collapse-btn{
+    position: absolute;
+    top: 90px;
+    right: -14px;
+    width: 28px;
+    height: 60px;
+    background: #593bdb;
+    color: #fff;
+    border-radius: 0 10px 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 999;
+    transition: all .3s ease;
+    opacity: 0;
+}
+
+/* SHOW ON SIDEBAR HOVER */
+.quixnav:hover .sidebar-collapse-btn{
+    opacity: 1;
+}
+
+/* ICON ANIMATION */
+.sidebar-collapse-btn i{
+    transition: all .3s ease;
+    font-size: 14px;
+}
+
+/* ROTATE ICON WHEN COLLAPSED */
+body.menu-toggle .sidebar-collapse-btn i{
+    transform: rotate(180deg);
+}
+
+/* MOVE BUTTON WHEN COLLAPSED */
+body.menu-toggle .sidebar-collapse-btn{
+    right: -14px;
+}
+
+}
 </style>
 
 <div class="quixnav">
+    <div class="sidebar-collapse-btn" id="sidebarToggle">
+    <i class="fas fa-chevron-left"></i>
+</div>
     <!-- Mobile Close Button -->
 <div class="sidebar-close d-lg-none">
     <span>&times;</span>

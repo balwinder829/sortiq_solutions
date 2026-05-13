@@ -98,11 +98,19 @@
 </style>
 <div class="header">
     <div class="header-content">
+ <!--        <div class="nav-control">
+    <div class="hamburger" id="sidebarToggle">
+        <span class="line"></span>
+        <span class="line"></span>
+        <span class="line"></span>
+    </div>
+</div> -->
         <nav class="navbar navbar-expand">
             <div class="collapse navbar-collapse justify-content-between">
                 @include('common.logo') 
                 {{-- Left side (search, etc.) --}}
                 <div class="header-left">
+ 
                     <div class="search_bar dropdown" style="display: none;">
                         <span class="search_icon p-3 c-pointer" data-toggle="dropdown">
                             <i class="mdi mdi-magnify"></i>

@@ -1272,7 +1272,24 @@ public function import(Request $request)
 
          $date = strtolower(date('d_F'));
 
-        $baseName = $isPursuing ? 'pursuing_certificate_letters_' : 'certificate_letters_';
+         if ($isPursuing && !$isInternship) {
+
+            $baseName = 'pursuing_certificate_letters_';
+
+        } elseif ($isPursuing && $isInternship) {
+
+            $baseName = 'pursuing_internship_certificate_letters_';
+
+        } elseif (!$isPursuing && $isInternship) {
+
+            $baseName = 'internship_certificate_letters_';
+
+        } else {
+
+            $baseName = 'certificate_letters_';
+        }
+        // dd($baseName, $isPursuing, $isInternship);
+        // $baseName = $isPursuing ? 'pursuing_certificate_letters_' : 'certificate_letters_';
         if ($collegeName) {
             $zipFileName = "{$baseName}_{$collegeName}_{$date}.zip";
         } else {
@@ -1670,7 +1687,26 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
 
         $dateFormatted = Carbon::now()->format('d_F_Y'); // 26_March_2015
 
-        $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_certificate.pdf";
+        if ($isPursuing && !$isInternship) {
+
+            $certificateType = 'pursuing_certificate';
+
+        } elseif ($isPursuing && $isInternship) {
+
+            $certificateType = 'pursuing_internship_certificate';
+
+        } elseif (!$isPursuing && $isInternship) {
+
+            $certificateType = 'internship_certificate';
+
+        } else {
+
+            $certificateType = 'certificate';
+        }
+
+        $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_{$certificateType}.pdf";
+
+        // $fileName = "{$studentName}_{$fatherName}_{$collegeName}_{$dateFormatted}_certificate.pdf";
         $filePath = $folderPath . '/' . $fileName;
 
         $regenerate = true;
@@ -2536,80 +2572,58 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
         }
     }
 
-    // public function moveToPlacement(Request $request)
-    // {
-    //     $ids = json_decode($request->ids, true);
+    public function toggleConfirmationSent(Request $request)
+    {
+        $student = Student::findOrFail($request->id);
 
-    //     if (empty($ids)) {
-    //         return back()->with('error', 'No students selected');
-    //     }
+        $student->certificate_sent = $request->status;
 
-    //     // dd($ids);
+        $student->save();
 
-    //     DB::beginTransaction();
+        return response()->json([
+            'success' => true,
+            'message' => $request->status
+                ? 'Certificate marked as sent'
+                : 'Certificate marked as not sent'
+        ]);
+    }
 
-    //     try {
+    public function bulkConfirmationStatus(Request $request)
+    {
+        // Expecting JSON string or array in $request->ids
+        $idsPayload = $request->input('ids');
 
-    //         // Fetch only not already placed students
-    //     $students = Student::whereIn('id', $ids)
-    //         ->where('is_placed', 0)
-    //         ->get();
+        if (empty($idsPayload)) {
 
+            return back()->with(
+                'error',
+                'No students selected.'
+            );
+        }
 
-    //     if ($students->isEmpty()) {
-    //         // dd($students);
-    //         return back()->with('error', 'All selected students are already placed');
-    //     }
+        // Decode possible JSON string
+        $ids = is_array($idsPayload)
+            ? $idsPayload
+            : json_decode($idsPayload, true);
 
-    //         foreach ($students as $student) {
+        if (!is_array($ids) || count($ids) === 0) {
 
-    //             // 🚫 Prevent duplicate placement entry
-    //             $exists = Placement::where('student_id', $student->id)->exists();
-    //             if ($exists) {
-    //                 continue;
-    //             }
+            return back()->with(
+                'error',
+                'Invalid selection.'
+            );
+        }
 
-    //             // ✅ Handle tech (first tech only)
-    //             $tech = null;
+        Student::whereIn('id', $ids)
+            ->update([
+                'certificate_sent' => $request->status
+            ]);
 
-    //             if (!empty($student->technology)) {
-    //                 if (is_array($student->technology)) {
-    //                     $tech = $student->technology[0] ?? null;
-    //                 } else {
-    //                     $tech = explode(',', $student->technology)[0] ?? null;
-    //                 }
-    //             }
-
-    //             // ✅ Insert into placements
-    //             Placement::create([
-    //                 'student_id'     => $student->id,
-    //                 'student_name'   => $student->student_name,
-    //                 'tech'           => $tech,
-    //                 'placement_date' => now(),
-    //                 'college_name'   => $student->college_name, // already ID
-    //                 'phone_no'       => $student->contact,
-    //                 'location'       => $student->place,
-    //                 'session_id'     => $student->session,
-    //                 'created_at'     => now(),
-    //                 'updated_at'     => now(),
-    //             ]);
-
-    //             // ✅ Update student
-    //             $student->update([
-    //                 'is_placed' => 1,
-    //                 'deleted_at' => now(),
-    //             ]);
-    //         }
-
-    //         DB::commit();
-
-    //         return back()->with('success', 'Selected students moved to placement successfully');
-
-    //     } catch (\Exception $e) {
-
-    //         DB::rollBack();
-
-    //         return back()->with('error', 'Error: ' . $e->getMessage());
-    //     }
-    // }
+        return back()->with(
+            'success',
+            $request->status
+                ? 'Certificates marked as sent.'
+                : 'Certificates marked as not sent.'
+        );
+    }
 }

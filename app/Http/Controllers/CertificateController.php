@@ -501,4 +501,59 @@ if (!$request->filled('fee_filter')) {
         return redirect()->route('certificates.index')
                          ->with('success', 'Student data updated successfully');
     }
+
+    public function toggleCertificateSent(Request $request)
+    {
+        $student = Student::findOrFail($request->id);
+
+        $student->certificate_sent = $request->status;
+
+        $student->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->status
+                ? 'Certificate marked as sent'
+                : 'Certificate marked as not sent'
+        ]);
+    }
+
+    public function bulkCertificateStatus(Request $request)
+    {
+        // Expecting JSON string or array in $request->ids
+        $idsPayload = $request->input('ids');
+
+        if (empty($idsPayload)) {
+
+            return back()->with(
+                'error',
+                'No students selected.'
+            );
+        }
+
+        // Decode possible JSON string
+        $ids = is_array($idsPayload)
+            ? $idsPayload
+            : json_decode($idsPayload, true);
+
+        if (!is_array($ids) || count($ids) === 0) {
+
+            return back()->with(
+                'error',
+                'Invalid selection.'
+            );
+        }
+
+        Student::whereIn('id', $ids)
+            ->update([
+                'certificate_sent' => $request->status
+            ]);
+
+        return back()->with(
+            'success',
+            $request->status
+                ? 'Certificates marked as sent.'
+                : 'Certificates marked as not sent.'
+        );
+    }
 }

@@ -790,7 +790,54 @@ document.addEventListener('DOMContentLoaded', function () {
 
 @endif
 {{-- ================= END OTP POPUP ================= --}}
+<script>
 
+// $(document).ready(function(){
+
+//     $('#sidebarToggle').click(function(){
+
+//         $('body').toggleClass('menu-toggle');
+
+//     });
+
+// });
+
+
+
+</script>
+<script>
+
+$(document).ready(function(){
+    if ($(window).width() > 991) {
+        // LOAD SAVED STATE
+        if(localStorage.getItem('sidebar-collapsed') === 'true'){
+
+            $('body').addClass('menu-toggle');
+
+        }
+
+        // TOGGLE
+        $('#sidebarToggle').click(function(){
+
+            $('body').toggleClass('menu-toggle');
+
+            // SAVE STATE
+            if($('body').hasClass('menu-toggle')){
+
+                localStorage.setItem('sidebar-collapsed', 'true');
+
+            }else{
+
+                localStorage.setItem('sidebar-collapsed', 'false');
+
+            }
+
+        
+    });
+        }
+});
+
+</script>
 </body>
 
 <footer class="text-center py-3 text-muted">

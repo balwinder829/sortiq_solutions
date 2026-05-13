@@ -57,6 +57,52 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
 #amountSlider .noUi-handle::after {
     display: none;
 }
+
+/* =========================
+   MOBILE STYLE TOGGLE
+========================= */
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+    background-color: #198754;
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
  </style>
 <div class="container mt-4">
     {{-- UNIVERSAL POPUP CONTAINER --}}
@@ -518,23 +564,53 @@ value="{{ request('registration_fee') }}">
                 <td>
                     {{ $student->updated_at ? \Carbon\Carbon::parse($student->updated_at)->format('d M Y') : '-' }}
                 </td>
-                <td class="text-center">
+               <!--  <td class="text-center">
                     <div class="mb-2">
-                        {{-- Issue --}}
-                       <!--  <form action="{{ route('students.issueCertificate', $student->id) }}" method="POST" style="display:inline-block;">
-                            @csrf
-                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Issue Certificate" data-swal-confirm="Send certificate to {{ $student->email_id }}?">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </button>
-                        </form> -->
-
-                        {{-- Edit --}}
+                                             {{-- Edit --}}
                         <a href="{{ route('certificates.edit',$student->id) }}" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit Student">
                             <i class="fa fa-edit"></i>
                         </a>
                     </div>
 
                     <span class="badge bg-light text-dark">Email count: {{ $student->email_count_certificate }}</span>
+                </td> -->
+                <td class="text-center">
+
+                    <div class="d-flex gap-2 justify-content-center align-items-center mb-2">
+
+                        {{-- Edit --}}
+                        <a href="{{ route('certificates.edit',$student->id) }}"
+                           class="btn btn-sm btn-outline-primary"
+                           data-bs-toggle="tooltip"
+                           title="Edit Student">
+
+                            <i class="fa fa-edit"></i>
+                        </a>
+
+                        {{-- Certificate Sent Toggle --}}
+                        <div class="d-flex align-items-center">
+
+    <label class="switch mb-0">
+
+        <input
+            type="checkbox"
+            class="certificateToggle"
+            data-id="{{ $student->id }}"
+            {{ $student->certificate_sent ? 'checked' : '' }}
+        >
+
+        <span class="slider round"></span>
+
+    </label>
+
+</div>
+
+                    </div>
+
+                    <span class="badge bg-light text-dark">
+                        Email count: {{ $student->email_count_certificate ?? 0 }}
+                    </span>
+
                 </td>
             </tr>
             @endforeach
@@ -568,6 +644,8 @@ value="{{ request('registration_fee') }}">
         <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
         <button id="moveSelected" class="btn btn-warning">Shift To Confirmation</button>
         <button id="updateIssueDate" class="btn btn-warning">Update Issue Date</button>
+        <button id="markCertificateSent" class="btn btn-success">Mark Certificate Sent</button>
+        <button id="markCertificateNotSent" class="btn btn-secondary mt-2 ml-2">Mark Certificate Not Sent</button>
     </div>
 
      
@@ -591,6 +669,7 @@ value="{{ request('registration_fee') }}">
     <input type="hidden" name="ids" id="bulkDownloadIds">
     <input type="hidden" name="college_name" value="{{ request('college_name') }}">
     <input type="hidden" name="is_pursuing">
+    <input type="hidden" name="is_internship">
 </form>
 
 <form id="bulkDeleteForm" method="POST" action="{{ route('students.bulk.delete') }}">
@@ -609,6 +688,20 @@ value="{{ request('registration_fee') }}">
 <form id="bulkMoveStudent" method="POST" action="{{ route('students.moveMultipleToConfirmation') }}" style="display:none;">
     @csrf
     <input type="hidden" name="ids" id="bulkmove">
+</form>
+
+{{-- Certificates Status chnage send or not sent--}}
+<form id="bulkCertificateStatusForm"
+      method="POST"
+      action="{{ route('students.bulkCertificateStatus') }}"
+      style="display:none;">
+
+    @csrf
+
+    <input type="hidden" name="ids" id="bulkCertificateIds">
+
+    <input type="hidden" name="status" id="bulkCertificateStatus">
+
 </form>
 
 
@@ -1000,7 +1093,73 @@ $(document).ready(function () {
             $('#bulkIssueForm').submit();
         });
 
+$('#markCertificateSent').click(function () {
 
+    let ids = getSelectedIds();
+
+    if (ids.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Select at least one student'
+        });
+
+        return;
+    }
+
+    Swal.fire({
+        title: 'Mark as Sent?',
+        text: 'Selected students will be marked as certificate sent.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes'
+    }).then((result) => {
+
+        if (!result.isConfirmed) return;
+
+        $('#bulkCertificateIds').val(JSON.stringify(ids));
+
+        $('#bulkCertificateStatus').val(1);
+
+        $('#bulkCertificateStatusForm').submit();
+
+    });
+
+});
+
+$('#markCertificateNotSent').click(function () {
+
+    let ids = getSelectedIds();
+
+    if (ids.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Select at least one student'
+        });
+
+        return;
+    }
+
+    Swal.fire({
+        title: 'Mark as Not Sent?',
+        text: 'Selected students will be marked as certificate not sent.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes'
+    }).then((result) => {
+
+        if (!result.isConfirmed) return;
+
+        $('#bulkCertificateIds').val(JSON.stringify(ids));
+
+        $('#bulkCertificateStatus').val(0);
+
+        $('#bulkCertificateStatusForm').submit();
+
+    });
+
+});
     $('#issueSelected1').click(function () {
         var ids = getSelectedIds();
 
@@ -1219,5 +1378,44 @@ $(document).ready(function(){
     });
 
 });
+$(document).on('change', '.certificateToggle', function () {
+
+    let toggle = $(this);
+
+    let id = toggle.data('id');
+
+    let status = toggle.is(':checked') ? 1 : 0;
+
+    $.ajax({
+
+        url: "{{ route('students.toggleCertificateSent') }}",
+
+        type: "POST",
+
+        data: {
+            _token: "{{ csrf_token() }}",
+            id: id,
+            status: status
+        },
+
+        success: function (response) {
+
+            toastr.success(response.message);
+
+        },
+
+        error: function () {
+
+            // revert toggle if failed
+            toggle.prop('checked', !status);
+
+            toastr.error('Failed to update status');
+
+        }
+
+    });
+
+});
 </script>
+
 @endpush
