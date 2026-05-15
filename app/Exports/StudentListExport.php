@@ -23,7 +23,7 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
     {
         $request = $this->request;
         $query = Student::query();
-
+        // dd($request);
         // Same filters as index()
         if ($request->notification === 'registered_today') {
             $query->whereDate('created_at', today());
@@ -172,6 +172,13 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             if ($request->filled('gender')) {
                 $query->where('gender', $request->gender);
             }
+            if ($request->filled('certificate_sent')) {
+                $query->where('certificate_sent', $request->certificate_sent);
+            }
+
+            if ($request->filled('confirmation_sent')) {
+                $query->where('confirmation_sent', $request->confirmation_sent);
+            }
 
             // Next Due Date Filter (IMPORTANT)
             if ($request->filled('next_due_date')) {
@@ -183,8 +190,12 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                 $query->where('session', session('admin_session_id'));
             }
         }
-
-        $query->where('certificate_status', 0);
+        if ($request->filled('certificate_status')) {
+            $query->where('certificate_status', $request->certificate_status);
+        }else{
+            $query->where('certificate_status', 0);    
+        }
+        // dd(vsprintf(str_replace('?', "'%s'", $query->toSql()), $query->getBindings()));
         $limit = $request->filled('limit') ? (int) $request->limit : null;
 
         $query = $query

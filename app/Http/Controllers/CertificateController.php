@@ -111,6 +111,10 @@ public function index(Request $request)
         if ($request->filled('is_intern')) {
             $query->where('is_intern', $request->is_intern);
         }
+
+        if ($request->filled('certificate_sent')) {
+            $query->where('certificate_sent', $request->certificate_sent);
+        }
         if ($request->filled('is_online')) {
             $query->where('is_online', $request->is_online);
         }

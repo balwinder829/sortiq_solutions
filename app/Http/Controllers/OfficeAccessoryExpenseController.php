@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OfficeAccessoryExpense;
 use Illuminate\Http\Request;
+use App\Http\DataTables\DataTablesServerSide;
 
 class OfficeAccessoryExpenseController extends Controller
 {
@@ -45,8 +46,183 @@ class OfficeAccessoryExpenseController extends Controller
         }
     }
 
-
     public function index(Request $request)
+    {
+        $query = OfficeAccessoryExpense::query();
+
+        // Quick filters
+        if ($request->quick) {
+
+            match ($request->quick) {
+
+                'today' =>
+                    $query->whereDate(
+                        'expense_date',
+                        today()
+                    ),
+
+                'yesterday' =>
+                    $query->whereDate(
+                        'expense_date',
+                        today()->subDay()
+                    ),
+
+                '7days' =>
+                    $query->where(
+                        'expense_date',
+                        '>=',
+                        today()->subDays(7)
+                    ),
+
+                '1month' =>
+                    $query->where(
+                        'expense_date',
+                        '>=',
+                        today()->subMonth()
+                    ),
+
+                default => null,
+            };
+        }
+
+        if ($request->from_date) {
+
+            $query->whereDate(
+                'expense_date',
+                '>=',
+                $request->from_date
+            );
+        }
+
+        if ($request->to_date) {
+
+            $query->whereDate(
+                'expense_date',
+                '<=',
+                $request->to_date
+            );
+        }
+
+        if ($request->title) {
+
+            $query->where(
+                'title',
+                'like',
+                '%' . $request->title . '%'
+            );
+        }
+
+        /* ================= AJAX DATATABLE ================= */
+
+        if ($request->ajax()) {
+
+            return DataTablesServerSide::response(
+
+                $request,
+
+                $query,
+
+                [
+
+                    'orderable' => [
+                        'id',
+                        'expense_date',
+                        'title',
+                        'quantity',
+                        'total_amount',
+                        'other_charges'
+                    ],
+
+                    'searchable' => [
+                        'title',
+                        'quantity',
+                        'total_amount',
+                        'other_charges'
+                    ],
+                ],
+
+                function ($expense) {
+
+                    $actions = '';
+
+                    // View
+                    $actions .= '
+                        <a href="' . route('office-accessories-expenses.show', $expense->id) . '"
+                           class="btn btn-sm"
+                           title="View">
+
+                            <i class="fa fa-eye"></i>
+
+                        </a>';
+
+                    // Edit
+                    $actions .= '
+                        <a href="' . route('office-accessories-expenses.edit', $expense->id) . '"
+                           class="btn btn-sm"
+                           title="Edit">
+
+                            <i class="fa fa-edit"></i>
+
+                        </a>';
+
+                    // Delete
+                    $actions .= '
+                        <form action="' . route('office-accessories-expenses.destroy', $expense->id) . '"
+                              method="POST"
+                              class="d-inline">
+
+                            ' . csrf_field() . '
+                            ' . method_field('DELETE') . '
+
+                            <button class="btn btn-sm"
+                                    data-swal-confirm="Are you sure?"
+                                    title="Delete">
+
+                                <i class="fa fa-trash"></i>
+
+                            </button>
+
+                        </form>';
+
+                    return [
+
+                        $expense->id,
+
+                        \Carbon\Carbon::parse(
+                            $expense->expense_date
+                        )->format('d M Y'),
+
+                        e($expense->title),
+
+                        e($expense->quantity),
+
+                        number_format(
+                            $expense->total_amount,
+                            2
+                        ),
+
+                        number_format(
+                            $expense->other_charges,
+                            2
+                        ),
+
+                        $actions
+                    ];
+                }
+            );
+        }
+
+        $expenses = $query
+            ->orderBy('expense_date', 'desc')
+            ->get();
+
+        return view(
+            'office-accessories-expenses.index',
+            compact('expenses')
+        );
+    }
+
+    public function index14may(Request $request)
     {
         $query = OfficeAccessoryExpense::query();
 

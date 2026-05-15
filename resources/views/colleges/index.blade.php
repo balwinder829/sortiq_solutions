@@ -290,7 +290,7 @@ $(document).ready(function () {
             { data: 5, name: 'students_count', orderable: true, searchable: false },
             { data: 6, name: 'college_type' },
             { data: 7, name: 'offer_training' },
-            { data: 8, name: 'training_in_year,' },
+            { data: 8, name: 'training_in_year' },
             // { data: 8, name: 'call_status', orderable: false, searchable: false },
             { data: 9, name: 'actions', orderable: false, searchable: false }
         ],

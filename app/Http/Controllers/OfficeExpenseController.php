@@ -6,6 +6,7 @@ use App\Models\OfficeExpense;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
+use App\Http\DataTables\DataTablesServerSide;
 
 class OfficeExpenseController extends Controller
 {
@@ -48,8 +49,197 @@ class OfficeExpenseController extends Controller
     }
 
     /* ================= LIST ================= */
+public function index(Request $request)
+{
+    $query = OfficeExpense::query();
 
- public function index(Request $request)
+    // Convert today once (DATE string)
+    $today = Carbon::now()->format('Y-m-d');
+
+    /* ================= QUICK FILTER ================= */
+    if ($request->filled('quick')) {
+
+        if ($request->quick === 'today') {
+
+            $query->where(
+                'expense_date',
+                '=',
+                $today
+            );
+        }
+
+        elseif ($request->quick === 'yesterday') {
+
+            $query->where(
+                'expense_date',
+                '=',
+                Carbon::now()
+                    ->subDay()
+                    ->format('Y-m-d')
+            );
+        }
+
+        elseif ($request->quick === '7days') {
+
+            $query->whereBetween('expense_date', [
+
+                Carbon::now()
+                    ->subDays(6)
+                    ->format('Y-m-d'),
+
+                $today
+
+            ]);
+        }
+
+        elseif ($request->quick === '1month') {
+
+            $query->whereBetween('expense_date', [
+
+                Carbon::now()
+                    ->subMonth()
+                    ->format('Y-m-d'),
+
+                $today
+
+            ]);
+        }
+
+    }
+
+    /* ================= MANUAL DATE FILTER ================= */
+    else {
+
+        if ($request->filled('from_date')) {
+
+            $query->where(
+                'expense_date',
+                '>=',
+                $request->from_date
+            );
+        }
+
+        if ($request->filled('to_date')) {
+
+            $query->where(
+                'expense_date',
+                '<=',
+                $request->to_date
+            );
+        }
+    }
+
+    /* ================= OTHER FILTERS ================= */
+
+    if ($request->filled('title')) {
+
+        $query->where(
+            'title',
+            'like',
+            '%' . $request->title . '%'
+        );
+    }
+
+    /* ================= AJAX DATATABLE ================= */
+
+    if ($request->ajax()) {
+
+        return DataTablesServerSide::response(
+
+            $request,
+
+            $query,
+
+            [
+
+                'orderable' => [
+                    'id',
+                    'expense_date',
+                    'title',
+                    'amount'
+                ],
+
+                'searchable' => [
+                    'title',
+                    'amount'
+                ],
+
+            ],
+
+            function ($expense) {
+
+                $actions = '';
+
+                // View
+                $actions .= '
+                    <a href="' . route('office-expenses.show', $expense->id) . '"
+                       class="btn btn-sm"
+                       title="View">
+
+                        <i class="fa fa-eye"></i>
+
+                    </a>';
+
+                // Edit
+                $actions .= '
+                    <a href="' . route('office-expenses.edit', $expense->id) . '"
+                       class="btn btn-sm"
+                       title="Edit">
+
+                        <i class="fa fa-edit"></i>
+
+                    </a>';
+
+                // Delete
+                $actions .= '
+                    <form action="' . route('office-expenses.destroy', $expense->id) . '"
+                          method="POST"
+                          class="d-inline">
+
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
+
+                        <button class="btn btn-sm"
+                                data-swal-confirm="Are you sure?"
+                                title="Delete">
+
+                            <i class="fa fa-trash"></i>
+
+                        </button>
+
+                    </form>';
+
+                return [
+
+                    $expense->id,
+
+                    Carbon::parse(
+                        $expense->expense_date
+                    )->format('d M Y'),
+
+                    e($expense->title),
+
+                    number_format(
+                        $expense->amount,
+                        2
+                    ),
+
+                    $actions
+                ];
+            }
+        );
+    }
+
+    /* ================= NORMAL VIEW ================= */
+
+    $expenses = $query->get();
+
+    return view(
+        'office_expenses.index',
+        compact('expenses')
+    );
+}
+ public function index14may(Request $request)
 {
     $query = OfficeExpense::query();
 

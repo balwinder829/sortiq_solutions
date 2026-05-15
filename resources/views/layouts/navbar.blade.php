@@ -132,7 +132,7 @@ body.menu-toggle .content-body {
 }
 
 body.menu-toggle .header {
-    padding-left: 80px !important;
+    /*padding-left: 80px !important;*/
 }/*
 .nav-control{
     cursor:pointer;
@@ -422,6 +422,14 @@ body.menu-toggle .sidebar-collapse-btn{
                                 <!-- <i class="fas fa-bed me-2"></i> -->
                                College Authority
                             </a>
+                        </li>
+
+                        <li>
+                            <a class="{{ isChildActive('college-mistakes*') }}"
+                               href="{{ route('college-mistakes.index') }}">
+                                <!-- <i class="fas fa-bed me-2"></i> -->
+                               College Mistakes
+                            </a>
                         </li> 
 
                         {{-- College Exams --}}
@@ -483,6 +491,13 @@ body.menu-toggle .sidebar-collapse-btn{
                             <a href="{{ route('workshops.index') }}">
                                 <!-- <i class="fa-regular fa-file-lines"></i> -->
                                 <span class="nav-text">Workshops</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ isParent(['workshop-expenses*']) }}">
+                            <a href="{{ route('workshop-expenses.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Workshop Expenses</span>
                             </a>
                         </li>
 

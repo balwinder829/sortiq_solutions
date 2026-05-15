@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\OfflineTestController;
 use App\Http\Controllers\Admin\OfficeOnlineQuestionController;
 
 
+use App\Http\Controllers\FinanceTabsController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\LeadCallController;
 use App\Http\Controllers\ActivityController;
@@ -143,6 +144,8 @@ use App\Http\Controllers\StudentPptController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\ProductsRegistrationFrontController;
 use App\Http\Controllers\SingleProductRegistrationFrontController;
+use App\Http\Controllers\WorkshopExpenseController;
+use App\Http\Controllers\CollegeMistakeController;
 use App\Http\Controllers\EmployeeLeaveController;
 use App\Http\Controllers\Admin\EmployeeLeaveController as AdminEmployeeLeaveController;
 use App\Http\Controllers\StudentLeaveController;
@@ -1064,13 +1067,27 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/students/bulk-certificate-status', [CertificateController::class, 'bulkCertificateStatus']
         )->name('students.bulkCertificateStatus');
 
-        Route::post('/students/toggle-certificate-sent', [StudentController::class, 'toggleConfirmationSent']
+        Route::post('/students/toggle-confirmation-sent', [StudentController::class, 'toggleConfirmationSent']
         )->name('students.toggleConfirmationSent');
 
-        Route::post('/students/bulk-certificate-status', [StudentController::class, 'bulkConfirmationStatus']
+        Route::post('/students/bulk-confirmation-status', [StudentController::class, 'bulkConfirmationStatus']
         )->name('students.bulkConfirmationStatus');
 
+        Route::resource('workshop-expenses', WorkshopExpenseController::class);
 
+        Route::get(
+            'workshop-expenses-data',
+            [WorkshopExpenseController::class, 'data']
+        )->name('workshop-expenses.data');
+
+        Route::resource('college-mistakes', CollegeMistakeController::class);
+
+        Route::get(
+            'college-mistakes-data',
+            [CollegeMistakeController::class, 'data']
+        )->name('college-mistakes.data');
+
+        Route::get('/finance', [FinanceTabsController::class, 'index'])->name('finance.index');
         // Route::post(
         //     'interviews/{interview}/rounds',
         //     [InterviewController::class, 'storeRound']

@@ -33,4 +33,9 @@ class Workshop extends Model
     {
         return $this->belongsTo(College::class);
     }
+
+    public function expenses()
+    {
+        return $this->hasMany(WorkshopExpense::class);
+    }
 }

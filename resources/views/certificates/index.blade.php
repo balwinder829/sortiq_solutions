@@ -260,6 +260,15 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
             </select>
         </div>
 
+        {{-- Certificate Sent --}}
+        <div class="col-md-2">
+            <select name="certificate_sent" class="form-control filterchange">
+                <option value="">--Certificate Sent--</option>
+                <option value="1" {{ request('certificate_sent') === '1' ? 'selected' : '' }}>Yes</option>
+                <option value="0" {{ request('certificate_sent') === '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+
 
 {{-- Regsiteration Fee --}}
 <div class="col-md-2">
@@ -400,6 +409,12 @@ value="{{ request('registration_fee') }}">
                    class="form-control text-end filterchange"
                    value="{{ request('amount_max', 200000) }}">
         </div>
+
+         <input type="hidden"
+                   name="certificate_status"
+                   id="amountMax"
+                   class="form-control"
+                   value="1">
     </div>
 </div>
 
@@ -407,9 +422,15 @@ value="{{ request('registration_fee') }}">
         <!-- <div class="col-md-1 d-flex align-items-end">
             <button type="submit" class="btn btn-primary">Search</button>
         </div> -->
-       <div class="col-md-3 d-flex align-items-end gap-2">
+       <div class="col-md-4 d-flex align-items-end gap-2">
             <a href="{{ route('certificates.index') }}" class="btn btn-secondary">Reset</a>
 
+            <a href="{{ route('students.export.excel', array_merge(request()->query(), ['certificate_status' => '1'])) }}"
+               class="btn btn-primary">
+
+                Download Excel
+
+            </a>
             <button type="button"
                 id="copySelected"
                 class="btn btn-success">

@@ -128,6 +128,10 @@ class StudentController extends Controller
                 $query->where('is_online', $request->is_online);
             }
 
+            if ($request->filled('confirmation_sent')) {
+                $query->where('confirmation_sent', $request->confirmation_sent);
+            }
+
             if ($request->filled('registration_fee')) {
                 $query->where('reg_fees', $request->registration_fee);
             }
@@ -2316,6 +2320,14 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
             $parts[] = 'pg';
         }
 
+        if ($request->filled('confirmation_sent')) {
+            $parts[] = 'confirmation_sent';
+        }
+
+        if ($request->filled('certificate_sent')) {
+            $parts[] = 'certificate_sent';
+        }
+
          
 
          
@@ -2576,15 +2588,15 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
     {
         $student = Student::findOrFail($request->id);
 
-        $student->certificate_sent = $request->status;
+        $student->confirmation_sent = $request->status;
 
         $student->save();
 
         return response()->json([
             'success' => true,
             'message' => $request->status
-                ? 'Certificate marked as sent'
-                : 'Certificate marked as not sent'
+                ? 'Confirmation Letter marked as sent'
+                : 'Confirmation Letter marked as not sent'
         ]);
     }
 
@@ -2616,14 +2628,14 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
 
         Student::whereIn('id', $ids)
             ->update([
-                'certificate_sent' => $request->status
+                'confirmation_sent' => $request->status
             ]);
 
         return back()->with(
             'success',
             $request->status
-                ? 'Certificates marked as sent.'
-                : 'Certificates marked as not sent.'
+                ? 'Confirmation Letter marked as sent.'
+                : 'Confirmation Letter marked as not sent.'
         );
     }
 }

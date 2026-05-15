@@ -54,7 +54,51 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
     display: none;
 }
 
+/* =========================
+   MOBILE STYLE TOGGLE
+========================= */
 
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 22px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+    background-color: #198754;
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
  </style>
 
  @php
@@ -424,6 +468,15 @@ Online
 
 </div>
 
+{{-- Confirmation Sent --}}
+    <div class="col-md-2">
+        <select name="confirmation_sent" class="form-control filterchange">
+            <option value="">--Confirmation Sent--</option>
+            <option value="1" {{ request('confirmation_sent') === '1' ? 'selected' : '' }}>Yes</option>
+            <option value="0" {{ request('confirmation_sent') === '0' ? 'selected' : '' }}>No</option>
+        </select>
+    </div>
+
 
 
 {{-- Fee Filter --}}
@@ -767,6 +820,25 @@ Copy to Session
                 <i class="fa fa-trash"></i>
             </button>
         </form>
+
+
+                               {{-- Certificate Sent Toggle --}}
+                        <!-- <div class="d-flex align-items-center"> -->
+
+                            <label class="switch mb-0">
+
+                                <input
+                                    type="checkbox"
+                                    class="certificateToggle"
+                                    data-id="{{ $student->id }}"
+                                    {{ $student->confirmation_sent ? 'checked' : '' }}
+                                >
+
+                                <span class="slider round"></span>
+
+                            </label>
+
+                        <!-- </div> -->
     </div>
 
     <span class="badge bg-light text-dark">Email count: {{ $student->email_count_confirmation }}</span>
@@ -1021,6 +1093,7 @@ Copy to Session
 									</button>
 								</form>
 							</div>
+
 						</div>
 					</div>
 				</div>
@@ -1056,6 +1129,8 @@ Copy to Session
     <!-- <button id="copySelected" class="btn btn-success">Copy to Session</button> -->
     <button id="makeInterns" class="btn btn-success">Update as Intern</button>
     <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
+    <button id="markCertificateSent" class="btn btn-success">Mark Confirmaton Sent</button>
+    <button id="markCertificateNotSent" class="btn btn-secondary">Mark Confirmaton Not Sent</button>
 
 </div>
 
@@ -1106,6 +1181,20 @@ Copy to Session
 <form id="bulkMakeInternForm" method="POST" action="{{ route('students.make_interns') }}" style="display:none;">
     @csrf
     <input type="hidden" name="ids" id="bulkmakeInterns">
+</form>
+
+{{-- Certificates Status chnage send or not sent--}}
+<form id="bulkCertificateStatusForm"
+      method="POST"
+      action="{{ route('students.bulkConfirmationStatus') }}"
+      style="display:none;">
+
+    @csrf
+
+    <input type="hidden" name="ids" id="bulkCertificateIds">
+
+    <input type="hidden" name="status" id="bulkCertificateStatus">
+
 </form>
 
 {{-- Move students to Placements--}}
@@ -1734,6 +1823,74 @@ table.on('draw.dt', function () {
              });
         });
 
+
+$('#markCertificateSent').click(function () {
+
+    let ids = getSelectedIds();
+
+    if (ids.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Select at least one student'
+        });
+
+        return;
+    }
+
+    Swal.fire({
+        title: 'Mark as Sent?',
+        text: 'Selected students will be marked as confirmation letter sent.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes'
+    }).then((result) => {
+
+        if (!result.isConfirmed) return;
+
+        $('#bulkCertificateIds').val(JSON.stringify(ids));
+
+        $('#bulkCertificateStatus').val(1);
+
+        $('#bulkCertificateStatusForm').submit();
+
+    });
+
+});
+
+$('#markCertificateNotSent').click(function () {
+
+    let ids = getSelectedIds();
+
+    if (ids.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Select at least one student'
+        });
+
+        return;
+    }
+
+    Swal.fire({
+        title: 'Mark as Not Sent?',
+        text: 'Selected students will be marked as confirmation letter not sent.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes'
+    }).then((result) => {
+
+        if (!result.isConfirmed) return;
+
+        $('#bulkCertificateIds').val(JSON.stringify(ids));
+
+        $('#bulkCertificateStatus').val(0);
+
+        $('#bulkCertificateStatusForm').submit();
+
+    });
+
+});
         $('#moveToPlacement').click(function () {
 
             let ids = getSelectedIds();
@@ -1827,6 +1984,46 @@ $(document).ready(function(){
     });
 
 });
+
+$(document).on('change', '.certificateToggle', function () {
+
+    let toggle = $(this);
+
+    let id = toggle.data('id');
+
+    let status = toggle.is(':checked') ? 1 : 0;
+
+    $.ajax({
+
+        url: "{{ route('students.toggleConfirmationSent') }}",
+
+        type: "POST",
+
+        data: {
+            _token: "{{ csrf_token() }}",
+            id: id,
+            status: status
+        },
+
+        success: function (response) {
+
+            toastr.success(response.message);
+
+        },
+
+        error: function () {
+
+            // revert toggle if failed
+            toggle.prop('checked', !status);
+
+            toastr.error('Failed to update status');
+
+        }
+
+    });
+
+});
+
 </script>
 
 @endpush

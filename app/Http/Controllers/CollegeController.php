@@ -27,37 +27,6 @@ class CollegeController extends Controller
         $this->middleware('permission:colleges.import')->only('import');
     }
 
-    public function index14fev()
-    {
-        // $colleges = College::all();
-        // $colleges = College::with(['state','district'])->get();
-
-        $activeSessionId = session('admin_session_id');
-
-         $colleges = College::with(['state', 'district'])
-        ->withCount([
-            'students as students_count' => function ($query) use ($activeSessionId) {
-                $query->where('session', $activeSessionId);
-            }
-        ])
-        ->orderBy('college_name', 'asc')
-        ->get();
-        
-        // $colleges = College::with(['state','district'])
-        //     ->withCount('students')
-        //     ->orderBy('college_name', 'asc')
-        //     ->get();
-        $states = State::orderBy('name')->get();
-
-$districtsGrouped = District::select('districts.id','districts.name','districts.state_id','states.name as state_name')
-    ->join('states', 'states.id', '=', 'districts.state_id')
-    ->orderBy('districts.name')
-    ->get()
-    ->groupBy('state_id');
-
-        return view('colleges.index', compact('colleges', 'states', 'districtsGrouped'));
-    }
-
     public function create()
     {   
         $states = State::orderBy('name')->get();
@@ -65,17 +34,7 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
         // return view('colleges.create');
     }
 
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'college_name' => 'required|string|max:255',
-    //     ]);
-
-    //     College::create($request->all());
-
-    //     return redirect()->route('colleges.index')
-    //                      ->with('success', 'College created successfully.');
-    // }
+    
 
  public function index()
     {
@@ -137,7 +96,217 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
                 $query->having('students_count', '>', 0);
             }
         }else{
-            $query->orderBy('updated_at', 'desc');
+            // $query->orderBy('updated_at', 'desc');
+        }
+
+        $total = $query->count();
+
+        // DataTables search (global)
+        if ($request->filled('search.value')) {
+            $term = $request->input('search.value');
+            $query->where(function ($q) use ($term) {
+                $q->where('colleges.college_name', 'like', '%' . $term . '%')
+                    ->orWhereHas('state', fn ($sq) => $sq->where('name', 'like', '%' . $term . '%'))
+                    ->orWhereHas('district', fn ($sq) => $sq->where('name', 'like', '%' . $term . '%'));
+            });
+        }
+
+        $filteredTotal = $query->count();
+
+       
+
+        /* ================= ORDERING SECTION ================= */
+
+        // $orderCol = $request->input('order.0.column');
+        // $orderDir = $request->input('order.0.dir') === 'asc' ? 'asc' : 'desc';
+        $orderCol = $request->input('order.0.column');
+        $orderDir = $request->input('order.0.dir', 'asc');
+
+        $orderable = [
+            0 => 'id',
+            1 => 'college_id',
+            2 => 'college_name',
+            3 => 'state',
+            4 => 'district',
+            5 => 'students_count',
+            6 => 'college_type',
+            7 => 'offer_training',
+            8 => 'training_in_year'
+        ];
+
+        $orderField = $orderable[$orderCol] ?? null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | ORDERING
+        |--------------------------------------------------------------------------
+        |
+        | Priority:
+        | 1. student_filter sorting
+        | 2. DataTable column sorting
+        | 3. Default latest updated
+        |
+        */
+
+        if (
+            $request->filled('student_filter') &&
+            in_array($request->student_filter, ['asc', 'desc'])
+        ) {
+
+            // Student count sorting
+            $query->orderBy('students_count', $request->student_filter);
+
+        } elseif ($orderField) {
+
+            // DataTable column sorting
+
+            switch ($orderField) {
+
+                case 'id':
+                    $query->orderBy('colleges.id', $orderDir);
+                    break;
+
+                case 'college_id':
+                    $query->orderBy('colleges.id', $orderDir);
+                    break;
+
+                case 'college_name':
+                    $query->orderBy('colleges.college_name', $orderDir);
+                    break;
+
+                case 'students_count':
+                    $query->orderBy('students_count', $orderDir);
+                    break;
+
+                case 'state':
+                    $query->orderByRaw(
+                        '(SELECT name FROM states WHERE states.id = colleges.state_id) ' . $orderDir
+                    );
+                    break;
+
+                case 'district':
+                    $query->orderByRaw(
+                        '(SELECT name FROM districts WHERE districts.id = colleges.district_id) ' . $orderDir
+                    );
+                    break;
+
+                case 'college_type':
+                    $query->orderBy('colleges.college_type', $orderDir);
+                    break;
+
+                case 'offer_training':
+                    $query->orderBy('colleges.offer_training', $orderDir);
+                    break;
+
+                case 'training_in_year':
+                    $query->orderBy('colleges.training_in_year', $orderDir);
+                    break;
+
+                default:
+                    $query->latest('colleges.updated_at');
+            }
+
+        } else {
+
+            // DEFAULT ORDER
+            $query->latest('colleges.updated_at');
+        }
+       
+
+        $start = (int) $request->input('start', 0);
+        $length = (int) $request->input('length', 50);
+        if ($length < 1 || $length > 100) {
+            $length = 50;
+        }
+
+        $colleges = $query->skip($start)->take($length)->get();
+
+        $data = [];
+        foreach ($colleges as $index => $college) {
+            $rowNum = $start + $index + 1;
+            // $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
+            $collegeType = $college->college_type_label;
+            $training = $college->offer_training == 1 ? 'Yes' : 'No';
+            $statusToggle = '
+                <label class="switch">
+                    <input type="checkbox" class="toggle-status"
+                        data-id="'.$college->id.'"
+                        '.($college->call_status ? 'checked' : '').'>
+                    <span class="slider round"></span>
+                </label>';
+            $data[] = [
+                $rowNum,
+                $college->id,
+                $college->college_name,
+                $college->state->name ?? '-',
+                $college->district->name ?? '-',
+                '<a href="' . route('common_filtered_student', ['college_name' => $college->id]) . '" class="text-decoration-none"><span class="badge bg-success">' . $college->students_count . '</span></a>',
+                $collegeType,
+                $training,
+                $college->training_in_year,
+                
+                '<div class="mb-2">' .
+                    '<a href="' . route('colleges.edit', $college->id) . '" class="btn btn-sm" data-bs-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a> ' .
+                    '<form action="' . route('colleges.destroy', $college->id) . '" method="POST" style="display:inline;">' .
+                    csrf_field() . method_field('DELETE') .
+                    '<button type="submit" class="btn btn-sm" data-swal-confirm="Are you sure?" data-bs-toggle="tooltip" title="Delete"><i class="fa fa-trash"></i></button>' .
+                    '</form></div>',
+            ];
+        }
+
+        return response()->json([
+            'draw'            => (int) $request->input('draw', 1),
+            'recordsTotal'    => $total,
+            'recordsFiltered' => $filteredTotal,
+            'data'            => $data,
+        ]);
+    }
+
+    public function data14may(Request $request)
+    {
+        $activeSessionId = session('admin_session_id');
+
+        $query = College::query()
+            ->with(['state', 'district'])
+            ->withCount([
+                'students as students_count' => function ($q) use ($activeSessionId) {
+                    $q->where('session', $activeSessionId);
+                }
+            ]);
+
+        // State filter (by state name from dropdown)
+        if ($request->filled('state_name')) {
+            $query->whereHas('state', fn ($q) => $q->where('name', $request->state_name));
+        }
+        if ($request->filled('district_name')) {
+            $query->whereHas('district', fn ($q) => $q->where('name', $request->district_name));
+        }
+
+        // College Type filter
+        if ($request->filled('college_type')) {
+            $query->where('college_type', $request->college_type);
+        }
+
+        // Training filter
+        if ($request->filled('offer_training')) {
+            $query->where('offer_training', $request->offer_training);
+        }
+        if ($request->call_status !== null && $request->call_status !== '') {
+            $query->where('call_status', $request->call_status);
+        }
+
+        // 👇 ADD HERE
+        if ($request->filled('student_filter')) {
+
+            if ($request->student_filter == 'zero') {
+                $query->having('students_count', '=', 0);
+            }
+
+            if ($request->student_filter == 'more') {
+                $query->having('students_count', '>', 0);
+            }
+        }else{
+            // $query->orderBy('updated_at', 'desc');
         }
 
         $total = $query->count();
@@ -163,23 +332,17 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
 
         $orderable = [
             0 => 'id',
-            1 => 'college_name',
-            2 => 'state',
-            3 => 'district',
-            4 => 'students_count',
-            5 => 'college_type',
-            6 => 'offer_training',
-            7 => 'training_in_year'
+            1 => 'college_id',
+            2 => 'college_name',
+            3 => 'state',
+            4 => 'district',
+            5 => 'students_count',
+            6 => 'college_type',
+            7 => 'offer_training',
+            8 => 'training_in_year'
         ];
 
         $orderField = $orderable[$orderCol] ?? null;
-
-        /*
-        Priority:
-        1. student_filter (asc/desc)
-        2. DataTables column sorting
-        3. Default = students_count DESC (High → Low)
-        */
 
         if ($request->filled('student_filter') && in_array($request->student_filter, ['asc', 'desc'])) {
 
@@ -188,25 +351,38 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
         } elseif ($orderField) {
 
             if ($orderField === 'college_name' || $orderField === 'id') {
+
                 $query->orderBy('colleges.' . $orderField, $orderDir);
 
+            } elseif ($orderField === 'college_id') {
+
+                $query->orderBy('colleges.id', $orderDir);
+
             } elseif ($orderField === 'students_count') {
+
                 $query->orderBy('students_count', $orderDir);
 
             } elseif ($orderField === 'state') {
+
                 $query->orderByRaw('(SELECT name FROM states WHERE states.id = colleges.state_id) ' . $orderDir);
 
             } elseif ($orderField === 'district') {
+
                 $query->orderByRaw('(SELECT name FROM districts WHERE districts.id = colleges.district_id) ' . $orderDir);
-            }elseif ($orderField === 'college_type') {
+
+            } elseif ($orderField === 'college_type') {
+
                 $query->orderBy('colleges.college_type', $orderDir);
 
             } elseif ($orderField === 'offer_training') {
+
                 $query->orderBy('colleges.offer_training', $orderDir);
-            }
-            elseif ($orderField === 'training_in_year') {
+
+            } elseif ($orderField === 'training_in_year') {
+
                 $query->orderBy('colleges.training_in_year', $orderDir);
             }
+
 
         } else {
 
@@ -263,6 +439,7 @@ $districtsGrouped = District::select('districts.id','districts.name','districts.
             'data'            => $data,
         ]);
     }
+
 public function store(Request $request)
 {
     $data = $request->validate([

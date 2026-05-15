@@ -63,6 +63,7 @@ class Student extends Authenticatable
         'internship_issue_date',
         'pursuing_issue_date',
         'certificate_sent',
+        'confirmation_sent',
     ];
 
      // Automatically hash password when setting it
