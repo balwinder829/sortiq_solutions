@@ -21,6 +21,7 @@ class ServicesRegistrationController extends Controller
         'index'        => 'view',
         'show'         => 'view',
         'export'         => 'view',
+        'destroy'         => 'view',
     ];
 
     public function __construct()
@@ -40,8 +41,168 @@ class ServicesRegistrationController extends Controller
             )->only($method);
         }
     }
-   
- public function index(Request $request)
+    
+    public function index(Request $request)
+    {
+        // AJAX → DataTable
+        if ($request->ajax()) {
+
+            $query = ServicesRegistration::with('courseData')
+                ->latest();
+
+            /*
+            |--------------------------------------------------------------------------
+            | FILTERS
+            |--------------------------------------------------------------------------
+            */
+
+            // Technology Filter
+            if ($request->technology) {
+
+                $query->where('technology', $request->technology);
+
+            }
+
+            // Slug Filter
+            if ($request->slug) {
+
+                $query->where('slug', 'like', '%' . $request->slug . '%');
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Date Filters
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->date_filter) {
+
+                switch ($request->date_filter) {
+
+                    case 'today':
+
+                        $query->whereDate('created_at', today());
+
+                        break;
+
+                    case 'yesterday':
+
+                        $query->whereDate('created_at', today()->subDay());
+
+                        break;
+
+                    case 'this_week':
+
+                        $query->whereBetween('created_at', [
+                            now()->startOfWeek(),
+                            now()->endOfWeek()
+                        ]);
+
+                        break;
+
+                    case 'last_week':
+
+                        $query->whereBetween('created_at', [
+                            now()->subWeek()->startOfWeek(),
+                            now()->subWeek()->endOfWeek()
+                        ]);
+
+                        break;
+
+                    case 'this_month':
+
+                        $query->whereMonth('created_at', now()->month)
+                              ->whereYear('created_at', now()->year);
+
+                        break;
+
+                    case 'custom':
+
+                        if ($request->from_date && $request->to_date) {
+
+                            $query->whereBetween('created_at', [
+
+                                \Carbon\Carbon::parse($request->from_date)->startOfDay(),
+
+                                \Carbon\Carbon::parse($request->to_date)->endOfDay()
+
+                            ]);
+
+                        }
+
+                        break;
+                }
+            }
+
+            return DataTablesServerSide::response($request, $query, [
+
+                'orderable'  => ['id','full_name','email'],
+
+                'searchable' => ['full_name','email','phone'],
+
+            ], function ($row, $index, $start) {
+
+                $actions = '
+
+                    <a href="' . route('services-registrations.show', $row->id) . '" class="btn btn-sm">
+                        <i class="fa fa-eye"></i>
+                    </a>
+
+                    <button type="button"
+                        class="btn btn-sm delete_btn"
+                        data-id="' . $row->id . '">
+                        <i class="fa fa-trash"></i>
+                    </button>
+
+                ';
+
+                $rowNum = $start + $index + 1;
+
+                return [
+
+                    '<input type="checkbox" class="row-checkbox" value="'.$row->id.'">',
+
+                    $rowNum,
+
+                    e($row->full_name),
+
+                    e($row->email),
+
+                    e($row->phone ?? '-'),
+
+                    e($row->location ?? '-'),
+
+                    e(optional($row->courseData)->course_name ?? $row->technology ?? '-'),
+
+                    $row->created_at->format('d M Y'),
+
+                    $actions
+
+                ];
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | NORMAL PAGE LOAD
+        |--------------------------------------------------------------------------
+        */
+
+        $technologies = Course::orderBy('course_name')->get([
+            'id',
+            'course_name'
+        ]);
+
+        $slugs = ServicesRegistration::select('slug')
+            ->distinct()
+            ->orderBy('slug')
+            ->pluck('slug');
+
+        return view('services-registrations.index', compact('technologies','slugs'));
+    }
+
+ public function index22may(Request $request)
     {
         // ✅ AJAX → DataTable
         if ($request->ajax()) {
@@ -138,7 +299,7 @@ public function index34(Request $request)
                 </a>
 
                 <button type="button"
-                    class="btn btn-sm btn-danger delete-btn"
+                    class="btn btn-sm delete_btn"
                     data-id="' . $row->id . '">
                     <i class="fa fa-trash"></i>
                 </button>
@@ -267,6 +428,7 @@ public function index34(Request $request)
 
     public function destroy(ServicesRegistration $services_registration)
     {
+        // dd($services_registration);
         $services_registration->delete();
 
         return back()->with('success', 'Registration deleted successfully');

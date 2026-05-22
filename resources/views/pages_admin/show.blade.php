@@ -62,14 +62,14 @@
 
                         <tr>
                             <th class="text-muted">College</th>
-                            <td>{{ $internship_registration->collegeData->FullName ?? '-' }}</td>
+                            <td>{{ optional($internship_registration->collegeData)->FullName ?? $internship_registration->college_name }}</td>
                         </tr>
 
                         <tr>
                             <th class="text-muted">Technology</th>
                             <td>
                                 <span class="badge bg-primary bg-opacity-10 text-primary">
-                                    {{ $internship_registration->courseData->course_name }}
+                                     {{ optional($internship_registration->courseData)->course_name ?? $internship_registration->technology }}
                                 </span>
                             </td>
                         </tr>

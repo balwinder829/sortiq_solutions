@@ -163,7 +163,10 @@ document.addEventListener("DOMContentLoaded", function () {
     ];
 
     const diplomaCourses = [
-        "Polytechnic"
+        "CSE",
+        "IT",
+        "Civil",
+        "Polytechnic",
     ];
 
     function loadClasses(type) {

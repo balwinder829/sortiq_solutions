@@ -146,7 +146,7 @@
                 <th>College</th>
                 <th>Technology</th>
                 <th>Added At</th>
-                <th>Actions</th>
+                <th width="100">Actions</th>
             </tr>
             </thead>
         </table>

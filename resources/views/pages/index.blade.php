@@ -65,6 +65,7 @@
                 <th>Slug</th>
                 <th>Status</th>
                 <th>Ad Type</th>
+                <th>Ad Status</th>
                 <th>Created</th>
                 <th>Actions</th>
             </tr>
@@ -80,6 +81,11 @@
                 <td>
                     <span class="badge {{ $page->is_active ? 'bg-success' : 'bg-danger' }}">
                         {{ $page->is_active ? 'Active' : 'Inactive' }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge {{ $page->ads_status ? 'bg-primary' : 'bg-secondary' }}">
+                        {{ $page->ads_status ? 'Running' : 'Not Running' }}
                     </span>
                 </td>
                 <td>{{ $page->created_at->format('d M Y') }}</td>

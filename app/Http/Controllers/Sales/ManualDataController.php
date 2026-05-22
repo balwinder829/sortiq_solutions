@@ -208,7 +208,7 @@ public function store(Request $request)
         'student_mobile' => ['required', 'required', 'digits:10', new NotBlockedNumber],
         'gender'          => 'required|in:male,female',
         'course_type'     => 'required|in:Degree,Diploma',
-        'class'           => 'required|in:BCA,MCA,BTech,BSc,BSc IT,BSc CS,Polytechnic',
+        'class'           => 'required',
         'semester'        => 'required|integer|min:1|max:8',
     ]);
 
@@ -262,7 +262,7 @@ public function update(Request $request, $id)
         'student_mobile' => ['required', 'required', 'digits:10', new NotBlockedNumber],
         'gender'          => 'required|in:male,female',
         'course_type'     => 'required|in:Degree,Diploma',
-        'class'           => 'required|in:BCA,MCA,BTech,BSc,BSc IT,BSc CS,Polytechnic',
+        'class'           => 'required',
         'semester'        => 'required|integer|min:1|max:8',
     ]);
 

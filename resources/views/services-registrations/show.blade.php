@@ -59,7 +59,7 @@
                             <th class="text-muted">Technology</th>
                             <td>
                                 <span class="badge bg-primary bg-opacity-10 text-primary">
-                                    {{ $services_registration->courseData->course_name }}
+                                    {{ optional($services_registration->courseData)->course_name ?? $services_registration->technology }}
                                 </span>
                             </td>
                         </tr>
