@@ -27,6 +27,12 @@
                    style="background:#6b51df;color:#fff;">
                     Import PGs
                 </a>
+
+                <a href="{{ route('pgs.export', request()->query()) }}"
+                   class="btn mb-3"
+                   style="background:#198754;color:#fff;">
+                    Export Excel
+                </a>
             </div>
         </div>
     </div>

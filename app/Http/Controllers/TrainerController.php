@@ -13,9 +13,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Validation\Rule;
 use App\Rules\NotBlockedNumber;
+use Mpdf\Mpdf;
+use Illuminate\Support\Facades\View;
+use App\Traits\PdfLayoutTrait;
+
 
 class TrainerController extends Controller
 {   
+    use PdfLayoutTrait;
     protected string $permissionPrefix = 'mentors';
 
     protected array $permissionMap = [
@@ -609,5 +614,54 @@ class TrainerController extends Controller
         session()->forget('warnings_download');
         $downloader = new \App\Exports\SkippedRowsExport($warnings);
         return \Maatwebsite\Excel\Facades\Excel::download($downloader, 'skipped_rows.xlsx');
+    }
+
+    private function generate_pdf($trainer,$letter_type): string
+    {
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 0,
+            'margin_right' => 0,
+            'margin_top' => 0,
+            'margin_bottom' => 0,
+            'tempDir' => storage_path('app/mpdf'),
+        ]);
+ 
+        if($letter_type == 'res'){
+            $view = 'trainers.mentors_responsibilities_letter_pdf';
+                    
+            $html = View::make($view)->render();
+        }else{
+            $view = 'student_additional_letters.pdf';
+                    
+            $html = View::make($view, compact('letter'))->render();
+        }
+         
+        
+        $mpdf->SetHTMLHeader('');
+        $mpdf->DefHTMLFooterByName('lastPageFooter', $this->getPDFFooter());
+              
+        $mpdf->WriteHTML($html);
+        $mpdf->SetHTMLFooterByName('lastPageFooter');
+        // RETURN STRING ONLY
+        return $mpdf->Output('', 'S');
+    }
+
+    public function downloadResponsiblitiesLetter()
+    {   
+        
+        $trainer = [];
+        $pdfContent = $this->generate_pdf($trainer,'res');
+
+        $fileName = "mentors_responsiblities_letter.pdf";
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header(
+                'Content-Disposition',
+                'attachment; filename="'.$fileName.'"'
+            );
     }
 }

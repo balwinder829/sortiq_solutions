@@ -86,26 +86,32 @@
         </div>
 
         {{-- COURSE TYPE --}}
+        {{-- COURSE TYPE --}}
         <div class="form-group col-md-6">
             <label class="fw-bold">Course Type</label>
-            <select name="course_type" class="form-control" required>
+
+            <select name="course_type" id="course_type" class="form-control" required>
                 <option value="">Select Course Type</option>
-                <option value="Degree" {{ old('course_type')=='Degree' ? 'selected' : '' }}>Degree</option>
-                <option value="Diploma" {{ old('course_type')=='Diploma' ? 'selected' : '' }}>Diploma</option>
+
+                <option value="Degree"
+                    {{ old('course_type')=='Degree' ? 'selected' : '' }}>
+                    Degree
+                </option>
+
+                <option value="Diploma"
+                    {{ old('course_type')=='Diploma' ? 'selected' : '' }}>
+                    Diploma
+                </option>
             </select>
         </div>
 
         {{-- CLASS --}}
+        {{-- CLASS --}}
         <div class="form-group col-md-6">
             <label class="fw-bold">Class</label>
-            <select name="class" class="form-control" required>
+
+            <select name="class" id="class" class="form-control" required>
                 <option value="">Select Class</option>
-                <option value="BCA" {{ old('class')=='BCA' ? 'selected' : '' }}>BCA</option>
-                <option value="MCA" {{ old('class')=='MCA' ? 'selected' : '' }}>MCA</option>
-                <option value="BTech" {{ old('class')=='BTech' ? 'selected' : '' }}>BTech</option>
-                <option value="BSc" {{ old('class')=='BSc' ? 'selected' : '' }}>BSc</option>
-                <option value="BSc IT" {{ old('class')=='BSc IT' ? 'selected' : '' }}>BSc IT</option>
-                <option value="BSc CS" {{ old('class')=='BSc CS' ? 'selected' : '' }}>BSc CS</option>
             </select>
         </div>
 
@@ -131,4 +137,57 @@
     </div>
     </form>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const courseType = document.getElementById("course_type");
+    const classSelect = document.getElementById("class");
+
+    const degreeCourses = [
+        "BCA",
+        "MCA",
+        "BTech",
+        "BSc",
+        "BSc IT",
+        "BSc CS"
+    ];
+
+    const diplomaCourses = [
+        "Polytechnic"
+    ];
+
+    function loadClasses(type) {
+
+        classSelect.innerHTML =
+            '<option value="">Select Class</option>';
+
+        let courses = [];
+
+        if (type === "Degree") {
+            courses = degreeCourses;
+        } else if (type === "Diploma") {
+            courses = diplomaCourses;
+        }
+
+        courses.forEach(function(course) {
+
+            let option = document.createElement("option");
+
+            option.value = course;
+            option.text = course;
+
+            classSelect.appendChild(option);
+        });
+    }
+
+    // change event
+    courseType.addEventListener("change", function () {
+        loadClasses(this.value);
+    });
+
+    // old value load after validation
+    loadClasses(courseType.value);
+
+});
+</script>
 @endsection

@@ -1,0 +1,314 @@
+<?php
+
+namespace App\Http\Controllers\Finance;
+use App\Http\Controllers\Controller;
+
+use App\Models\OfficeAsset;
+use Illuminate\Http\Request;
+use App\Http\DataTables\DataTablesServerSide;
+
+class OfficeAssetController extends Controller
+{
+
+    protected string $permissionPrefix = 'office_assets';
+
+    protected array $permissionMap = [
+        'index'        => 'view',
+        'show'         => 'view',
+        'download'         => 'view',
+        'sendEmail'         => 'view',
+         
+
+        'create'       => 'create',
+        'store'        => 'create',
+
+        'edit'         => 'edit',
+        'update'       => 'edit',
+
+        'destroy'      => 'delete',
+
+        // 'bulkDelete'      => 'delete',
+    ];
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+
+        // ❌ deny everything by default
+        // $this->middleware(function () {
+        //     abort(403);
+        // });
+
+        // ✅ allow only mapped methods
+        foreach ($this->permissionMap as $method => $action) {
+            $this->middleware(
+                "permission:{$this->permissionPrefix}.{$action}"
+            )->only($method);
+        }
+    }
+
+    public function index(Request $request)
+{
+    $query = OfficeAsset::query();
+
+    if ($request->quick) {
+
+        match ($request->quick) {
+
+            'today' =>
+                $query->whereDate(
+                    'expense_date',
+                    today()
+                ),
+
+            'yesterday' =>
+                $query->whereDate(
+                    'expense_date',
+                    today()->subDay()
+                ),
+
+            '7days' =>
+                $query->where(
+                    'expense_date',
+                    '>=',
+                    today()->subDays(7)
+                ),
+
+            '1month' =>
+                $query->where(
+                    'expense_date',
+                    '>=',
+                    today()->subMonth()
+                ),
+
+            default => null,
+        };
+    }
+
+    if ($request->from_date) {
+
+        $query->whereDate(
+            'expense_date',
+            '>=',
+            $request->from_date
+        );
+    }
+
+    if ($request->to_date) {
+
+        $query->whereDate(
+            'expense_date',
+            '<=',
+            $request->to_date
+        );
+    }
+
+    if ($request->title) {
+
+        $query->where(
+            'title',
+            'like',
+            '%' . $request->title . '%'
+        );
+    }
+
+    /* ================= AJAX DATATABLE ================= */
+
+    if ($request->ajax()) {
+
+        return DataTablesServerSide::response(
+
+            $request,
+
+            $query,
+
+            [
+
+                'orderable' => [
+                    'id',
+                    'expense_date',
+                    'title',
+                    'amount'
+                ],
+
+                'searchable' => [
+                    'title',
+                    'amount'
+                ],
+            ],
+
+            function ($asset) {
+
+                $actions = '';
+
+                // View
+                $actions .= '
+                    <a href="' . route('office-assets.show', $asset->id) . '"
+                       class="btn btn-sm"
+                       title="View">
+
+                        <i class="fa fa-eye"></i>
+
+                    </a>';
+
+                // Edit
+                $actions .= '
+                    <a href="' . route('office-assets.edit', $asset->id) . '"
+                       class="btn btn-sm"
+                       title="Edit">
+
+                        <i class="fa fa-edit"></i>
+
+                    </a>';
+
+                // Delete
+                $actions .= '
+                    <form action="' . route('office-assets.destroy', $asset->id) . '"
+                          method="POST"
+                          class="d-inline">
+
+                        ' . csrf_field() . '
+                        ' . method_field('DELETE') . '
+
+                        <button class="btn btn-sm"
+                                data-swal-confirm="Are you sure?"
+                                title="Delete">
+
+                            <i class="fa fa-trash"></i>
+
+                        </button>
+
+                    </form>';
+
+                return [
+
+                    $asset->id,
+
+                    \Carbon\Carbon::parse(
+                        $asset->expense_date
+                    )->format('d M Y'),
+
+                    e($asset->title),
+
+                    number_format(
+                        $asset->amount,
+                        2
+                    ),
+
+                    $actions
+                ];
+            }
+        );
+    }
+
+    $assets = $query
+        ->orderBy('expense_date', 'desc')
+        ->get();
+
+    return view(
+        'office-assets.index',
+        compact('assets')
+    );
+}
+
+    public function index14may(Request $request)
+    {
+        $query = OfficeAsset::query();
+
+        if ($request->quick) {
+            match ($request->quick) {
+                'today'     => $query->whereDate('expense_date', today()),
+                'yesterday' => $query->whereDate('expense_date', today()->subDay()),
+                '7days'     => $query->where('expense_date', '>=', today()->subDays(7)),
+                '1month'    => $query->where('expense_date', '>=', today()->subMonth()),
+                default     => null,
+            };
+        }
+
+        if ($request->from_date) {
+            $query->whereDate('expense_date', '>=', $request->from_date);
+        }
+
+        if ($request->to_date) {
+            $query->whereDate('expense_date', '<=', $request->to_date);
+        }
+
+        if ($request->title) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        $assets = $query->orderBy('expense_date', 'desc')->get();
+
+        return view('office-assets.index', compact('assets'));
+    }
+
+    public function create()
+    {
+        return view('office-assets.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'expense_date' => 'required|date',
+            'title'        => 'required|string|max:255',
+            'amount'       => 'required|numeric|min:0',
+            'description'  => 'nullable|string',
+        ]);
+
+        OfficeAsset::create($request->only([
+            'expense_date',
+            'title',
+            'amount',
+            'description'
+        ]));
+
+        return redirect()
+            ->route('office-assets.index')
+            ->with('success', 'Office asset added successfully');
+    }
+
+    public function show($id)
+    {
+        $asset = OfficeAsset::findOrFail($id);
+        return view('office-assets.show', compact('asset'));
+    }
+
+    public function edit($id)
+    {
+        $asset = OfficeAsset::findOrFail($id);
+        return view('office-assets.edit', compact('asset'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $asset = OfficeAsset::findOrFail($id);
+
+        $request->validate([
+            'expense_date' => 'required|date',
+            'title'        => 'required|string|max:255',
+            'amount'       => 'required|numeric|min:0',
+            'description'  => 'nullable|string',
+        ]);
+
+        $asset->update($request->only([
+            'expense_date',
+            'title',
+            'amount',
+            'description'
+        ]));
+
+        return redirect()
+            ->route('office-assets.index')
+            ->with('success', 'Office asset updated successfully');
+    }
+
+    public function destroy($id)
+    {
+        OfficeAsset::findOrFail($id)->delete();
+
+        return redirect()
+            ->route('office-assets.index')
+            ->with('success', 'Office asset deleted successfully');
+    }
+}

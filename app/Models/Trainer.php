@@ -68,5 +68,10 @@ class Trainer extends Authenticatable
             ->where('actor_type', 'trainer');
     }
 
+    public function letters()
+    {
+        return $this->hasMany(TrainerLetter::class, 'trainer_id');
+    }
+
 
 }

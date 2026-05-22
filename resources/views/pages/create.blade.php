@@ -51,10 +51,18 @@
     </div>
 
     <div class="form-group col-md-6">
-        <label>Status</label>
+        <label>Active Status</label>
         <select name="is_active" class="form-control">
             <option value="1">Active</option>
             <option value="0">Inactive</option>
+        </select>
+    </div>
+
+    <div class="form-group col-md-6">
+        <label>Ads Running Status</label>
+        <select name="ads_status" class="form-control">
+            <option value="1">Running</option>
+            <option value="0">Not Running</option>
         </select>
     </div>
 

@@ -91,6 +91,11 @@
                     <option value="mutual_consent" {{ old('internship_type') == 'mutual_consent' ? 'selected' : '' }} >Mutual Consent Letter</option>
                     <option value="training_consent" {{ old('internship_type') == 'training_consent' ? 'selected' : '' }} >Training Consent Letter</option>
                     <option value="placement" {{ old('internship_type') == 'placement' ? 'selected' : '' }} >Student Placement Letter</option>
+                    <option value="strict_offer_letter" {{ old('internship_type') == 'strict_offer_letter' ? 'selected' : '' }} >Strict Offer Letter</option>
+                    <option value="strict_consent_letter" {{ old('internship_type') == 'strict_consent_letter' ? 'selected' : '' }} >Strict Consent Letter</option>
+                    <option value="stipend_policy" {{ old('internship_type') == 'stipend_policy' ? 'selected' : '' }} >Stipend Policy Letter</option>
+                    <option value="internship_consent" {{ old('internship_type') == 'internship_consent' ? 'selected' : '' }} >Internship Consent Letter</option>
+                    <option value="part_time_job_opportunity" {{ old('internship_type') == 'part_time_job_opportunity' ? 'selected' : '' }} >Part Time Job Opportunity Letter</option>
                 </select>
                 @error('internship_type')
                     <div class="invalid-feedback d-block">{{ $message }}</div>

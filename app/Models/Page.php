@@ -21,6 +21,7 @@ class Page extends Model
         'meta_keywords',
         'banner_image',
         'featured_image',
-        'is_active'
+        'is_active',
+        'ads_status',
     ];
 }

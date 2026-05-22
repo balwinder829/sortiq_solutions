@@ -1108,7 +1108,7 @@ Copy to Session
 <div class="form-check mb-2">
     <input type="checkbox" class="form-check-input" id="isInternship" name="is_internship">
     <label class="form-check-label" for="isInternship">
-        Check it for Internship Certificate
+        Check it for Internship Confirm
     </label>
 </div>
 <div class="form-check mb-2">

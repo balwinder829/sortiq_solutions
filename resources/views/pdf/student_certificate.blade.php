@@ -65,7 +65,14 @@
 		// Safe duration
 		$durationName = optional($student->durationData)->name ?? '';
 		$courseName = $student->course_name ?? '';
-		$sessionName = optional($student->sessionData)->session_display_name ?? ''; 
+		$sessionName = optional($student->sessionData)->session_display_name ?? '';
+		$collegename = $student
+	    ? (
+	        $student->is_place
+	            ? ($student->place ?: '-')
+	            : ($student->collegeData?->college_display_name ?: '-')
+	    )
+	    : '-';
 	@endphp
 	<div class="certi-body" style=" background:url('{{ public_path('images/certificates_images/bg-shape.jpg') }}')  no-repeat center; background-size:860px; padding-top: 60px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">

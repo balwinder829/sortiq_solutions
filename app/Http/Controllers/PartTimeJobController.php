@@ -8,6 +8,8 @@ use App\Imports\PartTimeJobImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\View;
 use App\Rules\NotBlockedNumber;
+use App\Exports\PartTimeJobExport;
+// use Maatwebsite\Excel\Facades\Excel;
 
 class PartTimeJobController extends Controller
 {   
@@ -256,5 +258,13 @@ class PartTimeJobController extends Controller
                 'Import failed: Something went wrong while importing the file.'
             ]);
         }
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new PartTimeJobExport($request),
+            'part_time_jobs.xlsx'
+        );
     }
 }

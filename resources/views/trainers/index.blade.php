@@ -36,7 +36,7 @@ table.dataTable td {
     </div>
 
     {{-- MIDDLE: FILTER FORM --}}
-    <div class="col-md-8">
+    <div class="col-md-6">
         <form method="GET"id="filterForm" class="row g-2 align-items-end">
 
             {{-- COURSE FILTER --}}
@@ -69,8 +69,14 @@ table.dataTable td {
     </div>
 
     {{-- RIGHT: ADD MENTOR BUTTON --}}
-    <div class="col-md-2">
-        <div class="d-flex justify-content-end">
+    <div class="col-md-4">
+         <div class="d-flex justify-content-end gap-2">
+
+        {{-- Responsibility Letter --}}
+        <a href="{{ route('trainers.responsibilities_letter') }}"
+           class="btn btn-danger mb-3">
+            Responsibility Letter
+        </a>
             <a href="{{ route('trainers.create') }}"
                style="background-color: #6b51df; color: #fff;"
                class="btn btn-primary mb-3">

@@ -3,7 +3,16 @@
 @section('content')
 <div class="container">
     <h3>Edit Data</h3>
-
+{{-- ALL ERRORS --}}
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <form method="POST" action="{{ route('admin.hard_data.update', $manualData->id) }}">
         <div class="row">
         @csrf
@@ -87,24 +96,28 @@
         {{-- COURSE TYPE --}}
         <div class="form-group col-md-6">
             <label class="fw-bold">Course Type</label>
-            <select name="course_type" class="form-control" required>
+
+            <select name="course_type" id="course_type" class="form-control" required>
                 <option value="">Select Course Type</option>
-                <option value="Degree" {{ old('course_type', $manualData->course_type)=='Degree' ? 'selected' : '' }}>Degree</option>
-                <option value="Diploma" {{ old('course_type', $manualData->course_type)=='Diploma' ? 'selected' : '' }}>Diploma</option>
+
+                <option value="Degree"
+                    {{ old('course_type', $manualData->course_type)=='Degree' ? 'selected' : '' }}>
+                    Degree
+                </option>
+
+                <option value="Diploma"
+                    {{ old('course_type', $manualData->course_type)=='Diploma' ? 'selected' : '' }}>
+                    Diploma
+                </option>
             </select>
         </div>
 
         {{-- CLASS --}}
         <div class="form-group col-md-6">
             <label class="fw-bold">Class</label>
-            <select name="class" class="form-control" required>
+
+            <select name="class" id="class" class="form-control" required>
                 <option value="">Select Class</option>
-                <option value="BCA" {{ old('class', $manualData->class)=='BCA' ? 'selected' : '' }}>BCA</option>
-                <option value="MCA" {{ old('class', $manualData->class)=='MCA' ? 'selected' : '' }}>MCA</option>
-                <option value="BTech" {{ old('class', $manualData->class)=='BTech' ? 'selected' : '' }}>BTech</option>
-                <option value="BSc" {{ old('class', $manualData->class)=='BSc' ? 'selected' : '' }}>BSc</option>
-                <option value="BSc IT" {{ old('class', $manualData->class)=='BSc IT' ? 'selected' : '' }}>BSc IT</option>
-                <option value="BSc CS" {{ old('class', $manualData->class)=='BSc CS' ? 'selected' : '' }}>BSc CS</option>
             </select>
         </div>
 
@@ -130,4 +143,65 @@
     </div>
     </form>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const courseType = document.getElementById("course_type");
+    const classSelect = document.getElementById("class");
+
+    const selectedClass = "{{ old('class', $manualData->class) }}";
+
+    const degreeCourses = [
+        "BCA",
+        "MCA",
+        "BTech",
+        "BSc",
+        "BSc IT",
+        "BSc CS"
+    ];
+
+    const diplomaCourses = [
+        "Polytechnic"
+    ];
+
+    function loadClasses(type) {
+
+        classSelect.innerHTML =
+            '<option value="">Select Class</option>';
+
+        let courses = [];
+
+        if (type === "Degree") {
+            courses = degreeCourses;
+        } else if (type === "Diploma") {
+            courses = diplomaCourses;
+        }
+
+        courses.forEach(function(course) {
+
+            let option = document.createElement("option");
+
+            option.value = course;
+            option.text = course;
+
+            // selected value in edit
+            if (course === selectedClass) {
+                option.selected = true;
+            }
+
+            classSelect.appendChild(option);
+        });
+    }
+
+    // onchange
+    courseType.addEventListener("change", function () {
+        loadClasses(this.value);
+    });
+
+    // page load
+    loadClasses(courseType.value);
+
+});
+</script>
 @endsection

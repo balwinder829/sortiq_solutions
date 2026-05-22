@@ -61,6 +61,32 @@
                         @endforeach
                     </select>
                 </div>
+                 
+
+                    <!-- Quick Date Filter -->
+                    <div class="col-md-3">
+                        <select id="date_filter" class="form-control">
+                            <option value="">Select Date Filter</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="this_week">This Week</option>
+                            <option value="last_week">Last Week</option>
+                            <option value="this_month">This Month</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+
+                    <!-- From Date -->
+                    <div class="col-md-3">
+                        <input type="date" id="from_date" class="form-control" disabled>
+                    </div>
+
+                    <!-- To Date -->
+                    <div class="col-md-3">
+                        <input type="date" id="to_date" class="form-control" disabled>
+                    </div>
+
+                 
 
                 <div class="col-md-2">
                     <select name="limit" class="form-select filterchange">
@@ -71,18 +97,26 @@
                         <option value="100">100</option>
                     </select>
                 </div>
+<div class="col-md-auto d-flex gap-2 flex-nowrap align-items-start">
+    
+    <a href="{{ route('internship-registrations.index') }}"
+       class="btn btn-secondary text-nowrap">
+        Reset
+    </a>
 
-                <div class="col-md-2 d-flex gap-2">
-                    <a href="{{ route('internship-registrations.index') }}"
-                       class="btn btn-secondary w-100">Reset</a>
+    <a href="javascript:void(0)"
+       id="exportBtn"
+       class="btn btn-success text-nowrap">
+        Export
+    </a>
 
-                    <a href="javascript:void(0)"
-                       id="exportBtn"
-                       class="btn btn-success w-100">
-                        Export
-                    </a>
-                </div>
+    <a href="javascript:void(0)"
+       id="exportSelectedBtn"
+       class="btn btn-success text-nowrap">
+        Export Selected
+    </a>
 
+</div>
                 </div>
             </form>
 
@@ -102,6 +136,9 @@
         <table class="table table-bordered table-striped" id="internshipTable">
             <thead>
             <tr>
+                <th>
+                    <input type="checkbox" id="select-all">
+                </th>
                 <th>#</th>
                 <th>Name</th>
                 <th>Email</th>
@@ -132,8 +169,18 @@ $(document).ready(function () {
                 d.slug = $('select[name=slug]').val();
                 d.college = $('select[name=college]').val();
                 d.technology = $('select[name=technology]').val();
+                d.date_filter = $('#date_filter').val();
+                d.from_date = $('#from_date').val();
+                d.to_date = $('#to_date').val();
             }
         },
+        columnDefs: [
+            {
+                targets: 0,
+                orderable: false,
+                searchable: false
+            }
+        ],
         columns: [
             { data: 0 },
             { data: 1 },
@@ -142,7 +189,8 @@ $(document).ready(function () {
             { data: 4 },
             { data: 5 },
             { data: 6 },
-            { data: 7, orderable:false, searchable:false }
+            { data: 7 },
+            { data: 8, orderable:false, searchable:false }
         ],
         pageLength: 25
     });
@@ -150,6 +198,47 @@ $(document).ready(function () {
     $('.filterchange').on('change', function(){
         table.ajax.reload();
     });
+
+
+    // Enable/Disable Custom Date Range
+$('#date_filter').on('change', function () {
+
+    if ($(this).val() === 'custom') {
+
+        $('#from_date').prop('disabled', false);
+        $('#to_date').prop('disabled', false);
+
+    } else {
+
+        $('#from_date').prop('disabled', true).val('');
+        $('#to_date').prop('disabled', true).val('');
+    }
+
+    table.ajax.reload();
+});
+
+
+// Reload table on custom date change
+$('#from_date, #to_date').on('change', function () {
+
+    if ($('#date_filter').val() === 'custom') {
+        table.ajax.reload();
+    }
+});
+
+});
+
+$(document).on('change', '#select-all', function () {
+
+    $('.row-checkbox').prop('checked', $(this).is(':checked'));
+
+});
+
+$(document).on('change', '.row-checkbox', function () {
+
+    if (!$(this).is(':checked')) {
+        $('#select-all').prop('checked', false);
+    }
 
 });
 </script>
@@ -164,14 +253,70 @@ $('#exportBtn').on('click', function () {
     let college = $('select[name=college]').val();
     let technology = $('select[name=technology]').val();
 
+    let date_filter = $('#date_filter').val();
+    let from_date = $('#from_date').val();
+    let to_date = $('#to_date').val();
+
+    // Existing Filters
     if (slug) params.append('slug', slug);
+
     if (college) params.append('college', college);
+
     if (technology) params.append('technology', technology);
+
+    // Date Filters
+    if (date_filter) {
+        params.append('date_filter', date_filter);
+    }
+
+    // Custom Date Range
+    if (date_filter === 'custom') {
+
+        if (from_date) {
+            params.append('from_date', from_date);
+        }
+
+        if (to_date) {
+            params.append('to_date', to_date);
+        }
+    }
+
+    let url = "{{ route('internship-registrations.export') }}?" + params.toString();
+
+    window.location.href = url;
+});
+
+$('#exportSelectedBtn').on('click', function () {
+
+    let selected = [];
+
+    $('.row-checkbox:checked').each(function () {
+        selected.push($(this).val());
+    });
+
+    if (selected.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Records Selected',
+            text: 'Please select at least one record to Export.',
+            confirmButtonText: 'OK'
+        });
+
+        return;
+    }
+
+    let params = new URLSearchParams();
+
+    selected.forEach(id => {
+        params.append('ids[]', id);
+    });
 
     let url = "{{ route('internship-registrations.export') }}?" + params.toString();
 
     window.location.href = url;
 });
 </script>
+
 
 @endpush

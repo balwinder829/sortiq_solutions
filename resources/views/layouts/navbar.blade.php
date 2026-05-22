@@ -534,12 +534,12 @@ body.menu-toggle .sidebar-collapse-btn{
 
 
                  {{-- Leads --}}
-                <li class="{{ isParent(['enquiries*','admin.enquiries.dashboard','salespersons*','admin.enquiries.performance','registrations*','admin.calls','sales_staff*']) }}">
+                <li class="{{ isParent(['enquiries*','admin.enquiries.dashboard','salespersons*','admin.enquiries.performance','registrations*','admin.calls','sales_staff*','sales-staff-letters*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-database"></i>
                         <span class="nav-text">Sales Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['enquiries*','admin.enquiries.dashboard','salespersons','admin.enquiries.performance','registrations*','admin.calls','sales_staff*']) }}">
+                    <ul class="{{ showSubmenu(['enquiries*','admin.enquiries.dashboard','salespersons','admin.enquiries.performance','registrations*','admin.calls','sales_staff*','sales-staff-letters*']) }}">
                         <li>
                             <a class="{{ isChildActive('enquiries*') }}"
                                 href="{{ route('enquiries.index') }}">
@@ -551,6 +551,13 @@ body.menu-toggle .sidebar-collapse-btn{
                                 href="{{ route('sales_staff.index') }}">
                                 Manage Sales Teams
                             </a>
+                        </li>
+                        <li class="{{ isParent(['sales-staff-letters*']) }}">
+                            <a href="{{ route('sales-staff-letters.index') }}">
+                                <!-- <i class="fas fa-chalkboard-teacher"></i> -->
+                                <span class="nav-text">Sale Staff Letters</span>
+                            </a>
+                            
                         </li>
                         <li>
                             <a class="{{ isChildActive('salespersons*') }}"
@@ -634,12 +641,12 @@ body.menu-toggle .sidebar-collapse-btn{
                 </li>
 
                  {{-- Trainers --}}
-                <li class="{{ isParent(['trainers*','batches*']) }}">
+                <li class="{{ isParent(['trainers*','batches*','trainer-letters*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fas fa-chalkboard-teacher"></i>
                         <span class="nav-text">Mentor Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['trainers*','batches*']) }}">
+                    <ul class="{{ showSubmenu(['trainers*','batches*','trainer-letters*']) }}">
                         {{-- Trainers --}}
                         <li class="{{ isParent(['trainers*']) }}">
                             <a href="{{ route('trainers.index') }}">
@@ -649,6 +656,7 @@ body.menu-toggle .sidebar-collapse-btn{
                             
                         </li>
 
+
                         {{-- Batches --}}
                         <li class="{{ isParent(['batches*']) }}">
                             <a href="{{ route('batches.index') }}">
@@ -657,16 +665,23 @@ body.menu-toggle .sidebar-collapse-btn{
                             </a>
                              
                         </li>
+                        <li class="{{ isParent(['trainer-letters*']) }}">
+                            <a href="{{ route('trainer-letters.index') }}">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                                <span class="nav-text">Mentors Letters</span>
+                            </a>
+                            
+                        </li>
                     </ul>
                 </li>
 
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*']) }}">
                         
 
                         
@@ -714,6 +729,14 @@ body.menu-toggle .sidebar-collapse-btn{
                                 href="{{ route('student-additional-letters.index') }}">
                                 <i class="fas fa-file-signature"></i>
                                 <span class="nav-text">Student Letters</span>
+                            </a>
+                        </li> 
+
+                        <li>
+                            <a class="{{ isChildActive('student-custom-letters*') }}"
+                                href="{{ route('student-custom-letters.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                <span class="nav-text">Student Custom Letters</span>
                             </a>
                         </li>  
 
@@ -1316,6 +1339,12 @@ body.menu-toggle .sidebar-collapse-btn{
                     <a href="{{ route('users.index') }}">
                          <i class="fas fa-users"></i>
                         <span class="nav-text">User Management</span>
+                    </a>
+                </li>
+                <li class="{{ isParent(['finance*']) }}">
+                    <a href="{{ route('finance.index') }}">
+                         <i class="fas fa-users"></i>
+                        <span class="nav-text">Finanace Tabs</span>
                     </a>
                 </li>
 

@@ -53,6 +53,11 @@
             TPO Details
         </button>
     </li>
+     <li class="nav-item">
+        <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#principal">
+            Principal Details
+        </button>
+    </li>
 </ul>
 
 <div class="tab-content border p-3">
@@ -224,6 +229,39 @@
 
 @error('tpo_primary') <small class="text-danger d-block">{{ $message }}</small> @enderror
 <button type="button" class="btn btn-sm btn-secondary" onclick="addTpoEmail()">+ Add More</button>
+</div>
+
+</div>
+</div>
+
+
+<!-- ================= Principal ================= -->
+<div class="tab-pane fade" id="principal">
+<div class="row">
+
+<h5 class="col-12 mt-3">Principal Details</h5>
+
+<div class="col-md-4 mb-3">
+    <label>Name</label>
+    <input type="text" name="principal_name" value="{{ old('principal_name') }}"
+           class="form-control @error('principal_name') is-invalid @enderror">
+    @error('principal_name') <small class="text-danger">{{ $message }}</small> @enderror
+</div>
+
+<div class="col-md-4 mb-3">
+    <label>Gender</label>
+    <select name="principal_gender" class="form-control @error('principal_gender') is-invalid @enderror">
+        <option value="">Select Gender</option>
+        <option value="Male" {{ old('principal_gender')=='Male'?'selected':'' }}>Male</option>
+        <option value="Female" {{ old('principal_gender')=='Female'?'selected':'' }}>Female</option>
+        <option value="Other" {{ old('principal_gender')=='Other'?'selected':'' }}>Other</option>
+    </select>
+</div>
+
+<div class="col-md-4 mb-3">
+    <label>Contact</label>
+    <input type="text" name="principle_contact" value="{{ old('principle_contact') }}"
+           class="form-control @error('principle_contact') is-invalid @enderror" maxlength="10">
 </div>
 
 </div>

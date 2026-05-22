@@ -90,6 +90,26 @@
                         {{ $letter->internship_type == 'placement' ? 'selected' : '' }}>
                        Student Placement Letter
                     </option>
+                    <option value="strict_offer_letter"
+                        {{ $letter->internship_type == 'strict_offer_letter' ? 'selected' : '' }}>
+                       Strict Offer Letter
+                    </option>
+                    <option value="strict_consent_letter"
+                        {{ $letter->internship_type == 'strict_consent_letter' ? 'selected' : '' }}>
+                       Strict Consent Letter
+                    </option>
+                    <option value="stipend_policy"
+                        {{ $letter->internship_type == 'stipend_policy' ? 'selected' : '' }}>
+                       Stipend Policy Letter
+                    </option>
+                    <option value="internship_consent"
+                        {{ $letter->internship_type == 'internship_consent' ? 'selected' : '' }}>
+                       Internship Consent Letter
+                    </option>
+                    <option value="part_time_job_opportunity"
+                        {{ $letter->internship_type == 'part_time_job_opportunity' ? 'selected' : '' }}>
+                       Part Time Job Opportunity Letter
+                    </option>
                 </select>
                  @error('internship_type')
                     <div class="invalid-feedback d-block">{{ $message }}</div>

@@ -8,6 +8,7 @@ use App\Imports\PgImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\View;
 use App\Rules\NotBlockedNumber;
+use App\Exports\PgExport;
 
 class PgController extends Controller
 {   
@@ -250,5 +251,13 @@ class PgController extends Controller
                 'Import failed: Something went wrong while importing the file.'
             ]);
         }
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new PgExport($request),
+            'pgs.xlsx'
+        );
     }
 }

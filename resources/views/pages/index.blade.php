@@ -35,9 +35,17 @@
 
             <div class="col-md-3">
                 <select name="status" id="statusFilter" class="form-control">
-                    <option value="">All Status</option>
+                    <option value="">Active Status</option>
                     <option value="1" {{ request('status')=='1' ? 'selected' : '' }}>Active</option>
                     <option value="0" {{ request('status')=='0' ? 'selected' : '' }}>Inactive</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <select name="ads_status" id="runningstatusFilter" class="form-control">
+                    <option value="">Ads Running Status</option>
+                    <option value="1" {{ request('ads_status')=='1' ? 'selected' : '' }}>Running</option>
+                    <option value="0" {{ request('ads_status')=='0' ? 'selected' : '' }}>Not Running</option>
                 </select>
             </div>
 
@@ -75,8 +83,8 @@
                     </span>
                 </td>
                 <td>{{ $page->created_at->format('d M Y') }}</td>
-                <td class="d-flex gap-1">
-
+                <td >
+                    <div class="d-flex gap-1">
                      {{-- View Page --}}
                     <a href="{{ url('/'.$page->slug) }}"
                        class="btn btn-sm"
@@ -113,7 +121,7 @@
 
                         </button>
                     </form>
-
+                    </div>
 
                 </td>
             </tr>
@@ -161,6 +169,9 @@ document.getElementById('adsTypeFilter').addEventListener('change', function () 
 });
 
 document.getElementById('statusFilter').addEventListener('change', function () {
+    document.getElementById('filterForm').submit();
+});
+document.getElementById('runningstatusFilter').addEventListener('change', function () {
     document.getElementById('filterForm').submit();
 });
 </script>

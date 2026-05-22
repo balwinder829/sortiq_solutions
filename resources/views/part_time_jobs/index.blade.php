@@ -27,6 +27,11 @@
                    style="background:#6b51df;color:#fff;">
                     Import Part-Time Jobs
                 </a>
+                <a href="{{ route('part-time-jobs.export', request()->query()) }}"
+                   class="btn mb-3"
+                   style="background:#198754;color:#fff;">
+                    Export Excel
+                </a>
             </div>
         </div>
     </div>

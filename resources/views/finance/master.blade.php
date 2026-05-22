@@ -87,6 +87,41 @@
 
         </li>
 
+        <li class="nav-item">
+
+            <a href="#"
+               class="nav-link finance-tab"
+               data-tab="travel-expenses">
+
+                Travel Expenses
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a href="#"
+               class="nav-link finance-tab"
+               data-tab="office-assets">
+
+                Office Assets
+
+            </a>
+
+        </li>
+        <li class="nav-item">
+
+            <a href="#"
+               class="nav-link finance-tab"
+               data-tab="recharges">
+
+                Recharges
+
+            </a>
+
+        </li>
+
     </ul>
 
     {{-- Dynamic Content --}}

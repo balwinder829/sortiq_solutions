@@ -4,20 +4,28 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\CourseController;
-use App\Http\Controllers\CollegeController;
+use App\Http\Controllers\CollegeManagement\CollegeController;
 use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\CertificateController;
+use App\Http\Controllers\Students\StudentController;
+use App\Http\Controllers\Students\CertificateController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ReferenceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentTrainingController;
-use App\Http\Controllers\ProductsRegistrationController;
-use App\Http\Controllers\SingleProductRegistrationController;
+use App\Http\Controllers\AdsManagement\ProductsRegistrationController;
+use App\Http\Controllers\AdsManagement\SingleProductRegistrationController;
+use App\Http\Controllers\AdsManagement\AdsAnalyticsController;
+use App\Http\Controllers\AdsManagement\InternshipRegistrationController;
+use App\Http\Controllers\AdsManagement\ServicesRegistrationController;
+use App\Http\Controllers\AdsManagement\TestimonialController;
+use App\Http\Controllers\AdsManagement\AdminPageController;
+use App\Http\Controllers\Letters\TrainerLetterController;
+use App\Http\Controllers\Letters\SalesStaffLetterController;
+use App\Http\Controllers\Letters\StudentCustomLetterController;
 
 use App\Exports\StudentsExport;
 use App\Imports\StudentsImport;
@@ -26,27 +34,25 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\StudentCertificateController;
 use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\QuestionController;
-use App\Http\Controllers\Student\KeyTestController;
 use App\Http\Controllers\Admin\OfflineTestController;
 use App\Http\Controllers\Admin\OfficeOnlineQuestionController;
 
 
-use App\Http\Controllers\FinanceTabsController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\LeadCallController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\CollegeEventController;
-use App\Http\Controllers\StudentEventController;
-use App\Http\Controllers\EmployeeEventController;
+use App\Http\Controllers\Events\CollegeEventController;
+use App\Http\Controllers\Events\StudentEventController;
+use App\Http\Controllers\Events\EmployeeEventController;
 use App\Http\Controllers\EventNotificationController;
 use App\Http\Controllers\BrochureController;
 use App\Http\Controllers\PlacementController;
-use App\Http\Controllers\CloseStudenController;
+use App\Http\Controllers\Students\CloseStudenController;
 use App\Http\Controllers\TestCategoryController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AnalyticsController;
-use App\Http\Controllers\DistrictController;
+use App\Http\Controllers\CollegeManagement\DistrictController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\EnquiryOtpController;
@@ -54,61 +60,61 @@ use App\Http\Controllers\EnquiryFollowupController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Sales\SalesEnquiryController;
 use App\Http\Controllers\Sales\SalesDashboardController;
-use App\Http\Controllers\OfficeExpenseController;
 use App\Http\Controllers\PlacementCompanyController;
 use App\Http\Controllers\PartTimeJobController;
 use App\Http\Controllers\PgController;
-use App\Http\Controllers\UpcomingEventController;
-use App\Http\Controllers\PantryExpenseController;
-use App\Http\Controllers\TeaPantryExpenseController;
-use App\Http\Controllers\OfficePaperExpenseController;
-use App\Http\Controllers\OfficeCleaningExpenseController;
-use App\Http\Controllers\OfficeAccessoryExpenseController;
-use App\Http\Controllers\EventExpenseController;
-use App\Http\Controllers\TravelExpenseController;
-use App\Http\Controllers\OfficeAssetController;
-use App\Http\Controllers\BlockedNumberController;
-use App\Http\Controllers\JoiningStudentController;
+use App\Http\Controllers\Events\UpcomingEventController;
+use App\Http\Controllers\Finance\FinanceTabsController;
+use App\Http\Controllers\Finance\OfficeExpenseController;
+use App\Http\Controllers\Finance\PantryExpenseController;
+use App\Http\Controllers\Finance\TeaPantryExpenseController;
+use App\Http\Controllers\Finance\OfficePaperExpenseController;
+use App\Http\Controllers\Finance\OfficeCleaningExpenseController;
+use App\Http\Controllers\Finance\OfficeAccessoryExpenseController;
+use App\Http\Controllers\Finance\EventExpenseController;
+use App\Http\Controllers\Finance\TravelExpenseController;
+use App\Http\Controllers\Finance\OfficeAssetController;
+use App\Http\Controllers\Finance\RechargeController;
+use App\Http\Controllers\Finance\VisitingCardController;
+use App\Http\Controllers\Security\BlockedNumberController;
+use App\Http\Controllers\Students\JoiningStudentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\ChangePasswordController;
-use App\Http\Controllers\LetterController;
-use App\Http\Controllers\ManagementsLetterController;
-use App\Http\Controllers\RechargeController;
+use App\Http\Controllers\Letters\LetterController;
+use App\Http\Controllers\Letters\ManagementsLetterController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TutorialController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\DailyInterviewController;
 use App\Http\Controllers\SalaryStructureController;
 use App\Http\Controllers\SalarySlipController;
-use App\Http\Controllers\StudentAdditionalLetterController;
-use App\Http\Controllers\AcceptedLetterController;
+use App\Http\Controllers\Letters\StudentAdditionalLetterController;
+use App\Http\Controllers\Letters\AcceptedLetterController;
 use App\Http\Controllers\CompanyPptController;
-use App\Http\Controllers\AdminPageController;
+
 use App\Http\Controllers\FrontendPageController;
-use App\Http\Controllers\InternshipRegistrationController;
-use App\Http\Controllers\VisitingCardController;
-use App\Http\Controllers\ServicesRegistrationController;
-use App\Http\Controllers\HodController;
+
+use App\Http\Controllers\CollegeManagement\HodController;
 use App\Http\Controllers\InterviewQuestionController;
 use App\Http\Controllers\TechnologyController;
 use App\Http\Controllers\InterviewController;
 use App\Http\Controllers\InterviewRoundController;
-use App\Http\Controllers\StudentEvaluationController;
+use App\Http\Controllers\Students\StudentEvaluationController;
 use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\ScannerShareController;
-use App\Http\Controllers\MouController;
-use App\Http\Controllers\FeeStatusController;
+use App\Http\Controllers\CollegeManagement\MouController;
+use App\Http\Controllers\Students\FeeStatusController;
 use App\Http\Controllers\CommonFilteredStudentController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\EmployeeLoginController;
-use App\Http\Controllers\SystemActivityController;
-use App\Http\Controllers\BlockedIpController;
-use App\Http\Controllers\AllowedIpController;
+use App\Http\Controllers\Security\SystemActivityController;
+use App\Http\Controllers\Security\BlockedIpController;
+use App\Http\Controllers\Security\AllowedIpController;
 use App\Http\Controllers\SalesStaffController;
 use App\Http\Controllers\SalesStaffLoginController;
-use App\Http\Controllers\WorkshopController;
-use App\Http\Controllers\StudentsAcceptedLetterController;
-use App\Http\Controllers\StateController;
+use App\Http\Controllers\Workshop\WorkshopController;
+use App\Http\Controllers\Letters\StudentsAcceptedLetterController;
+use App\Http\Controllers\CollegeManagement\StateController;
 use App\Http\Controllers\MentorsLoginController;
 use App\Http\Controllers\StudentsLoginController;
 use App\Http\Controllers\Students\StudentDashboardController;
@@ -121,8 +127,10 @@ use App\Http\Controllers\Admin\OfficeOnlineTestController;
 use App\Http\Controllers\Admin\OfficeQuestionController;
 use App\Http\Controllers\Admin\OfficeResultController;
 use App\Http\Controllers\Admin\StudentPendingController;
-use App\Http\Controllers\Student\OfficeOnlineExamController;
-use App\Http\Controllers\Student\OfficeOnlineMCQTestController;
+use App\Http\Controllers\ExamFront\KeyTestController;
+use App\Http\Controllers\ExamFront\OfficeOnlineExamController;
+use App\Http\Controllers\ExamFront\OfficeOnlineMCQTestController;
+use App\Http\Controllers\ExamFront\AttendanceFormController;
 use App\Http\Controllers\PassoutController;
 use App\Http\Controllers\StudentProjectController;
 use App\Http\Controllers\StudentProjectAssignmentController;
@@ -132,20 +140,19 @@ use App\Http\Controllers\StudentCvController;
 use App\Http\Controllers\StudentCvTemplateController;
 use App\Http\Controllers\MentorsBatchController;
 use App\Http\Controllers\ExternalAttendanceController;
-use App\Http\Controllers\Student\AttendanceFormController;
-use App\Http\Controllers\CollegeCallController;
-use App\Http\Controllers\CollegeEmailController;
-use App\Http\Controllers\ManualDataController;
-use App\Http\Controllers\HardDataController;
+use App\Http\Controllers\CollegeManagement\CollegeCallController;
+use App\Http\Controllers\CollegeManagement\CollegeEmailController;
+use App\Http\Controllers\Sales\ManualDataController;
+use App\Http\Controllers\Sales\HardDataController;
 use App\Http\Controllers\FormEntryController;
 use App\Http\Controllers\JobDescriptionController;
 use App\Http\Controllers\StudentRegistrationController;
 use App\Http\Controllers\StudentPptController;
-use App\Http\Controllers\TestimonialController;
+
 use App\Http\Controllers\ProductsRegistrationFrontController;
 use App\Http\Controllers\SingleProductRegistrationFrontController;
-use App\Http\Controllers\WorkshopExpenseController;
-use App\Http\Controllers\CollegeMistakeController;
+use App\Http\Controllers\Workshop\WorkshopExpenseController;
+use App\Http\Controllers\CollegeManagement\CollegeMistakeController;
 use App\Http\Controllers\EmployeeLeaveController;
 use App\Http\Controllers\Admin\EmployeeLeaveController as AdminEmployeeLeaveController;
 use App\Http\Controllers\StudentLeaveController;
@@ -166,7 +173,7 @@ use Spatie\Permission\PermissionRegistrar;
 
 use App\Models\ExternalAttendanceTest;
 use Illuminate\Http\Request;
-use App\Http\Controllers\AdsAnalyticsController;
+
 use App\Http\Controllers\Admin\TestAnalyticsController;
 
 
@@ -224,6 +231,16 @@ Route::prefix('mentors')->group(function () {
     Route::post('/login',[MentorsLoginController::class,'login'])->name('mentors.login.submit');
 
 });
+ Route::middleware(['auth'])->group(function () {
+ // Route::middleware(['auth', 'enquiry.otp'])->group(function () {
+    Route::get('/part-time-jobs/export',
+        [PartTimeJobController::class, 'export']
+    )->name('part-time-jobs.export');
+
+    Route::get('/pgs/export', [PgController::class, 'export'])
+    ->name('pgs.export');
+
+ });
 
 // Route::prefix('students')->group(function () {
 
@@ -338,6 +355,34 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 });
 
 Route::prefix('admin')->middleware(['auth'])->group(function () {
+
+    Route::resource('trainer-letters', TrainerLetterController::class);
+
+    Route::get(
+        'trainer-letters/{trainer_letter}/download',
+        [TrainerLetterController::class, 'download']
+    )->name('trainer-letters.download');
+
+    Route::post(
+        'trainer-letters/{trainer_letter}/email',
+        [TrainerLetterController::class, 'email']
+    )->name('trainer-letters.email');
+
+
+    Route::resource(
+        'sales-staff-letters',
+        SalesStaffLetterController::class
+    );
+
+    Route::get(
+        'sales-staff-letters/{sales_staff_letter}/download',
+        [SalesStaffLetterController::class, 'download']
+    )->name('sales-staff-letters.download');
+
+    Route::post(
+        'sales-staff-letters/{sales_staff_letter}/email',
+        [SalesStaffLetterController::class, 'email']
+    )->name('sales-staff-letters.email');
 
     Route::get('/student-leave', [AdminStudentLeaveController::class, 'index'])
         ->name('admin.student.leave.index');
@@ -934,6 +979,22 @@ Route::resource(
 
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
+
+        Route::resource(
+            'student-custom-letters',
+            StudentCustomLetterController::class
+    );
+
+    Route::get(
+        'student-custom-letters/{studentCustomLetter}/pdf',
+        [StudentCustomLetterController::class, 'download']
+    )->name('student-custom-letters.download');
+
+    Route::post(
+        'student-custom-letters/{StudentCustomLetter}/email',
+        [StudentCustomLetterController::class, 'sendEmail']
+    )->name('student-custom-letters.email');
+
          Route::resource('student-ppt', StudentPptController::class)
         ->names('student_ppt');
 
@@ -1311,7 +1372,8 @@ Route::middleware(['auth'])->group(function () {
         '/salary-slips/{salarySlip}/email',
         [SalarySlipController::class, 'sendEmail']
     )->name('salary-slips.email.single');
-        Route::resource(
+    
+    Route::resource(
             'student-additional-letters',
             StudentAdditionalLetterController::class
     );
@@ -1412,6 +1474,8 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
     ->middleware(['auth'])   // admin users only
     // ->middleware(['auth','role:1'])   // admin users only
     ->group(function () {
+
+        Route::resource('accepted-letters', AcceptedLetterController::class);
 
 // Route::middleware(['auth', 'enquiry.otp','role:1'])->group(function () {
     Route::resource('recharges', RechargeController::class);
@@ -1559,7 +1623,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
-    Route::resource('accepted-letters', AcceptedLetterController::class);
+    
     Route::get(
         'accepted-letters/{accepted_letter}/download',
         [AcceptedLetterController::class, 'download']
@@ -1903,6 +1967,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/trainers/import/skipped/download/{type}', [TrainerController::class, 'downloadSkipped'])
         ->name('trainers.skipped.download');
     Route::get('/trainers/data', [TrainerController::class, 'data'])->name('trainers.data');
+    Route::get('/trainers/responsibilities_letter', [TrainerController::class, 'downloadResponsiblitiesLetter'])->name('trainers.responsibilities_letter');
     Route::resource('trainers', TrainerController::class)->except(['show']);
     
 

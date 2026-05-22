@@ -43,6 +43,11 @@
                         <option value="mutual_consent" {{ request('internship_type') === 'mutual_consent' ? 'selected' : '' }}>Mutual Consent Letter</option>
                         <option value="training_consent" {{ request('internship_type') === 'training_consent' ? 'selected' : '' }}>Training Consent Letter</option>
                         <option value="placement" {{ request('internship_type') === 'placement' ? 'selected' : '' }}>Student Placement Letter</option>
+                        <option value="strict_offer_letter" {{ request('internship_type') === 'strict_offer_letter' ? 'selected' : '' }}>Strict Offer Letter</option>
+                        <option value="strict_consent_letter" {{ request('internship_type') === 'strict_consent_letter' ? 'selected' : '' }}>Strict Consent Letter</option>
+                        <option value="stipend_policy" {{ request('internship_type') === 'stipend_policy' ? 'selected' : '' }}>Stipend Policy Letter</option>
+                        <option value="internship_consent" {{ request('internship_type') === 'internship_consent' ? 'selected' : '' }}>Internship Consent Letter</option>
+                        <option value="part_time_job_opportunity" {{ request('internship_type') === 'part_time_job_opportunity' ? 'selected' : '' }}>Part Time Job Opportunity Letter</option>
                     </select>
                 </div>
 
