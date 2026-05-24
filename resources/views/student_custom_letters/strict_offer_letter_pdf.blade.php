@@ -53,7 +53,7 @@
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" style="text-align: center;">
-                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 40px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>OFFER LETTER</strong></h2>
+                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 20px; font-weight: 700; color: #2c2e35; margin: 0 0 25px;"><strong>OFFER LETTER</strong></h2>
                     </td>
                 </tr>
             </table>
@@ -90,1097 +90,138 @@
                         $collegeOrPlace = $letter->college ?? '-';
                                             
 
-                @endphp
+            @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                         <b>Date:</b> {{ $issue_date }}<br>
+                        <b>Mr./Ms.:</b> {{ ucwords($letter->student_name) }}<br>
+                    </td>
+                </tr> 
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        Greetings from <strong>Sortiq Solutions Pvt. Ltd.</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+                        <strong>Congratulations!</strong>
                     </td>
                 </tr>
 
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>Dear:</b> {{ ucwords($letter->student_name) }}<br>
-                    </td>
-                </tr>
-                     
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        Greetings from Sortiq Solutions Pvt. Ltd.
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
+                        With reference to your interview discussion and profile evaluation with Sortiq Solutions Pvt. Ltd., we are pleased to offer you an opportunity to join our organization for the position of <b>{{ $letter->position }}</b> at our Mohali office. Your selection has been made after reviewing your communication skills, technical understanding, learning capabilities, and overall interaction during the recruitment process.
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        Congratulations!
-                    </td>
-                </tr>
-
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        With reference to your interview and interaction with Sortiq Solutions Pvt. Ltd., we are pleased to inform you that you have been selected for the Training cum Employment Program in our organization.!
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        Your selection is based on your profile, communication, technical understanding, and overall evaluation process. Detailed appointment confirmation and employment documentation shall be provided after successful completion of the required training and probation process as per company policies.
-                    </td>
-                </tr>
-                    <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       Terms & Conditions
-                    </td>
-                </tr>
-                
-                  
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>1. Training & Probation Period</b>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        The organization may invest approximately ₹2 LPA towards training, professional development, infrastructure, project exposure, and skill enhancement during the overall training and probation period. Upon successful completion of the required training, internal evaluations, and probation process, the proposed annual employment package may be up to ₹3 LPA, subject to company policies, performance standards, and organizational requirements.
                     </td>
                 </tr>
                 
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-                                <td style="font-size: 14px; line-height: 24px;">
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                    <tr>
-                                        <td width="12" valign="top">•</td>
-                                        <td colspan="2" style="font-size: 14px; line-height: 24px;padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                            Your training period will commence from {{ $training_start_date }}.
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td width="12" valign="top">•</td>
-                                        <td colspan="2" style="font-size: 14px; line-height: 24px;padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                            Initial training duration will be {{ $letter->training_duration }} months.
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td width="12" valign="top">•</td>
-                                        <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px;   font-family: 'Inter', sans-serif;">
-                                            After successful completion of training, a probation period of
-                                            {{ $letter->probation_period }} months may be applicable.
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td width="12" valign="top">•</td>
-                                        <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px;  font-family: 'Inter', sans-serif;">
-                                            The company reserves the right to extend training or probation
-                                            depending upon performance, discipline, attendance, project delivery,
-                                            learning ability, and professional conduct.
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td width="12" valign="top">•</td>
-                                        <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px;  font-family: 'Inter', sans-serif;">
-                                            The training period is intended to evaluate technical skills,
-                                            communication, teamwork, adaptability, discipline, and overall
-                                            suitability for company projects.
-                                        </td>
-                                    </tr>
-
-                                </table>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-               
-
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>2. Technical Evaluation & Performance</b>
+                    <b>Terms & Conditions</b>
                     </td>
                 </tr>
 
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-                                    During the training/probation period, your performance may be evaluated on the basis of:
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Technical skills
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Practical implementation
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Daily task completion
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Project performance
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                        </table>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        Your training period shall commence from {{ $training_start_date }} and will continue for approximately 6 months, during which your technical skills, attendance, communication, discipline, project involvement, and professional conduct shall be regularly monitored and evaluated by the organization.
                     </td>
                 </tr>
-                
-                 </table>
-                <pagebreak />
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:5px;">
+            
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:10px; font-family: 'Inter', sans-serif;">
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Assignment submissions
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Attendance and punctuality
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Communication skills
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Learning capability
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Team coordination
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Professional behavior
-                                            </td>
-                                        </tr>
-
-                                    </table>
-                                    <b>The company may conduct:</b>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-               <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Weekly evaluations
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Mock interviews
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                               Practical assessments
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Presentation rounds
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Client simulation tasks
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Technical tests
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Project reviews
-                                            </td>
-                                        </tr>
-
-                                    </table>
-                                    Minimum required performance standards must be maintained throughout the training and probation period.<br>
-                                </td>
-                            </tr>
-                        </table>
-                       
-                        
-                    </td>
-                </tr>
-                  
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>3. Attendance & Discipline Policy</b>
-                    </td>
-                </tr>
-                
-                  <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Regular attendance is mandatory.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Minimum 98% attendance may be required during training/probation.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Daily reporting to assigned mentor/team lead is compulsory.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Daily diary/task sheet/work update may be maintained by the candidate.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Unapproved leave, continuous absence, or irregular attendance may affect continuation, stipend, confirmation, recommendation, or placement support.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Professional discipline and company policies must be followed at all times.
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                        </table>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        Upon completion of the training period, candidates shall be required to appear for an internal assessment/test conducted by the company, with a minimum qualifying score of 60%. In case the required standards or qualifying score are not achieved, the organization reserves the right to extend, revise, discontinue, or terminate the training process without initiation of the probation period.
                     </td>
                 </tr>
 
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>4. Working Days & Timing</b>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        Candidates who successfully complete the training phase and receive company confirmation may proceed to a probation period of approximately 3 months based on project requirements and overall performance. The organization reserves the right to extend or modify the training or probation duration if expected standards, attendance, technical performance, or assigned responsibilities are not satisfactorily fulfilled.
                     </td>
                 </tr>
                 
                 <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        Any stipend during the training period shall remain subject to attendance, discipline, performance, assignment completion, and management approval as per company policies.
+                    </td>
+                </tr>
+            </table>
+            <pagebreak />
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+                <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Working Days: Monday to Saturday
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Working Hours: {{ $letter->working_hours }}
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Additional practical sessions, mock interviews, project discussions, or client meetings may be scheduled whenever required.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                During training/probation, leave restrictions may apply depending upon project requirements and evaluation schedules.
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                        </table>
+                        <b>Working Structure & Professional Conduct</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        The standard working schedule during training and probation may consist of 6 working days per week with office timings as communicated by the management. Additional meetings, project discussions, workshops, evaluations, or official activities may be scheduled whenever required for operational or training purposes.
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        Candidates are expected to maintain punctuality, professional discipline, ethical conduct, respectful communication, and proper coordination with team members, mentors, trainers, and reporting authorities throughout the program duration.
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>5. Stipend / Salary Policy</b>
-                        <br>
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-                                    Stipend or salary (if applicable) shall depend upon company policy and performance evaluation.<br>
-                                    The company reserves the right to:<br>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                 </table>
-                <pagebreak />
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:5px;">
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        
-
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Hold
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Revise
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Reduce
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Postpone
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Withdraw
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Cancel
-                                            </td>
-                                        </tr>
-
-                                    <tr>
-                                        <td width="30"></td>
-                                        <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                                          <b>stipend/salary in case of:</b>
-                                        </td>
-                                    </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Poor performance
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Incomplete assignments/tasks
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Low attendance
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Misconduct
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Policy violation
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Unsatisfactory project contribution
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Breach of confidentiality
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Failure in evaluations
-                                            </td>
-                                        </tr>
-
-                                    </table>
-                                    
-
-                                </td>
-
-                            </tr>
-                            <tr>
-                                <td width="30"></td>
-                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                    No stipend/salary shall be considered final until approved by HR and management after evaluation.<br>
-                                    <b>Annual Package: ₹3,00,000 (Three Lakhs per Annum)</b>
-                                </td>
-                            </tr>
-
-                        </table>
-
-                    </td>
-                </tr>
-                 
-                
-
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>6. Company Assets & Confidentiality</b>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        
-
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                   You shall maintain strict confidentiality regarding:<br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Company projects
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Client information
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Source code
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Internal documents
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Login credentials
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Databases
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Training materials
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Company processes
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="30"></td>
-                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                   Sharing or misuse of confidential information may result in immediate termination and legal action.<br>
-                                    Company assets, systems, software access, IDs, and resources provided during training/employment remain the property of the company and must be returned upon request.
-                                </td>
-                            </tr>
-                        </table>
-
-                        
-
+                        <b>Important Information</b>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>7. Code of Conduct</b>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        Candidates may be assigned internal projects, client-based assignments, research activities, or operational tasks as per organizational and project requirements. The company reserves the right to change deployment location, reporting structure, department allocation, or project responsibilities whenever required.
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        
-
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
-                                  You are expected to maintain:<br>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Professional behavior
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Respectful communication
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Ethical work standards
-                                            </td>
-                                        </tr>
-
-                                         
-                                    </table>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                 </table>
-                <pagebreak />
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:5px;">
-
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        
-
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                             
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                         
- 
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Proper dress code (if applicable)
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Responsible use of company systems and internet
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="30"></td>
-                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                  <b>The following may lead to disciplinary action or termination:</b>
-                                </td>
-                            </tr>
-                        </table>
-
-
-                        
-
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Misconduct
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Data misuse
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Harassment
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Fake reporting
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Indiscipline
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Proxy attendance
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Unauthorized recordings
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Client miscommunication
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Negative behavior affecting company reputation
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                        </table>
-
-                    </td>
-                </tr>
-               
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>8. Bond / Service Agreement (If Applicable)</b>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                You may be required to sign a Training and Service Agreement/Bond with the company for a minimum duration of {{ $letter->bond_duration }} months/years after confirmation.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Terms related to service agreement, notice period, training cost recovery, or project commitments shall be governed by separate documentation wherever applicable.
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                        </table>
-
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                        Any misconduct, policy violation, fake reporting, misuse of company systems, unauthorized sharing of confidential information, or behavior affecting company reputation may result in disciplinary action or immediate discontinuation from the training/employment program without prior notice.
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>9. Placement & Employment Conditions</b>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
+                       The candidate is expected to remain associated with the organization for a minimum duration of 2 years, including the training and probation period, subject to company policies and project requirements. Candidates may be required to submit educational certificates, photographs, and valid ID proof for official verification purposes:
                     </td>
                 </tr>
-                
+
                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Training and placement assistance may be provided based on performance and eligibility.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Employment confirmation is subject to successful completion of training/probation and management approval.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                The company reserves full rights regarding deployment, extension, department allocation, project assignment, or discontinuation.
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                        </table>
-
-                    </td>
-                </tr>
-                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>10. Documents Required at Joining</b>
-                    </td>
-                </tr>
-                
-               <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-
-                        
-
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                  Candidate may be required to submit:
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Educational certificates/mark sheets
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Government ID proof
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Passport size photographs
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Resume/CV
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Address proof
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                College documents (if applicable)
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            <td width="12" valign="top">•</td>
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Internship recommendation/reference letter (if applicable)
-                                            </td>
-                                        </tr>
-
-
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                            <tr>
-                                <td width="30"></td>
-                                <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                                  Original documents may be verified for official purposes whenever required.
-                                </td>
-                            </tr>
-                        </table>
-
-                        
-
-                    </td>
-                </tr>
-
-                </table>
-                <pagebreak />
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;">
-                 
-                 <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>11. General Conditions</b>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-
-                                <td style="font-size: 14px; line-height: 24px;">
-
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-
-                                        <tr>
-                                           
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                This offer is provisional and subject to verification of all information/documents submitted by the candidate.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                           
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                Any false information, fake documents, misconduct, or policy violation may lead to immediate cancellation of offer/training/employment without prior notice.
-                                            </td>
-                                        </tr>
-
-                                        <tr>
-                                            
-                                            <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:3px; font-family: 'Inter', sans-serif;">
-                                                The company reserves the right to modify internal policies, schedules, evaluation methods, or operational requirements whenever necessary.
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                        </table>
-
+                    <td width="12" style="vertical-align: middle;">•</td>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px;padding-bottom:3px; font-family: 'Inter', sans-serif;">
+                        Educational certificates and qualification documents
                     </td>
                 </tr>
                 <tr>
+                    <td width="12" style="vertical-align: middle;">•</td>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px;padding-bottom:3px; font-family: 'Inter', sans-serif;">
+                        Recent passport-size photographs
+                    </td>
+                </tr>
+                <tr>
+                    <td width="12" style="vertical-align: middle;">•</td>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px;padding-bottom:3px; font-family: 'Inter', sans-serif;">
+                        One valid government-issued ID proof with photocopy
+                    </td>
+                </tr>
+                <!-- <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px;padding-bottom:3px; font-family: 'Inter', sans-serif;">
+                        Original documents may be verified whenever required by the organization for administrative or official purposes.
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="font-size: 14px; line-height: 24px;padding-bottom:3px; font-family: 'Inter', sans-serif;">
+                        Reporting Time on First Day of Joining: 10:00 AM
+                    </td>
+                </tr> -->
+            
+                <!-- <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                         <b>Declaration</b>
                     </td>
                 </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-                                <td style="font-size: 14px; line-height: 24px;">
-                                  Please sign and submit a copy of this letter as acceptance of the above terms and conditions.<br>
-
-                                We look forward to your contribution and professional association with Sortiq Solutions Pvt. Ltd.
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>Candidate Acceptance</b>
-                    </td>
-                </tr>
-                
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
                         
@@ -1207,12 +248,9 @@
                                 }}<br>
                         Place: Mohali<br>
                     </td>
-                </tr>
+                </tr> -->
             </table>
-              
-            
-           @include('student_letters_footer_logos.footer_content_without_logo')
-            
+            @include('student_letters_footer_logos.footer_content_without_logo')
         </div>
     </div>
 </div>
