@@ -102,7 +102,9 @@ public function store(Request $request)
             Rule::in([
                 'free','stipend','offer','custom',
                 'mutual_consent','noc','training_consent',
-                'placement','internship','internship_with_package','strict_offer_letter', 'strict_consent_letter', 'stipend_policy', 'internship_consent','part_time_job_opportunity'
+                'placement','internship','internship_with_package',
+                'strict_offer_letter', 'strict_consent_letter', 'stipend_policy', 
+                'internship_consent','part_time_job_opportunity', 'with_roll_number', 'with_roll_number_internship'
             ]),
         ],
 
@@ -111,6 +113,8 @@ public function store(Request $request)
         'student_id.*'    => 'exists:students_detail,id',
 
         'subject'         => 'required_if:internship_type,custom|max:255',
+        'roll_number'     => 'required_if:internship_type,with_roll_number,with_roll_number_internship|max:255',
+        'semester'        => 'required_if:internship_type,with_roll_number,with_roll_number_internship|max:255',
         'letter_content'  => 'required_if:internship_type,custom,stipend',
         'issue_date'      => 'nullable|date',
     ], [
@@ -137,6 +141,8 @@ public function store(Request $request)
             'student_id'      => $studentId,
             'internship_type' => $request->internship_type,
             'subject'         => $request->subject,
+            'roll_number'     => $request->roll_number,
+            'semester'        => $request->semester,
             'letter_content'  => $request->letter_content,
             'issue_date'      => $request->issue_date 
                                 ? $request->issue_date 
@@ -211,7 +217,9 @@ public function store(Request $request)
                     'strict_consent_letter', 
                     'stipend_policy', 
                     'internship_consent',
-                    'part_time_job_opportunity'
+                    'part_time_job_opportunity',
+                    'with_roll_number',
+                    'with_roll_number_internship'
                 ]),
                 Rule::unique('student_additional_letters')
                     ->where('student_id', $request->student_id)
@@ -221,6 +229,8 @@ public function store(Request $request)
             'student_id'      => 'required|exists:students_detail,id',
             'letter_content'  => 'required_if:internship_type,custom,stipend',
             'issue_date'      => 'nullable|date',
+            'roll_number'     => 'required_if:internship_type,with_roll_number,with_roll_number_internship|max:255',
+            'semester'        => 'required_if:internship_type,with_roll_number,with_roll_number_internship|max:255',
         ], [
             'internship_type.unique' => 'This letter type already exists for this student.',
         ]);
@@ -334,7 +344,8 @@ public function store(Request $request)
             'stipend_policy' => 'student_additional_letters.stipend_policy_pdf',
             'internship_consent' => 'student_additional_letters.internship_consent_pdf',
             'part_time_job_opportunity' => 'student_additional_letters.part_time_job_opportunity_letter_pdf',
-            
+            'with_roll_number' => 'student_additional_letters.with_roll_number_letter_pdf',
+            'with_roll_number_internship' => 'student_additional_letters.with_roll_number_internship_letter_pdf',
             default => 'letters.pdf',
         };
 
@@ -371,6 +382,7 @@ public function download(StudentAdditionalLetter $StudentAdditionalLetter)
         'internship' => 'INTERNSHIP LETTER',
         'internship_with_package' => 'INTERNSHIP WITH PACKAGE LETTER',
         'part_time_job_opportunity' => 'PART TIME JOB OPPORTUNITY LETTER',
+        'with_roll_number' => 'WITH ROLL NUMBER LETTER',
     ];
 
     $sanitize = function ($value) {

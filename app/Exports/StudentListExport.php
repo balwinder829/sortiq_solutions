@@ -230,6 +230,38 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
 
     public function headings(): array
     {
+        $request = $this->request;
+        if($request->filled('without_fee') && $request->without_fee == true){
+
+            return [
+                'S.No',
+                'Student Name',
+                'Father/Husband Name',
+                'Contact',
+                'Email',
+                'Gender',
+                'Session',
+                'College',
+                'Technology',
+                'Status',
+                // 'Total Fee',
+                // 'Pending Fee',
+                // 'Registration Fee',
+                // 'Paid Fee',
+                'Next Due Date',
+                'Registered Date',
+                'Joining Date',
+                'End Date',
+                'Placement Offer',
+                'Part Time Job Offer',
+                'PG Offer',
+                'Study Mode',
+                'Is Intern',
+                // 'Pending Fees',
+            ];
+
+        }
+
         return [
             'S.No',
             'Student Name',
@@ -260,6 +292,42 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
 
     public function map($student): array
     {
+        if($this->request->filled('without_fee') && $this->request->without_fee == true){
+
+            return [
+                $student->sno,
+                $student->student_name,
+                $student->f_name,
+                $student->contact,
+                $student->email_id,
+                $student->gender,
+                $student->sessionData->session_name ?? '-',
+                $student->collegeData->college_display_name ?? '-',
+                $student->course_name ?? '-',
+                $student->status,
+                $student->next_due_date 
+                ? \Carbon\Carbon::parse($student->next_due_date)->format('d M Y') 
+                : '-',
+
+                $student->join_date 
+                    ? \Carbon\Carbon::parse($student->join_date)->format('d M Y') 
+                    : '-',
+
+                $student->start_date 
+                    ? \Carbon\Carbon::parse($student->start_date)->format('d M Y') 
+                    : '-',
+
+                $student->end_date 
+                    ? \Carbon\Carbon::parse($student->end_date)->format('d M Y') 
+                    : '-',
+
+                $student->placement_offer ? 'Yes' : 'No',
+                $student->part_time_offer ? 'Yes' : 'No',
+                $student->pg_offer ? 'Yes' : 'No',
+                $student->is_online ? 'Online' : 'Offline',
+                $student->is_intern ? 'Yes' : 'No',
+            ];
+        }
         return [
             $student->sno,
             $student->student_name,

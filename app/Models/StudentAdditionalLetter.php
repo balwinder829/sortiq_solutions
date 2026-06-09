@@ -12,6 +12,8 @@ class StudentAdditionalLetter extends Model
         'subject',
         'student_id',
         'issue_date',
+        'roll_number',
+        'semester',
         // 'email',
         'letter_content'
     ];

@@ -96,6 +96,8 @@
                     <option value="stipend_policy" {{ old('internship_type') == 'stipend_policy' ? 'selected' : '' }} >Stipend Policy Letter</option>
                     <option value="internship_consent" {{ old('internship_type') == 'internship_consent' ? 'selected' : '' }} >Internship Consent Letter</option>
                     <option value="part_time_job_opportunity" {{ old('internship_type') == 'part_time_job_opportunity' ? 'selected' : '' }} >Part Time Job Opportunity Letter</option>
+                    <option value="with_roll_number" {{ old('internship_type') == 'with_roll_number' ? 'selected' : '' }} >With Roll Number Letter</option>
+                    <option value="with_roll_number_internship" {{ old('internship_type') == 'with_roll_number_internship' ? 'selected' : '' }} >With Roll Number Internship Letter</option>
                 </select>
                 @error('internship_type')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -123,6 +125,24 @@
                 <label>Subject</label>
                 <input type="text" name="subject" class="form-control" value="{{ old('subject') }}">
                 @error('subject')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- Roll Number --}}
+            <div class="form-group col-md-6 d-none" id="roll_number_field">
+                <label>Roll Number</label>
+                <input type="text" name="roll_number" class="form-control" value="{{ old('roll_number') }}">
+                @error('roll_number')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- Semester --}}
+            <div class="form-group col-md-6 d-none" id="semester_field">
+                <label>Semester</label>
+                <input type="text" name="semester" class="form-control" value="{{ old('semester') }}">
+                @error('semester')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
@@ -198,13 +218,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const letterType = document.getElementById('internship_type');
     const contentField = document.getElementById('letter_content_field');
     const subjectField = document.getElementById('subject_field');
-
+    const rollNumberField = document.getElementById('roll_number_field');
+    const semesterField = document.getElementById('semester_field');
     function toggleFields() {
         const isContent = letterType.value === 'stipend' || letterType.value === 'custom';
         const isCustom  = letterType.value === 'custom';
+        const isWithRollNumber = (letterType.value === 'with_roll_number' || letterType.value === 'with_roll_number_internship');
 
         contentField.classList.toggle('d-none', !isContent);
         subjectField.classList.toggle('d-none', !isCustom);
+        rollNumberField.classList.toggle('d-none', !isWithRollNumber);
+        semesterField.classList.toggle('d-none', !isWithRollNumber);
     }
 
     letterType.addEventListener('change', toggleFields);
