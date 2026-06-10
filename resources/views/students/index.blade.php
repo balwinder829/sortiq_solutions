@@ -621,11 +621,10 @@ Reset
 </a>
 
 <a href="{{ route('students.export.excel', request()->query()) }}"
-class="btn btn-primary">
+class="btn btn-primary">Download Excel</a>
 
-Download Excel
-
-</a>
+<a href="{{ route('students.export.excel', array_merge(request()->query(), ['without_fee' => true])) }}"
+class="btn btn-primary">Without Fee Download Excel</a>
 
 <button type="button"
 id="copySelected"
@@ -682,6 +681,7 @@ Copy to Session
                 <th class="text-center">Technology</th>
                 <th class="text-center">Total Fees(Rs.)</th>
                 <th class="text-center">Reg Fees(Rs.)</th>
+                <th class="text-center">Paid Fees(Rs. )</th>
                 <th class="text-center">Pending Fees(Rs.)</th>
                 <th class="text-center" width="100px">Pending Fees Due Date</th>
                 <!-- <th class="text-center">Department</th> -->
@@ -738,6 +738,7 @@ Copy to Session
 
                 <td>{{ $student->total_fees }}</td>
                 <td>{{ $student->reg_fees }}</td>
+                <td>{{ $student->paid_fees }}</td>
                 <td>{{ $student->pending_fees }}</td>
                 <td>
                     {{ $student->next_due_date ? \Carbon\Carbon::parse($student->next_due_date)->format('d M Y') : '-' }}
