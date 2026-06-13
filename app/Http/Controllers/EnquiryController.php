@@ -22,7 +22,7 @@ use Carbon\Carbon;
 use App\Exports\EnquiriesExport;
 use App\Rules\NotBlockedNumber;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Storage;
 class EnquiryController extends Controller
 {
      protected array $permissionMap = [
@@ -349,13 +349,23 @@ public function index(Request $request)
     $sales    = SalesStaff::where('status', 'active')->get();
     $colleges = College::orderBy('college_name')->get();
 
+    $previousWhatsappUploadedFiles = collect(
+            Storage::disk('public')->files('whatsapp-files')
+        )->map(function ($file) {
+            return [
+                'path' => $file,
+                'name' => basename($file),
+            ];
+        });
+
     return view('enquiries.index', compact(
         'enquiries',
         'sales',
         'colleges',
         'totalLeads',
         'assignedLeads',
-        'unassignedLeads'
+        'unassignedLeads',
+        'previousWhatsappUploadedFiles'
     ));
 }
 

@@ -21,7 +21,7 @@ use App\Exports\EnquiriesExport;
 use App\Rules\NotBlockedNumber;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\Storage;
 class PassoutController extends Controller
 {   
     public function __construct()
@@ -191,10 +191,18 @@ class PassoutController extends Controller
     $enquiries = $query->paginate(20)->appends($request->all());
 
     $sales    = SalesStaff::where('status', 'active')->get();
-
+    $previousWhatsappUploadedFiles = collect(
+            Storage::disk('public')->files('whatsapp-files')
+        )->map(function ($file) {
+            return [
+                'path' => $file,
+                'name' => basename($file),
+            ];
+        });
     return view('passouts.index', compact(
         'enquiries',
-        'sales'
+        'sales',
+        'previousWhatsappUploadedFiles'
     ));
 }
 

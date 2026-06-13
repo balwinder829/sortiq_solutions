@@ -1448,7 +1448,12 @@ body.menu-toggle .sidebar-collapse-btn{
                 </li>
 
                 
-
+                <li>
+                    <a href="{{ route('admin.message.setup_whatsapp') }}">
+                        <i class="fab fa-whatsapp text-success fs-5"></i>
+                        <span class="nav-text">Setup WhatsApp</span>
+                    </a>
+                </li>
                {{-- Logout --}}
                 <li>
                     <a href="{{ route('logout') }}"
@@ -2797,6 +2802,13 @@ body.menu-toggle .sidebar-collapse-btn{
 
                 </li> -->
                @endcan 
+
+                <li>
+                    <a href="{{ route('admin.message.setup_whatsapp') }}">
+                        <span class="nav-text">Setup WhatsApp</span>
+                    </a>
+                </li>
+
                {{-- Logout --}}
                 <li>
                     <a href="{{ route('logout') }}"

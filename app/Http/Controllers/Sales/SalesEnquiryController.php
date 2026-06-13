@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Models\College;
-
+use Illuminate\Support\Facades\Storage;
 
 class SalesEnquiryController extends Controller
 {
@@ -130,7 +130,16 @@ public function index(Request $request)
     ->orderBy('college_name')
     ->get();
 
-    return view('sales.enquiries.index', compact('enquiries','colleges'));
+     $previousWhatsappUploadedFiles = collect(
+            Storage::disk('public')->files('whatsapp-files')
+        )->map(function ($file) {
+            return [
+                'path' => $file,
+                'name' => basename($file),
+            ];
+        });
+        
+    return view('sales.enquiries.index', compact('enquiries','colleges', 'previousWhatsappUploadedFiles'));
 }
 
     public function indexqw(Request $request)

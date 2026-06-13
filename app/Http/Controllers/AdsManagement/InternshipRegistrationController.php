@@ -166,8 +166,24 @@ class InternshipRegistrationController extends Controller
             'searchable' => ['full_name','email','phone'],
         ], function ($row, $index, $start) {
 
-            $actions = '
-                <a href="' . route('internship-registrations.show', $row->id) . '" class="btn btn-sm">
+            $actions = '';
+            if(!empty($row->phone)){
+                $phone = $row->phone;
+                if(strlen($phone) == 10){
+                    $phone = "91".$phone;
+                } else {
+                    $phone = str_replace('+', '', $phone);
+                }
+                //https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(cleanMessage)}
+                $actions .= '<a href="https://wa.me/'.$phone.'" class="btn btn-sm" target="_blank">
+                    <i class="fab fa-whatsapp text-success fs-5"></i>
+                </a>';
+                // $actions .= '<a href="https://wa.me/'.$row->phone.'" class="btn btn-sm" target="_blank">
+                //     <i class="fa fa-whatsapp"></i>
+                // </a>';
+            }
+                
+            $actions .= '<a href="' . route('internship-registrations.show', $row->id) . '" class="btn btn-sm">
                     <i class="fa fa-eye"></i>
                 </a>
 
@@ -190,7 +206,7 @@ class InternshipRegistrationController extends Controller
                 '<input type="checkbox" class="row-checkbox" value="'.$row->id.'">',
                 $rowNum,
                 e($row->full_name),
-                e($row->email),
+                '<a href="mailto:'.$row->email.'">'.$row->email.'</a>',
                 e($row->phone ?? '-'),
                 e(optional($row->collegeData)->FullName ?? $row->college_name ?? '-'),
                 e(optional($row->courseData)->course_name ?? $row->technology ?? '-'),

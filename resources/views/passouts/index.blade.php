@@ -160,6 +160,7 @@
                 <!-- <button type="submit" class="btn btn-primary">
                     <i class="fa fa-search"></i> Search
                 </button> -->
+                @include('partials.whatsapp-popover')
                 <a href="{{ route('passouts.index') }}" class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
                 </a>
@@ -344,15 +345,11 @@ $(document).ready(function () {
         pageLength: 50
     });
 });
-</script>
 
-<script>
 $('#selectAll').on('change', function() {
     $('.rowCheck:enabled').prop('checked', this.checked);
 });
-</script>
 
-<script>
 $('#assignBtn').on('click', function () {
 
     let ids = [];
@@ -394,8 +391,7 @@ function showPopup(message) {
     var popup = new bootstrap.Modal(document.getElementById('popupModal'));
     popup.show();
 }
-</script>
-<script>
+
 $(document).ready(function(){
 
     let timer;
@@ -412,6 +408,82 @@ $(document).ready(function(){
         }, 500); // waits 500ms after typing stops
     });
 
+});
+
+new bootstrap.Popover(document.getElementById('whatsappBtn'), {
+    html: true,
+    sanitize: false,
+    customClass: 'whatsapp-popover',
+    content: function () {
+        return $('#whatsappPopoverContent').html();
+    }
+});
+
+$(document).on('click', '#sendWhatsappNotification', function () {
+    
+    let popover = $(this).closest('.popover');
+    let custom_message = popover.find('textarea[name="customMessage"]').val();
+    let append_name = $('input[name="append_name"]:checked').val() || false;
+    
+    let selectedRecordIds = new Set();
+    $('.rowCheck:checked').each(function () {
+        selectedRecordIds.add($(this).val());
+    });
+
+    if (selectedRecordIds.size === 0) {
+        Swal.fire('No selection', 'Select at least one student', 'warning');
+        return;
+    }
+    
+    if (custom_message?.length > 0) {
+        custom_message = custom_message;
+    } else {
+        Swal.fire('Message Required', 'Please enter a custom message', 'warning');
+        return;
+    }
+
+    let formData = new FormData();
+    formData.append('append_name',append_name);
+    formData.append('message',custom_message);
+    formData.append('model', "Enquiry");
+    formData.append('_token', "{{ csrf_token() }}");
+    formData.append('message_type', append_name ? 'with_name' : 'same_message');
+    Array.from(selectedRecordIds).forEach(function(id) {
+        formData.append('ids[]', id);
+    });
+    
+    formData.append('existing_file_path', popover.find('#existingFile').val());
+    let fileInput = popover.find('input[type="file"]')[0];
+    if (fileInput && fileInput.files.length > 0) {
+        formData.append('whatsappFile', fileInput.files[0]);
+        //console.log(fileInput.files[0].name);
+    }
+
+    $.ajax({
+        url: "{{ route('admin.message.send_whatsapp') }}",
+        type: "POST",
+        processData: false,
+        contentType: false,
+        data: formData,
+        beforeSend: function () {
+            popover.find('#message_loader').show();
+            popover.find('#sendWhatsappNotification').prop('disabled', true);
+        },
+        success: function (res) {
+            if(res.status === 'error' || res.status === false) {
+                Swal.fire('Error', res.message, 'error');
+                return;
+            }
+            Swal.fire('Success', res.message, 'success');
+        },
+        error: function () {
+            Swal.fire('Error', 'Something went wrong', 'error');
+        },
+        complete: function () {
+            popover.find('#message_loader').hide();
+            popover.find('#sendWhatsappNotification').prop('disabled', false);
+        }
+    });
 });
 </script>
 @endpush

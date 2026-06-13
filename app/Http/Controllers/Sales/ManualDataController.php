@@ -15,7 +15,7 @@ use App\Models\District;
 use App\Models\Enquiry;
 use App\Rules\NotBlockedNumber;
 use App\Exports\ManualDataExport;
-
+use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\Str;
 use Carbon\Carbon;
 
@@ -160,7 +160,8 @@ public function index(Request $request)
                 e($data->gender),
                 $data->created_at?->format('d M Y'),
                 $actions,
-                'is_moved_to_enquiry' => $data->is_moved_to_enquiry
+                'is_moved_to_enquiry' => $data->is_moved_to_enquiry,
+                'row_id' => $data->id
             ];
         });
     }
@@ -178,8 +179,16 @@ public function index(Request $request)
             ->get()
             ->pluck('display_name', 'id');
 
+    $previousWhatsappUploadedFiles = collect(
+            Storage::disk('public')->files('whatsapp-files')
+        )->map(function ($file) {
+            return [
+                'path' => $file,
+                'name' => basename($file),
+            ];
+        });
 
-    return view('manual_data.index', compact('colleges','states','districtsGrouped','sessionsList'));
+    return view('manual_data.index', compact('colleges','states','districtsGrouped','sessionsList', 'previousWhatsappUploadedFiles'));
 }
 
     
