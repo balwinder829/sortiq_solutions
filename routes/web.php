@@ -148,6 +148,7 @@ use App\Http\Controllers\FormEntryController;
 use App\Http\Controllers\JobDescriptionController;
 use App\Http\Controllers\StudentRegistrationController;
 use App\Http\Controllers\StudentPptController;
+use App\Http\Controllers\Whatsapp\WhatsappController;
 
 use App\Http\Controllers\ProductsRegistrationFrontController;
 use App\Http\Controllers\SingleProductRegistrationFrontController;
@@ -160,22 +161,19 @@ use App\Http\Controllers\Admin\StudentLeaveController as AdminStudentLeaveContro
 use App\Http\Controllers\Admin\GmailController;
 use App\Models\Student;
 use App\Http\Controllers\Admin\AnalyticsController  as AdminAnalyticsController;
-
-
-
-
 use App\Models\Test;
 use App\Models\StudentTest;
-
 use Spatie\Permission\PermissionRegistrar;
-
-
-
 use App\Models\ExternalAttendanceTest;
 use Illuminate\Http\Request;
-
 use App\Http\Controllers\Admin\TestAnalyticsController;
 
+
+ Route::get('/download/{file}', function ($file) {
+            $path = storage_path('app/public/whatsapp-files/' . $file);
+            abort_unless(file_exists($path), 404);
+            return response()->download($path);
+        })->name('download.file');
 
 // EMployee Leave Form show
 Route::get('/leave/apply', [EmployeeLeaveController::class, 'create'])
@@ -518,6 +516,13 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
         Route::post('/manual-data/move-enquiries',
             [ManualDataController::class, 'moveManualToEnquiries']
         )->name('manual_data.move.enquiries');
+
+        Route::post('/send_whatsapp_message', [WhatsappController::class, 'sendWhatsappMessage'])->name('message.send_whatsapp');
+        Route::get('/setup_whatsapp', [WhatsappController::class, 'setupWhatsapp'])->name('message.setup_whatsapp');
+        Route::post('/whatsapp_setup_login', [WhatsappController::class, 'whatsapp_setup_login'])->name('whatsapp.login.submit');
+        Route::get('/whatsapp_qr', [WhatsappController::class, 'whatsapp_qr'])->name('whatsapp.qr');
+        Route::post('/whatsapp_reset', [WhatsappController::class, 'whatsapp_reset'])->name('whatsapp.reset');
+       
 
         Route::get('hard-data/export', [HardDataController::class, 'exportExcel'])->name('hard_data.export');
         Route::get('hard-data/import', [HardDataController::class, 'importForm'])->name('hard_data.import.form');
