@@ -661,6 +661,7 @@ value="{{ request('registration_fee') }}">
     <div class="mt-3">
         <!-- <button id="issueSelected" class="btn btn-primary">Issue Certificate</button> -->
         <button id="downloadissueSelected" class="btn btn-primary">Download Certificates</button>
+        <button id="downloadissueMonthNameSelected" class="btn btn-primary">Download Certificates (Month Name)</button>
         <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
         <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
         <button id="moveSelected" class="btn btn-warning">Shift To Confirmation</button>
@@ -691,6 +692,7 @@ value="{{ request('registration_fee') }}">
     <input type="hidden" name="college_name" value="{{ request('college_name') }}">
     <input type="hidden" name="is_pursuing">
     <input type="hidden" name="is_internship">
+    <input type="hidden" name="is_month_name">
 </form>
 
 <form id="bulkDeleteForm" method="POST" action="{{ route('students.bulk.delete') }}">
@@ -1248,6 +1250,7 @@ $('#markCertificateNotSent').click(function () {
         let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
         $('input[name="is_pursuing"]').val(isPursuing);
         $('input[name="is_internship"]').val(isInternship);
+        $('input[name="is_month_name"]').val("no");
         // if (ids.length === 0) {
         //     alert('Select at least one student');
         //     return;
@@ -1263,6 +1266,29 @@ $('#markCertificateNotSent').click(function () {
         });
     });
 
+ // Download Confirm Letter(s)
+    $('#downloadissueMonthNameSelected').click(function () {
+        var ids = getSelectedIds();
+        let isPursuing = $('#isPursuing').is(':checked') ? 1 : 0;
+        let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
+        $('input[name="is_pursuing"]').val(isPursuing);
+        $('input[name="is_month_name"]').val("yes");
+        $('input[name="is_internship"]').val(isInternship);
+        // if (ids.length === 0) {
+        //     alert('Select at least one student');
+        //     return;
+        // }
+
+        // if (!confirm('Download confirm letter(s) for selected student(s)?')) {
+        //     return;
+        // }
+        pageBulkConfirm(ids, 'Download confirm letter(s) for selected student(s)?', function () {
+        // Put JSON string of IDs into hidden input and submit form
+            $('#bulkDownloadIds').val(JSON.stringify(ids));
+            $('#bulkDownloadForm').submit();
+        });
+    });
+    
     $('#copySelected').on('click', function () {
 
         let ids = getSelectedIds();

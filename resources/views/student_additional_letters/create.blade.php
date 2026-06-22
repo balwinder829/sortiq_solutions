@@ -98,6 +98,7 @@
                     <option value="part_time_job_opportunity" {{ old('internship_type') == 'part_time_job_opportunity' ? 'selected' : '' }} >Part Time Job Opportunity Letter</option>
                     <option value="with_roll_number" {{ old('internship_type') == 'with_roll_number' ? 'selected' : '' }} >With Roll Number Letter</option>
                     <option value="with_roll_number_internship" {{ old('internship_type') == 'with_roll_number_internship' ? 'selected' : '' }} >With Roll Number Internship Letter</option>
+                    <option value="confirmation_letter" {{ old('internship_type') == 'confirmation_letter' ? 'selected' : '' }} >Confirmation Letter</option>
                 </select>
                 @error('internship_type')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -140,7 +141,7 @@
 
             {{-- Semester --}}
             <div class="form-group col-md-6 d-none" id="semester_field">
-                <label>Semester</label>
+                <label id="semester_field_label">Semester</label>
                 <input type="text" name="semester" class="form-control" value="{{ old('semester') }}">
                 @error('semester')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -220,15 +221,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const subjectField = document.getElementById('subject_field');
     const rollNumberField = document.getElementById('roll_number_field');
     const semesterField = document.getElementById('semester_field');
+    const semesterFieldLabel = document.getElementById('semester_field_label');
     function toggleFields() {
         const isContent = letterType.value === 'stipend' || letterType.value === 'custom';
         const isCustom  = letterType.value === 'custom';
-        const isWithRollNumber = (letterType.value === 'with_roll_number' || letterType.value === 'with_roll_number_internship');
+        const isWithRollNumber = (letterType.value === 'with_roll_number' || letterType.value === 'with_roll_number_internship' || letterType.value === 'confirmation_letter' );
 
         contentField.classList.toggle('d-none', !isContent);
         subjectField.classList.toggle('d-none', !isCustom);
         rollNumberField.classList.toggle('d-none', !isWithRollNumber);
         semesterField.classList.toggle('d-none', !isWithRollNumber);
+
+        if(letterType.value === 'confirmation_letter'){
+            semesterFieldLabel.innerText = "Batch";
+        } else {
+            semesterFieldLabel.innerText = "Semester";
+        }
     }
 
     letterType.addEventListener('change', toggleFields);

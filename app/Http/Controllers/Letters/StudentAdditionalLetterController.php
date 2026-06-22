@@ -104,7 +104,8 @@ public function store(Request $request)
                 'mutual_consent','noc','training_consent',
                 'placement','internship','internship_with_package',
                 'strict_offer_letter', 'strict_consent_letter', 'stipend_policy', 
-                'internship_consent','part_time_job_opportunity', 'with_roll_number', 'with_roll_number_internship'
+                'internship_consent','part_time_job_opportunity', 
+                'with_roll_number', 'with_roll_number_internship', 'confirmation_letter'
             ]),
         ],
 
@@ -113,8 +114,8 @@ public function store(Request $request)
         'student_id.*'    => 'exists:students_detail,id',
 
         'subject'         => 'required_if:internship_type,custom|max:255',
-        'roll_number'     => 'required_if:internship_type,with_roll_number,with_roll_number_internship|max:255',
-        'semester'        => 'required_if:internship_type,with_roll_number,with_roll_number_internship|max:255',
+        'roll_number'     => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
+        'semester'        => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
         'letter_content'  => 'required_if:internship_type,custom,stipend',
         'issue_date'      => 'nullable|date',
     ], [
@@ -219,7 +220,8 @@ public function store(Request $request)
                     'internship_consent',
                     'part_time_job_opportunity',
                     'with_roll_number',
-                    'with_roll_number_internship'
+                    'with_roll_number_internship',
+                    'confirmation_letter'
                 ]),
                 Rule::unique('student_additional_letters')
                     ->where('student_id', $request->student_id)
@@ -229,8 +231,8 @@ public function store(Request $request)
             'student_id'      => 'required|exists:students_detail,id',
             'letter_content'  => 'required_if:internship_type,custom,stipend',
             'issue_date'      => 'nullable|date',
-            'roll_number'     => 'required_if:internship_type,with_roll_number,with_roll_number_internship|max:255',
-            'semester'        => 'required_if:internship_type,with_roll_number,with_roll_number_internship|max:255',
+            'roll_number'     => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
+            'semester'        => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
         ], [
             'internship_type.unique' => 'This letter type already exists for this student.',
         ]);
@@ -346,6 +348,7 @@ public function store(Request $request)
             'part_time_job_opportunity' => 'student_additional_letters.part_time_job_opportunity_letter_pdf',
             'with_roll_number' => 'student_additional_letters.with_roll_number_letter_pdf',
             'with_roll_number_internship' => 'student_additional_letters.with_roll_number_internship_letter_pdf',
+            'confirmation_letter' => 'student_additional_letters.confirmation_letter',
             default => 'letters.pdf',
         };
 
@@ -383,6 +386,7 @@ public function download(StudentAdditionalLetter $StudentAdditionalLetter)
         'internship_with_package' => 'INTERNSHIP WITH PACKAGE LETTER',
         'part_time_job_opportunity' => 'PART TIME JOB OPPORTUNITY LETTER',
         'with_roll_number' => 'WITH ROLL NUMBER LETTER',
+        'confirmation_letter' => 'Confirmation Letter'
     ];
 
     $sanitize = function ($value) {

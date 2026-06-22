@@ -47,17 +47,28 @@
     	use Carbon\Carbon;
 
 	    // Safe session values
-		$sessionStart = optional($student->sessionData)->start_date 
-		    ? Carbon::parse($student->start_date)->format('d F Y') 
-		    : '';
+		// if only need month and year then this else full date
+		if(isset($isMonthName) && $isMonthName === "yes"){
+			$sessionStart = optional($student->sessionData)->start_date 
+				? Carbon::parse($student->start_date)->format('F Y') 
+				: '';
 
-		$sessionEnd = optional($student->sessionData)->end_date
-		    ? Carbon::parse($student->end_date)->format('d F Y')
-		    : '';
+			$sessionEnd = optional($student->sessionData)->end_date
+				? Carbon::parse($student->end_date)->format('F Y')
+				: '';
+		} else {
+			$sessionStart = optional($student->sessionData)->start_date 
+				? Carbon::parse($student->start_date)->format('d F Y') 
+				: '';
 
-		   $issue_date = optional($student->certificate_issue_date)
-		    ? Carbon::parse($student->certificate_issue_date)->format('d-m-Y')
-		    : \Carbon\Carbon::now()->format('d-m-Y');
+			$sessionEnd = optional($student->sessionData)->end_date
+				? Carbon::parse($student->end_date)->format('d F Y')
+				: '';
+		}
+
+		$issue_date = optional($student->certificate_issue_date)
+		? Carbon::parse($student->certificate_issue_date)->format('d-m-Y')
+		: \Carbon\Carbon::now()->format('d-m-Y');
 
 		// Safe college
 		$collegrealename = optional($student->collegeData)->college_name ?? '';

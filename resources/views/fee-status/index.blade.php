@@ -13,7 +13,7 @@ color: white!important;
 /* 🟡 50-80 */
 table.table-striped.dataTable tbody tr.row-80 > * {
 background-color: yellow !important;
-color: white!important;
+color: black!important;
 
 }
 
