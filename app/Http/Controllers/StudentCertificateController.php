@@ -148,38 +148,39 @@ class StudentCertificateController extends Controller
             ]);
 
            
-           $certificate = Student::with([
+           $allCertificates = Student::with([
                 'collegeData'  => fn ($q) => $q->withTrashed(),
                
             ])
             ->where('sno', $request->certificateId)
-            ->first();
+            ->get();
 
-            if (!$certificate) {
+            if (!$allCertificates) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unverified certificate.'
                 ]);
             }
 
+            $all_certificates = [];
+            foreach($allCertificates as $certificate) {
+                $all_certificates[] = [
+                                        'first_name' => ucwords($certificate->student_name),
+                                        'duration'   => $certificate->durationData?->name ?? $certificate->duration,
+                                        'college'    => ucwords($certificate->collegeData?->college_name) ?? 'N/A',
+                                        'technology' => ucwords($certificate?->course_name) ?? 'N/A',
+                                        'semester'   => $certificate->semester,
+                                        'stream'     => $certificate->stream,
+                                        'branch'     => $certificate->branch,
+                                        'start_date' => $certificate->start_date ? date('j F Y', strtotime($certificate->start_date)) : 'N/A',
+                                        'end_date'   => $certificate->end_date ? date('j F Y', strtotime($certificate->end_date)) : 'N/A',
+                                    ];
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Certificate verified.',
-                'data' => [
-                    'first_name' => ucwords($certificate->student_name),
-                    'duration'   => $certificate->durationData?->name ?? $certificate->duration,
-                    'college'    => ucwords($certificate->collegeData?->college_name) ?? 'N/A',
-                    'technology' => ucwords($certificate?->course_name) ?? 'N/A',
-                    'semester'   => $certificate->semester,
-                    'stream'     => $certificate->stream,
-                    'branch'     => $certificate->branch,
-                    'start_date' => $certificate->start_date
-                        ? date('j F Y', strtotime($certificate->start_date))
-                        : 'N/A',
-                    'end_date'   => $certificate->end_date
-                        ? date('j F Y', strtotime($certificate->end_date))
-                        : 'N/A',
-                ]
+                'data' => $all_certificates
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
