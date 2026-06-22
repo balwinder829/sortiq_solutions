@@ -14,7 +14,7 @@ trait PdfLayoutTrait
     protected function getPDFFooter()
     {
         return '<div style="position: fixed; bottom: -35px;" class="ct-footer-shape">
-            <img src="'.public_path('images/confirmation_images/footer-shape-1.png').'"/>
+            <img src="'.public_path('images/confirmation_images/footer-shape-11.png').'"/>
         </div>';
     }
 
