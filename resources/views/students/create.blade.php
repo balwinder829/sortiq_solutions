@@ -115,6 +115,13 @@
                        class="form-control"
                        placeholder="Enter place">
             </div>
+            
+            <div class="form-group col-md-6">
+                <label>Email</label>
+                <input type="email" required name="email_id" class="form-control"
+                       value="{{ old('email_id') }}">
+                @error('email_id') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
 
             <div class="form-group col-md-6">
                 <label>Contact No</label>
@@ -144,12 +151,7 @@
                 @error('alternative_phone') <small class="text-danger">{{ $message }}</small> @enderror
             </div>
 
-            <div class="form-group col-md-6">
-                <label>Email</label>
-                <input type="email" required name="email_id" class="form-control"
-                       value="{{ old('email_id') }}">
-                @error('email_id') <small class="text-danger">{{ $message }}</small> @enderror
-            </div>
+            
 
            <div class="form-group col-md-6">
                 <label>Status</label>
@@ -241,82 +243,81 @@
 
             
 
+            <div class="row col-md-12 border border-warning p-3">
+                
+                    <div class="form-group col-md-6">
+                        <label>Registered Date</label>
+                        <input type="date" name="join_date" class="form-control" id="join_date"
+                            value="{{ old('join_date') }}" >
+                        <small class="text-danger d-none" id="join_error">
+                            Sunday is not allowed
+                        </small>
+                        @error('join_date') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Duration</label>
+                        <select name="duration" class="form-control" id="duration" >
+                            <option value="" disabled {{ old('duration') ? '' : 'selected' }}>--Select--</option>
 
-            <div class="form-group col-md-6">
-                <label>Registered Date</label>
-                <input type="date" name="join_date" class="form-control" id="join_date"
-                       value="{{ old('join_date') }}" >
-                <small class="text-danger d-none" id="join_error">
-                    Sunday is not allowed
-                </small>
-                @error('join_date') <small class="text-danger">{{ $message }}</small> @enderror
+                            @foreach($course_duration as $d)
+                                <option value="{{ $d->duration }}" 
+                                    {{ old('duration') == $d->duration ? 'selected' : '' }}>
+                                    {{ $d->name }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        @error('duration') 
+                            <small class="text-danger">{{ $message }}</small> 
+                        @enderror
+                    </div>
+            
+                    <div class="form-group col-md-6">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" class="form-control"
+                            value="{{ old('start_date') }}"  id="start_date" required>
+                        <small class="text-danger d-none" id="start_error">
+                            Sunday is not allowed
+                        </small>
+                        <small id="date_error" class="text-danger d-none">
+                            Start date must be on or after the registered date.
+                        </small>
+                        @error('start_date') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
+                <!--  <div class="form-group col-md-6">
+                        <label>End Date</label>
+                        <input type="date" name="end_date" class="form-control"
+                            value="{{ old('end_date') }}" id="end_date" >
+                        <small class="text-danger d-none" id="end_error">
+                            Sunday is not allowed
+                        </small>
+                        @error('end_date') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div> -->
+                    <input type="hidden"
+                    id="session_end_date"
+                    value="{{ $activeSession->end_date }}">
+
+                    <div class="form-group col-md-6">
+                        <label>End Date</label>
+                        <input type="date"
+                            name="end_date"
+                            class="form-control"
+                            id="end_date">
+                        <small class="text-danger d-none" id="end_error">
+                            Sunday is not allowed
+                        </small>
+                        @error('end_date') <small class="text-danger">{{ $message }}</small> @enderror
+                    </div>
+
+                    <div class="form-group col-md-6" id="pending_next_due_date">
+                        <label>Pending Fees Due Date</label>
+                        <input type="date" name="next_due_date" class="form-control" value="{{ old('next_due_date') }}">
+                        <small class="text-danger d-none" id="due_date_error">
+                            Next due date must be after the registered date.
+                        </small>
+                    </div>
             </div>
-
-        
-            <div class="form-group col-md-6">
-                <label>Start Date</label>
-                <input type="date" name="start_date" class="form-control"
-                       value="{{ old('start_date') }}"  id="start_date" required>
-                <small class="text-danger d-none" id="start_error">
-                    Sunday is not allowed
-                </small>
-                <small id="date_error" class="text-danger d-none">
-                    Start date must be on or after the registered date.
-                </small>
-                @error('start_date') <small class="text-danger">{{ $message }}</small> @enderror
-            </div>
-
-           <!--  <div class="form-group col-md-6">
-                <label>End Date</label>
-                <input type="date" name="end_date" class="form-control"
-                       value="{{ old('end_date') }}" id="end_date" >
-                <small class="text-danger d-none" id="end_error">
-                    Sunday is not allowed
-                </small>
-                @error('end_date') <small class="text-danger">{{ $message }}</small> @enderror
-            </div> -->
-            <input type="hidden"
-               id="session_end_date"
-               value="{{ $activeSession->end_date }}">
-
-            <div class="form-group col-md-6">
-                <label>End Date</label>
-                <input type="date"
-                       name="end_date"
-                       class="form-control"
-                       id="end_date">
-                <small class="text-danger d-none" id="end_error">
-                    Sunday is not allowed
-                </small>
-                 @error('end_date') <small class="text-danger">{{ $message }}</small> @enderror
-            </div>
-
-            <div class="form-group col-md-6" id="pending_next_due_date">
-                <label>Pending Fees Due Date</label>
-                <input type="date" name="next_due_date" class="form-control" value="{{ old('next_due_date') }}">
-                <small class="text-danger d-none" id="due_date_error">
-                    Next due date must be after the registered date.
-                </small>
-            </div>
-
-            <div class="form-group col-md-6">
-                <label>Duration</label>
-                <select name="duration" class="form-control" id="duration" >
-                    <option value="" disabled {{ old('duration') ? '' : 'selected' }}>--Select--</option>
-
-                    @foreach($course_duration as $d)
-                        <option value="{{ $d->duration }}" 
-                            {{ old('duration') == $d->duration ? 'selected' : '' }}>
-                            {{ $d->name }}
-                        </option>
-                    @endforeach
-                </select>
-
-                @error('duration') 
-                    <small class="text-danger">{{ $message }}</small> 
-                @enderror
-            </div>
-
             <div class="form-group col-md-6">
                 <label>Batch Assign</label>
                 <select name="batch_assign" class="form-control">
@@ -468,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Detect manual change
 document.getElementById('end_date').addEventListener('input', function () {
-    endDateManuallyChanged = true;
+    //endDateManuallyChanged = true;
 });
 
 // Recalculate when start date changes (only if user didn't override)
@@ -478,6 +479,11 @@ document.getElementById('start_date').addEventListener('change', function () {
         calculateEndDateFromSession();
     }
 });
+
+document.getElementById('duration').addEventListener('change', function () {
+    calculateEndDateFromSession();
+});
+
 function validateDates() {
     let joinDate  = $('#join_date').val();
     let startDate = $('#start_date').val();
@@ -494,34 +500,66 @@ function validateDates() {
 }
 
 function calculateEndDateFromSession() {
+    // console.log(" Executing... ")
+    handleFieldsEnableDisable();
     const sessionEnd = document.getElementById('session_end_date').value;
     const startDate  = document.getElementById('start_date').value;
+    const duration  = document.getElementById('duration').value || 0;
 
     if (!sessionEnd || !startDate) return;
 
-    let endDate = new Date(sessionEnd);
+    let endDate = new Date(startDate);
     let start   = new Date(startDate);
-    let sessionStart = new Date("{{ $activeSession->start_date }}");
-
+    // let sessionStart = new Date("{{ $activeSession->start_date }}");
+    // console.log({sessionStart, start})
     // Calculate missed days
-    let diffTime = start.getTime() - sessionStart.getTime();
-    let missedDays = Math.max(Math.floor(diffTime / (1000 * 60 * 60 * 24)), 0);
-
-    endDate.setDate(endDate.getDate() + missedDays);
-
+    // let diffTime = start.getTime() - sessionStart.getTime();
+    // let missedDays = Math.max(Math.floor(diffTime / (1000 * 60 * 60 * 24)), 0);
+    endDate.setDate(start.getDate() + Number(duration));
+    // console.log({start, duration, startDate, endDate})
+    // console.log({ endDay: endDate.getDay(), duration, diffTime})
     // If Sunday → move to Monday
     if (endDate.getDay() === 0) {
         endDate.setDate(endDate.getDate() + 1);
     }
-
+    // console.log({ endDate });
     setEndDate(endDate);
+}
+
+function handleFieldsEnableDisable(){
+
+    const duration  = document.getElementById('duration').value;
+    const startDate  = document.getElementById('start_date').value;
+    // console.log({ duration, startDate });
+    if(duration == ""){
+        document.getElementById('start_date').value = "";
+        document.getElementById('end_date').value = "";
+
+        document.getElementById('start_date').disabled = true;
+        document.getElementById('end_date').disabled = true;
+        return;
+    } else {
+        document.getElementById('start_date').disabled = false;
+    } 
+    
+    
+    if (startDate == ""){
+        document.getElementById('end_date').disabled = true;
+        return;
+    } 
+    
+    if (startDate !== "" && duration !== ""){
+        document.getElementById('start_date').disabled = false;
+        document.getElementById('end_date').disabled = false;
+    }
+
 }
 
 function setEndDate(date) {
     const year  = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day   = String(date.getDate()).padStart(2, '0');
-
+    // console.log(`${year}-${month}-${day}`);
     document.getElementById('end_date').value = `${year}-${month}-${day}`;
 }
 
@@ -539,10 +577,7 @@ document.getElementById('end_date').addEventListener('change', function () {
 });
 
 $('#join_date').on('change', validateDates);
-</script>
 
-
-<script>
 $(document).ready(function () {
 
     function calculateFees(changed) {
@@ -598,10 +633,7 @@ $(document).ready(function () {
     });
 
 });
-</script>
 
-
-<script>
 $(document).ready(function () {
 
     function togglePaidFees() {
@@ -626,9 +658,7 @@ $(document).ready(function () {
     });
 
 });
-</script>
 
-<script>
    
 function capitalizeWords(input) {
     const start = input.selectionStart;
@@ -752,8 +782,7 @@ function toggleDueDate() {
         // Set final value
         input.value = prefix + value;
     }
-</script>
-<script>
+
 function validateDueDate() {
     let joinDate = $('#join_date').val();
     let dueDate  = $('input[name="next_due_date"]').val();
@@ -772,8 +801,7 @@ function validateDueDate() {
 $('#join_date, input[name="next_due_date"]').on('change', function () {
     validateDueDate();
 });
-</script>
-<script>
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const genderSelect = document.getElementById("genderSelect");

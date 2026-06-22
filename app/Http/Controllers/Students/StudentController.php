@@ -43,30 +43,23 @@ class StudentController extends Controller
     protected array $permissionMap = [
         'index'        => 'view',
         'show'         => 'view',
-        'confirmStudent'         => 'view',
-        'confirmMultiple'         => 'view',
-        'importForm'         => 'import',
-        'import'         => 'import',
-        'exportExcel'         => 'import',
-
+        'confirmStudent' => 'view',
+        'confirmMultiple' => 'view',
+        'importForm'      => 'import',
+        'import'          => 'import',
+        'exportExcel'     => 'import',
         'create'       => 'create',
         'store'        => 'create',
-
         'edit'         => 'edit',
         'update'       => 'edit',
-
         'destroy'      => 'delete',
-
         'bulkDelete'      => 'bulk_deletes',
-        
         'downloadconfirmMultiple'      => 'downloads',
         'downloadMultipleReceipts'      => 'downloads',
         'downloadCertificateMultiple'      => 'downloads',
         'generateIdCard'      => 'downloads',
         'downloadIdStudentCard'      => 'downloads',
-
         'copyStudents'      => 'copy_to_other_session',
-
         'moveMultipleToCertificate'      => 'move_to_certificates',
     ];
 
@@ -323,7 +316,15 @@ class StudentController extends Controller
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
         $lastStudent = Student::orderBy('id', 'desc')->first();
-        $nextSno = $lastStudent ? $lastStudent->sno + 1 : 1;
+        if(!empty($lastStudent) && !empty($lastStudent->sno)){
+            $lastSn = $lastStudent->sno;
+            $lastSnArr = explode("-", $lastSn);
+            $lastSn = end($lastSnArr);
+            $nextSno = !empty($lastSn) ? str_pad($lastSn+1, 5, '0', STR_PAD_LEFT) : 2000;
+        } else {
+            $nextSno = 1;
+        }
+        // $nextSno = $lastStudent ? $lastStudent->sno + 1 : 1;
 
         return view('students.create', compact('sessions','activeSession','colleges','courses','batches','references','course_duration','student_status','nextSno'));
     }
@@ -455,13 +456,19 @@ class StudentController extends Controller
         /** 🔢 GLOBAL RECEIPT / STUDENT RECORD NUMBER */
         // $lastSno = Student::whereRaw("sno REGEXP '^[0-9]+$'")
         //     ->max(DB::raw('CAST(sno AS UNSIGNED)'));
-
         // $validate['sno'] = $lastSno ? $lastSno + 1 : 1;
 
         $lastSno = Student::orderBy('id', 'desc')->value('sno');
-
-        $newSno = is_numeric($lastSno) ? ((int)$lastSno + 1) : 1;
-
+        // $newSno = is_numeric($lastSno) ? ((int)$lastSno + 1) : 1;
+        if(!empty($lastSno) && !empty($lastSno)){
+            $lastSnArr = explode("-", $lastSno);
+            $lastSn = end($lastSnArr);
+            $newSno = !empty($lastSn) ? ((int) $lastSn + 1) : 2000;
+            $newSno = 'SN-' . date('Ym') . '-' . str_pad($newSno, 5, '0', STR_PAD_LEFT);
+        } else {
+            $newSno = 2000;
+            $newSno = 'SN-' . date('Ym') . '-' . str_pad($newSno, 5, '0', STR_PAD_LEFT);
+        }
         $validate['sno'] = $newSno;
 
 
@@ -1226,6 +1233,7 @@ public function import(Request $request)
         $ids = json_decode($request->ids, true);
         $isPursuing = $request->boolean('is_pursuing');
         $isInternship = $request->boolean('is_internship');
+        $isMonthName = !empty($request->is_month_name) ? $request->is_month_name : "no";
         // dd($request->request);
         if (!is_array($ids) || count($ids) === 0) {
             return back()->with('error', 'No students selected.');
@@ -1257,7 +1265,7 @@ public function import(Request $request)
         foreach ($students as $student) {            
              // ✅ Case 1: empty → set
            
-            $pdfPath = $this->generatePdf($student, $isPursuing, $isInternship);
+            $pdfPath = $this->generatePdf($student, $isPursuing, $isInternship, $isMonthName);
 
             if (file_exists($pdfPath)) {
                 $pdfPaths[] = $pdfPath;
@@ -1664,14 +1672,14 @@ public function import(Request $request)
     function getPDFFooter()
     {
         return '<div style="position: fixed; bottom: -35px;" class="ct-footer-shape">
-                    <img src="'.public_path('images/confirmation_images/footer-shape-1.png').'"/>
+                    <img src="'.public_path('images/confirmation_images/footer-shape-11.png').'"/>
                 </div>';
     }
 
 
-private function generatePdf($student, $isPursuing = false, $isInternship = false)
+private function generatePdf($student, $isPursuing = false, $isInternship = false, $isMonthName = "no")
     {
-         
+        
      // Create folder path for today
         $date = Carbon::now()->format('Y-m-d');
         $folderPath = public_path("student_certificate/{$date}");
@@ -1754,7 +1762,7 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
                 $view = "pdf.student_certificate";
             }
 
-            $html = view($view, compact('student'))->render();
+            $html = view($view, compact('student', 'isMonthName'))->render();
         
             $mpdf->WriteHTML($html);
             $mpdf->Output($filePath, 'F');
