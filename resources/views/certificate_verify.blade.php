@@ -204,18 +204,17 @@ $('#certCheckForm').on('submit', function(e) {
                 .show();
 
             let d = res.data;
-
-            $('#certTable tbody').html(`
-                <tr>
-                    <td>${d.first_name ?? 'N/A'}</td>
-                    <td>${d.college ?? 'N/A'}</td>
-                    <td>${d.duration ?? 'N/A'}</td>
-                    <td>${d.technology ?? 'N/A'}</td>
-                    <td>${d.start_date ?? 'N/A'}</td>
-                    <td>${d.end_date ?? 'N/A'}</td>
-                </tr>
-            `);
-
+            let rows = d?.map((item, index) => {
+                return `<tr>
+                            <td>${item.first_name ?? 'N/A'}</td>
+                            <td>${item.college ?? 'N/A'}</td>
+                            <td>${item.duration ?? 'N/A'}</td>
+                            <td>${item.technology ?? 'N/A'}</td>
+                            <td>${item.start_date ?? 'N/A'}</td>
+                            <td>${item.end_date ?? 'N/A'}</td>
+                        </tr>`;
+            });
+            $('#certTable tbody').html(rows?.join(""));
             tableWrap.show();
 
         } else {
