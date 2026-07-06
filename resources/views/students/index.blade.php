@@ -487,6 +487,11 @@ class="form-control filterchange">
 
 <option value="">-- Fee Related Filter --</option>
 
+<option value="not_paid"
+{{ request('fee_filter')=='not_paid'?'selected':'' }}>
+Not Paid
+</option>
+
 <option value="completed"
 {{ request('fee_filter')=='completed'?'selected':'' }}>
 Completed Fees
@@ -796,6 +801,7 @@ Copy to Session
            title="Download ID Card">
            <i class="fas fa-id-card"></i>
         </a>
+        @include('whatsapp.whatsapp_btn_individual', ["mobile" => $student->contact])
         {{-- Issue --}}
 
         <!-- <form action="{{ route('students.confirmStudent', $student->id) }}" method="POST" style="display:inline-block;"  class="confirm-single-form" >

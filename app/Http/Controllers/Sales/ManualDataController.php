@@ -137,7 +137,12 @@ public function index(Request $request)
             'searchable' => ['student_name','student_email','student_mobile'],
         ], function ($data, $index, $start) {
 
-            $actions  = '<a href="' . route('admin.manual_data.edit', $data->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ';
+            $mobile = preg_replace('/\D/', '', $data->student_mobile); // remove non-digits
+            if(strlen($mobile) == 10){
+                $mobile = '91'.$mobile;
+            }
+            $actions = '<a href="https://wa.me/'.$mobile.'?text=Hello '.$data->student_name.'," target="_blank"><i class="fa-brands fa-whatsapp"></i></a>';
+            $actions .= '<a href="' . route('admin.manual_data.edit', $data->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ';
             $actions .= '<form action="' . route('admin.manual_data.destroy', $data->id) . '" method="POST" style="display:inline-block;">'
                         . csrf_field()
                         . method_field('DELETE') .

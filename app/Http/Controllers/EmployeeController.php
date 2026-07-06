@@ -195,7 +195,7 @@ class EmployeeController extends Controller
         $request->photo->move($dir, $photoName);
     }
 
-    DB::transaction(function () use ($data, $photoName) {
+    DB::transaction(function () use ($data, $photoName, $request) {
           // Lock table rows
        $lastEmployee = Employee::orderBy('id', 'desc')->lockForUpdate()->first();
 
@@ -207,7 +207,7 @@ class EmployeeController extends Controller
         }
 
         $newEmpCode = 'SS-' . $newNumber; // ✅ No padding
-
+       
         Employee::create([
             'user_id'      =>null,
             'emp_code'     => $newEmpCode,
@@ -232,6 +232,8 @@ class EmployeeController extends Controller
             'alternative_phone'     => $data['alternative_phone'],
             'probation_period'     => $data['probation_period'],
             'emp_pswd'     => trim($data['password']),
+            'is_married' => isset($request->is_married) ? $request->is_married : 0,
+            'gender' => isset($request->gender) ? $request->gender : "male"
         ]);
     });
 
@@ -351,9 +353,11 @@ class EmployeeController extends Controller
             'dob'          => $data['dob'],
             'blood_group'  => $data['blood_group'],
             'address'      => $data['address'],
+            'is_married' => isset($request->is_married) ? $request->is_married : 0,
+            'gender' => isset($request->gender) ? $request->gender : "male",
             'photo'        => $photoName, // ✅ filename only
         ];
-
+// dd($empData);
         if ($request->filled('password')) {
             $empData['emp_pswd'] = $empData['password'] = $request->password;
         }

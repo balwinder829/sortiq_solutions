@@ -174,7 +174,7 @@ use App\Http\Controllers\Admin\TestAnalyticsController;
             abort_unless(file_exists($path), 404);
             return response()->download($path);
         })->name('download.file');
-
+Route::post('/upload-pdf', [StudentAdditionalLetterController::class, 'uploadPdf'])->name('upload.pdf');
 // EMployee Leave Form show
 Route::get('/leave/apply', [EmployeeLeaveController::class, 'create'])
     ->name('employee.leave.apply');

@@ -172,7 +172,9 @@ class StudentController extends Controller
                     case 'completed':
                         $query->where('pending_fees', 0);
                         break;
-
+                    case 'not_paid':
+                        $query->where('paid_fees', "<", 1);
+                        break;
                     case 'pending':
                         $query->where('pending_fees', '>', 0);
                         break;
@@ -1831,13 +1833,35 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
         // Receipt No.
         $receiptNumber = strtoupper(uniqid("RCT"));
 
+        $amount = $student->reg_fees + ($student->paid_fees ?? 0);
+        $AmountInWords = ucwords(
+            (new \NumberFormatter('en', \NumberFormatter::SPELLOUT))->format($amount)
+        );
+
         // Payment amount (you can change this)
         // $amount = $student->reg_fees;
-        $amount = $student->reg_fees + ($student->paid_fees ?? 0);
-
+        $PaidFees = $student->paid_fees ?? 0;
         // Convert amount to words
-        $amountInWords = ucwords(
-            (new \NumberFormatter('en', \NumberFormatter::SPELLOUT))->format($amount)
+        $PaidFeesAmountInWords = ucwords(
+            (new \NumberFormatter('en', \NumberFormatter::SPELLOUT))->format($PaidFees)
+        );
+
+        $RegFeesAamount = ($student->reg_fees ?? 0);
+        // Convert amount to words
+        $RegFeeAmountInWords = ucwords(
+            (new \NumberFormatter('en', \NumberFormatter::SPELLOUT))->format($RegFeesAamount)
+        );
+        
+        $TotalFeesAamount = ($student->total_fees ?? 0);
+        // Convert amount to words
+        $TotalFeesAmountInWords = ucwords(
+            (new \NumberFormatter('en', \NumberFormatter::SPELLOUT))->format($TotalFeesAamount)
+        );
+        
+        $PendingFeesAmount = ($student->pending_fees ?? 0);
+        // Convert amount to words
+        $PendingFeesAmountInWords = ucwords(
+            (new \NumberFormatter('en', \NumberFormatter::SPELLOUT))->format($PendingFeesAmount)
         );
 
         // PDF Name
@@ -1890,8 +1914,17 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
         $html = view('pdf.payment_receipt', [
             'student'        => $student,
             'receiptNumber'  => $receiptNumber,
+            'PaidFees' => $PaidFees,
+            'PaidFeesAmountInWords' => $PaidFeesAmountInWords,
+            'RegFeesAamount' => $RegFeesAamount,
+            'RegFeeAmountInWords' => $RegFeeAmountInWords,
+            'TotalFeesAamount' => $TotalFeesAamount,
+            'TotalFeesAmountInWords' => $TotalFeesAmountInWords,
+            'PendingFeesAmount' => $PendingFeesAmount,
+            'PendingFeesAmountInWords' => $PendingFeesAmountInWords,
+            'mode' => $student->is_online ? 'Online' : 'Offline', // online/Offline
             'amount'         => $amount,
-            'amountInWords'  => $amountInWords,
+            'amountInWords'  => $AmountInWords,
             'payment_mode'   => 'Cash',
             'transaction_no' => 'N/A',
         ])->render();

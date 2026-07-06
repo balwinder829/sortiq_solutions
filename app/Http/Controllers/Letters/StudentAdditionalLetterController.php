@@ -534,4 +534,32 @@ public function sendEmail($id)
             $letter->letter_content
         );
     }
+
+     public function uploadPdf(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,doc,docx,png,jpg,jpeg|max:10240',
+        ]);
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            
+            // Move file to public/uploads directory
+            $file->move(public_path('uploads'), $fileName);
+            
+            $url = asset('uploads/' . $fileName);
+            
+            return response()->json([
+                'success' => true,
+                'url' => $url,
+                'fileName' => $file->getClientOriginalName()
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'File upload failed.'
+        ], 400);
+    }
 }

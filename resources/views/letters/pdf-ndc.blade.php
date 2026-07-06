@@ -131,7 +131,7 @@ li {
 
                <tr>
                     <td  style="font-size: 14px; line-height: 24px; text-align:center; font-family: 'Inter', sans-serif;">
-                        Sortiq Solutions Pvt. Ltd., principal office at E-51, Ground Floor, Industrial Area, Phase 8, Mohali, Punjab - 160072, hereinafter referred to as “the Company”,
+                        Sortiq Solutions Pvt. Ltd., principal office at E-51, Ground Floor, Industrial Area, Phase 8, Mohali, Punjab - 160071, hereinafter referred to as “the Company”,
                     </td>
                 </tr>
 

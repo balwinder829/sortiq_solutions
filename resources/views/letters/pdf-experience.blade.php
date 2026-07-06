@@ -13,7 +13,10 @@ body {
 </style>
 </head>
 <body>
-
+@php
+	$gender = strtolower($letter->employee->gender ?? '');
+	$title = ($gender === 'female') ? ($letter->employee->is_married ? 'Mrs.' : 'Miss.') : 'Mr.';
+@endphp
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
 	<div class="head-main" style="padding-top: 110px;">
 		<div class="inner-container" style="padding-left: 30px; padding-right: 30px;">
@@ -61,7 +64,7 @@ body {
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-						This is to certify that <strong>Mr./Ms {{ ucwords($letter->employee->emp_name) }}</strong> was working with <strong>"Sortiq Solutions Pvt. Ltd."</strong> from <strong>{{ \Carbon\Carbon::parse($letter->employee->joining_date)->format('d M Y') }}</strong> to <strong>{{ \Carbon\Carbon::parse($letter->relieving_date)->format('d M Y') }}</strong> His/her last served designation was <strong>{{ ucwords($letter->employee->position) }}</strong> with the salary <strong>{{ optional($letter->employee->salaryStructure)->total_salary
+						This is to certify that <strong>{{ $title }} {{ ucwords($letter->employee->emp_name) }}</strong> was working with <strong>"Sortiq Solutions Pvt. Ltd."</strong> from <strong>{{ \Carbon\Carbon::parse($letter->employee->joining_date)->format('d M Y') }}</strong> to <strong>{{ \Carbon\Carbon::parse($letter->relieving_date)->format('d M Y') }}</strong> His/her last served designation was <strong>{{ ucwords($letter->employee->position) }}</strong> with the salary <strong>{{ optional($letter->employee->salaryStructure)->total_salary
 						    ? number_format($letter->employee->salaryStructure->total_salary, 2)
 						    : 'N/A'
 						}}</strong> per month.

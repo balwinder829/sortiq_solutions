@@ -1283,7 +1283,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <!-- RIGHT SIDE (Existing Content) -->
       <div class="col-md-6 text-center text-md-end">
         <p class="mb-1 fs-5 fw-semibold">
-          E-51, Phase 8, Industrial Area, Mohali, Punjab - 160072
+          E-51, Phase 8, Industrial Area, Mohali, Punjab - 160071
         </p>
 
         <div class="d-flex justify-content-md-end justify-content-center gap-3 flex-wrap">

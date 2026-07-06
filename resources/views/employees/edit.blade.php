@@ -71,6 +71,33 @@
                 </select>
             </div>
 
+       
+            <div class="form-group col-md-6">
+               <label>Is Married</label>
+                <select name="is_married" class="form-control" required>
+                    <option value="">Select</option>
+                    @foreach([["label" => "Married", "value"=> 1], ["label" => "Unmarried", "value"=> 0]] as $bg)
+                        <option value="{{ $bg['value'] }}"
+                            {{ old('is_married', $employee->is_married) == $bg['value'] ? 'selected' : '' }}>
+                            {{ ucwords($bg['label']) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="form-group col-md-6">
+               <label>Gender</label>
+                <select name="gender" class="form-control" required>
+                    <option value="">Select</option>
+                    @foreach([["label" => "Male", "value"=> "male"], ["label" => "Female", "value"=> "female"]] as $bg)
+                        <option value="{{ $bg['value'] }}"
+                            {{ old('gender', $employee->gender) == $bg['value'] ? 'selected' : '' }}>
+                            {{ ucwords($bg['label']) }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            
             <div class="form-group col-md-6">
                 <label>Work Mode</label>
                 <select name="work_mode" class="form-control" required>

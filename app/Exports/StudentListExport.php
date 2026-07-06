@@ -117,7 +117,9 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                     case 'completed':
                         $query->where('pending_fees', 0);
                         break;
-
+                    case 'not_paid':
+                        $query->where('paid_fees', "<", 1);
+                        break;
                     case 'pending':
                         $query->where('pending_fees', '>', 0);
                         break;

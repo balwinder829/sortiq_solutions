@@ -86,14 +86,10 @@ li {
                 } elseif ($letter->employee->job_type === 'part_time') {
                     $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
                 }
-            @endphp
 
-            @php
-                 
-
-                
+                $gender = strtolower($letter->employee->gender ?? '');
+                $title = ($gender === 'female') ? ($letter->employee->is_married ? 'Mrs' : 'Miss') : 'Mr';
                 $amount = (int) ($letter->bond_amount ?? 20000);
-
                 $bondAmountFormatted = '₹' . (
                     strlen($amount) > 3
                         ? preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', substr($amount, 0, -3)) . ',' . substr($amount, -3)
@@ -119,7 +115,7 @@ li {
                 </tr>
                 <tr>
                     <td colspan="2" align="left" style="font-size: 14px;  padding-bottom:5px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-                       <strong>Mr./Ms: </strong> {{ ucwords($letter->employee->emp_name) }}
+                       <strong>{{ $title }}: </strong> {{ ucwords($letter->employee->emp_name) }}
                     </td>
                 </tr>
                 @if($employmentLine)

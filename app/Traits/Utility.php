@@ -86,8 +86,15 @@ trait Utility
                 $status = !empty($res['success']) ? $res['success'] : false;
                 $recipientCount = !empty($res['recipientCount']) ? $res['recipientCount'] : 0;
                 if($status === true){
-                    WhatsappLogs::insert($dataForLogs);
+
+                    $dataToBeInserted = [];
                     foreach($dataForLogs as $item){
+                        $message = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $item['message']);
+                        $item['message'] = $message;
+                        $dataToBeInserted[] = $item;
+                    }
+                    WhatsappLogs::insert($dataToBeInserted);
+                    foreach($dataToBeInserted as $item){
                         $model = $item['model'];
                         $id = $item['model_id'];
                         $sql = ManualData::query();

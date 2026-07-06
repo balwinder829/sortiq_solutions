@@ -57,6 +57,10 @@ body {
 			    } elseif ($letter->employee->job_type === 'part_time') {
 			        $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
 			    }
+
+				$gender = strtolower($letter->employee->gender ?? '');
+				$title = ($gender === 'female') ? ($letter->employee->is_married ? 'Mrs' : 'Miss') : 'Mr';
+
 			@endphp
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
@@ -66,7 +70,7 @@ body {
 				</tr>
 				<tr>
 					<td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-						<strong>Mr./Ms: </strong> {{ ucwords($letter->employee->emp_name) }}
+						<strong>{{ $title }}: </strong> {{ ucwords($letter->employee->emp_name) }}
 					</td>
 				</tr>
 				<tr>

@@ -1,13 +1,84 @@
 @extends('layouts.app')
 
 @section('content')
-
+<script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+ <meta name="csrf-token" content="{{ csrf_token() }}">
 <style>
     table.dataTable td {
         text-transform: capitalize;
     }
 </style>
-
+<style>
+        .whatsapp-btn {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            box-shadow: 0 4px 14px 0 rgba(37, 211, 102, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .whatsapp-btn:hover {
+            box-shadow: 0 6px 20px 0 rgba(37, 211, 102, 0.4);
+            transform: translateY(-2px);
+        }
+        .whatsapp-btn-global {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .whatsapp-btn-global:hover {
+            box-shadow: 0 6px 20px 0 rgba(16, 185, 129, 0.5);
+            transform: translateY(-2px);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* CKEditor Dark Theme Styling */
+        .ck-editor__editable_inline {
+            background-color: rgba(15, 23, 42, 0.6) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #f1f5f9 !important;
+            min-height: 150px;
+            border-bottom-left-radius: 12px !important;
+            border-bottom-right-radius: 12px !important;
+        }
+        .ck-editor__editable_inline:focus {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 1px #10b981 !important;
+        }
+        .ck-toolbar {
+            background-color: rgba(30, 41, 59, 0.9) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            border-top-left-radius: 12px !important;
+            border-top-right-radius: 12px !important;
+        }
+        .ck-toolbar * {
+            color: #e2e8f0 !important;
+        }
+        .ck-toolbar .ck-button:hover,
+        .ck-toolbar .ck-button:active {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+        .ck-toolbar .ck-button.ck-on {
+            background: rgba(16, 185, 129, 0.3) !important;
+        }
+        .ck-dropdown__panel {
+            background: #1e293b !important;
+        }
+        .ck-list__item .ck-button:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+    </style>
 <div class="container">
 
     {{-- Add Enquiry Button --}}
@@ -288,6 +359,58 @@
 </div> -->
 {{-- ======================== END UPLOAD ======================== --}}
 
+
+    <!-- Message Composer Panel -->
+    <section class="glass rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <label for="message-input" class="block text-sm font-semibold text-slate-200 tracking-wide uppercase">
+                        1. Compose Message
+                    </label>
+                    <span id="char-count" class="text-xs text-slate-500">0 characters</span>
+                </div>
+                <div class="relative">
+                    <textarea 
+                        id="message-input" 
+                        rows="3" 
+                        class="w-full bg-slate-900/60 border border-slate-700/80 rounded-xl px-4 py-3 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none text-base"
+                        placeholder="Type your message here..."></textarea>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Browser Popup Warning Alert -->
+    <!-- <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex gap-3 text-amber-400 text-sm glass">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <div>
+            <span class="font-semibold">Browser Popup Blockers:</span> When broadcasting to multiple students, your browser will try to block the tabs. Please click <strong>"Allow popups from this site"</strong> in your address bar when prompted so all chats open correctly.
+        </div>
+    </div> -->
+
+    <!-- Sticky Bulk Action Bar -->
+    <div id="bulk-bar" class="hidden glass border-emerald-500/30 bg-emerald-950/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-300">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold" id="selected-count-badge">
+                0
+            </div>
+            <div class="text-white font-medium">
+                Students selected for broadcast
+            </div>
+        </div>
+        <div class="flex gap-3 w-full sm:w-auto">
+            <button onclick="sendBulkWhatsApp()" class="w-full sm:w-auto whatsapp-btn-global px-5 py-2.5 rounded-lg text-white font-semibold flex items-center justify-center gap-2 hover:scale-102 transition-all text-sm">
+                Send to Selected (<span id="btn-count">0</span>)
+            </button>
+            <button onclick="sendBulkWhatsAppWithName()" class="w-full sm:w-auto whatsapp-btn px-5 py-2.5 rounded-lg text-white font-semibold flex items-center justify-center gap-2 hover:scale-102 transition-all text-sm">
+                Send with Name (<span id="btn-count-name">0</span>)
+            </button>
+        </div>
+    </div>
+
     {{-- ======================== TABLE ======================== --}}
     <div class="table-responsive">
         <table class="table table-bordered table-striped" id="enquiriesTable">
@@ -320,6 +443,7 @@
                                 @else
                                     <span class="badge bg-secondary">Assigned</span>
                                 @endif
+                                
                             </td>
                         @endif
 
@@ -354,13 +478,25 @@
 
                         <td class="no-wrap" style="width: 150px;">
                             <div class="d-flex gap-1">
-                            <a href="{{ route('enquiries.show', $enquiry->id) }}" class="btn btn-sm">
-                                <i class="fa fa-eye"></i>
-                            </a>
-                            <a href="{{ route('enquiries.edit', $enquiry->id) }}" class="btn btn-sm">
-                                <i class="fa fa-pencil"></i>
-                            </a>
-                        </div>
+                                @php
+                                    $mobile = preg_replace('/\D/', '', $enquiry->mobile); // remove non-digits
+                                    if(strlen($mobile) == 10){
+                                        $mobile = '91'.$mobile;
+                                    }
+                                @endphp
+                                 <button 
+                                    onclick="sendSingleWhatsApp('{{ $mobile }}')"
+                                    class="border-0"
+                                >
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                </button>
+                                <a href="{{ route('enquiries.show', $enquiry->id) }}" class="btn btn-sm">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                                <a href="{{ route('enquiries.edit', $enquiry->id) }}" class="btn btn-sm">
+                                    <i class="fa fa-pencil"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 @endforeach
@@ -445,7 +581,7 @@ function restoreCheckedBoxes(){
         if(selectedEnquiries.includes(id)){
             $(this).prop('checked', true);
         }
-
+        syncBulkActionBar();
     });
 
 }
@@ -461,6 +597,7 @@ $(document).on('change','.rowCheck',function(){
 
         if(!selectedEnquiries.includes(id)){
             selectedEnquiries.push(id);
+            console.log({ selectedRecordIds });
             selectedRecordIds.add(parseInt(id));
         }
 
@@ -470,7 +607,7 @@ $(document).on('change','.rowCheck',function(){
         selectedRecordIds = selectedEnquiries.map(id => parseInt(id));
 
     }
-
+    syncBulkActionBar();
     localStorage.setItem('selected_enquiries',JSON.stringify(selectedEnquiries));
 
 });
@@ -499,8 +636,8 @@ $('#selectAll').on('change',function(){
             selectedEnquiries = selectedEnquiries.filter(e => e != id);
             selectedRecordIds = new Set(selectedEnquiries.map(id => parseInt(id)));
         }
-
     });
+    syncBulkActionBar();
 
     localStorage.setItem('selected_enquiries',JSON.stringify(selectedEnquiries));
 
@@ -648,6 +785,263 @@ $(document).on('click', '#sendWhatsappNotification', function () {
         }
     });
 });
+
+    const students = @json($enquiries);
+    // State variables
+
+    let filteredStudents = [...students?.data];
+    let selectedStudentIds = new Set();
+    let currentPage = 1;
+    let pageSize = 15;
+    let searchQuery = '';
+
+    // Dom elements
+    const tableBody = document.getElementById('table-body');
+    const paginationInfo = document.getElementById('pagination-info');
+    const paginationControls = document.getElementById('pagination-controls');
+
+    const selectedCountBadge = document.getElementById('selected-count-badge');
+    const btnCount = document.getElementById('btn-count');
+    const btnCountName = document.getElementById('btn-count-name');
+    const btnCountApi = document.getElementById('btn-count-api');
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+
+    class MyUploadAdapter {
+        constructor(loader) {
+            this.loader = loader;
+        }
+        upload() {
+            return this.loader.file
+                .then(file => new Promise((resolve, reject) => {
+                    const data = new FormData();
+                    data.append('file', file);
+
+                    fetch('/upload-pdf', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: data
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            resolve({
+                                default: result.url
+                            });
+                        } else {
+                            reject(result.message || 'Upload failed');
+                        }
+                    })
+                    .catch(error => {
+                        reject(error);
+                    });
+                }));
+        }
+        abort() {}
+    }
+
+    function MyCustomUploadAdapterPlugin(editor) {
+        editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+            return new MyUploadAdapter(loader);
+        };
+    }
+
+    // Initialize CKEditor 5
+    let editorInstance;
+    ClassicEditor
+        .create(document.querySelector('#message-input'), {
+            extraPlugins: [MyCustomUploadAdapterPlugin]
+        })
+        .then(editor => {
+            editorInstance = editor;
+            
+            // Track character count
+            editor.model.document.on('change:data', () => {
+                const data = editor.getData();
+                const countSpan = document.getElementById('char-count');
+                const plainText = data.replace(/<[^>]*>/g, '');
+                countSpan.textContent = `${plainText.length} characters`;
+            });
+
+            // Dynamically inject our "Attach File" button into the CKEditor toolbar DOM
+            const toolbarItems = editor.ui.view.toolbar.element.querySelector('.ck-toolbar__items');
+            if (toolbarItems) {
+                const separator = document.createElement('span');
+                separator.className = 'ck ck-toolbar__separator';
+                toolbarItems.appendChild(separator);
+
+                const uploadBtn = document.createElement('button');
+                uploadBtn.type = 'button';
+                uploadBtn.className = 'ck ck-button ck-off custom-upload-btn';
+                uploadBtn.setAttribute('title', 'Attach File (PDF, Doc, Image)');
+                uploadBtn.setAttribute('aria-label', 'Attach File');
+                uploadBtn.innerHTML = `
+                    <svg class="ck-icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px;">
+                        <path fill="currentColor" d="M11.666 4.793v7.354a3.146 3.146 0 0 1-5.37 2.224 3.146 3.146 0 0 1 0-4.448l4.447-4.448a1.573 1.573 0 0 1 2.224 0 1.573 1.573 0 0 1 0 2.224l-4.447 4.448a.524.524 0 0 1-.74 0 .524.524 0 0 1 0-.741l4.077-4.077a.524.524 0 1 0-.741-.74l-4.077 4.076a1.573 1.573 0 0 0 0 2.225 1.573 1.573 0 0 0 2.224 0l4.448-4.448a2.622 2.622 0 0 0-3.708-3.708l-4.448 4.448a4.195 4.195 0 0 0 0 5.93 4.195 4.195 0 0 0 5.93 0l4.448-4.448a.524.524 0 1 0-.74-.741l-4.449 4.448a3.146 3.146 0 0 1-4.448-4.448l4.448-4.448a.524.524 0 0 1 .74 0 .524.524 0 0 1 0 .741z"/>
+                    </svg>
+                `;
+                toolbarItems.appendChild(uploadBtn);
+
+                uploadBtn.addEventListener('click', () => {
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = '.pdf,.doc,.docx,.png,.jpg,.jpeg';
+                    
+                    fileInput.onchange = () => {
+                        const file = fileInput.files[0];
+                        if (!file) return;
+
+                        uploadBtn.style.opacity = '0.5';
+                        uploadBtn.setAttribute('title', 'Uploading...');
+
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        fetch('/upload-pdf', {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            uploadBtn.style.opacity = '1';
+                            uploadBtn.setAttribute('title', 'Attach File (PDF, Doc, Image)');
+
+                            if (data.success) {
+                                editor.model.change(writer => {
+                                    const insertPosition = editor.model.document.selection.getFirstPosition();
+                                    const link = writer.createText(` ${data.fileName} `, { linkHref: data.url });
+                                    editor.model.insertContent(link, insertPosition);
+                                });
+                            } else {
+                                alert('Upload failed: ' + (data.message || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            uploadBtn.style.opacity = '1';
+                            uploadBtn.setAttribute('title', 'Attach File (PDF, Doc, Image)');
+                            console.error('Error:', error);
+                            alert('An error occurred during file upload.');
+                        });
+                    };
+                    fileInput.click();
+                });
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
+
+    // Sync visual bulk banner
+    function syncBulkActionBar() {
+        const count = selectedRecordIds.size;
+        if (count > 0) {
+            const bulkBar = document.getElementById('bulk-bar');
+            bulkBar.classList.remove('hidden');
+            selectedCountBadge.textContent = count;
+            btnCount.textContent = count;
+            if (btnCountName) {
+                btnCountName.textContent = count;
+            }
+            if (btnCountApi) {
+                btnCountApi.textContent = count;
+            }
+        } else {
+            const bulkBar = document.getElementById('bulk-bar');
+            bulkBar.classList.add('hidden');
+        }
+    }
+
+
+    // Helper to convert CKEditor HTML to WhatsApp plain-text markdown
+    function getWhatsAppMessage() {
+        let html = editorInstance ? editorInstance.getData() : document.getElementById('message-input').value;
+        
+        // 1. Replace bold tags with *
+        html = html.replace(/<(strong|b)>(.*?)<\/\1>/gi, '*$2*');
+        
+        // 2. Replace italic tags with _
+        html = html.replace(/<(em|i)>(.*?)<\/\1>/gi, '_$2_');
+        
+        // 3. Replace strikethrough tags with ~
+        html = html.replace(/<(s|strike|del)>(.*?)<\/\1>/gi, '~$2~');
+        
+        // 4. Handle links - format as "Text (URL)"
+        html = html.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '$2 ($1)');
+        
+        // 5. Replace list items and blockquotes to clean text format
+        html = html.replace(/<li>(.*?)<\/li>/gi, '• $1\n');
+        html = html.replace(/<\/li>/gi, '\n');
+        html = html.replace(/<blockquote>(.*?)<\/blockquote>/gi, '> $1\n');
+
+        // 6. Replace paragraph end tags or break tags with newlines
+        html = html.replace(/<\/p>/gi, '\n');
+        html = html.replace(/<p>/gi, '');
+        html = html.replace(/<br\s*\/?>/gi, '\n');
+        
+        // 7. Strip all other HTML tags
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        let text = tempDiv.textContent || tempDiv.innerText || "";
+        
+        return text.trim();
+    }
+
+    // Single WhatsApp Redirect
+    function sendSingleWhatsApp(phone) {
+        const cleanMessage = getWhatsAppMessage();
+        const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(cleanMessage)}`;
+        window.open(url, '_blank');
+    }
+
+    // Dynamic Bulk WhatsApp Sending
+    function sendBulkWhatsApp() {
+        const cleanMessage = getWhatsAppMessage();
+        const encodedMessage = encodeURIComponent(cleanMessage);
+        
+        // Filter original list for selected students to resolve their phone numbers
+        const selectedStudents = filteredStudents.filter(student => selectedRecordIds.has(student.id));
+        console.log({ selectedStudents, selectedRecordIds });
+        if (selectedStudents.length === 0) return;
+
+        // Open all tabs synchronously within the click event thread context
+        selectedStudents.forEach((student) => {
+
+            let mobile = (student.mobile || '').replace(/\D/g, '');
+            if (mobile.length === 10) {
+                mobile = '91' + mobile;
+            }
+            const url = `https://api.whatsapp.com/send?phone=${mobile}&text=${encodedMessage}`;
+            window.open(url, '_blank');
+        });
+    }
+
+    // Dynamic Bulk WhatsApp Sending with personalized student names
+    function sendBulkWhatsAppWithName() {
+        const cleanMessage = getWhatsAppMessage();
+        
+        // Filter original list for selected students to resolve their phone numbers and names
+        const selectedStudents = filteredStudents.filter(student => selectedRecordIds.has(student.id));
+        console.log({ selectedStudents, selectedRecordIds})
+        if (selectedStudents.length === 0) return;
+
+        // Open all tabs synchronously within the click event thread context
+        selectedStudents.forEach((student) => {
+            let mobile = (student.mobile || '').replace(/\D/g, '');
+            if (mobile.length === 10) {
+                mobile = '91' + mobile;
+            }
+            const personalizedMessage = `Hii ${student.name}\n\n${cleanMessage}`;
+            const url = `https://api.whatsapp.com/send?phone=${mobile}&text=${encodeURIComponent(personalizedMessage)}`;
+            window.open(url, '_blank');
+        });
+    }
 
 </script>
 @endpush

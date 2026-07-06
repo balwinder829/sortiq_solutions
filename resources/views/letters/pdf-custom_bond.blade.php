@@ -119,6 +119,8 @@ tr {
                 } elseif ($letter->employee->job_type === 'part_time') {
                     $employmentLine = "Part Time ({$letter->employee->working_hours_per_day} Hours Per Day)";
                 }
+                $gender = strtolower($letter->employee->gender ?? '');
+                $title = ($gender === 'female') ? ($letter->employee->is_married ? 'Mrs' : 'Miss') : 'Mr';
             @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:15px;">
 
@@ -129,7 +131,7 @@ tr {
                 </tr>
                 <tr>
                     <td colspan="2" align="left" style="font-size: 14px;  padding-bottom:5px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-                       <strong>Mr./Ms: </strong> {{ ucwords($letter->employee->emp_name) }}
+                       <strong>{{ $title }}: </strong> {{ ucwords($letter->employee->emp_name) }}
                     </td>
                 </tr>
                  @if($employmentLine)
@@ -156,7 +158,7 @@ tr {
 
                <tr>
                     <td align="left" style="font-size: 14px; line-height: 24px; text-align:left; font-family: 'Inter', sans-serif;">
-                        Sortiq Solutions Pvt. Ltd., an Indian Company having its principal place of office at <strong>E - 51, Ground Floor, Industrial Area, Phase 8 Mohali, Punjab - 160072</strong>, hereinafter (hereinafter referred to as "the Company"),
+                        Sortiq Solutions Pvt. Ltd., an Indian Company having its principal place of office at <strong>E - 51, Ground Floor, Industrial Area, Phase 8 Mohali, Punjab - 160071</strong>, hereinafter (hereinafter referred to as "the Company"),
                     </td>
                 </tr>
 

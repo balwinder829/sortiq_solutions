@@ -34,7 +34,7 @@
                 </tr>
                 <tr>
                     <td colspan="2" width="100" align="center" style="font-size: 10px; line-height: 12px; padding: 0px; font-family: 'Inter', sans-serif;  padding-left: 0px; padding-bottom: 2px; color: #191616;">
-                        <strong>E-51, Ground Floor, Industrial Area,<br> Phase 8 Mohali, Punjab - 160072</strong>
+                        <strong>E-51, Ground Floor, Industrial Area,<br> Phase 8 Mohali, Punjab - 160071</strong>
                     </td>
                 </tr>
                 <tr>

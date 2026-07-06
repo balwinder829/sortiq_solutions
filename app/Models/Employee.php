@@ -39,6 +39,8 @@ class Employee extends Authenticatable
         'job_type',
         'working_hours_per_day',
         'employment_lifecycle_status',
+        'is_married',
+        'gender',
         'employment_mode',
     ];
 
