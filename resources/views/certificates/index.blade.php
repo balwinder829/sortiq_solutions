@@ -999,7 +999,7 @@ $(document).ready(function () {
         "scrollX": true,
         columnDefs: [
             {
-                targets: 1, // first column
+                targets: [0, 1],
                 searchable: false,
                 orderable: false
             }
@@ -1025,12 +1025,25 @@ $(document).ready(function () {
     }
     });
 
+    function syncCheckAll() {
+        var currentPageCheckboxes = $(table.rows({ page: 'current' }).nodes())
+            .find('.record_checked:not(:disabled)');
+        var checkedCount = currentPageCheckboxes.filter(':checked').length;
+
+        $('#checkAll').prop(
+            'checked',
+            currentPageCheckboxes.length > 0 && checkedCount === currentPageCheckboxes.length
+        );
+    }
+
     table.on('draw.dt', function () {
         var PageInfo = table.page.info();
 
         table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
             cell.innerHTML = PageInfo.start + i + 1;
         });
+
+        syncCheckAll();
     }).draw();
     // ✅ Save page whenever page changes
     table.on('page.dt', function () {
@@ -1045,17 +1058,25 @@ $(document).ready(function () {
     //     $('.record_checked').prop('checked', this.checked);
     // });
 
+    $('#checkAll').on('click', function (e) {
+        e.stopPropagation();
+    });
+
     $('#checkAll').on('change', function () {
         const checked = this.checked;
 
-        $('.record_checked').each(function () {
+        $(table.rows({ page: 'current' }).nodes()).find('.record_checked').each(function () {
             if (this.disabled) {
                 this.checked = false; // FORCE UNCHECK
             } else {
                 this.checked = checked;
             }
         });
+
+        syncCheckAll();
     });
+
+    $('#certificatesTable').on('change', '.record_checked', syncCheckAll);
 
     // Get selected IDs
     function getSelectedIds() {
