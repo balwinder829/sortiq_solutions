@@ -450,7 +450,8 @@ public function store(Request $request)
             'max:255',
             Rule::unique('colleges')->where(function ($query) use ($request) {
                 return $query->where('state_id', $request->state_id)
-                             ->where('district_id', $request->district_id);
+                             ->where('district_id', $request->district_id)
+                             ->whereNull('deleted_at'); 
             }),
         ],
         'college_display_name' => 'nullable|string|max:255',
@@ -505,7 +506,8 @@ public function update(Request $request, $id)
             Rule::unique('colleges')
                 ->where(function ($query) use ($request) {
                     return $query->where('state_id', $request->state_id)
-                                 ->where('district_id', $request->district_id);
+                                 ->where('district_id', $request->district_id)
+                                 ->whereNull('deleted_at'); 
                 })
                 ->ignore($id),
         ],
@@ -528,21 +530,21 @@ public function update(Request $request, $id)
     $slug      = $resolver->makeSlug($data['college_name']);
     $shortname = $data['college_short_name'];
     /** Duplicate check (exclude current college) */
-    $exists = College::withTrashed()
-        ->where('clean_name', $cleanName)
-        ->where('state_id', $data['state_id'])
-        ->where('district_id', $data['district_id'])
-        ->where('id', '!=', $college->id)
-        ->exists();
+    // $exists = College::withTrashed()
+    //     ->where('clean_name', $cleanName)
+    //     ->where('state_id', $data['state_id'])
+    //     ->where('district_id', $data['district_id'])
+    //     ->where('id', '!=', $college->id)
+    //     ->exists();
 
-    if ($exists) {
-        return back()
-            ->withErrors([
-                'college_name' =>
-                    'This college already exists in the selected state and district.'
-            ])
-            ->withInput();
-    }
+    // if ($exists) {
+    //     return back()
+    //         ->withErrors([
+    //             'college_name' =>
+    //                 'This college already exists in the selected state and district.'
+    //         ])
+    //         ->withInput();
+    // }
 
     /** Update record */
     $college->update([

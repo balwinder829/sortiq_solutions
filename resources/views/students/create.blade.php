@@ -187,12 +187,24 @@
                 @error('technology') <small class="text-danger">{{ $message }}</small> @enderror
             </div> -->
 
-            <div class="form-group col-md-6">
+            <!-- <div class="form-group col-md-6">
                 <label>Technology</label>
                 <select name="technology[]" class="form-control" multiple>
                     @foreach($courses as $course)
                         <option value="{{ $course->id }}"
                             {{ in_array($course->course_name, old('technology', [])) ? 'selected' : '' }}>
+                            {{ $course->course_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div> -->
+
+            <div class="form-group col-md-6">
+                <label>Technology</label>
+                <select name="technology[]" class="form-control" multiple>
+                    @foreach($courses as $course)
+                        <option value="{{ $course->id }}"
+                            {{ in_array($course->id, old('technology', [$defaultTechnology])) ? 'selected' : '' }}>
                             {{ $course->course_name }}
                         </option>
                     @endforeach
@@ -321,7 +333,11 @@
             <div class="form-group col-md-6">
                 <label>Batch Assign</label>
                 <select name="batch_assign" class="form-control">
+
                     <option value="" disabled {{ old('batch_assign') ? '' : 'selected' }}>Choose one</option>
+                     <option value="" {{ old('batch_assign', '') == '' ? 'selected' : '' }}>
+                        Not Decided
+                    </option>
                     @foreach($batches as $batch)
                         <option value="{{ $batch->id }}" 
                             {{ old('batch_assign') == $batch->id ? 'selected' : '' }}>

@@ -10,6 +10,7 @@ use Illuminate\Validation\ValidationException;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
+use App\Models\LetterTemplate;
 
 class TrainerLetterController extends Controller
 {
@@ -31,8 +32,11 @@ class TrainerLetterController extends Controller
     public function create()
     {
         $trainers = Trainer::where('status', 'active')->get();
+         $template = LetterTemplate::where('letter_type', 'trainer_consent')
+        ->where('status', 1)
+        ->first();
 
-        return view('trainer_letters.create', compact('trainers'));
+        return view('trainer_letters.create', compact('trainers','template'));
     }
 
     public function store(Request $request)
@@ -41,6 +45,7 @@ class TrainerLetterController extends Controller
             'trainer_id'  => 'required|exists:trainers,id',
             'letter_type' => 'required|in:trainer_consent',
             'issue_date'  => 'required|date|before_or_equal:today',
+             'letter_content' => 'required',
         ]);
 
         $exists = TrainerLetter::where('trainer_id', $request->trainer_id)
@@ -64,9 +69,14 @@ class TrainerLetterController extends Controller
     {
         $trainers = Trainer::where('status', 'active')->get();
 
+        $template = LetterTemplate::where('letter_type', $trainer_letter->letter_type)
+        ->where('status', 1)
+        ->first();
+
         return view('trainer_letters.edit', [
             'letter' => $trainer_letter,
-            'trainers' => $trainers
+            'trainers' => $trainers,
+            'template' => $template,
         ]);
     }
 
@@ -76,6 +86,7 @@ class TrainerLetterController extends Controller
             'trainer_id'  => 'required|exists:trainers,id',
             'letter_type' => 'required|in:trainer_consent',
             'issue_date'  => 'required|date|before_or_equal:today',
+            'letter_content' => 'required',
         ]);
 
         $exists = TrainerLetter::where('trainer_id', $request->trainer_id)
@@ -118,9 +129,21 @@ class TrainerLetterController extends Controller
             'tempDir' => storage_path('app/mpdf'),
         ]);
 
+        $content = $letter->letter_content;
+
+        $content = str_replace(
+            [
+                '{{trainer_name}}',
+            ],
+            [
+                ucwords($letter->trainer->name),
+            ],
+            $content
+        );
+
         $html = View::make(
-            'trainer_letters.consent_pdf',
-            compact('letter')
+            'trainer_letters.custom_consent_pdf',
+            compact('letter','content')
         )->render();
 
         // $mpdf->WriteHTML($html);

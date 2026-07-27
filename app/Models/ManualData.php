@@ -17,6 +17,7 @@ class ManualData extends Model
     protected $fillable = [
         'session_id',
         'college_id',
+        'college_name',
         'student_name',
         'student_email',
         'student_mobile',

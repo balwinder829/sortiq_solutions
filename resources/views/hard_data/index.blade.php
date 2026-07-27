@@ -35,13 +35,33 @@
 
     {{-- ✅ NEW: COLLEGE --}}
     <div class="col-md-2">
-        <select name="college_id" class="form-control select2">
+        <!-- <select name="college_id" class="form-control select2">
             <option value="">All College</option>
             @foreach($colleges as $college)
                 <option value="{{ $college->id }}">
                     {{ $college->college_name }}
                 </option>
             @endforeach
+        </select> -->
+        <select name="college_id" class="form-control select2">
+            <option value="">All College</option>
+
+            {{-- Existing colleges --}}
+            @foreach($colleges as $college)
+                <option value="id_{{ $college->id }}">
+                    {{ $college->FullName }}
+                </option>
+            @endforeach
+
+            @if($unknownColleges->count())
+                <optgroup label="Unknown Colleges">
+                    @foreach($unknownColleges as $college)
+                        <option value="txt_{{ $college->college_name }}">
+                            {{ $college->college_name }}
+                        </option>
+                    @endforeach
+                </optgroup>
+            @endif
         </select>
     </div>
 

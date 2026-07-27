@@ -34,7 +34,8 @@
                         <option value="increment" {{ ($selectedType ?? '') === 'increment' ? 'selected' : '' }}>Increment Letter</option>
                         <option value="bond" {{ ($selectedType ?? '') === 'bond' ? 'selected' : '' }}>Employment Bond Letter</option>
                         <option value="custom_bond" {{ ($selectedType ?? '') === 'custom_bond' ? 'selected' : '' }}>Custom Bond Letter</option>
-                         <option value="noc" {{ ($selectedType ?? '') === 'noc' ? 'selected' : '' }}>NOC Letter</option>
+                        <option value="noc" {{ ($selectedType ?? '') === 'noc' ? 'selected' : '' }}>NOC Letter</option>
+                        <option value="responsibility_letter" {{ ($selectedType ?? '') === 'responsibility_letter' ? 'selected' : '' }}>Responsibility Letter</option>
                     </select>
                 </div>
 

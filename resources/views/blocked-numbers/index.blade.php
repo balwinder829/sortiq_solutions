@@ -43,18 +43,28 @@
                 <td>{{ \Carbon\Carbon::parse($blocked->blocked_at)->format('d M Y h:i A') }}</td>
                 <td>
                     <a href="{{ route('admin.blocked-numbers.show', $blocked) }}"
-                       class="btn btn-sm btn-info">View</a>
+                       class="btn btn-sm btn-info">
+                        View
+                    </a>
 
-                   <!--  <form method="POST"
-                          action="{{ route('admin.blocked-numbers.destroy', $blocked) }}"
-                          class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-sm btn-danger"
-                                data-swal-confirm="Unblock this number?">
-                            Unblock
-                        </button>
-                    </form> -->
+                    <a href="{{ route('admin.blocked-numbers.edit', $blocked) }}"
+                       class="btn btn-sm btn-warning">
+                        Edit
+                    </a>
+
+                    <form method="POST"
+      action="{{ route('admin.blocked-numbers.destroy', $blocked) }}"
+      class="d-inline">
+    @csrf
+    @method('DELETE')
+
+    <button type="submit"
+            class="btn btn-sm btn-danger"
+            data-swal-delete
+            data-swal-confirm="Delete this blocked number?">
+        Delete
+    </button>
+</form>
                 </td>
             </tr>
         @endforeach

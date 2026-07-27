@@ -54,6 +54,22 @@
                 >
             </div>
 
+             {{-- Letter Content --}}
+            <div class="form-group col-md-12" id="letter_content_field">
+                <label>Letter Content</label>
+                <textarea
+                    name="letter_content"
+                    id="editor"
+                    class="form-control @error('letter_content') is-invalid @enderror"
+                    rows="15">{!! old('letter_content', $letter->letter_content ?: ($template->content ?? '')) !!}</textarea>
+
+                @error('letter_content')
+                <div class="invalid-feedback d-block">
+                    {{ $message }}
+                </div>
+                @enderror
+            </div>
+
         </div>
 
         <button class="btn btn-primary mt-3">
@@ -70,3 +86,12 @@
 </div>
 
 @endsection
+@push('scripts')
+<!-- <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script> -->
+ <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
+
+<script>
+    CKEDITOR.replace('editor');
+</script>
+
+@endpush

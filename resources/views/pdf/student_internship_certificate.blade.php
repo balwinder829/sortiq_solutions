@@ -65,8 +65,8 @@
 				: '';
 		}
 		
-		$issue_date = optional($student->certificate_issue_date)
-		    ? Carbon::parse($student->certificate_issue_date)->format('d-m-Y')
+		$issue_date = optional($student->end_date)
+		    ? Carbon::parse($student->end_date)->format('d-m-Y')
 		    : \Carbon\Carbon::now()->format('d-m-Y');
 
 		// Safe college

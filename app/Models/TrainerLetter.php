@@ -14,6 +14,7 @@ class TrainerLetter extends Model
     protected $fillable = [
         'trainer_id',
         'letter_type',
+        'letter_content',
         'issue_date',
         'is_sent',
         'send_count',

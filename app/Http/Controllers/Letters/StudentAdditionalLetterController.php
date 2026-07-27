@@ -12,6 +12,7 @@ use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
 use Illuminate\Validation\Rule;
+use App\Models\LetterTemplate;
 
 class StudentAdditionalLetterController extends Controller
 {	
@@ -91,7 +92,15 @@ class StudentAdditionalLetterController extends Controller
         $activeSessionNo = session('admin_session_id');
         $colleges = College::orderBy('college_display_name')->get();
         $students = Student::where('session', $activeSessionNo)->orderBy('student_name')->get();
-        return view('student_additional_letters.create', compact('colleges','students'));
+
+        $templates = LetterTemplate::where('status',1)
+            ->whereIn('letter_type',[
+                'student_responsibility',
+                'placed_student_responsibility'
+            ])
+            ->pluck('content','letter_type');
+
+        return view('student_additional_letters.create', compact('colleges','students','templates'));
     }
 
 public function store(Request $request)
@@ -105,7 +114,8 @@ public function store(Request $request)
                 'placement','internship','internship_with_package',
                 'strict_offer_letter', 'strict_consent_letter', 'stipend_policy', 
                 'internship_consent','part_time_job_opportunity', 
-                'with_roll_number', 'with_roll_number_internship', 'confirmation_letter'
+                'with_roll_number', 'with_roll_number_internship', 'confirmation_letter','student_responsibility',
+                    'placed_student_responsibility'
             ]),
         ],
 
@@ -191,9 +201,20 @@ public function store(Request $request)
     {
         $activeSessionNo = session('admin_session_id');
         $students = Student::where('session', $activeSessionNo)->orderBy('student_name')->get();
+
+        $templates = LetterTemplate::where('status', 1)
+            ->whereIn('letter_type', [
+                'student_responsibility',
+                'placed_student_responsibility'
+            ])
+            ->pluck('content', 'letter_type');
+
+
+
         return view('student_additional_letters.edit', [
             'letter' => $studentAdditionalLetter,
-            'students' => $students
+            'students' => $students,
+            'templates'=> $templates
         ]);
     }
 
@@ -221,7 +242,9 @@ public function store(Request $request)
                     'part_time_job_opportunity',
                     'with_roll_number',
                     'with_roll_number_internship',
-                    'confirmation_letter'
+                    'confirmation_letter',
+                    'student_responsibility',
+                    'placed_student_responsibility'
                 ]),
                 Rule::unique('student_additional_letters')
                     ->where('student_id', $request->student_id)
@@ -349,10 +372,59 @@ public function store(Request $request)
             'with_roll_number' => 'student_additional_letters.with_roll_number_letter_pdf',
             'with_roll_number_internship' => 'student_additional_letters.with_roll_number_internship_letter_pdf',
             'confirmation_letter' => 'student_additional_letters.confirmation_letter',
+            'student_responsibility' => 'student_additional_letters.student_responsibility_pdf',
+            'placed_student_responsibility' => 'student_additional_letters.placed_student_responsibility_pdf',
             default => 'letters.pdf',
         };
 
-     $html = View::make($view, compact('letter'))->render();
+     // $html = View::make($view, compact('letter'))->render();
+
+        if (in_array($letter->internship_type, [
+    'student_responsibility',
+    'placed_student_responsibility'
+])) {
+
+    $student = $letter->student;
+
+    $gender = strtolower($student->gender ?? '');
+    $relation = 'son';
+
+    if ($gender === 'female') {
+        $relation = $student->is_married ? 'wife' : 'daughter';
+    }
+
+    $content = $letter->letter_content;
+
+    $content = str_replace(
+        [
+            '{{student_name}}',
+            '{{relation}}',
+            '{{father_name}}',
+            '{{technology}}',
+            '{{joining_date}}',
+        ],
+        [
+            ucwords($student->student_name ?? ''),
+            $relation,
+            $student->father_name_with_title ?? '-',
+            ucwords($student->course_name ?? 'N/A'),
+            $student->start_date
+                ? \Carbon\Carbon::parse($student->start_date)->format('d M Y')
+                : '',
+        ],
+        $content
+    );
+
+    $html = View::make($view, [
+        'letter' => $letter,
+        'content' => $content,
+    ])->render();
+
+} else {
+
+    $html = View::make($view, compact('letter'))->render();
+
+}
     // $html = View::make(
     //     'student_additional_letters.pdf',
     //     compact('letter')
@@ -386,7 +458,9 @@ public function download(StudentAdditionalLetter $StudentAdditionalLetter)
         'internship_with_package' => 'INTERNSHIP WITH PACKAGE LETTER',
         'part_time_job_opportunity' => 'PART TIME JOB OPPORTUNITY LETTER',
         'with_roll_number' => 'WITH ROLL NUMBER LETTER',
-        'confirmation_letter' => 'Confirmation Letter'
+        'confirmation_letter' => 'Confirmation Letter',
+        'student_responsibility' => 'Student Responsibility Letter',
+        'placed_student_responsibility' => 'Placed Student Responsibility Letter',
     ];
 
     $sanitize = function ($value) {

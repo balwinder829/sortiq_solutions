@@ -15,6 +15,7 @@ class SalesStaffLetters extends Model
 
         'sales_staff_id',
         'letter_type',
+        'letter_content',
         'issue_date',
         'is_sent',
         'send_count',

@@ -43,6 +43,10 @@
                     <option value="custom_bond" {{ old('letter_type')=='custom_bond'?'selected':'' }}>Custom Bond Letter</option>
                     <option value="noc" {{ old('letter_type')=='noc'?'selected':'' }}>NOC Letter</option>
                     <option value="custom" {{ old('letter_type')=='custom'?'selected':'' }}>Custom Office Letter</option>
+                    <option value="responsibility_letter"
+                        {{ old('letter_type')=='responsibility_letter'?'selected':'' }}>
+                        Responsibility Letter
+                    </option>
                 </select>
                 @error('letter_type')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -223,10 +227,10 @@
             <div class="form-group col-md-12 d-none" id="bondTerms">
                 <label id="bondlabel">Bond Terms</label>
                 <textarea
-                    name="bond_terms"
-                    id="bond_terms"
-                    class="form-control @error('bond_terms') is-invalid @enderror"
-                >{{ old('bond_terms') }}</textarea>
+                        name="bond_terms"
+                        id="bond_terms"
+                        class="form-control @error('bond_terms') is-invalid @enderror"
+                    >{{ old('bond_terms') }}</textarea>
                 @error('bond_terms')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -243,6 +247,9 @@
 
 @push('scripts')
 <script>
+const letterTemplates = @json($templates);
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function () {
     const letterType = document.getElementById('letterType');
 
@@ -257,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const isinternCustom = letterType.value === 'intern_custom';
         const isBond = letterType.value === 'bond'  || letterType.value === 'custom_bond';
         const isBondField = letterType.value === 'bond';
-        const isCustomBond = letterType.value === 'custom_bond' || letterType.value === 'custom';
+        const isCustomBond = letterType.value === 'custom_bond' || letterType.value === 'custom' || letterType.value === 'responsibility_letter';
 
         console.log(isinternCustom);
         document.getElementById('relievingField').classList.toggle('d-none', !isExperience);
@@ -278,7 +285,39 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('bondAmountLabel').textContent = isintern ? 'Stipend' : 'Bond Amount';
         document.getElementById('bondcheckNo').classList.toggle('d-none', !isBond);
         document.getElementById('bondTerms').classList.toggle('d-none', !(isCustomBond || isinternCustom));
-        document.getElementById('bondlabel').textContent = isinternCustom ? 'Content' : 'Bond Terms';
+        // document.getElementById('bondlabel').textContent = isinternCustom ? 'Content' : 'Bond Terms';
+        let label = 'Bond Terms';
+
+        if (isinternCustom) {
+            label = 'Content';
+        } else if (letterType.value === 'responsibility_letter') {
+            label = 'Responsibility Letter Content';
+        }
+
+        document.getElementById('bondlabel').textContent = label;
+
+        if (CKEDITOR.instances.bond_terms) {
+
+            if (letterType.value === 'responsibility_letter') {
+
+                CKEDITOR.instances.bond_terms.setData(
+                    letterTemplates.responsibility_letter ?? ''
+                );
+
+            } else if (
+                letterType.value === 'custom_bond' ||
+                letterType.value === 'intern_custom'
+            ) {
+
+                CKEDITOR.instances.bond_terms.setData('');
+
+            } else {
+
+                CKEDITOR.instances.bond_terms.setData('');
+
+            }
+
+        }
 
     }
 

@@ -311,7 +311,10 @@ class StudentController extends Controller
         // $references = Reference::all();
         $colleges    = College::orderBy('college_display_name', 'asc')->get();
         $courses     = Course::orderBy('course_name', 'asc')->get();
-        $batches     = Batch::orderBy('batch_name', 'asc')->get();        
+        // $batches     = Batch::orderBy('batch_name', 'asc')->get();        
+        $batches = Batch::where('session_name', $activeSessionId)
+                ->orderBy('batch_name', 'asc')
+                ->get();
         $references  = Reference::orderBy('name', 'asc')->get();
 
         // $users = User::all();
@@ -328,7 +331,9 @@ class StudentController extends Controller
         }
         // $nextSno = $lastStudent ? $lastStudent->sno + 1 : 1;
 
-        return view('students.create', compact('sessions','activeSession','colleges','courses','batches','references','course_duration','student_status','nextSno'));
+        $defaultTechnology = Course::where('course_name', 'Not Selected')->value('id'); 
+
+        return view('students.create', compact('sessions','activeSession','colleges','courses','batches','references','course_duration','student_status','nextSno','defaultTechnology'));
     }
 
     // Store student
@@ -446,7 +451,8 @@ class StudentController extends Controller
             if ($contactExists) {
                 return back()
                     ->withErrors([
-                        'contact' => 'This student name with this contact already exists in this session'
+                        // 'contact' => 'This student name with this contact already exists in this session'
+                        'contact' => 'A student with the same name, father name and contact already exists in the current session.'
                     ])
                     ->withInput();
             }
@@ -512,7 +518,10 @@ class StudentController extends Controller
         $sessions = StudentSession::all();
         $colleges    = College::orderBy('college_display_name', 'asc')->get();
         $courses     = Course::orderBy('course_name', 'asc')->get();
-        $batches     = Batch::orderBy('batch_name', 'asc')->get();        
+        // $batches     = Batch::orderBy('batch_name', 'asc')->get();  
+        $batches = Batch::where('session_name', $activeSessionId)
+                ->orderBy('batch_name', 'asc')
+                ->get();      
         $references  = Reference::orderBy('name', 'asc')->get();
 
         $users = User::all();
@@ -572,7 +581,7 @@ class StudentController extends Controller
             'technology'   => 'required|array',
             'technology.*' => 'string',
 
-            'batch_assign'   => 'required|string',   // not batch_id
+            'batch_assign'   => 'nullable|string',   // not batch_id
             'reference'      => 'nullable|string',   // not reference_user
             'status'         => 'required|string',
             'duration'         => 'nullable|string',
@@ -621,7 +630,8 @@ class StudentController extends Controller
             if ($contactExists) {
                 return back()
                     ->withErrors([
-                        'contact' => 'This student name with this contact already exists in this session'
+                        // 'contact' => 'This student name with this contact already exists in this session'
+                        'contact' => 'A student with the same name, father name and contact already exists in the current session.'
                     ])
                     ->withInput();
             }
@@ -2450,6 +2460,37 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
         ]);
 
         return back()->with('success', 'Students marked as intern successfully.');
+    }
+
+    /*---Edit Bulk Students-----*/
+
+    public function bulkUpdate(Request $request)
+    {
+        $ids = json_decode($request->ids, true);
+
+        $data = [];
+
+        // dd($request);
+
+        if ($request->filled('college_id')) {
+            $data['college_name'] = $request->college_id;
+        }
+
+        if ($request->filled('technology')) {
+            $data['technology'] = $request->technology;
+        }
+
+        if ($request->filled('start_date')) {
+            $data['start_date'] = $request->start_date;
+        }
+
+        if ($request->filled('end_date')) {
+            $data['end_date'] = $request->end_date;
+        }
+
+        Student::whereIn('id', $ids)->update($data);
+
+        return back()->with('success', 'Students updated successfully.');
     }
 
 

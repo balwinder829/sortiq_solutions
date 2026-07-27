@@ -310,8 +310,13 @@
                                 <!-- Batch -->
                                 <div class="form-group col-md-6">
                                     <label>Batch</label>
-                                    <select name="batch_assign" required class="form-control">
+                                    <select name="batch_assign" class="form-control">
                                         <option value="" disabled>--Choose--</option>
+                                         <option value=""
+                                            {{ old('batch_assign', $student->batch_assign) == '' ? 'selected' : '' }}>
+                                            Not Decided
+                                        </option>
+
                                         @foreach($batches as $batch)
                                             <option value="{{ $batch->id }}" 
                                                 {{ old('batch_assign', $student->batch_assign) == $batch->id ? 'selected' : '' }}>

@@ -59,6 +59,7 @@
                     <option value="custom_bond" {{ $letter->letter_type === 'custom_bond' ? 'selected' : '' }}>Custom Bond Letter</option>
                     <option value="noc" {{ $letter->letter_type === 'noc' ? 'selected' : '' }}>NOC Letter</option>
                     <option value="custom" {{ $letter->letter_type === 'custom' ? 'selected' : '' }}>Custom Office Letter</option>
+                     <option value="responsibility_letter" {{ $letter->letter_type === 'responsibility_letter' ? 'selected' : '' }}>Responsibility Letter</option>
                 </select>
                 @error('letter_type')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -265,6 +266,9 @@
 
 @push('scripts')
 <script>
+const letterTemplates = @json($templates);
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function () {
     const letterType = document.getElementById('letterType');
 
@@ -277,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const isBond = ['bond', 'custom_bond'].includes(letterType.value);
         // const isCustomBond = letterType.value === 'custom_bond';
-        const isCustomBond = letterType.value === 'custom_bond' || letterType.value === 'custom';
+        const isCustomBond = letterType.value === 'custom_bond' || letterType.value === 'custom' || letterType.value === 'responsibility_letter';
 
         document.getElementById('relievingField').classList.toggle('d-none', !isExperience);
         // document.getElementById('probationField').classList.toggle('d-none', !isAppointment);
@@ -297,7 +301,28 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('bondAmountLabel').textContent = isintern ? 'Stipend' : 'Bond Amount';
         document.getElementById('bondcheckNo').classList.toggle('d-none', !isBond);
         document.getElementById('bondTerms').classList.toggle('d-none', !(isCustomBond || isinternCustom));
-        document.getElementById('bondlabel').textContent = isinternCustom ? 'Content' : 'Bond Terms';
+        // document.getElementById('bondlabel').textContent = isinternCustom ? 'Content' : 'Bond Terms';
+        let label = 'Bond Terms';
+
+        if (isinternCustom) {
+            label = 'Content';
+        } else if (letterType.value === 'responsibility_letter') {
+            label = 'Responsibility Letter Content';
+        }
+
+        document.getElementById('bondlabel').textContent = label;
+
+        if (
+            CKEDITOR.instances.bond_terms &&
+            letterType.value === 'responsibility_letter'
+        ) {
+            const editor = CKEDITOR.instances.bond_terms;
+
+            // Load template only if there is no saved content
+            if (editor.getData().trim() === '') {
+                editor.setData(letterTemplates.responsibility_letter ?? '');
+            }
+        }
     }
 
     letterType.addEventListener('change', toggleFields);

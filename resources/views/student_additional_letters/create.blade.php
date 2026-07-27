@@ -99,6 +99,8 @@
                     <option value="with_roll_number" {{ old('internship_type') == 'with_roll_number' ? 'selected' : '' }} >With Roll Number Letter</option>
                     <option value="with_roll_number_internship" {{ old('internship_type') == 'with_roll_number_internship' ? 'selected' : '' }} >With Roll Number Internship Letter</option>
                     <option value="confirmation_letter" {{ old('internship_type') == 'confirmation_letter' ? 'selected' : '' }} >Confirmation Letter</option>
+                    <option value="student_responsibility" {{ old('internship_type') == 'student_responsibility' ? 'selected' : '' }} >Student Responsibility Letter</option>
+                    <option value="placed_student_responsibility" {{ old('internship_type') == 'placed_student_responsibility' ? 'selected' : '' }} >Placed Student Responsibility Letter</option>
                 </select>
                 @error('internship_type')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -191,6 +193,9 @@
     CKEDITOR.replace('editor');
 </script>
 <script>
+    const letterTemplates = @json($templates);
+</script>
+<script>
 // document.getElementById('internship_type').addEventListener('change', function () {
 //     document.getElementById('subject_field').style.display =
 //         this.value === 'custom' ? 'block' : 'none';
@@ -223,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const semesterField = document.getElementById('semester_field');
     const semesterFieldLabel = document.getElementById('semester_field_label');
     function toggleFields() {
-        const isContent = letterType.value === 'stipend' || letterType.value === 'custom';
+        const isContent = letterType.value === 'stipend' || letterType.value === 'custom' || letterType.value === 'student_responsibility' || letterType.value === 'placed_student_responsibility';
         const isCustom  = letterType.value === 'custom';
         const isWithRollNumber = (letterType.value === 'with_roll_number' || letterType.value === 'with_roll_number_internship' || letterType.value === 'confirmation_letter' );
 
@@ -236,6 +241,34 @@ document.addEventListener('DOMContentLoaded', function () {
             semesterFieldLabel.innerText = "Batch";
         } else {
             semesterFieldLabel.innerText = "Semester";
+        }
+
+        if (CKEDITOR.instances.editor) {
+
+            if (letterType.value === 'student_responsibility') {
+
+                CKEDITOR.instances.editor.setData(
+                    letterTemplates.student_responsibility ?? ''
+                );
+
+            } else if (letterType.value === 'placed_student_responsibility') {
+
+                CKEDITOR.instances.editor.setData(
+                    letterTemplates.placed_student_responsibility ?? ''
+                );
+
+            } else if (
+                letterType.value === 'stipend'
+                || letterType.value === 'custom'
+            ) {
+
+                CKEDITOR.instances.editor.setData('');
+
+            } else {
+
+                CKEDITOR.instances.editor.setData('');
+
+            }
         }
     }
 

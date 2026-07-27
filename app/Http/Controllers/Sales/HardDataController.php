@@ -46,8 +46,23 @@ public function index(Request $request)
 
         // FILTERS
 
-        if ($request->college_id) {
-            $query->where('college_id', $request->college_id);
+        // if ($request->college_id) {
+        //     $query->where('college_id', $request->college_id);
+        // }
+
+        if ($request->filled('college_id')) {
+
+            $value = $request->college_id;
+
+            if (str_starts_with($value, 'id_')) {
+
+                $query->where('college_id', str_replace('id_', '', $value));
+
+            } elseif (str_starts_with($value, 'txt_')) {
+
+                $query->whereNull('college_id')
+                      ->where('college_name', str_replace('txt_', '', $value));
+            }
         }
 
         if ($request->state_id) {
@@ -152,7 +167,8 @@ public function index(Request $request)
             return [
                 $rowNum,
                 e($data->student_name),
-                e(optional($data->college)->FullName),
+                // e(optional($data->college)->FullName),
+                e($data->college ? $data->college->FullName : $data->college_name),
                 e($data->student_email),
                 e($data->student_mobile),
                 e($data->class),
@@ -167,6 +183,14 @@ public function index(Request $request)
     }
 
     $colleges = College::orderBy('college_name')->get();
+    $unknownColleges = HardData::whereNull('college_id')
+    ->whereNotNull('college_name')
+    ->where('session_id', session('admin_session_id'))
+    ->select('college_name')
+    ->distinct()
+    ->orderBy('college_name')
+    ->get();
+
     $states = State::orderBy('name')->get();
 
     $districtsGrouped = District::with('state')
@@ -180,7 +204,7 @@ public function index(Request $request)
             ->pluck('display_name', 'id');
 
 
-    return view('hard_data.index', compact('colleges','states','districtsGrouped','sessionsList'));
+    return view('hard_data.index', compact('colleges','unknownColleges', 'states','districtsGrouped','sessionsList'));
 }
 
     
@@ -432,10 +456,56 @@ public function exportExcel(Request $request)
 
             $message = "From {$total} rows: {$inserted} inserted, {$skipped} skipped.";
 
+            // if (!empty($importer->duplicateContacts)) {
+            //     return back()
+            //         ->with('success', $message)
+            //         ->withErrors($importer->duplicateContacts);
+            // }
+
+            $errors = [];
+
+            // Blocked Numbers
+            if (!empty($importer->blockedNumbers)) {
+
+                $errors[] = "===== Blocked Numbers (" . count($importer->blockedNumbers) . ") =====";
+
+                foreach ($importer->blockedNumbers as $number) {
+                    $errors[] = $number;
+                }
+            }
+
+            // Duplicate Numbers
             if (!empty($importer->duplicateContacts)) {
+
+                if (!empty($errors)) {
+                    $errors[] = "";
+                }
+
+                $errors[] = "===== Duplicate Numbers (" . count($importer->duplicateContacts) . ") =====";
+
+                foreach ($importer->duplicateContacts as $number) {
+                    $errors[] = $number;
+                }
+            }
+
+            // College Not Found
+            if (!empty($importer->collegeNotFound)) {
+
+                if (!empty($errors)) {
+                    $errors[] = "";
+                }
+
+                $errors[] = "===== College Not Found (Saved as Text) (" . count($importer->collegeNotFound) . ") =====";
+
+                foreach ($importer->collegeNotFound as $college) {
+                    $errors[] = $college;
+                }
+            }
+
+            if (!empty($errors)) {
                 return back()
                     ->with('success', $message)
-                    ->withErrors($importer->duplicateContacts);
+                    ->withErrors($errors);
             }
 
             return back()->with('success', $message);

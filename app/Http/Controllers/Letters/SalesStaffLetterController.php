@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
+use App\Models\LetterTemplate;
 
 class SalesStaffLetterController extends Controller
 {
@@ -34,7 +35,12 @@ class SalesStaffLetterController extends Controller
     {
         $salesStaff = SalesStaff::where('status', 'active')->get();
 
-        return view('sales_staff_letters.create', compact('salesStaff'));
+        $template = LetterTemplate::where('letter_type', 'sales_consent')
+        ->where('status', 1)
+        ->first();
+
+
+        return view('sales_staff_letters.create',  compact('salesStaff', 'template'));
     }
 
     public function store(Request $request)
@@ -57,6 +63,8 @@ class SalesStaffLetterController extends Controller
             'sale_target' => 'required|string|max:255',
 
             'amount_of_deduction' => 'required|numeric',
+
+            'letter_content' => 'required',
         ]);
 
         // $exists = SalesStaffLetters::where('sales_staff_id', $request->sales_staff_id)
@@ -80,9 +88,15 @@ class SalesStaffLetterController extends Controller
     {
         $salesStaff = SalesStaff::where('status', 'active')->get();
 
+        $template = LetterTemplate::where('letter_type', 'sales_consent')
+        ->where('status', 1)
+        ->first();
+
+
         return view('sales_staff_letters.edit', [
             'letter' => $sales_staff_letter,
-            'salesStaff' => $salesStaff
+            'salesStaff' => $salesStaff,
+            'template' => $template
         ]);
     }
 
@@ -93,6 +107,9 @@ class SalesStaffLetterController extends Controller
             'sales_staff_id' => 'required|exists:sales_staff,id',
 
             'letter_type' => 'required|in:trainer_consent',
+
+
+            'letter_content' => 'required',
 
             'issue_date' => 'required|date',
 
@@ -148,10 +165,44 @@ class SalesStaffLetterController extends Controller
             'tempDir' => storage_path('app/mpdf'),
         ]);
 
+        $content = $letter->letter_content;
+
+        $content = str_replace(
+            [
+                '{{employee_name}}',
+                '{{employee_id}}',
+                '{{deduction_month}}',
+                '{{deduction_year}}',
+                '{{sales_target}}',
+                '{{deduction_amount}}',
+                '{{issue_date}}',
+            ],
+            [
+                ucwords($letter->trainer->name ?? ''),
+                $letter->emp_id ?? '',
+                $letter->month_of_deduction ?? '',
+                $letter->year_of_deduction ?? '',
+                $letter->sale_target ?? '',
+                $letter->amount_of_deduction ?? '',
+                $letter->issue_date
+                    ? \Carbon\Carbon::parse($letter->issue_date)->format('d M Y')
+                    : now()->format('d M Y'),
+            ],
+            $content
+        );
+
         $html = View::make(
-            'sales_staff_letters.consent_pdf',
-            compact('letter')
+            'sales_staff_letters.custom_consent_pdf',
+            [
+                'letter' => $letter,
+                'content' => $content,
+            ]
         )->render();
+        
+        // $html = View::make(
+        //     'sales_staff_letters.consent_pdf',
+        //     compact('letter')
+        // )->render();
 
         $mpdf->SetHTMLHeader('');
         $mpdf->DefHTMLFooterByName(

@@ -26,6 +26,7 @@ use App\Http\Controllers\AdsManagement\AdminPageController;
 use App\Http\Controllers\Letters\TrainerLetterController;
 use App\Http\Controllers\Letters\SalesStaffLetterController;
 use App\Http\Controllers\Letters\StudentCustomLetterController;
+use App\Http\Controllers\Letters\LetterTemplateController;
 
 use App\Exports\StudentsExport;
 use App\Imports\StudentsImport;
@@ -353,6 +354,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 });
 
 Route::prefix('admin')->middleware(['auth'])->group(function () {
+
+    Route::resource('letter-templates', LetterTemplateController::class);
 
     Route::resource('trainer-letters', TrainerLetterController::class);
 
@@ -1125,6 +1128,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/students/copy', [StudentController::class, 'copyStudents'])->name('students.copy');
         Route::post('/students/make_interns', [StudentController::class, 'makeInterns'])->name('students.make_interns');
 
+        Route::post('/students/bulk-update', [StudentController::class, 'bulkUpdate'])->name('students.bulkUpdate');
+
         Route::post('/students/move-to-placement', [StudentController::class, 'moveToPlacement'])->name('students.moveToPlacement');
         
         Route::post('/students/toggle-certificate-sent', [CertificateController::class, 'toggleCertificateSent']
@@ -1715,7 +1720,7 @@ Route::get('/payroll/process/{year}/{month}', [PayrollController::class, 'proces
         Route::resource(
             'blocked-numbers',
             BlockedNumberController::class
-        )->except(['edit', 'update']);
+        );
 
         Route::resource('blocked-ips', BlockedIpController::class)
             ->only(['index', 'create', 'store', 'destroy'])

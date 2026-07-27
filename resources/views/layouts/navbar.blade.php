@@ -1135,12 +1135,12 @@ body.menu-toggle .sidebar-collapse-btn{
                  
 
                  
-                <li class="{{ isParent(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
+                <li class="{{ isParent(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*','letter-templates*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fas fa-chalkboard-teacher"></i>
                         <span class="nav-text">Company Uses</span>
                     </a>
-                    <ul class="{{ showSubmenu(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*']) }}">
+                    <ul class="{{ showSubmenu(['student.events*','college.events*','upcoming-events*','employee.events.*','company_ppt*','brochures*','company_profile*','scanners*','letter-templates*']) }}">
                         
                         <li>
                             <a class="{{ isChildActive('upcoming-events.*') }}"
@@ -1199,6 +1199,13 @@ body.menu-toggle .sidebar-collapse-btn{
                         <a href="{{ route('scanners.index') }}">
                             <!-- <i class="fa-regular fa-file-lines"></i> -->
                             <span class="nav-text">Social Share Scanners</span>
+                        </a>
+                    </li>  
+
+                    <li class="{{ isParent(['letter-templates*']) }}">
+                        <a href="{{ route('letter-templates.index') }}">
+                            <!-- <i class="fa-regular fa-file-lines"></i> -->
+                            <span class="nav-text">Default Letters Template</span>
                         </a>
                     </li>  
                     <li class="{{ request()->route('type') == 'upcoming.event' ? 'mm-active' : '' }}">

@@ -1138,6 +1138,7 @@ Copy to Session
     <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
     <button id="markCertificateSent" class="btn btn-success">Mark Confirmaton Sent</button>
     <button id="markCertificateNotSent" class="btn btn-secondary">Mark Confirmaton Not Sent</button>
+    <button id="editBulkStudents" class="btn btn-secondary">Edit Students</button>
 
 </div>
 
@@ -1251,6 +1252,90 @@ Copy to Session
     </form>
   </div>
 </div>
+
+<!--- Edit Bulk Students start------->
+
+<div class="modal fade" id="bulkEditModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('students.bulkUpdate') }}">
+            @csrf
+
+            <input type="hidden" name="ids" id="bulkEditIds">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Bulk Edit Students
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label>College</label>
+
+                        <select name="college_id" class="form-control" id="bulkCollege">
+                            <option value="">Keep Existing</option>
+
+                            @foreach($colleges as $college)
+                                <option value="{{ $college->id }}">
+                                    {{ $college->FullName }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label>Technology</label>
+
+                        <select name="technology" class="form-control">
+                            <option value="">Keep Existing</option>
+
+                            @foreach($courses as $course)
+                                <option value="{{ $course->id }}">
+                                    {{ $course->course_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label>Start Date</label>
+                        <input type="date"
+                               name="start_date"
+                               class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label>End Date</label>
+                        <input type="date"
+                               name="end_date"
+                               class="form-control">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-success">
+                        Update Selected Students
+                    </button>
+
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+<!--- Edit Bulk Students end------->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
 
 
@@ -1490,6 +1575,26 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 
 <script>
 $(document).ready(function () {
+
+    $('#bulkEditModal').on('shown.bs.modal', function () {
+
+        if (!$('#bulkCollege').hasClass("select2-hidden-accessible")) {
+
+            $('#bulkCollege').select2({
+                dropdownParent: $('#bulkEditModal'),
+                width: '100%',
+                placeholder: 'Keep Existing',
+                allowClear: true
+            });
+
+        }
+
+    });
+    // =========================
+    // Store selected IDs globally
+    // =========================
+    let selectedStudents = [];
+
     $('.confirm-single-form').on('submit', function () {
         let isInternship = $('#isInternship').is(':checked') ? 1 : 0;
         $(this).find('.isInternshipHiddenSingle').val(isInternship);
@@ -1559,28 +1664,105 @@ table.on('draw.dt', function () {
         );
     });
 
+// =====================================
+// Restore checked records after redraw
+// =====================================
+table.on('draw.dt', function () {
 
+    $('.record_checked').each(function () {
+
+        let id = $(this).val();
+
+        if (selectedStudents.includes(id)) {
+            $(this).prop('checked', true);
+        }
+
+    });
+
+    // Update Check All status
+    let total = $('.record_checked:not(:disabled)').length;
+    let checked = $('.record_checked:checked').length;
+
+    $('#checkAll').prop('checked', total > 0 && total === checked);
+
+});
+
+
+    // $('#checkAll').on('change', function () {
+    //     const checked = this.checked;
+
+    //     $('.record_checked').each(function () {
+    //         if (this.disabled) {
+    //             this.checked = false; // FORCE UNCHECK
+    //         } else {
+    //             this.checked = checked;
+    //         }
+    //     });
+    // });
 
     $('#checkAll').on('change', function () {
+
         const checked = this.checked;
 
         $('.record_checked').each(function () {
+
             if (this.disabled) {
-                this.checked = false; // FORCE UNCHECK
-            } else {
-                this.checked = checked;
+                this.checked = false;
+                return;
             }
+
+            let id = $(this).val();
+
+            $(this).prop('checked', checked);
+
+            if (checked) {
+
+                if (!selectedStudents.includes(id)) {
+                    selectedStudents.push(id);
+                }
+
+            } else {
+
+                selectedStudents = selectedStudents.filter(x => x != id);
+
+            }
+
         });
+
     });
 
+    // ==================================
+    // Individual checkbox
+    // ==================================
+    $(document).on('change', '.record_checked', function () {
+
+        let id = $(this).val();
+
+        if ($(this).is(':checked')) {
+
+            if (!selectedStudents.includes(id)) {
+                selectedStudents.push(id);
+            }
+
+        } else {
+
+            selectedStudents = selectedStudents.filter(x => x != id);
+
+        }
+
+    });
 
     // Get selected IDs
+    // function getSelectedIds() {
+    //     var ids = [];
+    //     $('.record_checked:checked').each(function() {
+    //         ids.push($(this).val());
+    //     });
+    //     return ids;
+    // }
+
     function getSelectedIds() {
-        var ids = [];
-        $('.record_checked:checked').each(function() {
-            ids.push($(this).val());
-        });
-        return ids;
+        return selectedStudents;
     }
 
     // Multi-action buttons
@@ -1830,6 +2012,23 @@ table.on('draw.dt', function () {
              });
         });
 
+        $('#editBulkStudents').click(function () {
+
+            let ids = getSelectedIds();
+
+            if (ids.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Select at least one student'
+                });
+                return;
+            }
+
+            $('#bulkEditIds').val(JSON.stringify(ids));
+
+            $('#bulkEditModal').modal('show');
+
+        });
 
 $('#markCertificateSent').click(function () {
 

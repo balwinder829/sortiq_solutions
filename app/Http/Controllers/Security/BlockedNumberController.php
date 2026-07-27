@@ -80,6 +80,28 @@ class BlockedNumberController extends Controller
         );
     }
 
+    public function edit(BlockedNumber $blockedNumber)
+    {
+        return view('blocked-numbers.edit', [
+            'blocked' => $blockedNumber
+        ]);
+    }
+
+    public function update(Request $request, BlockedNumber $blockedNumber)
+    {
+        $request->validate([
+            'number' => 'required|string|unique:blocked_numbers,number,' . $blockedNumber->id,
+        ]);
+
+        $blockedNumber->update([
+            'number' => $request->number,
+        ]);
+
+        return redirect()
+            ->route('admin.blocked-numbers.index')
+            ->with('success', 'Blocked number updated successfully.');
+    }
+
     public function destroy(BlockedNumber $blockedNumber, BlockNumberService $service)
     {
         $service->unblock($blockedNumber);

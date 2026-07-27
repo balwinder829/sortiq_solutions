@@ -5,6 +5,17 @@
 <div class="container">
 
     <h4>Generate Trainer Letter</h4>
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <strong>Please fix the following errors:</strong>
+
+        <ul class="mb-0 mt-2">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
     <form method="POST" action="{{ route('trainer-letters.store') }}">
         @csrf
@@ -47,6 +58,20 @@
                 >
             </div>
 
+            {{-- Letter Content --}}
+            <div class="form-group col-md-12" id="letter_content_field">
+                <label>Letter Content</label>
+                <textarea name="letter_content"
+                  id="editor"
+                  class="form-control @error('letter_content') is-invalid @enderror">{!! old('letter_content', $template->content ?? '') !!}</textarea>
+
+                @error('letter_content')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+
+                
+            </div>
+
         </div>
 
         <button class="btn btn-primary mt-3">
@@ -63,3 +88,12 @@
 </div>
 
 @endsection
+@push('scripts')
+<!-- <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script> -->
+ <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
+
+<script>
+    CKEDITOR.replace('editor');
+</script>
+
+@endpush
