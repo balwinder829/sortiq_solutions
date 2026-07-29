@@ -658,7 +658,7 @@ value="{{ request('registration_fee') }}">
         </label>
     </div>
     {{-- Multi-action buttons --}}
-    <div class="mt-3">
+    <div class="mt-3 tble-bts">
         <!-- <button id="issueSelected" class="btn btn-primary">Issue Certificate</button> -->
         <button id="downloadissueSelected" class="btn btn-primary">Download Certificates</button>
         <button id="downloadissueMonthNameSelected" class="btn btn-primary">Download Certificates (Month Name)</button>
@@ -667,7 +667,8 @@ value="{{ request('registration_fee') }}">
         <button id="moveSelected" class="btn btn-warning">Shift To Confirmation</button>
         <button id="updateIssueDate" class="btn btn-warning">Update Issue Date</button>
         <button id="markCertificateSent" class="btn btn-success">Mark Certificate Sent</button>
-        <button id="markCertificateNotSent" class="btn btn-secondary mt-2 ml-2">Mark Certificate Not Sent</button>
+        <button id="markCertificateNotSent" class="btn btn-secondary mt-0 ml-2">Mark Certificate Not Sent</button>
+        <button id="movedropout" class="btn btn-success">Move to Dropout</button>
     </div>
 
      
@@ -727,6 +728,12 @@ value="{{ request('registration_fee') }}">
 
 </form>
 
+
+{{-- Move students to Interns--}}
+<form id="bulkMoveDropoutForm" method="POST" action="{{ route('students.move_to_dropout') }}" style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkmoveDropout">
+</form>
 
 {{-- Move students to Placements--}}
 <form id="bulkPlacementForm" method="POST" action="{{ route('students.moveToPlacement') }}" style="display:none;">
@@ -981,6 +988,11 @@ document.addEventListener('DOMContentLoaded', function () {
 $(document).ready(function () {
     // Initialize DataTable
 
+    // =========================
+    // Store selected IDs globally
+    // =========================
+    let selectedStudents = [];
+
     var savedPage = sessionStorage.getItem('students_certificate_page');
 
     var pageLength = 10;
@@ -1034,6 +1046,9 @@ $(document).ready(function () {
             'checked',
             currentPageCheckboxes.length > 0 && checkedCount === currentPageCheckboxes.length
         );
+
+        // console.log('selectedStudents', selectedStudents);
+        // console.log('getSelectedIds()', getSelectedIds());
     }
 
     table.on('draw.dt', function () {
@@ -1079,13 +1094,44 @@ $(document).ready(function () {
     $('#certificatesTable').on('change', '.record_checked', syncCheckAll);
 
     // Get selected IDs
+    // function getSelectedIds() {
+    //     var ids = [];
+    //     $('.record_checked:checked').each(function() {
+    //         ids.push($(this).val());
+    //     });
+    //     return ids;
+    // }
+
     function getSelectedIds() {
-        var ids = [];
+
         $('.record_checked:checked').each(function() {
-            ids.push($(this).val());
+
+            let id = $(this).val();
+
+            if (!selectedStudents.includes(id)) {
+                selectedStudents.push(id);
+            }
+
         });
-        return ids;
+
+        return selectedStudents;
     }
+
+    $('#movedropout').click(function() {
+            var ids = getSelectedIds();
+
+            // if(ids.length === 0) {
+            //     alert('Select at least one student');
+            //     return;
+            // }
+            pageBulkConfirm(ids, 'Move to Dropout?', function () {
+            // if(confirm('Make Interns?')) {
+                // $('#deleteIds').val(ids);
+                $('#bulkmoveDropout').val(JSON.stringify(ids));
+                $('#bulkMoveDropoutForm').submit();
+             });
+        });
+
 
     // Multi-action buttons
     // $('#issueSelected').click(function() {

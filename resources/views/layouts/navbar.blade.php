@@ -703,11 +703,20 @@ body.menu-toggle .sidebar-collapse-btn{
                              
                         </li>
 
-                        {{-- Certificates --}}
+                        {{-- Close Student --}}
                         <li class="{{ isParent(['close_student*']) }}">
                             <a href="{{ route('close_student.index') }}">
                                 <i class="fas fa-user-check"></i>
                                 <span class="nav-text">Close Students</span>
+                            </a>
+                             
+                        </li>  
+
+                        {{-- Dropout Student--}}
+                        <li class="{{ isParent(['dropout-students*']) }}">
+                            <a href="{{ route('dropout-students.index') }}">
+                                <i class="fas fa-user-check"></i>
+                                <span class="nav-text">Dropout Students</span>
                             </a>
                              
                         </li>   
@@ -1937,6 +1946,16 @@ body.menu-toggle .sidebar-collapse-btn{
                             <a href="{{ route('close_student.index') }}">
                                 <i class="fas fa-user-check"></i>
                                 <span class="nav-text">Close Students</span>
+                            </a>
+                             
+                        </li>
+                        @endcan      
+                        {{-- Certificates --}}
+                         @can('dropout_students.view')
+                        <li class="{{ isParent(['dropout-students*']) }}">
+                            <a href="{{ route('dropout-students.index') }}">
+                                <i class="fas fa-user-check"></i>
+                                <span class="nav-text">Dropout Students</span>
                             </a>
                              
                         </li>

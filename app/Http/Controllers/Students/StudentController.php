@@ -2462,6 +2462,40 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
         return back()->with('success', 'Students marked as intern successfully.');
     }
 
+
+    // Add to dropout
+    public function moveToDropout(Request $request)
+    {
+        // dd($request);
+        $request->validate([
+            'ids' => 'required'
+        ]);
+
+        // Decode safely
+        $ids = json_decode($request->ids, true);
+        // dd($ids);
+        // If empty / invalid JSON
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Get only existing IDs
+        $validIds = Student::whereIn('id', $ids)->pluck('id')->toArray();
+
+        // If no valid students found
+        if (empty($validIds)) {
+            return back()->with('error', 'Selected students do not exist.');
+        }
+
+        // Update interns
+        Student::whereIn('id', $validIds)->update([
+            'certificate_status' => 4,
+             'deleted_at' => now(),
+        ]);
+
+        return back()->with('success', 'Students moved to dropout successfully.');
+    }
+
     /*---Edit Bulk Students-----*/
 
     public function bulkUpdate(Request $request)

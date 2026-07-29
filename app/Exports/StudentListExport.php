@@ -23,6 +23,10 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
     {
         $request = $this->request;
         $query = Student::query();
+
+        if ($request->filled('certificate_status') && $request->certificate_status == 4) {
+            $query->withTrashed();
+        }
         // dd($request);
         // Same filters as index()
         if ($request->notification === 'registered_today') {
@@ -192,10 +196,18 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                 $query->where('session', session('admin_session_id'));
             }
         }
-        if ($request->filled('certificate_status')) {
-            $query->where('certificate_status', $request->certificate_status);
-        }else{
-            $query->where('certificate_status', 0);    
+        // if ($request->filled('certificate_status')) {
+        //     $query->where('certificate_status', $request->certificate_status);
+        // }else{
+        //     $query->where('certificate_status', 0);    
+        // }
+
+        $certificateStatus = $request->input('certificate_status', 0);
+
+        $query->where('certificate_status', $certificateStatus);
+
+        if ($certificateStatus == 4) {
+            $query->whereNotNull('deleted_at');
         }
         // dd(vsprintf(str_replace('?', "'%s'", $query->toSql()), $query->getBindings()));
         $limit = $request->filled('limit') ? (int) $request->limit : null;

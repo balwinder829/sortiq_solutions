@@ -10,6 +10,7 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Students\StudentController;
 use App\Http\Controllers\Students\CertificateController;
+use App\Http\Controllers\Students\DropoutController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartmentController;
@@ -988,6 +989,9 @@ Route::resource(
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
 
+    Route::resource('dropout-students', DropoutController::class)
+    ->except(['create', 'store', 'show','destroy']);
+
         Route::resource(
             'student-custom-letters',
             StudentCustomLetterController::class
@@ -1127,6 +1131,18 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/students/copy', [StudentController::class, 'copyStudents'])->name('students.copy');
         Route::post('/students/make_interns', [StudentController::class, 'makeInterns'])->name('students.make_interns');
+
+        Route::post('/students/move_to_dropout', [StudentController::class, 'moveToDropout'])->name('students.move_to_dropout');
+
+        //Dropout to others
+
+        Route::post('/dropout/move_to_confirmation', [DropoutController::class, 'moveToConfirmation'])->name('dropout.move_to_confirmation');
+
+        Route::post('/dropout/move_to_certification', [DropoutController::class, 'moveToCertificate'])->name('dropout.move_to_certification');
+
+         Route::get('dropout/export/excel', [DropoutController::class, 'exportExcel'])
+    ->name('dropout.export.excel');
+
 
         Route::post('/students/bulk-update', [StudentController::class, 'bulkUpdate'])->name('students.bulkUpdate');
 

@@ -869,7 +869,7 @@ Copy to Session
 				<div class="table-card">
 					<div class="tble-hd">
 						<div class="tbl-status">Joined</div>
-						<h2><input type="checkbox" id="checkAll1" /> <span>Serial No: 123432</span></h2>
+						<h2><input type="checkbox" id="1c1heckAll1" /> <span>Serial No: 123432</span></h2>
 					</div>
 					<div class="tble-rep">
 						<h3>Personal detail:</h3>
@@ -926,7 +926,7 @@ Copy to Session
 				<div class="table-card">
 					<div class="tble-hd">
 						<div class="tbl-status">Joined</div>
-						<h2><input type="checkbox" id="checkAll2" /> <span>Serial No: 123432</span></h2>
+						<h2><input type="checkbox" id="ch1eckAll2" /> <span>Serial No: 123432</span></h2>
 					</div>
 					<div class="tble-rep">
 						<h3>Personal detail:</h3>
@@ -994,7 +994,7 @@ Copy to Session
 				<div class="table-card">
 					<div class="tble-hd">
 						<div class="tbl-status">Joined</div>
-						<h2><input type="checkbox" id="checkAll2" /> <span>Serial No: 123432</span></h2>
+						<h2><input type="checkbox" id="che1ckAll2" /> <span>Serial No: 123432</span></h2>
 					</div>
 					<div class="tble-rep">
 						<h3>Personal detail:</h3>
@@ -1051,7 +1051,7 @@ Copy to Session
 				<div class="table-card">
 					<div class="tble-hd">
 						<div class="tbl-status">Joined</div>
-						<h2><input type="checkbox" id="checkAll1" /> <span>Serial No: 123432</span></h2>
+						<h2><input type="checkbox" id="che1ckAll1" /> <span>Serial No: 123432</span></h2>
 					</div>
 					<div class="tble-rep">
 						<h3>Personal detail:</h3>
@@ -1135,6 +1135,7 @@ Copy to Session
     <button id="deleteSelected" class="btn btn-danger">Delete Selected</button>
     <!-- <button id="copySelected" class="btn btn-success">Copy to Session</button> -->
     <button id="makeInterns" class="btn btn-success">Update as Intern</button>
+    <button id="movedropout" class="btn btn-success">Move to Dropout</button>
     <button id="moveToPlacement" class="btn btn-success">Move to Placement</button>
     <button id="markCertificateSent" class="btn btn-success">Mark Confirmaton Sent</button>
     <button id="markCertificateNotSent" class="btn btn-secondary">Mark Confirmaton Not Sent</button>
@@ -1189,6 +1190,12 @@ Copy to Session
 <form id="bulkMakeInternForm" method="POST" action="{{ route('students.make_interns') }}" style="display:none;">
     @csrf
     <input type="hidden" name="ids" id="bulkmakeInterns">
+</form>
+
+{{-- Move students to Interns--}}
+<form id="bulkMoveDropoutForm" method="POST" action="{{ route('students.move_to_dropout') }}" style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkmoveDropout">
 </form>
 
 {{-- Certificates Status chnage send or not sent--}}
@@ -1647,13 +1654,13 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
     });
 
     // ✅ Dynamic serial number
-table.on('draw.dt', function () {
-    var PageInfo = table.page.info();
+// table.on('draw.dt', function () {
+//     var PageInfo = table.page.info();
 
-    table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
-        cell.innerHTML = PageInfo.start + i + 1;
-    });
-}).draw();
+//     table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
+//         cell.innerHTML = PageInfo.start + i + 1;
+//     });
+// }).draw();
 
 
      // ✅ Save page whenever page changes
@@ -1667,25 +1674,75 @@ table.on('draw.dt', function () {
 // =====================================
 // Restore checked records after redraw
 // =====================================
-table.on('draw.dt', function () {
+// table.on('draw.dt', function () {
 
-    $('.record_checked').each(function () {
+//     $('.record_checked').each(function () {
 
-        let id = $(this).val();
+//         let id = $(this).val();
 
-        if (selectedStudents.includes(id)) {
-            $(this).prop('checked', true);
-        }
+//         if (selectedStudents.includes(id)) {
+//             $(this).prop('checked', true);
+//         }
+
+//     });
+
+//     // Update Check All status
+//     let total = $('.record_checked:not(:disabled)').length;
+//     let checked = $('.record_checked:checked').length;
+
+//     $('#checkAll').prop('checked', total > 0 && total === checked);
+
+// });
+
+// 27 july start
+
+    function syncCheckAll() {
+        var currentPageCheckboxes = $(table.rows({ page: 'current' }).nodes())
+            .find('.record_checked:not(:disabled)');
+        var checkedCount = currentPageCheckboxes.filter(':checked').length;
+
+        $('#checkAll').prop(
+            'checked',
+            currentPageCheckboxes.length > 0 && checkedCount === currentPageCheckboxes.length
+        );
+
+        console.log('selectedStudents', selectedStudents);
+        console.log('getSelectedIds()', getSelectedIds());
+    }
+
+    table.on('draw.dt', function () {
+        var PageInfo = table.page.info();
+
+        table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
+            cell.innerHTML = PageInfo.start + i + 1;
+        });
+
+        syncCheckAll();
+    }).draw();
+
+    $('#checkAll').on('click', function (e) {
+        e.stopPropagation();
+    });
+
+    $('#checkAll').on('change', function () {
+        const checked = this.checked;
+
+        $(table.rows({ page: 'current' }).nodes()).find('.record_checked').each(function () {
+            if (this.disabled) {
+                this.checked = false; // FORCE UNCHECK
+            } else {
+                this.checked = checked;
+            }
+        });
+
+        syncCheckAll();
+
 
     });
 
-    // Update Check All status
-    let total = $('.record_checked:not(:disabled)').length;
-    let checked = $('.record_checked:checked').length;
+    $('#studentsTable').on('change', '.record_checked', syncCheckAll);
+// 27 july end
 
-    $('#checkAll').prop('checked', total > 0 && total === checked);
-
-});
 
 
     // $('#checkAll').on('change', function () {
@@ -1700,70 +1757,89 @@ table.on('draw.dt', function () {
     //     });
     // });
 
-    $('#checkAll').on('change', function () {
+    // $('#checkAll').on('change', function () {
 
-        const checked = this.checked;
+    //     const checked = this.checked;
 
-        $('.record_checked').each(function () {
+    //     $('.record_checked').each(function () {
 
-            if (this.disabled) {
-                this.checked = false;
-                return;
-            }
+    //         if (this.disabled) {
+    //             this.checked = false;
+    //             return;
+    //         }
 
-            let id = $(this).val();
+    //         let id = $(this).val();
 
-            $(this).prop('checked', checked);
+    //         $(this).prop('checked', checked);
 
-            if (checked) {
+    //         if (checked) {
 
-                if (!selectedStudents.includes(id)) {
-                    selectedStudents.push(id);
-                }
+    //             if (!selectedStudents.includes(id)) {
+    //                 selectedStudents.push(id);
+    //             }
 
-            } else {
+    //         } else {
 
-                selectedStudents = selectedStudents.filter(x => x != id);
+    //             selectedStudents = selectedStudents.filter(x => x != id);
 
-            }
+    //         }
 
-        });
+    //     });
 
-    });
+    // });
 
     // ==================================
     // Individual checkbox
     // ==================================
-    $(document).on('change', '.record_checked', function () {
+    // $(document).on('change', '.record_checked', function () {
 
-        let id = $(this).val();
+    //     let id = $(this).val();
 
-        if ($(this).is(':checked')) {
+    //     if ($(this).is(':checked')) {
+
+    //         if (!selectedStudents.includes(id)) {
+    //             selectedStudents.push(id);
+    //         }
+
+    //     } else {
+
+    //         selectedStudents = selectedStudents.filter(x => x != id);
+
+    //     }
+
+    // });
+
+    // Get selected IDs
+    // function getSelectedIds() {
+
+    //     var ids = [];
+    //     $('.record_checked:checked').each(function() {
+    //         selectedStudents.push($(this).val());
+    //         // selectedStudents.push(id);
+    //     });
+    //     // return [...new Set(selectedStudents)];
+    //     return selectedStudents;
+    //     return ids;
+    // }
+
+    function getSelectedIds() {
+
+        $('.record_checked:checked').each(function() {
+
+            let id = $(this).val();
 
             if (!selectedStudents.includes(id)) {
                 selectedStudents.push(id);
             }
 
-        } else {
+        });
 
-            selectedStudents = selectedStudents.filter(x => x != id);
-
-        }
-
-    });
-
-    // Get selected IDs
-    // function getSelectedIds() {
-    //     var ids = [];
-    //     $('.record_checked:checked').each(function() {
-    //         ids.push($(this).val());
-    //     });
-    //     return ids;
-    // }
-
-    function getSelectedIds() {
         return selectedStudents;
     }
+
+    // function getSelectedIds() {
+    //     return selectedStudents;
+    // }
 
     // Multi-action buttons
     $('#issueSelected2').click(function() {
@@ -2009,6 +2085,21 @@ table.on('draw.dt', function () {
                 // $('#deleteIds').val(ids);
                 $('#bulkmakeInterns').val(JSON.stringify(ids));
                 $('#bulkMakeInternForm').submit();
+             });
+        });
+
+        $('#movedropout').click(function() {
+            var ids = getSelectedIds();
+
+            // if(ids.length === 0) {
+            //     alert('Select at least one student');
+            //     return;
+            // }
+            pageBulkConfirm(ids, 'Move to Dropout?', function () {
+            // if(confirm('Make Interns?')) {
+                // $('#deleteIds').val(ids);
+                $('#bulkmoveDropout').val(JSON.stringify(ids));
+                $('#bulkMoveDropoutForm').submit();
              });
         });
 
