@@ -684,7 +684,7 @@ class="btn btn-primary">Without Fee Download Excel</a> -->
                 <th class="text-center">Receipt Count</th>
                 <th class="text-center">Created At</th>
                 <th class="text-center">Updated At</th>
-                <th width="180px" class="text-center">Action</th>
+                <!-- <th width="180px" class="text-center">Action</th> -->
             </tr>
         </thead>
         <tbody>
@@ -774,8 +774,8 @@ class="btn btn-primary">Without Fee Download Excel</a> -->
                 <td>
                     {{ $student->updated_at ? \Carbon\Carbon::parse($student->updated_at)->format('d M Y') : '-' }}
                 </td>
-        <td class="text-center">
-    <div class="mb-2">
+        <!-- <td class="text-center">
+    <div class="mb-2"> -->
           
  
         {{-- Edit --}}
@@ -792,10 +792,10 @@ class="btn btn-primary">Without Fee Download Excel</a> -->
         </form> -->
 
  
-    </div>
+   <!--  </div>
 
     
-</td>
+</td> -->
             </tr>
             @endforeach
         </tbody>
