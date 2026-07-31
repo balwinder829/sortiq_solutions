@@ -601,6 +601,26 @@ class AnalyticsController extends Controller
         */
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | DROPOUT DATA
+        |--------------------------------------------------------------------------
+        */
+
+
+        $dropoutAnalytics = Student::onlyTrashed()
+        ->where('session', $activeSessionNo)
+        ->where('certificate_status', 4)
+        ->whereNotNull('deleted_at')
+        ->selectRaw("
+            COUNT(*) as total_dropouts,
+            SUM(COALESCE(total_fees,0)) as total_fees,
+            SUM(COALESCE(reg_fees,0) + COALESCE(paid_fees,0)) as collected_fees,
+            SUM(COALESCE(pending_fees,0)) as pending_fees
+        ")
+        ->first();
+
+
         return view('admin.analytics.index', compact(
             'totalTests',
             'activeTests',
@@ -698,6 +718,8 @@ class AnalyticsController extends Controller
             'topState',
             'topCollegeData',
             'feeSums',
+            // DROPOUT
+            'dropoutAnalytics',  
         ));
     }
 }

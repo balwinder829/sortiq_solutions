@@ -364,6 +364,14 @@ body.menu-toggle .sidebar-collapse-btn{
                                 Student Finance
                             </a>
                         </li>
+
+                        {{-- Dropout Students and Finance --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'dropout-students']) }}"
+                               class="{{ request('tab') == 'dropout-students' ? 'mm-active' : '' }}">
+                                Dropout Students
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -676,12 +684,12 @@ body.menu-toggle .sidebar-collapse-btn{
                 </li>
 
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status']) }}">
                         
 
                         
@@ -727,6 +735,13 @@ body.menu-toggle .sidebar-collapse-btn{
                             </a>
                              
                         </li>    
+                        <li class="{{ isParent(['dropout.fee.status']) }}">
+                            <a href="{{ route('dropout.fee.status') }}">
+                                <i class="fas fa-user-check"></i>
+                                <span class="nav-text">Dropout Fee Status</span>
+                            </a>
+                        </li>
+
                         <li class="{{ isParent(['fee.status']) }}">
                             <a href="{{ route('fee.status') }}">
                                 <i class="fas fa-user-check"></i>
@@ -1616,6 +1631,14 @@ body.menu-toggle .sidebar-collapse-btn{
                                 Student Finance
                             </a>
                         </li>
+
+                        {{-- Dropout Students and Finance --}}
+                        <li>
+                            <a href="{{ route('admin.analytics', ['tab' => 'dropout-students']) }}"
+                               class="{{ request('tab') == 'dropout-students' ? 'mm-active' : '' }}">
+                                Dropout Students
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 @endcan
@@ -1911,12 +1934,12 @@ body.menu-toggle .sidebar-collapse-btn{
 
                 @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view','student_request.view','online_exam.view','student_leave.view','projects.view','tutorials.view','latest_tech_articles.view','seo_tips.view','interview_preparation_blogs.view','cpanel_explanation.view','hosting.view','faqs_section.view','helpdesk_categories.view','student_projects.view','student_project_assignments.view','student_project_submissions.view','student_project_reviews.view','cv_templates.view','student_cvs.view','student_ppt.view','placement_companies.view','part_time_jobs.view','pgs.view','placements.view','references.view'])
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*', 'dropout.fee.status']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*', 'dropout.fee.status']) }}">
                         
 
                         
@@ -1970,13 +1993,23 @@ body.menu-toggle .sidebar-collapse-btn{
                         </li> 
                         @endcan      
                          @can('fee_status.view')
+                        <li class="{{ isParent(['dropout.fee.status']) }}">
+                            <a href="{{ route('dropout.fee.status') }}">
+                                <i class="fas fa-user-check"></i>
+                                <span class="nav-text">Dropout Fee Status</span>
+                            </a>
+                        </li>
+                        @endcan 
+
+                        @can('fee_status.view')
                         <li class="{{ isParent(['fee.status']) }}">
                             <a href="{{ route('fee.status') }}">
                                 <i class="fas fa-user-check"></i>
                                 <span class="nav-text">Payments (Fee) Status</span>
                             </a>
                         </li>
-                        @endcan   
+                        @endcan  
+
                          @can('student_letters.view')
                         <li>
                             <a class="{{ isChildActive('student-additional-letters*') }}"

@@ -106,6 +106,7 @@ use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\ScannerShareController;
 use App\Http\Controllers\CollegeManagement\MouController;
 use App\Http\Controllers\Students\FeeStatusController;
+use App\Http\Controllers\Students\DropoutFeeStatusController;
 use App\Http\Controllers\CommonFilteredStudentController;
 use App\Http\Controllers\PayrollController;
 use App\Http\Controllers\EmployeeLoginController;
@@ -1214,6 +1215,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/fee-status', [FeeStatusController::class, 'index'])->name('fee.status');   
         Route::get('/fee-status/export', [FeeStatusController::class, 'export'])->name('fee.status.export');
+
+        //DROPOUT
+         Route::get('/dropout-fee-status', [DropoutFeeStatusController::class, 'index'])->name('dropout.fee.status');   
+        Route::get('/dropout-fee-status/export', [DropoutFeeStatusController::class, 'export'])->name('dropout.fee.status.export');
 
         Route::get('/colleges/import', [CollegeController::class, 'showImport'])
             ->name('colleges.import.view');

@@ -132,6 +132,15 @@
             </button>
         </li>
 
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="tab"
+                    data-bs-target="#tab-dropout"
+                    data-tab="dropout-students">
+                Dropout Students
+            </button>
+        </li>
+
     </ul>
 
     {{-- ================= TAB CONTENT ================= --}}
@@ -1012,6 +1021,51 @@
                         <div class="card-body">
                             <h6>Highest Revenue District</h6>
                             <h4>Rs. {{ $fmt->format($topDistrict->total ?? 0) }} - {{ $topDistrict->district }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        {{-- ================= DROPOUT TAB ================= --}}
+        <div class="tab-pane fade" id="tab-dropout">
+
+            <div class="row gx-3 gy-2">
+
+                <div class="col-md-3">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Dropout</h6>
+                            <h3>{{ $dropoutAnalytics->total_dropouts }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Fees</h6>
+                            <h3>Rs. {{ $fmt->format($dropoutAnalytics->total_fees) }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Total Collected</h6>
+                            <h3>Rs. {{ $fmt->format($dropoutAnalytics->collected_fees) }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card dashboard-card text-center shadow-sm">
+                        <div class="card-body">
+                            <h6>Pending Fees</h6>
+                            <h3>Rs. {{ $fmt->format($dropoutAnalytics->pending_fees) }}</h3>
                         </div>
                     </div>
                 </div>
