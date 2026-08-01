@@ -14,6 +14,11 @@ class College extends Model
     protected $table = 'colleges';
     protected $appends = ['full_name'];
 
+    protected $casts = [
+        'departments' => 'array',
+        'is_important' => 'boolean',
+    ];
+
     protected $fillable = [
         'college_name',   // original value shown everywhere
         'clean_name',     // cleaned value for duplicate + slug
@@ -25,6 +30,11 @@ class College extends Model
         'college_type',
         'offer_training',
         'training_in_year',
+         // New
+        'is_important',
+        'departments',
+        'ownership_type',
+        'connection_type'
     ];
 
     const TYPES = [

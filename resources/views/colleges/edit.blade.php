@@ -95,6 +95,89 @@
                 @endforeach
             </select>
         </div>
+
+        @php
+            $departmentList = [
+                'CSE',
+                'MBA',
+                'BBA',
+                'Civil',
+                'EC',
+                'Mechanical',
+            ];
+
+            $selectedDepartments = old(
+                'departments',
+                $college->departments ?? []
+            );
+        @endphp
+
+        {{-- Important College --}}
+        <div class="form-group col-md-6">
+            <label>Important College</label>
+            <select name="is_important" class="form-control">
+                <option value="0"
+                    {{ old('is_important', $college->is_important) == 0 ? 'selected' : '' }}>
+                    No
+                </option>
+                <option value="1"
+                    {{ old('is_important', $college->is_important) == 1 ? 'selected' : '' }}>
+                    Yes
+                </option>
+            </select>
+        </div>
+
+        {{-- Government / Private --}}
+        <div class="form-group col-md-6">
+            <label>Ownership</label>
+            <select name="ownership_type" class="form-control">
+                <option value="0"
+                    {{ old('ownership_type', $college->ownership_type) == 0 ? 'selected' : '' }}>
+                    Private
+                </option>
+                <option value="1"
+                    {{ old('ownership_type', $college->ownership_type) == 1 ? 'selected' : '' }}>
+                    Government
+                </option>
+            </select>
+        </div>
+
+        {{-- Connection Type --}}
+        <div class="form-group col-md-6">
+            <label>Connection Type</label>
+            <select name="connection_type" class="form-control">
+                <option value="0"
+                    {{ old('connection_type', $college->connection_type) == 0 ? 'selected' : '' }}>
+                    New Connection
+                </option>
+                <option value="1"
+                    {{ old('connection_type', $college->connection_type) == 1 ? 'selected' : '' }}>
+                    Old Connection
+                </option>
+            </select>
+        </div>
+
+        {{-- Departments --}}
+        <div class="form-group col-md-6">
+            <label>Departments</label>
+
+            <select name="departments[]" class="form-control select2" multiple>
+
+                @foreach($departmentList as $department)
+
+                    <option value="{{ $department }}"
+                        {{ in_array($department, $selectedDepartments) ? 'selected' : '' }}>
+                        {{ $department }}
+                    </option>
+
+                @endforeach
+
+            </select>
+
+            <small class="text-muted">
+                Hold Ctrl (Windows) or Cmd (Mac) to select multiple departments.
+            </small>
+        </div>
     </div>
         <button class="btn btn-primary">Update</button>
         <a href="{{ route('colleges.index') }}" class="btn btn-secondary">

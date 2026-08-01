@@ -6,42 +6,23 @@ use App\Models\College;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-// use Maatwebsite\Excel\Concerns\WithShouldAutoSize;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class CollegesExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
 {
-    protected $stateName;
-    protected $districtName;
-    protected $studentFilter;
+    protected array $filters;
     protected $activeSessionId;
-    protected $college_type;
-    protected $offer_training;
-    protected $call_status;
 
-    public function __construct($stateName = null, $districtName = null, $studentFilter = null, $college_type = null, $offer_training = null, $call_status = null)
+    public function __construct(array $filters = [])
     {
-        $this->stateName     = $stateName;
-        $this->districtName  = $districtName;
-        $this->studentFilter = $studentFilter;
-        $this->college_type = $college_type;
-        $this->offer_training = $offer_training;
-        $this->call_status = $call_status;
+        $this->filters = $filters;
         $this->activeSessionId = session('admin_session_id');
-
-
-        // dd([
-        //     'stateName' => $stateName,
-        //     'districtName' => $districtName,
-        //     'studentFilter' => $studentFilter,
-        //     'college_type' => $college_type,
-        //     'offer_training' => $offer_training,
-        //     'call_status' => $call_status,
-        // ]);
     }
 
     public function collection()
     {
+        $filters = $this->filters;
+        // dd($filters);
         $query = College::query()
             ->with(['state', 'district'])
             ->withCount([
@@ -50,59 +31,78 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
                 }
             ]);
 
-        if (!empty($this->stateName)) {
-            $query->whereHas('state', function ($q) {
-                $q->where('name', $this->stateName);
+        // State
+        if (!empty($filters['state_name'])) {
+            $query->whereHas('state', function ($q) use ($filters) {
+                $q->where('name', $filters['state_name']);
             });
         }
 
-        if (!empty($this->districtName)) {
-            $query->whereHas('district', function ($q) {
-                $q->where('name', $this->districtName);
+        // District
+        if (!empty($filters['district_name'])) {
+            $query->whereHas('district', function ($q) use ($filters) {
+                $q->where('name', $filters['district_name']);
             });
         }
 
-        // if (!empty($this->college_type)) {
-        //     $query->where('college_type', $this->college_type);
-        // }
-
-        if ($this->college_type !== null && $this->college_type !== '') {
-            $query->where('college_type', $this->college_type);
+        // College Type
+        if (($filters['college_type'] ?? '') !== '') {
+            $query->where('college_type', $filters['college_type']);
         }
 
-        if ($this->offer_training !== null && $this->offer_training !== '') {
-            $query->where('offer_training', $this->offer_training);
+        // Training
+        if (($filters['offer_training'] ?? '') !== '') {
+            $query->where('offer_training', $filters['offer_training']);
         }
 
-        if ($this->call_status !== null && $this->call_status !== '') {
-            $query->where('call_status', $this->call_status);
-        }
-        // if (!empty($this->offer_training)) {
-        //     $query->where('offer_training', $this->offer_training);
-        // }
-
-
-
-        if (!empty($this->studentFilter)) {
-
-            if ($this->studentFilter === 'zero') {
-                $query->having('students_count', 0);
-            }
-
-            if ($this->studentFilter === 'more') {
-                $query->having('students_count', '>', 0);
-            }
-
-            if ($this->studentFilter === 'asc') {
-                $query->orderBy('students_count', 'asc');
-            }
-
-            if ($this->studentFilter === 'desc') {
-                $query->orderBy('students_count', 'desc');
-            }
+        // Call Status
+        if (($filters['call_status'] ?? '') !== '') {
+            $query->where('call_status', $filters['call_status']);
         }
 
-        // dd($query->get());
+        // Important
+        if (($filters['is_important'] ?? '') !== '') {
+            $query->where('is_important', $filters['is_important']);
+        }
+
+        // Ownership
+        if (($filters['ownership_type'] ?? '') !== '') {
+            $query->where('ownership_type', $filters['ownership_type']);
+        }
+
+        // Connection
+        if (($filters['connection_type'] ?? '') !== '') {
+            $query->where('connection_type', $filters['connection_type']);
+        }
+
+        // Department
+        if (!empty($filters['department'])) {
+            $query->whereJsonContains('departments', $filters['department']);
+        }
+
+        // Student Filter
+        if (!empty($filters['student_filter'])) {
+
+            switch ($filters['student_filter']) {
+
+                case 'zero':
+                    $query->having('students_count', '=', 0);
+                    break;
+
+                case 'more':
+                    $query->having('students_count', '>', 0);
+                    break;
+
+                case 'asc':
+                    $query->orderBy('students_count', 'asc');
+                    break;
+
+                case 'desc':
+                    $query->orderBy('students_count', 'desc');
+                    break;
+            }
+        }
+
         return $query->get();
     }
 
@@ -115,27 +115,35 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
             'Display Name',
             'College Type',
             'Providing Training',
+            'Important',
+            'Ownership',
+            'Connection',
+            'Departments',
             'Students Count',
         ];
     }
 
     public function map($college): array
     {
-        // $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
-        // $collegeType = \App\Models\College::TYPES[$college->college_type] ?? 'N/A'
         if ($college->college_type == 2) {
             $collegeType = 'Degree, Diploma';
         } else {
-            $collegeType = \App\Models\College::TYPES[$college->college_type] ?? 'N/A';
+            $collegeType = College::TYPES[$college->college_type] ?? 'N/A';
         }
-        $training = $college->offer_training == 1 ? 'Yes' : 'No';
+
         return [
             $college->college_name,
             $college->state->name ?? '-',
             $college->district->name ?? '-',
             $college->college_display_name,
             $collegeType,
-            $training,
+            $college->offer_training ? 'Yes' : 'No',
+            $college->is_important ? 'Yes' : 'No',
+            $college->ownership_type ? 'Government' : 'Private',
+            $college->connection_type ? 'Old Connection' : 'New Connection',
+            !empty($college->departments)
+                ? implode(', ', $college->departments)
+                : '',
             $college->students_count ?? 0,
         ];
     }

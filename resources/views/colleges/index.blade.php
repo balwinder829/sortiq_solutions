@@ -207,6 +207,43 @@ input:checked + .slider:before {
         </select>
     </div>
 
+    <div class="col-md-2">
+        <select id="filter_important" class="form-control">
+            <option value="">Important</option>
+            <option value="1">Important</option>
+            <option value="0">Normal</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select id="filter_ownership" class="form-control">
+            <option value="">Ownership</option>
+            <option value="1">Government</option>
+            <option value="0">Private</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select id="filter_connection" class="form-control">
+            <option value="">Connection</option>
+            <option value="1">Old Connection</option>
+            <option value="0">New Connection</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <select id="filter_department" class="form-control">
+            <option value="">Department</option>
+
+            <option value="CSE">CSE</option>
+            <option value="MBA">MBA</option>
+            <option value="BBA">BBA</option>
+            <option value="Civil">Civil</option>
+            <option value="EC">EC</option>
+            <option value="Mechanical">Mechanical</option>
+        </select>
+    </div>
+
    <!--  <div class="col-md-2 mt-2">
         <select id="filter_status" class="form-control">
             <option value="">All</option>
@@ -278,6 +315,10 @@ $(document).ready(function () {
                 d.student_filter = $('#student_filter').val();
                 d.college_type = $('#filter_college_type').val();
                 d.offer_training = $('#filter_training').val();
+                d.is_important   = $('#filter_important').val();
+                d.ownership_type = $('#filter_ownership').val();
+                d.connection_type = $('#filter_connection').val();
+                d.department = $('#filter_department').val();
                 // d.call_status = $('#filter_status').val();
             }
         },
@@ -299,9 +340,13 @@ $(document).ready(function () {
         order:[]
     });
 
-    $('#student_filter, #filter_college_type, #filter_training, #filter_status').change(function () {
-        table.ajax.reload();
-    });
+    // $('#student_filter, #filter_college_type, #filter_training, #filter_status').change(function () {
+    //     table.ajax.reload();
+    // });
+
+    $('#student_filter, #filter_college_type, #filter_training, #filter_important, #filter_ownership, #filter_connection, #filter_department').change(function () {
+            table.ajax.reload();
+        });
 
     // STATE FILTER → Updates District Dropdown and reloads table
     $('#filter-state').on('change', function () {
@@ -355,13 +400,22 @@ $('#exportExcel').on('click', function () {
     let offer_training = $('#filter_training').val();
     let call_status = $('#filter_status').val();
 
+    let is_important   = $('#filter_important').val();
+    let ownership_type = $('#filter_ownership').val();
+    let connection_type = $('#filter_connection').val();
+    let department = $('#filter_department').val();
+
     let url = "{{ route('colleges.export.excel') }}?" +
         "state_name=" + encodeURIComponent(state) +
         "&district_name=" + encodeURIComponent(district) +
         "&student_filter=" + encodeURIComponent(student) +
         "&college_type=" + encodeURIComponent(college_type) +
         "&call_status=" + encodeURIComponent(call_status) +
-        "&offer_training=" + encodeURIComponent(offer_training);
+        "&offer_training=" + encodeURIComponent(offer_training) + 
+        "&is_important=" + encodeURIComponent(is_important) +
+        "&ownership_type=" + encodeURIComponent(ownership_type) +
+        "&connection_type=" + encodeURIComponent(connection_type) +
+        "&department=" + encodeURIComponent(department);
 
     // Trigger download
     window.location.href = url;

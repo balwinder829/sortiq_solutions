@@ -41,7 +41,29 @@ class CollegesImport implements ToCollection, WithHeadingRow
             );
 
             // Import-specific resolver
-            $result = $this->resolver->resolveForImport($combined);
+            // $result = $this->resolver->resolveForImport($combined);
+            // Import-specific resolver
+            $result = $this->resolver->resolveForImport($combined, [
+
+                'college_type' => $this->getCollegeType($row['college_type'] ?? ''),
+
+                'offer_training' => strtolower(trim($row['providing_training'] ?? '')) === 'yes' ? 1 : 0,
+
+                'training_in_year' => (int)($row['no_of_times_in_year'] ?? 0),
+
+                'is_important' => strtolower(trim($row['important'] ?? '')) === 'yes' ? 1 : 0,
+
+                'ownership_type' => strtolower(trim($row['ownership'] ?? '')) === 'government' ? 1 : 0,
+
+                'connection_type' => in_array(
+                    strtolower(trim($row['connection'] ?? '')),
+                    ['old', 'old connection']
+                ) ? 1 : 0,
+
+                'departments' => !empty($row['departments'])
+                    ? array_map('trim', explode(',', $row['departments']))
+                    : [],
+            ]);
 
             if ($result['status'] === 'created') {
                 $this->created++;
@@ -55,5 +77,20 @@ class CollegesImport implements ToCollection, WithHeadingRow
                 ];
             }
         }
+    }
+
+    protected function getCollegeType($value): int
+    {
+        $value = strtolower(trim($value));
+
+        return match ($value) {
+            'degree' => 0,
+            'diploma' => 1,
+            'degree, diploma',
+            'degree,diploma',
+            'degree & diploma',
+            'degree diploma' => 2,
+            default => 0,
+        };
     }
 }

@@ -86,6 +86,26 @@ class CollegeController extends Controller
             $query->where('call_status', $request->call_status);
         }
 
+        // Important
+        if ($request->filled('is_important')) {
+            $query->where('is_important', $request->is_important);
+        }
+
+        // Ownership
+        if ($request->filled('ownership_type')) {
+            $query->where('ownership_type', $request->ownership_type);
+        }
+
+        // Connection
+        if ($request->filled('connection_type')) {
+            $query->where('connection_type', $request->connection_type);
+        }
+
+        // Department (JSON)
+        if ($request->filled('department')) {
+            $query->whereJsonContains('departments', $request->department);
+        }
+
         // 👇 ADD HERE
         if ($request->filled('student_filter')) {
 
@@ -238,7 +258,10 @@ class CollegeController extends Controller
             $data[] = [
                 $rowNum,
                 $college->id,
-                $college->college_name,
+                // $college->college_name,
+                $college->is_important
+                    ? '<span class="text-warning" title="Important College">⭐</span> ' . e($college->college_name)
+                    : e($college->college_name),
                 $college->state->name ?? '-',
                 $college->district->name ?? '-',
                 '<a href="' . route('common_filtered_student', ['college_name' => $college->id]) . '" class="text-decoration-none"><span class="badge bg-success">' . $college->students_count . '</span></a>',
@@ -460,6 +483,11 @@ public function store(Request $request)
         'college_type'          => 'required',
         'offer_training'          => 'required',
         'training_in_year'          => 'required',
+        'is_important' => 'required|boolean',
+        'departments' => 'nullable|array',
+        'departments.*' => 'string',
+        'ownership_type' => 'required|in:0,1',
+        'connection_type' => 'required|in:0,1',
     ], [
         'college_name.unique' => 'This college already exists in the selected district.'
     ]);
@@ -518,6 +546,12 @@ public function update(Request $request, $id)
         'college_type'          => 'required',
         'offer_training'          => 'required',
         'training_in_year'          => 'required',
+        'is_important'   => 'nullable|boolean',
+        'departments'    => 'nullable|array',
+        'departments.*'  => 'string',
+        'ownership_type' => 'nullable|in:0,1',
+        'connection_type'=> 'nullable|in:0,1',
+
     ], [
         'college_name.unique' => 'This college already exists in the selected district.'
     ]);
@@ -558,6 +592,10 @@ public function update(Request $request, $id)
         'college_type'          => $data['college_type'],
         'offer_training'          => $data['offer_training'],
         'training_in_year'          => $data['training_in_year'],
+        'is_important'         => $data['is_important'] ?? 0,
+        'departments'          => $data['departments'] ?? [],
+        'ownership_type'       => $data['ownership_type'] ?? 0,
+        'connection_type'      => $data['connection_type'] ?? 0,
     ]);
 // dd($college);
     return redirect()
@@ -694,12 +732,18 @@ public function exportExcel(Request $request)
 
     return Excel::download(
         new CollegesExport(
-            $request->state_name,
-            $request->district_name,
-            $request->student_filter,
-            $request->college_type,
-            $request->offer_training,
-            $request->call_status
+            $request->only([
+                'state_name',
+                'district_name',
+                'student_filter',
+                'college_type',
+                'offer_training',
+                'call_status',
+                'is_important',
+                'ownership_type',
+                'connection_type',
+                'department',
+            ])
         ),
         $fileName
     );

@@ -216,6 +216,10 @@ class CollegeResolver
                 'college_type'         => $data['college_type'],
                 'offer_training'       => $data['offer_training'],
                 'training_in_year'     => $data['training_in_year'],
+                'is_important'   => $data['is_important'] ?? 0,
+                'departments'    => $data['departments'] ?? null,   // or [] if you prefer empty array
+                'ownership_type' => $data['ownership_type'] ?? 0,   // 0 = Private
+                'connection_type'=> $data['connection_type'] ?? 0,  // 0 = New Connection
             ]
         );
     }
@@ -231,7 +235,7 @@ class CollegeResolver
         return \Str::slug($collegeName);
     }
 
-    public function resolveForImport(string $input): array
+    public function resolveForImport(string $input, array $extraData = []): array
     {
         $raw = trim($input);
 
@@ -269,6 +273,16 @@ class CollegeResolver
             'slug'                 => Str::slug($collegeNameRaw),
             'state_id'             => $stateId,
             'district_id'          => $districtId,
+                 // Existing fields
+            'college_type'         => $extraData['college_type'] ?? 0,
+            'offer_training'       => $extraData['offer_training'] ?? 0,
+            'training_in_year'     => $extraData['training_in_year'] ?? 0,
+
+            // New fields
+            'is_important'         => $extraData['is_important'] ?? 0,
+            'ownership_type'       => $extraData['ownership_type'] ?? 0,
+            'connection_type'      => $extraData['connection_type'] ?? 0,
+            'departments'          => $extraData['departments'] ?? [],
         ]);
 
         return [
