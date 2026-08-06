@@ -79,6 +79,28 @@
             background: rgba(255, 255, 255, 0.1) !important;
         }
     </style>
+
+    @if(session('success') || session('error'))
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Clear localStorage
+            localStorage.removeItem('selected_enquiries');
+
+            // Clear JS variables
+            selectedEnquiries = [];
+            selectedRecordIds = new Set();
+
+            // Uncheck checkboxes
+            $('.rowCheck').prop('checked', false);
+            $('#selectAll').prop('checked', false);
+
+            // Hide bulk action bar
+            syncBulkActionBar();
+
+        });
+        </script>
+    @endif
 <div class="container">
 
     {{-- Add Enquiry Button --}}
@@ -438,13 +460,20 @@
                     <tr>
                         @if(auth()->user()->isAdmin())
                             <td class="text-center">
-                                @if(!$enquiry->assigned_to)
-                                    <input type="checkbox" class="rowCheck" value="{{ $enquiry->id }}">
-                                @else
-                                    <span class="badge bg-secondary">Assigned</span>
-                                @endif
-                                
-                            </td>
+    <div class="d-inline-flex align-items-center gap-1">
+
+        <input type="checkbox"
+               class="rowCheck"
+               value="{{ $enquiry->id }}">
+
+        @if($enquiry->assignedTo)
+            <i class="fas fa-user-check text-warning  ml-1"
+               data-bs-toggle="tooltip"
+               title="Assigned to {{ $enquiry->assignedTo->name }}"></i>
+        @endif
+
+    </div>
+</td>
                         @endif
 
                         <td>{{ $enquiries->firstItem() + $loop->index }}</td>
@@ -508,9 +537,21 @@
         {{ $enquiries->links('pagination::bootstrap-5') }}
     </div>
 
+    
+
+    <div class="mt-3">
+        <button id="bulkMoveEnquiry" class="btn btn-warning">
+        Move / Close Enquiry
+    </button>
+    <button id="assignBtn"
+            class="btn btn-primary">
+        Assign Selected Enquiries
+    </button>
+    </div>
+
     {{-- ======================== ASSIGN MULTIPLE ======================== --}}
     @if(auth()->user()->isAdmin())
-        <div class="mt-4">
+    <!--     <div class="mt-4">
             <h5><strong>Assign Selected Enquiries</strong></h5>
 
             <select id="salesperson" class="form-control mb-2">
@@ -523,7 +564,7 @@
             <button id="assignBtn" class="btn btn-primary">
                 Assign Selected
             </button>
-        </div>
+        </div> -->
     @endif
 
     {{-- Popup Modal --}}
@@ -541,13 +582,317 @@
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="moveEnquiryModal" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <form id="moveEnquiryForm"
+              method="POST"
+              action="{{ route('enquiries.bulkMove') }}">
+
+            @csrf
+
+            <input type="hidden"
+                   name="ids"
+                   id="bulkMoveIds">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Move / Close Enquiries
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Action
+                        </label>
+
+                        <select class="form-control"
+                                name="action"
+                                id="bulkAction"
+                                required>
+
+                            <option value="">Select Action</option>
+
+                            <option value="move">
+                                Move To Another Session
+                            </option>
+
+                            <option value="close">
+                                Close Enquiry
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div id="moveSection" style="display:none;">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Session
+                            </label>
+
+                            <select class="form-control"
+                                    name="session_id">
+
+                                <option value="">
+                                    Select Session
+                                </option>
+
+                                @foreach($sessions as $session)
+
+                                    <option value="{{ $session->id }}">
+                                        {{ $session->session_name }}
+                                    </option>
+
+                                @endforeach
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Reason
+
+                        </label>
+
+                        <textarea class="form-control"
+                                  rows="3"
+                                  name="reason"></textarea>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button class="btn btn-success">
+
+                        Save
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="assignModal" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Assign Selected Enquiries
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Salesperson
+                    </label>
+
+                    <select id="salesperson"
+                            class="form-control">
+
+                        <option value="">
+                            Select Salesperson
+                        </option>
+
+                        @foreach($sales as $s)
+
+                            <option value="{{ $s->id }}">
+                                {{ $s->name }}
+                            </option>
+
+                        @endforeach
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                        id="confirmAssign"
+                        class="btn btn-primary">
+
+                    Assign
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 @endsection
 {{-- ======================== SCRIPTS ======================== --}}
 @push('scripts')
 
+
 <script>
+
+$('#bulkMoveEnquiry').click(function () {
+
+    
+    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+
+    if (ids.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least one enquiry'
+        });
+
+        return;
+    }
+
+    $('#bulkMoveIds').val(JSON.stringify(ids));
+
+    $('#moveEnquiryModal').modal('show');
+
+});
+
+$('#bulkAction').change(function () {
+
+    if ($(this).val() == 'move') {
+
+        $('#moveSection').show();
+
+    } else {
+
+        $('#moveSection').hide();
+
+    }
+
+});
+
+// $('#moveEnquiryForm').submit(function(e){
+
+//     e.preventDefault();
+
+//     let ids = $('#bulkMoveIds').val();
+
+//     $('<input>')
+//         .attr({
+//             type:'hidden',
+//             name:'action',
+//             value:$('#bulkAction').val()
+//         })
+//         .appendTo('#bulkMoveEnquiryForm');
+
+//     $('<input>')
+//         .attr({
+//             type:'hidden',
+//             name:'session_id',
+//             value:$('select[name=session_id]').val()
+//         })
+//         .appendTo('#bulkMoveEnquiryForm');
+
+//     $('<input>')
+//         .attr({
+//             type:'hidden',
+//             name:'reason',
+//             value:$('textarea[name=reason]').val()
+//         })
+//         .appendTo('#bulkMoveEnquiryForm');
+
+//     $('#bulkMoveEnquiryForm').submit();
+
+// });
+
+
+    $('#moveEnquiryForm').submit(function(e){
+
+    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+
+    if(ids.length===0){
+
+        e.preventDefault();
+
+        showPopup('Please select at least one enquiry.');
+
+        return;
+
+    }
+
+    $('#bulkMoveIds').val(JSON.stringify(ids));
+
+    if($('#bulkAction').val()=="move" &&
+       $('[name=session_id]').val()==""){
+
+        e.preventDefault();
+
+        showPopup('Please select session.');
+
+        return;
+
+    }
+
+    localStorage.removeItem('selected_enquiries');
+
+});
+
+    $('#moveEnquiryModal').on('hidden.bs.modal',function(){
+
+        $('#moveEnquiryForm')[0].reset();
+
+        $('#moveSection').hide();
+
+        $('#otherReason').hide();
+
+    });
 
 let selectedEnquiries = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
 let selectedRecordIds = new Set(selectedEnquiries.map(id => parseInt(id)));
@@ -603,8 +948,13 @@ $(document).on('change','.rowCheck',function(){
 
     }else{
 
+        // selectedEnquiries = selectedEnquiries.filter(e => e != id);
+        // selectedRecordIds = selectedEnquiries.map(id => parseInt(id));
+        // Remove from array
         selectedEnquiries = selectedEnquiries.filter(e => e != id);
-        selectedRecordIds = selectedEnquiries.map(id => parseInt(id));
+
+        // Remove from Set
+        selectedRecordIds.delete(parseInt(id));
 
     }
     syncBulkActionBar();
@@ -634,31 +984,95 @@ $('#selectAll').on('change',function(){
 
             $(this).prop('checked',false);
             selectedEnquiries = selectedEnquiries.filter(e => e != id);
-            selectedRecordIds = new Set(selectedEnquiries.map(id => parseInt(id)));
+            // selectedRecordIds = new Set(selectedEnquiries.map(id => parseInt(id)));
+            selectedRecordIds.delete(parseInt(id));
         }
     });
     syncBulkActionBar();
 
     localStorage.setItem('selected_enquiries',JSON.stringify(selectedEnquiries));
+    console.log(selectedEnquiries);
 
 });
 
 /* ================================
    ASSIGN BUTTON
 ================================ */
+// $('#assignBtn').on('click',function(){
+
+//     let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+//     let salesId = $('#salesperson').val();
+
+//     if(ids.length === 0){
+//         showPopup('Please select at least one enquiry.');
+//         return;
+//     }
+
+//     if(!salesId){
+//         showPopup('Please select a salesperson.');
+//         return;
+//     }
+
+//     fetch("{{ route('enquiries.assign') }}",{
+//         method:"POST",
+//         headers:{
+//             "Content-Type":"application/json",
+//             "X-CSRF-TOKEN":"{{ csrf_token() }}"
+//         },
+//         body:JSON.stringify({
+//             enquiry_ids:ids,
+//             salesperson_id:salesId
+//         })
+//     })
+//     .then(res=>res.json())
+//     .then(data=>{
+
+//         localStorage.removeItem('selected_enquiries');
+
+//         if(data.message){
+//             location.reload();
+//         }
+
+//     });
+
+// });
+
 $('#assignBtn').on('click',function(){
+
+    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+
+    if(ids.length === 0){
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least one enquiry'
+        });
+        return;
+    }
+
+    $('#assignModal').modal('show');
+
+});
+
+$('#confirmAssign').on('click',function(){
 
     let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
     let salesId = $('#salesperson').val();
 
     if(ids.length === 0){
-        showPopup('Please select at least one enquiry.');
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least one enquiry'
+        });
         return;
     }
 
     if(!salesId){
-        showPopup('Please select a salesperson.');
-        return;
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select a salesperson'
+        });
+        // showPopup('Please select a salesperson.');
+        // return;
     }
 
     fetch("{{ route('enquiries.assign') }}",{
@@ -941,6 +1355,8 @@ $(document).on('click', '#sendWhatsappNotification', function () {
     // Sync visual bulk banner
     function syncBulkActionBar() {
         const count = selectedRecordIds.size;
+        console.log(count);
+        console.log(selectedRecordIds);
         if (count > 0) {
             const bulkBar = document.getElementById('bulk-bar');
             bulkBar.classList.remove('hidden');
@@ -955,6 +1371,14 @@ $(document).on('click', '#sendWhatsappNotification', function () {
         } else {
             const bulkBar = document.getElementById('bulk-bar');
             bulkBar.classList.add('hidden');
+            btnCount.textContent = count;
+            selectedCountBadge.textContent = count;
+            if (btnCountName) {
+                btnCountName.textContent = count;
+            }
+            if (btnCountApi) {
+                btnCountApi.textContent = count;
+            }
         }
     }
 

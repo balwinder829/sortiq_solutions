@@ -1486,6 +1486,12 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
         ->name('enquiries.assign');
 
 
+    Route::post(
+    '/enquiries/bulk-move',
+    [EnquiryController::class,'bulkMove']
+)->name('enquiries.bulkMove');
+
+
     //Office expenses
     Route::resource('electricity-expenses', OfficeExpenseController::class)->names('office-expenses');
     Route::resource('pantry-expenses', PantryExpenseController::class);

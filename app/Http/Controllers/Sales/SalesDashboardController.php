@@ -21,7 +21,7 @@ class SalesDashboardController extends Controller
         (new SalesPendingWorkService)->generate(Auth::user());
 
         // Total assigned
-        $totalAssigned = Enquiry::where('assigned_to', $userId)->count();
+        $totalAssigned = Enquiry::active()->where('assigned_to', $userId)->count();
 
         // Today follow-ups
         // $todayFollowups = EnquiryFollowup::where('user_id', $userId)
@@ -31,13 +31,16 @@ class SalesDashboardController extends Controller
 
         // Upcoming follow-ups (after today)
         $upcomingFollowups = EnquiryFollowup::where('user_id', $userId)
+            ->whereHas('enquiry', function ($q) {
+                $q->active();
+            })
             ->whereDate('next_followup_date', '>', $today)
             ->with('enquiry')
             ->orderBy('next_followup_date')
             ->get();
 
         // Status wise count
-        $statusCount = Enquiry::where('assigned_to', $userId)
+        $statusCount = Enquiry::active()->where('assigned_to', $userId)
             ->selectRaw('status, COUNT(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
@@ -45,6 +48,9 @@ class SalesDashboardController extends Controller
 
         // Today follow-ups
         $todayFollowups = EnquiryFollowup::where('user_id', $userId)
+            ->whereHas('enquiry', function ($q) {
+                $q->active();
+            })
             ->whereDate('next_followup_date', $today)
             ->with('enquiry')
             ->orderByDesc('updated_at') // 🔥 LATEST STATUS FIRST
@@ -56,11 +62,11 @@ class SalesDashboardController extends Controller
             ->whereNull('status')
             ->count();
 
-        $todaysAssigned = Enquiry::where('assigned_to', $userId)
+        $todaysAssigned = Enquiry::active()->where('assigned_to', $userId)
         ->whereDate('assigned_at', $today)
         ->count();
 
-        $todayRegistered = Enquiry::where('assigned_to', $userId)
+        $todayRegistered = Enquiry::active()->where('assigned_to', $userId)
             ->whereNotNull('registered_at')
             ->whereDate('registered_at', $today)
             ->count();
@@ -74,11 +80,14 @@ class SalesDashboardController extends Controller
         ];
 
         $notPickedCount = EnquiryFollowup::where('user_id', $userId)
+            ->whereHas('enquiry', function ($q) {
+                $q->active();
+            })
             ->whereIn('call_status', $notPickedStatuses)
             ->whereDate('updated_at', $today)
             ->count();
 
-        $collegeWiseAssigned = Enquiry::where('assigned_to', $userId)
+        $collegeWiseAssigned = Enquiry::active()->where('assigned_to', $userId)
             ->whereNotNull('college')
             ->with('collegeData')
             ->selectRaw('college, COUNT(*) as total')

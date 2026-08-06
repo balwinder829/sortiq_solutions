@@ -15,6 +15,7 @@ class EnquiryFollowup extends Model
 
     protected $fillable = [
         'enquiry_id',
+        'session_id',
         'user_id',
         'status',
         'call_status',
@@ -31,5 +32,10 @@ class EnquiryFollowup extends Model
     public function user()
     {
         return $this->belongsTo(SalesStaff::class);
+    }
+
+    public function session()
+    {
+        return $this->belongsTo(StudentSession::class,'session_id');
     }
 }

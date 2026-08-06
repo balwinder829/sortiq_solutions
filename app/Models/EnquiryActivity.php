@@ -10,6 +10,7 @@ class EnquiryActivity extends Model
     use SoftDeletes;
     protected $fillable = [
         'enquiry_id',
+        'session_id',
         'user_id',
         'type',
         'old_value',
@@ -23,5 +24,10 @@ class EnquiryActivity extends Model
 
     public function user() {
         return $this->belongsTo(SalesStaff::class);
+    }
+
+    public function session()
+    {
+        return $this->belongsTo(StudentSession::class,'session_id');
     }
 }

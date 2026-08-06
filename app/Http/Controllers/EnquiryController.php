@@ -23,6 +23,8 @@ use App\Exports\EnquiriesExport;
 use App\Rules\NotBlockedNumber;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\Models\EnquiryMovement;
+
 class EnquiryController extends Controller
 {
      protected array $permissionMap = [
@@ -173,6 +175,12 @@ public function index(Request $request)
     $activeSessionNo = session('admin_session_id');
     $query = Enquiry::enquiries()
         ->where('session_id', $activeSessionNo);
+
+    if (!$request->filled('enquiry_status')) {
+        $query->active();
+    } else {
+        $query->where('enquiry_status', $request->enquiry_status);
+    }
 
     // =========================
     // ROLE BASED ACCESS
@@ -1425,5 +1433,150 @@ public function bulkConvertl(Request $request)
             new EnquiriesExport($request->all(), 0),
             $fileName
         );
+    }
+
+public function bulkMove(Request $request)
+{
+    
+
+    // dd($request);
+    $request->validate([
+        'ids'        => 'required',
+        'action'     => 'required|in:move,close',
+        'reason'     => 'nullable|string|max:255',
+        'session_id' => 'nullable|exists:student_sessions,id',
+    ]);
+
+    $ids = json_decode($request->ids, true);
+
+    if (empty($ids)) {
+        return back()->with('error', 'No enquiries selected.');
+    }
+
+    DB::beginTransaction();
+
+    try {
+
+        $enquiries = Enquiry::whereIn('id', $ids)->get();
+
+        foreach ($enquiries as $enquiry) {
+
+            $oldSession = $enquiry->session_id;
+            $oldSessionVal = StudentSession::find($oldSession);
+            $newSession = StudentSession::find($request->session_id);
+
+            /*
+            |--------------------------------------------------------------------------
+            | MOVE ENQUIRY
+            |--------------------------------------------------------------------------
+            */
+            if ($request->action == 'move') {
+
+                if ($oldSession == $request->session_id) {
+                    continue;
+                }
+
+                $enquiry->update([
+                    'session_id' => $request->session_id,
+                ]);
+
+                EnquiryMovement::create([
+                    'enquiry_id'      => $enquiry->id,
+                    'from_session_id' => $oldSession,
+                    'to_session_id'   => $request->session_id,
+                    'action'          => 'moved',
+                    'reason'          => $request->reason,
+                    'moved_by'        => auth()->id(),
+                ]);
+
+                EnquiryActivity::create([
+                    'enquiry_id' => $enquiry->id,
+                    'session_id' => $oldSession,
+                    'user_id'    => auth()->id(),
+                    'type'       => 'session_moved',
+                    'old_value'  => $oldSessionVal?->session_name,
+                    'new_value'  => $newSession?->session_name,
+                    'details'    => 'Moved to another session. ' . ($request->reason ?? ''),
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | CLOSE ENQUIRY
+            |--------------------------------------------------------------------------
+            */
+            if ($request->action == 'close') {
+
+                $enquiry->update([
+                    'enquiry_status' => 'closed',
+                    'closed_reason'  => $request->reason,
+                    'closed_at'      => now(),
+                    'closed_by'      => auth()->id(),
+                ]);
+
+                EnquiryMovement::create([
+                    'enquiry_id'      => $enquiry->id,
+                    'from_session_id' => $oldSession,
+                    'to_session_id'   => null,
+                    'action'          => 'closed',
+                    'reason'          => $request->reason,
+                    'moved_by'        => auth()->id(),
+                ]);
+
+                EnquiryActivity::create([
+                    'enquiry_id' => $enquiry->id,
+                    'session_id' => $oldSession,
+                    'user_id'    => auth()->id(),
+                    'type'       => 'enquiry_closed',
+                    'details'    => 'Enquiry Closed. ' . ($request->reason ?? ''),
+                ]);
+            }
+        }
+
+        DB::commit();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Selected enquiries updated successfully.');
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return redirect()
+            ->back()
+            ->with('error', $e->getMessage());
+    }
+}
+
+    public function bulkMove2(Request $request)
+    {
+        dd($request);
+        $request->validate([
+            'ids' => 'required'
+        ]);
+
+        // Decode safely
+        $ids = json_decode($request->ids, true);
+        // dd($ids);
+        // If empty / invalid JSON
+        if (empty($ids) || !is_array($ids)) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Get only existing IDs
+        $validIds = Student::whereIn('id', $ids)->pluck('id')->toArray();
+
+        // If no valid students found
+        if (empty($validIds)) {
+            return back()->with('error', 'Selected students do not exist.');
+        }
+
+        // Update interns
+        Student::whereIn('id', $validIds)->update([
+            'is_intern' => 1
+        ]);
+
+        return back()->with('success', 'Students marked as intern successfully.');
     }
 }

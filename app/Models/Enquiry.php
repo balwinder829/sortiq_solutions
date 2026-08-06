@@ -14,6 +14,7 @@ class Enquiry extends Model
         'last_contacted_at' => 'datetime',
         'next_followup_at'  => 'datetime', // 🔥 MISSING
         'registered_at'     => 'datetime',
+        'closed_at'         => 'datetime',
     ];
 
     protected $guarded = [];
@@ -30,6 +31,7 @@ class Enquiry extends Model
             $enquiry->followups()->delete();
             $enquiry->activities()->delete();
             $enquiry->registration()->delete();
+            $enquiry->movements()->delete();
         });
 
         static::restoring(function ($enquiry) {
@@ -37,6 +39,7 @@ class Enquiry extends Model
             $enquiry->followups()->withTrashed()->restore();
             $enquiry->activities()->withTrashed()->restore();
             $enquiry->registration()->withTrashed()->restore();
+            $enquiry->movements()->withTrashed()->restore();
         });
     }
 
@@ -82,5 +85,30 @@ class Enquiry extends Model
     public function salesStaff()
     {
         return $this->belongsTo(SalesStaff::class, 'assigned_to');
+    }
+
+    public function movements()
+    {
+        return $this->hasMany(EnquiryMovement::class)
+            ->latest();
+    }
+
+    public function currentSession()
+    {
+        return $this->belongsTo(StudentSession::class, 'session_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('enquiry_status', 'active');
+    }
+
+    public function scopeClosed($query)
+    {
+        return $query->where('enquiry_status', 'closed');
+    }
+    public function scopeAdmitted($query)
+    {
+        return $query->where('enquiry_status', 'admitted');
     }
 }
