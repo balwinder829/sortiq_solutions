@@ -362,7 +362,248 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function changeSession(Request $request)
+   public function changeSession(Request $request)
+{
+    if (Auth::user()->role != 1) {
+        // abort(403, "Unauthorized");
+    }
+
+    $request->validate([
+        'session_id'      => 'required|exists:student_sessions,id',
+        'special_session' => 'nullable|boolean',
+    ]);
+
+    $selectedSession = StudentSession::withoutGlobalScopes()
+        ->where('id', $request->session_id)
+        ->whereNull('deleted_at')
+        ->first();
+
+    if (!$selectedSession) {
+        return back()->with(
+            'error',
+            'Selected session not found or has been deleted.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SALE DATA PAGES
+    |--------------------------------------------------------------------------
+    |
+    | special_session = 1
+    | Means Enquiry / Manual / Hard Data page.
+    |
+    | These pages can use BOTH normal and sale sessions.
+    |
+    */
+
+    if ((int) $request->special_session === 1) {
+
+        // Remember currently selected header session
+        session([
+            'admin_header_session_id' => $selectedSession->id,
+        ]);
+
+        // Sale session
+        if ((int) $selectedSession->session_type === 1) {
+
+            session([
+                'admin_sale_session_id' => $selectedSession->id,
+            ]);
+
+        }
+
+        // Normal session
+        if ((int) $selectedSession->session_type === 0) {
+
+            session([
+                'admin_session_id' => $selectedSession->id,
+            ]);
+
+        }
+
+    } else {
+
+        /*
+        |--------------------------------------------------------------------------
+        | NORMAL PAGES
+        |--------------------------------------------------------------------------
+        |
+        | Only normal sessions are allowed.
+        |
+        */
+
+        if ((int) $selectedSession->session_type !== 0) {
+
+            return back()->with(
+                'error',
+                'Sale sessions are available only in Sales Data, Manual Data and Hard Data.'
+            );
+        }
+
+        session([
+            'admin_session_id'        => $selectedSession->id,
+            'admin_header_session_id' => $selectedSession->id,
+        ]);
+    }
+
+    return back()->with(
+        'success',
+        'Session changed successfully.'
+    );
+}
+public function changeSession12auga(Request $request)
+{
+    if (Auth::user()->role != 1) {
+        // abort(403, "Unauthorized");
+    }
+
+    $request->validate([
+        'session_id' => 'required|exists:student_sessions,id',
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | GET SELECTED SESSION
+    |--------------------------------------------------------------------------
+    | withoutGlobalScopes() is important because Sale sessions
+    | have session_type = 1 and may be hidden by the normal
+    | StudentSession global scope.
+    */
+
+    $selectedSession = StudentSession::withoutGlobalScopes()
+        ->where('id', $request->session_id)
+        ->whereNull('deleted_at')
+        ->first();
+
+
+    if (!$selectedSession) {
+        return back()->with(
+            'error',
+            'Selected session not found or has been deleted.'
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMAL SESSION
+    |--------------------------------------------------------------------------
+    */
+
+    if ((int) $selectedSession->session_type === 0) {
+
+        session([
+            'admin_session_id' => $selectedSession->id,
+        ]);
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SALE SESSION
+    |--------------------------------------------------------------------------
+    */
+
+    elseif ((int) $selectedSession->session_type === 1) {
+
+        session([
+            'admin_sale_session_id' => $selectedSession->id,
+        ]);
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | INVALID SESSION TYPE
+    |--------------------------------------------------------------------------
+    */
+
+    else {
+
+        return back()->with(
+            'error',
+            'Invalid session type.'
+        );
+    }
+
+
+    return back()->with(
+        'success',
+        'Session changed successfully.'
+    );
+}
+    public function changeSession13aug(Request $request)
+{
+    if (Auth::user()->role != 1) {
+        // abort(403, "Unauthorized");
+    }
+
+    $request->validate([
+        'session_id' => 'required|exists:student_sessions,id',
+    ]);
+
+    $selectedSession = StudentSession::where('id', $request->session_id)
+        ->whereNull('deleted_at')
+        ->firstOrFail();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMAL SESSION
+    |--------------------------------------------------------------------------
+    */
+
+    if ((int) $selectedSession->session_type === 0) {
+
+        session([
+            'admin_session_id' => $selectedSession->id,
+        ]);
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SALE SESSION
+    |--------------------------------------------------------------------------
+    */
+
+    elseif ((int) $selectedSession->session_type === 1) {
+
+        session([
+            'admin_sale_session_id' => $selectedSession->id,
+        ]);
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | INVALID SESSION TYPE
+    |--------------------------------------------------------------------------
+    */
+
+    else {
+
+        return back()->with(
+            'error',
+            'Invalid session type.'
+        );
+
+    }
+
+
+    return back()->with(
+        'success',
+        'Session changed successfully.'
+    );
+}
+    
+    public function changeSession_old(Request $request)
     {
 
         if (Auth::user()->role != 1) {

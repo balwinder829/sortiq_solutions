@@ -268,6 +268,9 @@ input:checked + .slider:before {
     <table id="colleges-table" class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th width="30">
+                    <input type="checkbox" id="checkAll">
+                </th>
                 <th>ID</th>
                 <th>College ID</th>
                 <th>College Name/Place</th>
@@ -285,9 +288,208 @@ input:checked + .slider:before {
             {{-- Data loaded via server-side Ajax (no full dataset in page) --}}
         </tbody>
     </table>
+
+    <button
+        id="editBulkCollege"
+        class="btn btn-primary">
+
+        Edit Selected Colleges
+
+        </button>
 </div>
 
- 
+ <!-- Bulk Edit Modal -->
+<div class="modal fade" id="bulkEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <form method="POST" action="{{ route('colleges.bulkUpdate') }}" id="bulkCollegeForm">
+            @csrf
+
+            <input type="hidden" name="ids" id="bulkCollegeIds">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Bulk Edit Colleges
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="row">
+
+                        {{-- College Type --}}
+                        <div class="form-group col-md-6 mb-3">
+                            <label><strong>College Type</strong></label>
+
+                            <select name="college_type" class="form-control">
+
+                                <option value="">Keep Existing</option>
+
+                                @foreach(\App\Models\College::TYPES as $key => $value)
+                                    <option value="{{ $key }}">
+                                        {{ $value }}
+                                    </option>
+                                @endforeach
+
+                            </select>
+                        </div>
+
+                        {{-- Offer Training --}}
+                        <div class="form-group col-md-6 mb-3">
+                            <label><strong>Offer Training</strong></label>
+
+                            <select name="offer_training" class="form-control">
+
+                                <option value="">Keep Existing</option>
+
+                                <option value="0">No</option>
+
+                                <option value="1">Yes</option>
+
+                            </select>
+                        </div>
+
+                        {{-- Training Times --}}
+                        <div class="form-group col-md-6 mb-3">
+                            <label><strong>Training Times in Year</strong></label>
+
+                            <select name="training_in_year" class="form-control">
+
+                                <option value="">Keep Existing</option>
+
+                                @foreach(range(0,5) as $year)
+                                    <option value="{{ $year }}">
+                                        {{ $year }}
+                                    </option>
+                                @endforeach
+
+                            </select>
+                        </div>
+
+                        {{-- Important --}}
+                        <div class="form-group col-md-6 mb-3">
+
+                            <label><strong>Important College</strong></label>
+
+                            <select name="is_important" class="form-control">
+
+                                <option value="">Keep Existing</option>
+
+                                <option value="1">Yes</option>
+
+                                <option value="0">No</option>
+
+                            </select>
+
+                        </div>
+
+                        {{-- Ownership --}}
+                        <div class="form-group col-md-6 mb-3">
+
+                            <label><strong>Ownership</strong></label>
+
+                            <select name="ownership_type" class="form-control">
+
+                                <option value="">Keep Existing</option>
+
+                                <option value="1">Government</option>
+
+                                <option value="0">Private</option>
+
+                            </select>
+
+                        </div>
+
+                        {{-- Connection --}}
+                        <div class="form-group col-md-6 mb-3">
+
+                            <label><strong>Connection Type</strong></label>
+
+                            <select name="connection_type" class="form-control">
+
+                                <option value="">Keep Existing</option>
+
+                                <option value="1">Old Connection</option>
+
+                                <option value="0">New Connection</option>
+
+                            </select>
+
+                        </div>
+
+                        {{-- Departments --}}
+                        <div class="form-group col-md-12 mb-3">
+
+                            <label><strong>Departments</strong></label>
+
+                            @php
+                                $departmentList = [
+                                    'CSE',
+                                    'MBA',
+                                    'BBA',
+                                    'Civil',
+                                    'EC',
+                                    'Mechanical',
+                                ];
+                            @endphp
+
+                            <select
+                                name="departments[]"
+                                id="bulkDepartments"
+                                class="form-control"
+                                multiple>
+
+                                @foreach($departmentList as $department)
+
+                                    <option value="{{ $department }}">
+                                        {{ $department }}
+                                    </option>
+
+                                @endforeach
+
+                            </select>
+
+                            <small class="text-muted">
+                                Hold Ctrl to select multiple departments.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary">
+
+                        Update Selected Colleges
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+</div>
 
 @endsection
 
@@ -300,7 +502,8 @@ input:checked + .slider:before {
 let districtsByState = @json($districtsGrouped);
 
 $(document).ready(function () {
-
+    // let selectedColleges = [];
+    let selectedColleges = {};
     // SERVER-SIDE DATATABLE — only current page is loaded from server
     let table = $('#colleges-table').DataTable({
         processing: true,
@@ -323,17 +526,18 @@ $(document).ready(function () {
             }
         },
         columns: [
-            { data: 0, name: 'id' },
-            { data: 1, name: 'college_id' },
-            { data: 2, name: 'college_name' },
-            { data: 3, name: 'state' },
-            { data: 4, name: 'district' },
-            { data: 5, name: 'students_count', orderable: true, searchable: false },
-            { data: 6, name: 'college_type' },
-            { data: 7, name: 'offer_training' },
-            { data: 8, name: 'training_in_year' },
+            { data: 0, orderable:false, searchable:false },
+            { data: 1, name: 'id' },
+            { data: 2, name: 'college_id' },
+            { data: 3, name: 'college_name' },
+            { data: 4, name: 'state' },
+            { data: 5, name: 'district' },
+            { data: 6, name: 'students_count', orderable: true, searchable: false },
+            { data: 7, name: 'college_type' },
+            { data: 8, name: 'offer_training' },
+            { data: 9, name: 'training_in_year' },
             // { data: 8, name: 'call_status', orderable: false, searchable: false },
-            { data: 9, name: 'actions', orderable: false, searchable: false }
+            { data: 10, name: 'actions', orderable: false, searchable: false }
         ],
         pageLength: 50,
         lengthMenu: [5, 10, 25, 50, 100],
@@ -370,6 +574,115 @@ $(document).ready(function () {
     $('#filter-district').on('change', function () {
         table.ajax.reload();
     });
+
+
+
+
+    // ======================================
+// Individual Checkbox Selection
+// ======================================
+$(document).on('change', '.record_checked', function () {
+
+    let id = $(this).val();
+
+    if ($(this).is(':checked')) {
+        selectedColleges[id] = true;
+    } else {
+        delete selectedColleges[id];
+    }
+
+    console.log(selectedColleges);
+
+});
+
+// ======================================
+// Restore Checked Rows After Draw
+// ======================================
+// table.on('draw.dt', function () {
+
+//     $('.record_checked').each(function () {
+
+//         let id = $(this).val();
+
+//         $(this).prop('checked', !!selectedColleges[id]);
+
+//     });
+
+// });
+
+table.on('draw.dt', function () {
+
+    let allChecked = true;
+
+    $('.record_checked').each(function () {
+
+        let id = $(this).val();
+
+        if (selectedColleges[id]) {
+
+            $(this).prop('checked', true);
+
+        } else {
+
+            $(this).prop('checked', false);
+
+            allChecked = false;
+
+        }
+
+    });
+
+    $('#checkAll').prop('checked', allChecked);
+
+});
+
+$(document).on('change', '#checkAll', function () {
+
+    let isChecked = $(this).is(':checked');
+
+    $('.record_checked').each(function () {
+
+        let id = $(this).val();
+
+        $(this).prop('checked', isChecked);
+
+        if (isChecked) {
+            selectedColleges[id] = true;
+        } else {
+            delete selectedColleges[id];
+        }
+
+    });
+
+    let totalRows = $('.record_checked').length;
+    let checkedRows = $('.record_checked:checked').length;
+
+    $('#checkAll').prop('checked', totalRows > 0 && totalRows === checkedRows);
+
+});
+// ======================================
+// Edit Selected Colleges
+// ======================================
+$('#editBulkCollege').click(function () {
+
+    if (Object.keys(selectedColleges).length === 0){
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'No College Selected',
+            text: 'Please choose at least 1 college.'
+        });
+
+        return;
+    }
+
+    // $('#bulkCollegeIds').val(selectedColleges.join(','));
+    $('#bulkCollegeIds').val(Object.keys(selectedColleges).join(','));
+
+    $('#bulkEditModal').modal('show');
+
+});
+
 
 });
 
@@ -450,7 +763,8 @@ $(document).on('change', '.toggle-status', function () {
             checkbox.prop('checked', !status);
         }
     });
-});
+    });
+
 </script>
 
 

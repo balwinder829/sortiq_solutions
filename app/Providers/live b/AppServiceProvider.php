@@ -142,7 +142,7 @@ class AppServiceProvider extends ServiceProvider
         return $user->hasRole('Admin') ? true : null;
     });
     
-    // URL::forceScheme('https');
+    URL::forceScheme('https');
      if (app()->environment('production')) {
         // URL::forceScheme('https');
     }
@@ -154,14 +154,14 @@ class AppServiceProvider extends ServiceProvider
     View::composer('*', function ($view) {
 
         // get list of all sessions ordered by start_date
-        $sessions = \App\Models\StudentSession::orderBy('start_date', 'desc')->get();
+        // $sessions = \App\Models\StudentSession::orderBy('start_date', 'desc')->get();
         // $sessions = \App\Models\StudentSession::withCount('students')->orderBy('start_date', 'desc')->get();
 
-        // $sessions = \App\Models\StudentSession::withoutGlobalScopes()
-        // ->withCount('students')
-        // ->whereIn('session_type', [0, 1])
-        // ->orderBy('start_date', 'desc')
-        // ->get();
+        $sessions = \App\Models\StudentSession::withoutGlobalScopes()
+        ->withCount('students')
+        ->whereIn('session_type', [0, 1])
+        ->orderBy('start_date', 'desc')
+        ->get();
 
         // find active session (if selected)
         $currentSession = null;
@@ -198,11 +198,9 @@ class AppServiceProvider extends ServiceProvider
 
 $isSpecialSessionRoute = request()->routeIs(
     'enquiries.*',
-    'passouts.*',
     'admin.manual_data.*',
     'admin.hard_data.*',
     'admin.enquiries.*',
-    'admin.passouts.*',
 );
 
 

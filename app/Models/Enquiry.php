@@ -15,6 +15,7 @@ class Enquiry extends Model
         'next_followup_at'  => 'datetime', // 🔥 MISSING
         'registered_at'     => 'datetime',
         'closed_at'         => 'datetime',
+        'departments' => 'array',
     ];
 
     protected $guarded = [];
@@ -110,5 +111,16 @@ class Enquiry extends Model
     public function scopeAdmitted($query)
     {
         return $query->where('enquiry_status', 'admitted');
+    }
+
+    public function session()
+    {
+        return $this->belongsTo(StudentSession::class);
+    }
+
+    public function allSession()
+    {
+        return $this->belongsTo(StudentSession::class, 'session_id')
+            ->withoutGlobalScopes();
     }
 }

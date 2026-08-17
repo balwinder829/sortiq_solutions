@@ -656,7 +656,7 @@
                                     Select Session
                                 </option>
 
-                                @foreach($sessions as $session)
+                                @foreach($saleSessions as $session)
 
                                     <option value="{{ $session->id }}">
                                         {{ $session->session_name }}

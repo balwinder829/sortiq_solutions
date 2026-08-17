@@ -114,6 +114,35 @@
                     @enderror
                 </div>
 
+                 {{-- Departments --}}
+        <div class="form-group col-md-6">
+            <label>Departments</label>
+
+            @php
+                $departmentList = [
+                    'CSE',
+                    'MBA',
+                    'BBA',
+                    'Civil',
+                    'EC',
+                    'Mechanical',
+                ];
+            @endphp
+
+            <select name="departments[]" class="form-control" multiple>
+                @foreach($departmentList as $department)
+                    <option value="{{ $department }}"
+                        {{ in_array($department, old('departments', [])) ? 'selected' : '' }}>
+                        {{ $department }}
+                    </option>
+                @endforeach
+            </select>
+
+            <small class="text-muted">
+                Hold Ctrl (Windows) or Cmd (Mac) to select multiple departments.
+            </small>
+        </div>
+
             </div>
 
             <button type="submit" class="btn btn-primary mt-2">

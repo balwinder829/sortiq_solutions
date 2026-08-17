@@ -174,53 +174,13 @@
     </form>
     {{-- ======================== END FILTERS ======================== --}}
 
-    
-{{-- ======================== UPLOAD EXCEL (UPDATED) ======================== --}}
-<!-- <div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white">
-        <strong>Import Data</strong>
-    </div>
-
-    <div class="card-body">
-        <form action="{{ route('passouts.import') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-
-            <div class="row align-items-center">
-
-                {{-- File Input --}}
-                <div class="col-md-5 mb-2">
-                    <input type="file" name="file" class="form-control" required>
-                </div>
-
-                {{-- Upload Button --}}
-                <div class="col-md-3 mb-2">
-                    <button class="btn btn-secondary w-100">
-                        <i class="fa fa-upload"></i> Upload Excel/CSV
-                    </button>
-                </div>
-
-                {{-- Download Sample File --}}
-                <div class="col-md-4 mb-2 text-end">
-                    <a href="{{ asset('sample/sample_record_file.xlsx') }}" 
-                       class="btn btn-outline-primary"
-                       download>
-                        <i class="fa fa-file-excel"></i> Download Sample File
-                    </a>
-                </div>
-
-            </div>
-        </form>
-    </div>
-</div> -->
-{{-- ======================== END UPLOAD ======================== --}}
-
     {{-- ======================== TABLE ======================== --}}
     <div class="table-responsive">
         <table class="table table-bordered table-striped" id="enquiriesTable">
             <thead>
                 <tr>
                     @if(auth()->user()->isAdmin())
-                        <th><input type="checkbox" id="selectAll"></th>
+                        <th><input type="checkbox" id="passoutSelectAll"></th>
                     @endif
                     <th>#</th>
                     <th>Name</th>
@@ -240,11 +200,17 @@
                     <tr>
                         @if(auth()->user()->isAdmin())
                             <td class="text-center">
-                                @if(!$enquiry->assigned_to)
-                                    <input type="checkbox" class="rowCheck" value="{{ $enquiry->id }}">
-                                @else
-                                    <span class="badge bg-secondary">Assigned</span>
-                                @endif
+<div class="d-inline-flex align-items-center gap-1">
+                                <input
+                                    type="checkbox"
+                                    class="passoutRowCheck"
+                                    value="{{ $enquiry->id }}">
+                                    @if($enquiry->assignedTo)
+            <i class="fas fa-user-check text-warning  ml-1"
+               data-bs-toggle="tooltip"
+               title="Assigned to {{ $enquiry->assignedTo->name }}"></i>
+        @endif
+</div>
                             </td>
                         @endif
 
@@ -296,23 +262,7 @@
         {{ $enquiries->links('pagination::bootstrap-5') }}
     </div>
 
-    {{-- ======================== ASSIGN MULTIPLE ======================== --}}
-    @if(auth()->user()->isAdmin())
-        <div class="mt-4">
-            <h5><strong>Assign Selected Enquiries</strong></h5>
-
-            <select id="salesperson" class="form-control mb-2">
-                <option value="">Select Salesperson</option>
-                @foreach($sales as $s)
-                    <option value="{{ $s->id }}">{{ $s->name }}</option>
-                @endforeach
-            </select>
-
-            <button id="assignBtn" class="btn btn-primary">
-                Assign Selected
-            </button>
-        </div>
-    @endif
+   
 
     {{-- Popup Modal --}}
     <div class="modal fade" id="popupModal" tabindex="-1">
@@ -329,6 +279,278 @@
             </div>
         </div>
     </div>
+    {{-- ======================== PASSOUT BULK ACTIONS ======================== --}}
+@if(auth()->user()->isAdmin())
+    
+    
+
+    <div
+        id="passoutBulkActionBar"
+        class="mt-3"
+        style="display:block;">
+
+        <div class="d-flex align-items-center gap-2">
+
+            <button
+                type="button"
+                id="passoutMoveCloseBtn"
+                class="btn btn-warning">
+
+                
+                Move / Close
+            </button>
+
+            <button
+                type="button"
+                id="passoutAssignTrainerBtn"
+                class="btn btn-primary">
+
+                
+                Assign Trainer
+            </button>
+
+            <button
+                type="button"
+                id="passoutClearSelection"
+                class="btn btn-secondary">
+
+                Clear Selection
+
+            </button>
+
+        </div>
+
+    </div>
+
+@endif
+
+{{-- ======================== PASSOUT MOVE / CLOSE MODAL ======================== --}}
+@if(auth()->user()->isAdmin())
+
+<div class="modal fade"
+     id="passoutMoveCloseModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Passout Bulk Action
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Action
+                    </label>
+
+                    <select
+                        id="passoutBulkAction"
+                        class="form-control">
+
+                        <option value="">
+                            Select Action
+                        </option>
+
+                        <option value="move">
+                            Move To Another Session
+                        </option>
+
+                        <option value="close">
+                            Close Selected
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                {{-- SESSION --}}
+                <div
+                    id="passoutSessionSection"
+                    style="display:none;">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Select Session
+                        </label>
+
+                        <select
+                            id="passoutTargetSession"
+                            class="form-control">
+
+                            <option value="">
+                                Select Session
+                            </option>
+
+                            @foreach($saleSessions as $session)
+
+                                <option value="{{ $session->id }}">
+
+                                    {{ ucwords($session->session_name) }}
+
+                                </option>
+
+                            @endforeach
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                {{-- CLOSE REASON --}}
+                <div
+                    id="passoutReasonSection"
+                    style="display:block;">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Reason
+                        </label>
+
+                        <textarea
+                            id="passoutCloseReason"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Enter reason for closing">
+                        </textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="button"
+                    id="passoutConfirmBulkAction"
+                    class="btn btn-primary">
+
+                    Continue
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@endif
+
+{{-- ======================== PASSOUT TRAINER MODAL ======================== --}}
+@if(auth()->user()->isAdmin())
+
+<div class="modal fade"
+     id="passoutTrainerModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Assign Trainer
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <label class="form-label">
+                    Select Trainer
+                </label>
+
+                <select
+                    id="passoutTrainer"
+                    class="form-control">
+
+                    <option value="">
+                        Select Trainer
+                    </option>
+
+                    @foreach($sales ?? [] as $trainer)
+
+                        <option value="{{ $trainer->id }}">
+                            {{ $trainer->name }}
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancel
+
+                </button>
+
+                <button
+                    type="button"
+                    id="passoutConfirmTrainer"
+                    class="btn btn-primary">
+
+                    Assign Trainer
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@endif
 
 </div>
 @endsection
@@ -346,46 +568,718 @@ $(document).ready(function () {
     });
 });
 
-$('#selectAll').on('change', function() {
-    $('.rowCheck:enabled').prop('checked', this.checked);
-});
+// $('#selectAll').on('change', function() {
+//     $('.rowCheck:enabled').prop('checked', this.checked);
+// });
 
-$('#assignBtn').on('click', function () {
 
-    let ids = [];
-    $('.rowCheck:checked').each(function () {
-        ids.push($(this).val());
+
+/* =========================================================
+   INITIAL LOAD
+   ========================================================= */
+ /* =========================================================
+   PASSOUT SELECTION + BULK ACTIONS
+   ========================================================= */
+
+let selectedPassouts =
+    JSON.parse(localStorage.getItem('selected_passouts')) || [];
+
+
+/* =========================================================
+   SAVE SELECTION
+   ========================================================= */
+
+function savePassoutSelection() {
+
+    localStorage.setItem(
+        'selected_passouts',
+        JSON.stringify(selectedPassouts)
+    );
+
+}
+
+
+/* =========================================================
+   SELECT ALL STATE
+   ========================================================= */
+
+function syncPassoutSelectAll() {
+
+    let total =
+        $('.passoutRowCheck:enabled').length;
+
+    let checked =
+        $('.passoutRowCheck:enabled:checked').length;
+
+    $('#passoutSelectAll').prop(
+        'checked',
+        total > 0 && total === checked
+    );
+
+}
+
+
+/* =========================================================
+   RESTORE SELECTION AFTER PAGE LOAD
+   ========================================================= */
+
+function restorePassoutSelection() {
+
+    $('.passoutRowCheck').each(function () {
+
+        let id = String($(this).val());
+
+        $(this).prop(
+            'checked',
+            selectedPassouts.includes(id)
+        );
+
     });
 
-    let salesId = $('#salesperson').val();
+    syncPassoutSelectAll();
 
-    if (ids.length === 0) {
-        showPopup('Please select at least one unassigned enquiry.');
-        return;
+}
+
+
+/* =========================================================
+   SINGLE CHECKBOX
+   ========================================================= */
+
+$(document).on(
+    'change',
+    '.passoutRowCheck',
+    function () {
+
+        let id = String($(this).val());
+
+        if ($(this).is(':checked')) {
+
+            if (!selectedPassouts.includes(id)) {
+
+                selectedPassouts.push(id);
+
+            }
+
+        } else {
+
+            selectedPassouts =
+                selectedPassouts.filter(
+                    item => item !== id
+                );
+
+        }
+
+        savePassoutSelection();
+
+        syncPassoutSelectAll();
+
     }
+);
 
-    if (!salesId) {
-        showPopup('Please select a salesperson.');
-        return;
+
+/* =========================================================
+   SELECT ALL
+   ========================================================= */
+
+$(document).on(
+    'change',
+    '#passoutSelectAll',
+    function () {
+
+        let checked =
+            $(this).is(':checked');
+
+        $('.passoutRowCheck:enabled').each(function () {
+
+            let id = String($(this).val());
+
+            $(this).prop(
+                'checked',
+                checked
+            );
+
+            if (checked) {
+
+                if (!selectedPassouts.includes(id)) {
+
+                    selectedPassouts.push(id);
+
+                }
+
+            } else {
+
+                selectedPassouts =
+                    selectedPassouts.filter(
+                        item => item !== id
+                    );
+
+            }
+
+        });
+
+        savePassoutSelection();
+
+        syncPassoutSelectAll();
+
     }
+);
 
-    fetch("{{ route('enquiries.assign') }}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-        },
-        body: JSON.stringify({
-            enquiry_ids: ids,
-            salesperson_id: salesId
+
+/* =========================================================
+   CLEAR SELECTION
+   ========================================================= */
+
+$(document).on(
+    'click',
+    '#passoutClearSelection',
+    function () {
+
+        selectedPassouts = [];
+
+        localStorage.removeItem(
+            'selected_passouts'
+        );
+
+        $('.passoutRowCheck')
+            .prop('checked', false);
+
+        $('#passoutSelectAll')
+            .prop('checked', false);
+
+        Swal.fire(
+            'Selection Cleared',
+            'Selected passouts have been cleared.',
+            'success'
+        );
+
+    }
+);
+
+
+/* =========================================================
+   INITIAL LOAD
+   ========================================================= */
+
+$(document).ready(function () {
+
+    restorePassoutSelection();
+
+});
+
+
+/* =========================================================
+   MOVE / CLOSE BUTTON
+   ========================================================= */
+
+$(document).on(
+    'click',
+    '#passoutMoveCloseBtn',
+    function () {
+
+        if (selectedPassouts.length === 0) {
+
+            Swal.fire(
+                'No Selection',
+                'Please select at least one passout.',
+                'warning'
+            );
+
+            return;
+        }
+
+        /*
+        | Reset modal
+        */
+
+        $('#passoutBulkAction').val('');
+
+        $('#passoutSessionSection').hide();
+
+        $('#passoutReasonSection').hide();
+
+        $('#passoutTargetSession').val('');
+
+        $('#passoutCloseReason').val('');
+
+        /*
+        | Bootstrap 5
+        */
+
+        let modalElement =
+            document.getElementById(
+                'passoutMoveCloseModal'
+            );
+
+        let modal =
+            bootstrap.Modal.getOrCreateInstance(
+                modalElement
+            );
+
+        modal.show();
+
+    }
+);
+
+
+/* =========================================================
+   ACTION CHANGE
+   ========================================================= */
+
+$(document).on(
+    'change',
+    '#passoutBulkAction',
+    function () {
+
+        let action = $(this).val();
+
+        if (action === 'move') {
+
+            $('#passoutSessionSection').show();
+
+            $('#passoutReasonSection').show();
+
+        }
+
+        else if (action === 'close') {
+
+            $('#passoutSessionSection').hide();
+
+            $('#passoutReasonSection').show();
+
+        }
+
+        else {
+
+            $('#passoutSessionSection').hide();
+
+            $('#passoutReasonSection').hide();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CONTINUE MOVE / CLOSE
+   ========================================================= */
+
+$(document).on(
+    'click',
+    '#passoutConfirmBulkAction',
+    function () {
+
+        let action =
+            $('#passoutBulkAction').val();
+
+        if (!action) {
+
+            Swal.fire(
+                'Action Required',
+                'Please select Move or Close.',
+                'warning'
+            );
+
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MOVE
+        |--------------------------------------------------------------------------
+        */
+
+        if (action === 'move') {
+
+            let sessionId =
+                $('#passoutTargetSession').val();
+
+            if (!sessionId) {
+
+                Swal.fire(
+                    'Session Required',
+                    'Please select a session.',
+                    'warning'
+                );
+
+                return;
+            }
+
+
+            // Reason is OPTIONAL
+            let reason =
+                $('#passoutCloseReason')
+                    .val()
+                    .trim();
+
+
+            Swal.fire({
+                title: 'Move Passouts?',
+                text:
+                    'Move ' +
+                    selectedPassouts.length +
+                    ' selected passout record(s)?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Move'
+            }).then(function (result) {
+
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                submitPassoutBulkAction(
+                    'move',
+                    sessionId,
+                    reason
+                );
+
+            });
+
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CLOSE
+        |--------------------------------------------------------------------------
+        */
+
+        if (action === 'close') {
+
+            // Reason is OPTIONAL
+            let reason =
+                $('#passoutCloseReason')
+                    .val()
+                    .trim();
+
+
+            Swal.fire({
+                title: 'Close Passouts?',
+                text:
+                    'Close ' +
+                    selectedPassouts.length +
+                    ' selected passout record(s)?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Close'
+            }).then(function (result) {
+
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                submitPassoutBulkAction(
+                    'close',
+                    '',
+                    reason
+                );
+
+            });
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SUBMIT MOVE / CLOSE
+   ========================================================= */
+
+function submitPassoutBulkAction(
+    action,
+    sessionId,
+    reason
+) {
+
+    let form = $('<form>', {
+
+        method: 'POST',
+
+        action: "{{ route('enquiries.bulkMove') }}"
+
+    });
+
+
+    form.append(
+        $('<input>', {
+
+            type: 'hidden',
+
+            name: '_token',
+
+            value: "{{ csrf_token() }}"
+
         })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.message) location.reload();
-    });
-});
+    );
 
+
+    form.append(
+        $('<input>', {
+
+            type: 'hidden',
+
+            name: 'action',
+
+            value: action
+
+        })
+    );
+
+
+    form.append(
+        $('<input>', {
+
+            type: 'hidden',
+
+            name: 'ids',
+
+            value: JSON.stringify(
+                selectedPassouts
+            )
+
+        })
+    );
+
+
+    form.append(
+        $('<input>', {
+
+            type: 'hidden',
+
+            name: 'session_id',
+
+            value: sessionId || ''
+
+        })
+    );
+
+
+    form.append(
+        $('<input>', {
+
+            type: 'hidden',
+
+            name: 'reason',
+
+            value: reason || ''
+
+        })
+    );
+
+
+    $('body').append(form);
+
+    /*
+    | Clear selection only when submitting
+    */
+
+    localStorage.removeItem(
+        'selected_passouts'
+    );
+
+    form.submit();
+
+}
+
+
+/* =========================================================
+   ASSIGN TRAINER BUTTON
+   ========================================================= */
+
+$(document).on(
+    'click',
+    '#passoutAssignTrainerBtn',
+    function () {
+
+        if (selectedPassouts.length === 0) {
+
+            Swal.fire(
+                'No Selection',
+                'Please select at least one passout.',
+                'warning'
+            );
+
+            return;
+        }
+
+
+        $('#passoutTrainer').val('');
+
+
+        let modalElement =
+            document.getElementById(
+                'passoutTrainerModal'
+            );
+
+        let modal =
+            bootstrap.Modal.getOrCreateInstance(
+                modalElement
+            );
+
+        modal.show();
+
+    }
+);
+
+
+/* =========================================================
+   CONFIRM TRAINER
+   ========================================================= */
+
+$(document).on(
+    'click',
+    '#passoutConfirmTrainer',
+    function () {
+
+        let trainerId =
+            $('#passoutTrainer').val();
+
+        if (!trainerId) {
+
+            Swal.fire(
+                'Trainer Required',
+                'Please select a trainer.',
+                'warning'
+            );
+
+            return;
+        }
+
+
+        Swal.fire({
+            title: 'Assign Trainer?',
+            text:
+                'Assign trainer to ' +
+                selectedPassouts.length +
+                ' selected passout record(s)?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Assign'
+        }).then(function (result) {
+
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            submitPassoutTrainerAssignment(
+                trainerId
+            );
+
+        });
+
+    }
+);
+
+
+/* =========================================================
+   SUBMIT TRAINER ASSIGNMENT
+   ========================================================= */
+function submitPassoutTrainerAssignment(trainerId) {
+
+    let form = $('<form>', {
+        method: 'POST',
+        action: "{{ route('enquiries.assign') }}"
+    });
+
+    form.append(
+        $('<input>', {
+            type: 'hidden',
+            name: '_token',
+            value: "{{ csrf_token() }}"
+        })
+    );
+
+    form.append(
+        $('<input>', {
+            type: 'hidden',
+            name: 'salesperson_id',
+            value: trainerId
+        })
+    );
+
+    form.append(
+        $('<input>', {
+            type: 'hidden',
+            name: 'enquiry_ids',
+            value: JSON.stringify(selectedPassouts)
+        })
+    );
+
+    $('body').append(form);
+
+    localStorage.removeItem('selected_passouts');
+
+    form.submit();
+}
+function ewsubmitPassoutTrainerAssignment(
+    trainerId
+) {
+
+    let form = $('<form>', {
+
+        method: 'POST',
+
+        action: "{{ route('enquiries.assign') }}"
+
+    });
+
+
+    form.append(
+        $('<input>', {
+
+            type: 'hidden',
+
+            name: '_token',
+
+            value: "{{ csrf_token() }}"
+
+        })
+    );
+
+
+    form.append(
+        $('<input>', {
+
+            type: 'hidden',
+
+            name: 'trainer_id',
+
+            value: trainerId
+
+        })
+    );
+
+
+    form.append(
+        $('<input>', {
+
+            type: 'hidden',
+
+            name: 'ids',
+
+            value: JSON.stringify(
+                selectedPassouts
+            )
+
+        })
+    );
+
+
+    $('body').append(form);
+
+
+    localStorage.removeItem(
+        'selected_passouts'
+    );
+
+
+    form.submit();
+
+}
 function showPopup(message) {
     document.getElementById('popupMessage').innerHTML = message;
     var popup = new bootstrap.Modal(document.getElementById('popupModal'));
@@ -426,7 +1320,7 @@ $(document).on('click', '#sendWhatsappNotification', function () {
     let append_name = $('input[name="append_name"]:checked').val() || false;
     
     let selectedRecordIds = new Set();
-    $('.rowCheck:checked').each(function () {
+    $('.passoutRowCheck:checked').each(function () {
         selectedRecordIds.add($(this).val());
     });
 

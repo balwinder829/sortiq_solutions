@@ -504,7 +504,7 @@ document.addEventListener("DOMContentLoaded", function () {
 let endDateManuallyChanged = false;
 
 document.addEventListener('DOMContentLoaded', function () {
-    calculateEndDateFromSession();
+    // calculateEndDateFromSession();
 });
 
 // Detect manual change

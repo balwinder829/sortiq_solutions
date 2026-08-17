@@ -18,8 +18,51 @@ class SessionController extends Controller
         $this->middleware('permission:sessions.edit')->only(['edit','update']);
         $this->middleware('permission:sessions.delete')->only('destroy');
     }
- 
-    public function index()
+ public function index(Request $request)
+{
+    $activeSessionId = session('admin_session_id');
+
+    // Default tab = Normal
+    $type = $request->get('type', 'normal');
+
+    $sessionType = $type === 'sale' ? 1 : 0;
+
+    // $sessionsList = StudentSession::with(['batches.students'])
+    //     ->where('session_type', $sessionType)
+    //     ->withCount([
+    //         'students',
+    //         'students as online_students_count' => function ($query) {
+    //             $query->where('is_online', 1);
+    //         },
+    //         'students as offline_students_count' => function ($query) {
+    //             $query->where('is_online', 0);
+    //         }
+    //     ])
+    //     ->orderByDesc('students_count')
+    //     ->get();
+
+    $sessionsList = StudentSession::withoutGlobalScope('normalSession')
+    ->with(['batches.students'])
+    ->where('session_type', $sessionType)
+    ->withCount([
+        'students',
+        'students as online_students_count' => function ($query) {
+            $query->where('is_online', 1);
+        },
+        'students as offline_students_count' => function ($query) {
+            $query->where('is_online', 0);
+        }
+    ])
+    ->orderByDesc('students_count')
+    ->get();
+
+    return view('sessions.index', compact(
+        'sessionsList',
+        'activeSessionId',
+        'type'
+    ));
+}
+    public function index_8aug()
 {
     $activeSessionId = session('admin_session_id');
 
@@ -82,6 +125,7 @@ public function store(Request $request)
         // 'session_month' => 'required|string|max:255',
         // 'session_year'  => 'required|string|max:4',
         'status'        => 'required|in:active,inactive',
+         'session_type'          => 'nullable|in:0,1',
         // 'department'    => 'nullable|string|max:255',
     ]);
 
@@ -93,6 +137,7 @@ public function store(Request $request)
         // 'session_month'  => $validated['session_month'], // NEW
         // 'session_year'   => $validated['session_year'],  // NEW
         'status'         => $validated['status'],
+        'session_type'         => $validated['session_type'],
         // 'department'     => $validated['department'] ?? null,
     ]);
 
@@ -131,6 +176,7 @@ public function update(Request $request, StudentSession $session)
         // 'session_month' => 'required|string|max:255',
         // 'session_year'  => 'required|string|max:4',
         'status'        => 'required|in:active,inactive',
+        'session_type'          => 'nullable|in:0,1',
         // 'department'    => 'nullable|string|max:255',
     ]);
 
@@ -142,6 +188,7 @@ public function update(Request $request, StudentSession $session)
         // 'session_month'  => $validated['session_month'], // NEW
         // 'session_year'   => $validated['session_year'],  // NEW
         'status'         => $validated['status'],
+        'session_type'         => $validated['session_type'],
         // 'department'     => $validated['department'] ?? null,
     ]);
 

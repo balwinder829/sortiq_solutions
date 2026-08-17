@@ -172,7 +172,11 @@ public function __construct()
     // LIST WITH FILTER (ADMIN INDEX)
 public function index(Request $request)
 {   
-    $activeSessionNo = session('admin_session_id');
+    // $activeSessionNo = session('admin_session_id');
+     $activeSessionNo = session(
+        'admin_header_session_id',
+        session('admin_session_id')
+    );
     $query = Enquiry::enquiries()
         ->where('session_id', $activeSessionNo);
 
@@ -354,6 +358,7 @@ public function index(Request $request)
     // =========================
     $enquiries = $query->paginate(20)->appends($request->all());
     // dd($enquiries);
+    // dd($activeSessionNo,$enquiries);
     $sales    = SalesStaff::where('status', 'active')->get();
     $colleges = College::orderBy('college_name')->get();
 
@@ -366,6 +371,12 @@ public function index(Request $request)
             ];
         });
 
+    $saleSessions = StudentSession::withoutGlobalScope('normalSession')
+    ->where('session_type', 1)
+    ->where('status', 'active')
+    ->orderBy('start_date', 'desc')
+    ->get();
+
     return view('enquiries.index', compact(
         'enquiries',
         'sales',
@@ -373,6 +384,7 @@ public function index(Request $request)
         'totalLeads',
         'assignedLeads',
         'unassignedLeads',
+        'saleSessions',
         'previousWhatsappUploadedFiles'
     ));
 }
@@ -408,7 +420,11 @@ public function index(Request $request)
              // 'college_id' => 'nullable|exists:colleges,id',
         ]);
 
-        $activeSessionNo = session('admin_session_id');
+        // $activeSessionNo = session('admin_session_id');
+        $activeSessionNo = session(
+            'admin_header_session_id',
+            session('admin_session_id')
+        );
         // $validated['session'] = $activeSessionNo;
 
         Enquiry::create([
@@ -449,7 +465,11 @@ public function index(Request $request)
             'is_passout' => 'nullable',
         ]);
 
-        $validated['session_id'] = session('admin_session_id');
+        // $validated['session_id'] = session('admin_session_id');
+        $validated['session_id'] = session(
+            'admin_header_session_id',
+            session('admin_session_id')
+        );
 
         
         // $request->validate([

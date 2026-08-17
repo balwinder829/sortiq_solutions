@@ -22,6 +22,8 @@ use App\Rules\NotBlockedNumber;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use App\Models\StudentSession;
+
 class PassoutController extends Controller
 {   
     public function __construct()
@@ -53,8 +55,19 @@ class PassoutController extends Controller
 
     public function index(Request $request)
 {
-    $query = Enquiry::passouts();
+    // $activeSessionNo = session('admin_session_id');
+    $activeSessionNo = session(
+        'admin_header_session_id',
+        session('admin_session_id')
+    );
+    $query = Enquiry::passouts()
+        ->where('session_id', $activeSessionNo);
 
+    if (!$request->filled('enquiry_status')) {
+        $query->active();
+    } else {
+        $query->where('enquiry_status', $request->enquiry_status);
+    }
     // =========================
     // ROLE BASED ACCESS
     // =========================
@@ -189,6 +202,7 @@ class PassoutController extends Controller
     // DATA
     // =========================
     $enquiries = $query->paginate(20)->appends($request->all());
+    // dd($activeSessionNo,$enquiries);
 
     $sales    = SalesStaff::where('status', 'active')->get();
     $previousWhatsappUploadedFiles = collect(
@@ -199,9 +213,17 @@ class PassoutController extends Controller
                 'name' => basename($file),
             ];
         });
+
+    $saleSessions = StudentSession::withoutGlobalScope('normalSession')
+    ->where('session_type', 1)
+    ->where('status', 'active')
+    ->orderBy('start_date', 'desc')
+    ->get();
+
     return view('passouts.index', compact(
         'enquiries',
         'sales',
+        'saleSessions',
         'previousWhatsappUploadedFiles'
     ));
 }
@@ -216,9 +238,15 @@ class PassoutController extends Controller
         $request->validate([
             'name' => 'required',
             'mobile' => ['nullable', 'string', new NotBlockedNumber],
+            'departments' => 'nullable|array',
+            'departments.*' => 'string',
         ]);
 
-        $activeSessionNo = session('admin_session_id');
+        // $activeSessionNo = session('admin_session_id');
+        $activeSessionNo = session(
+            'admin_header_session_id',
+            session('admin_session_id')
+        );
 
         Enquiry::create([
             'name' => $request->name,
@@ -229,7 +257,9 @@ class PassoutController extends Controller
             'is_passout' => 1,
             'created_by' => Auth::id(),
             'study' => $request->study,
-            'source' => 'manual'
+            'departments' => $request->departments,
+            'source' => 'manual',
+
         ]);
 
         return redirect()->route('passouts.index')
@@ -261,6 +291,8 @@ class PassoutController extends Controller
         $request->validate([
             'name' => 'required',
             'mobile' => ['nullable', 'string', new NotBlockedNumber],
+            'departments' => 'nullable|array',
+            'departments.*' => 'string',
         ]);
         
         $passout->update($request->all());

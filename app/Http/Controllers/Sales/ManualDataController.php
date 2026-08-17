@@ -16,8 +16,9 @@ use App\Models\Enquiry;
 use App\Rules\NotBlockedNumber;
 use App\Exports\ManualDataExport;
 use Illuminate\Support\Facades\Storage;
-    use Illuminate\Support\Str;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ManualDataController extends Controller
 {
@@ -39,10 +40,15 @@ public function index(Request $request)
 {   
     if ($request->ajax()) {
 
-        $activeSessionNo = session('admin_session_id');
+        // $activeSessionNo = session('admin_session_id');
+        $activeSessionNo = session(
+            'admin_header_session_id',
+            session('admin_session_id')
+        );
 
         $query = ManualData::with('college')
-                    ->where('session_id', $activeSessionNo);
+                    ->where('session_id', $activeSessionNo)
+                     ->where('enquiry_status', 'active');
 
         // FILTERS
 
@@ -207,6 +213,18 @@ public function index(Request $request)
             ->get()
             ->pluck('display_name', 'id');
 
+    // $saleSessions = StudentSession::withoutGlobalScope('normalSession')
+    // ->where('session_type', 1)
+    // ->where('status', 'active')
+    // ->orderBy('start_date', 'desc')
+    // ->get();
+
+    $saleSessions = StudentSession::withoutGlobalScopes()
+    ->where('status', 'active')
+    ->where('session_type', 1)
+    ->orderBy('start_date', 'desc')
+    ->pluck('session_name', 'id');
+
     $previousWhatsappUploadedFiles = collect(
             Storage::disk('public')->files('whatsapp-files')
         )->map(function ($file) {
@@ -216,7 +234,7 @@ public function index(Request $request)
             ];
         });
 
-    return view('manual_data.index', compact('colleges','unknownColleges', 'states','districtsGrouped','sessionsList', 'previousWhatsappUploadedFiles'));
+    return view('manual_data.index', compact('colleges','unknownColleges', 'states','districtsGrouped','sessionsList', 'previousWhatsappUploadedFiles','saleSessions'));
 }
 
     
@@ -249,7 +267,11 @@ public function store(Request $request)
         'semester'        => 'required|integer|min:1|max:8',
     ]);
 
-    $activeSessionId = session('admin_session_id');
+    // $activeSessionId = session('admin_session_id');
+    $activeSessionId = $activeSessionNo = session(
+        'admin_header_session_id',
+        session('admin_session_id')
+    );
     // Optional: default source
     $validated['session_id'] = $activeSessionId;
     $validated['source'] = 'manual';
@@ -534,4 +556,125 @@ public function exportExcel(Request $request)
             ]);
         }
     }
+
+public function bulkAction(Request $request)
+{
+    $request->validate([
+        'ids'        => 'required',
+        'action'     => 'required|in:move,close',
+        'reason'     => 'nullable|string|max:255',
+        'session_id' => 'nullable|exists:student_sessions,id',
+    ]);
+
+    $ids = is_array($request->ids)
+        ? $request->ids
+        : json_decode($request->ids, true);
+
+    if (empty($ids)) {
+        return back()->with('error', 'No records selected.');
+    }
+
+    DB::beginTransaction();
+
+    try {
+
+        $manualData = ManualData::whereIn('id', $ids)->get();
+
+        foreach ($manualData as $record) {
+
+            $oldSession = $record->session_id;
+
+            $oldSessionVal = StudentSession::find($oldSession);
+
+            $newSession = null;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | MOVE RECORD
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->action == 'move') {
+
+                // If same session, skip
+                if ((int) $oldSession === (int) $request->session_id) {
+                    continue;
+                }
+
+                $newSession = StudentSession::find(
+                    $request->session_id
+                );
+
+
+                $record->update([
+                    'session_id' => $request->session_id,
+                ]);
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Activity / Movement
+                |--------------------------------------------------------------------------
+                |
+                | Only add these if you have these tables/models for ManualData.
+                | For now we only update ManualData.
+                |
+                */
+
+
+                // If you want to keep a movement history later,
+                // we can add ManualDataMovement here.
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CLOSE RECORD
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->action == 'close') {
+
+                $record->update([
+
+                    'enquiry_status' => 'closed',
+
+                    'closed_reason' => $request->reason,
+
+                    'closed_at' => now(),
+
+                    'closed_by' => auth()->id(),
+
+                ]);
+
+            }
+        }
+
+
+        DB::commit();
+
+
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Selected records updated successfully.'
+            );
+
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return redirect()
+            ->back()
+            ->with(
+                'error',
+                $e->getMessage()
+            );
+    }
+}
+
+
 }

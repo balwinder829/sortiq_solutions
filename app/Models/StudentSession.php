@@ -20,6 +20,7 @@ class StudentSession extends Model
         'start_date',
         'end_date',
         'status',
+        'session_type',
         // 'department',
     ];
 
@@ -27,6 +28,15 @@ class StudentSession extends Model
         'start_date' => 'date',
         'end_date' => 'date',
     ];
+
+
+    protected static function booted()
+{
+    static::addGlobalScope('normalSession', function ($query) {
+        $query->where('session_type', 0);
+    });
+}
+
 
     // Accessor for session_start
     public function getSessionStartAttribute()

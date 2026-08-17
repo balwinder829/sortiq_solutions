@@ -127,37 +127,85 @@
                 <ul class="navbar-nav header-right">
 
                     {{-- 🔥 SESSION SWITCHER (ROLE = 1 ONLY) --}}
-                    @if(Auth::check() && (Auth::user()->role == 1|| Auth::user()->role == 4 ))
-                       @if(isset($sessions) && count($sessions) > 0)
-<li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#"
-       role="button" data-bs-toggle="dropdown">
-        <i class="mdi mdi-calendar me-1"></i>
-        {{ $currentSession
-            ? ucwords($currentSession->session_name).' ('.\Carbon\Carbon::parse($currentSession->start_date)->format('M Y').')'
-            : 'Select Session' }}
-    </a>
+                    {{-- 🔥 SESSION SWITCHER --}}
+@if(Auth::check() && (Auth::user()->role == 1 || Auth::user()->role == 4))
 
-    <ul class="dropdown-menu dropdown-menu-end">
-        @foreach($sessions as $session)
-            <li>
-                <form action="{{ route('admin.changeSession') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="session_id" value="{{ $session->id }}">
-                    <button type="submit"
-                            class="dropdown-item {{ session('admin_session_id') == $session->id ? 'active' : '' }}">
-                        {{ ucwords($session->session_name) }}
-                        ({{ \Carbon\Carbon::parse($session->start_date)->format('M Y') }})
-                        - ({{ $session->students_count }})
-                    </button>
-                </form>
-            </li>
-        @endforeach
-    </ul>
-</li>
-@endif
+    @if(isset($headerSessions) && $headerSessions->count() > 0)
 
+        <li class="nav-item dropdown">
+
+            <a class="nav-link dropdown-toggle d-flex align-items-center"
+               href="#"
+               role="button"
+               data-bs-toggle="dropdown"
+               aria-expanded="false">
+
+                <i class="mdi mdi-calendar me-1"></i>
+
+                {{ $headerCurrentSession
+                    ? ucwords($headerCurrentSession->session_name)
+                        . ' ('
+                        . \Carbon\Carbon::parse($headerCurrentSession->start_date)->format('M Y')
+                        . ')'
+                    : 'Select Session'
+                }}
+
+            </a>
+
+
+            <ul class="dropdown-menu dropdown-menu-end">
+
+    @foreach($headerSessions as $session)
+
+        <li>
+
+            <form
+                action="{{ route('admin.changeSession') }}"
+                method="POST">
+
+                @csrf
+
+                <input
+                    type="hidden"
+                    name="session_id"
+                    value="{{ $session->id }}">
+
+                {{-- Tell changeSession() that this page allows Sale sessions --}}
+                <input
+                    type="hidden"
+                    name="special_session"
+                    value="{{ $isSpecialSessionRoute ? 1 : 0 }}">
+
+                <button
+                    type="submit"
+                    class="dropdown-item
+                        {{ $headerCurrentSession && $headerCurrentSession->id == $session->id ? 'active' : '' }}">
+
+                    {{ ucwords($session->session_name) }}
+
+                    @if((int) $session->session_type === 1)
+                        <span class="text-warning">(Sale)</span>
                     @endif
+
+                    ({{ \Carbon\Carbon::parse($session->start_date)->format('M Y') }})
+
+                    - ({{ $session->students_count }})
+
+                </button>
+
+            </form>
+
+        </li>
+
+    @endforeach
+
+</ul>
+
+        </li>
+
+    @endif
+
+@endif
 
                     {{-- USER MENU --}}
 

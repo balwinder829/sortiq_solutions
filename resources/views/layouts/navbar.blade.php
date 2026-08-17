@@ -542,12 +542,12 @@ body.menu-toggle .sidebar-collapse-btn{
 
 
                  {{-- Leads --}}
-                <li class="{{ isParent(['enquiries*','admin.enquiries.dashboard','salespersons*','admin.enquiries.performance','registrations*','admin.calls','sales_staff*','sales-staff-letters*']) }}">
+                <li class="{{ isParent(['enquiries*','admin.enquiries.dashboard','salespersons*','admin.enquiries.performance','registrations*','admin.calls','sales_staff*','sales-staff-letters*','admin.closed-data.*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-database"></i>
                         <span class="nav-text">Sales Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['enquiries*','admin.enquiries.dashboard','salespersons','admin.enquiries.performance','registrations*','admin.calls','sales_staff*','sales-staff-letters*']) }}">
+                    <ul class="{{ showSubmenu(['enquiries*','admin.enquiries.dashboard','salespersons','admin.enquiries.performance','registrations*','admin.calls','sales_staff*','sales-staff-letters*','admin.closed-data.*']) }}">
                         <li>
                             <a class="{{ isChildActive('enquiries*') }}"
                                 href="{{ route('enquiries.index') }}">
@@ -608,6 +608,12 @@ body.menu-toggle .sidebar-collapse-btn{
                          <li class="{{ request()->routeIs('admin.hard_data.*') ? 'mm-active' : '' }}">
                             <a href="{{ route('admin.hard_data.index') }}">
                                 Hard Data
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->routeIs('admin.closed-data.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.closed_data.index') }}">
+                                Closed Data
                             </a>
                         </li>
 

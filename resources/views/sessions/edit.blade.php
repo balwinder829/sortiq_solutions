@@ -52,6 +52,23 @@
             </select>
         </div>
 
+         {{-- Session Type --}}
+        <div class="form-group">
+            <label>Session Type</label>
+            <select name="session_type" class="form-control" required>
+                <option value="0"
+                    {{ old('session_type', $session->session_type) == 0 ? 'selected' : '' }}>
+                    Normal
+                </option>
+
+                <option value="1"
+                    {{ old('session_type', $session->session_type) == 1 ? 'selected' : '' }}>
+                    Sale
+                </option>
+            </select>
+        </div>
+
+
         <button type="submit" class="btn btn-primary">Update Session</button>
     </form>
 </div>

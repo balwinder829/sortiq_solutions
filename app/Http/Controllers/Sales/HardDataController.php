@@ -16,6 +16,7 @@ use App\Models\Enquiry;
 use App\Rules\NotBlockedNumber;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class HardDataController extends Controller
 {
@@ -39,10 +40,15 @@ public function index(Request $request)
 {   
     if ($request->ajax()) {
 
-        $activeSessionNo = session('admin_session_id');
+        // $activeSessionNo = session('admin_session_id');
+        $activeSessionNo = session(
+            'admin_header_session_id',
+            session('admin_session_id')
+        );
 
         $query = HardData::with('college')
-                    ->where('session_id', $activeSessionNo);
+                    ->where('session_id', $activeSessionNo)
+                    ->where('enquiry_status', 'active');
 
         // FILTERS
 
@@ -177,7 +183,10 @@ public function index(Request $request)
                 e($data->gender),
                 $data->created_at?->format('d M Y'),
                 $actions,
-                'is_moved_to_enquiry' => $data->is_moved_to_enquiry
+                // Extra data for JavaScript
+                'id' => $data->id,
+                'is_moved_to_enquiry' => $data->is_moved_to_enquiry,
+                // 'is_moved_to_enquiry' => $data->is_moved_to_enquiry
             ];
         });
     }
@@ -203,8 +212,13 @@ public function index(Request $request)
             ->get()
             ->pluck('display_name', 'id');
 
+    $saleSessions = StudentSession::withoutGlobalScopes()
+    ->where('status', 'active')
+    ->where('session_type', 1)
+    ->orderBy('start_date', 'desc')
+    ->pluck('session_name', 'id');
 
-    return view('hard_data.index', compact('colleges','unknownColleges', 'states','districtsGrouped','sessionsList'));
+    return view('hard_data.index', compact('colleges','unknownColleges', 'states','districtsGrouped','sessionsList','saleSessions'));
 }
 
     
@@ -237,7 +251,11 @@ public function store(Request $request)
         'semester'        => 'required|integer|min:1|max:8',
     ]);
 
-    $activeSessionId = session('admin_session_id');
+    // $activeSessionId = session('admin_session_id');
+    $activeSessionId = session(
+        'admin_header_session_id',
+        session('admin_session_id')
+    );
     // Optional: default source
     $validated['session_id'] = $activeSessionId;
     $validated['source'] = 'manual';
@@ -519,4 +537,115 @@ public function exportExcel(Request $request)
             ]);
         }
     }
+
+    public function bulkAction(Request $request)
+{
+    $request->validate([
+        'ids'        => 'required',
+        'action'     => 'required|in:move,close',
+        'reason'     => 'nullable|string|max:255',
+        'session_id' => 'nullable|exists:student_sessions,id',
+    ]);
+
+    $ids = is_array($request->ids)
+        ? $request->ids
+        : json_decode($request->ids, true);
+
+    if (empty($ids)) {
+        return response()->json([
+            'message' => 'No records selected.'
+        ], 422);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MOVE SESSION VALIDATION
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        $request->action === 'move' &&
+        !$request->session_id
+    ) {
+        return response()->json([
+            'message' => 'Session is required.'
+        ], 422);
+    }
+
+    DB::beginTransaction();
+
+    try {
+
+        $records = HardData::whereIn('id', $ids)->get();
+
+        if ($records->isEmpty()) {
+            return response()->json([
+                'message' => 'No records found.'
+            ], 422);
+        }
+
+        $count = 0;
+
+        foreach ($records as $record) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | MOVE TO ANOTHER SALE SESSION
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->action === 'move') {
+
+                // Already in selected session
+                if (
+                    (int) $record->session_id ===
+                    (int) $request->session_id
+                ) {
+                    continue;
+                }
+
+                $record->update([
+                    'session_id' => $request->session_id,
+                ]);
+
+                $count++;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CLOSE RECORD
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->action === 'close') {
+
+                $record->update([
+                    'enquiry_status' => 'closed',
+                    'closed_reason'  => $request->reason,
+                    'closed_at'      => now(),
+                    'closed_by'      => auth()->id(),
+                ]);
+
+                $count++;
+            }
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'message' => $request->action === 'move'
+                ? "$count records moved successfully."
+                : "$count records closed successfully."
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
 }

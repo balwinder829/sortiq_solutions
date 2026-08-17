@@ -106,7 +106,11 @@ class HardDataImport implements
         // Clean values
         $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
 
-        $sessionId = session('admin_session_id');
+        // $sessionId = session('admin_session_id');
+        $sessionId = session(
+            'admin_header_session_id',
+            session('admin_session_id')
+        );
 
         /* -------- COLLEGE RESOLVE -------- */
         // try {

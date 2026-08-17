@@ -18,6 +18,12 @@
             Move to Enquiries
         </button>
 
+        <button type="button"
+                id="bulkManualActionBtn"
+                class="btn btn-warning mb-3">
+            Move / Close Selected
+        </button>
+
         <a href="{{ route('admin.manual_data.create') }}"
            class="btn btn-primary mb-3"
            style="background:#6b51df;">
@@ -144,6 +150,169 @@
 
 </div>
 
+
+<!-- Move / Close Manual Data Modal -->
+<div class="modal fade"
+     id="moveManualDataModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <form id="moveManualDataForm">
+
+            @csrf
+
+            <input type="hidden"
+                   name="ids"
+                   id="manualBulkIds">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Move / Close Records
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <!-- ACTION -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Action
+                        </label>
+
+                        <select class="form-control"
+                                name="action"
+                                id="manualBulkAction"
+                                required>
+
+                            <option value="">
+                                Select Action
+                            </option>
+
+                            <option value="move">
+                                Move To Another Session
+                            </option>
+
+                            <option value="close">
+                                Close Record
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- MOVE SECTION -->
+
+                    <div id="manualMoveSection"
+                         style="display:none;">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Session
+                            </label>
+
+                            <select class="form-control"
+                                    name="session_id"
+                                    id="manualSessionId">
+
+                                <option value="">
+                                    Select Session
+                                </option>
+
+                                @foreach($saleSessions as $id => $name)
+
+                                    <option value="{{ $id }}">
+                                        {{ $name }}
+                                    </option>
+
+                                @endforeach
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CLOSE SECTION -->
+
+                    <div id="manualCloseSection"
+                         style="display:block;">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Reason
+                            </label>
+
+                            <textarea class="form-control"
+                                      name="reason"
+                                      id="manualCloseReason"
+                                      rows="3"
+                                      placeholder="Enter reason"></textarea>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SELECTED COUNT -->
+
+                    <!-- <div class="alert alert-light">
+
+                        Selected Records:
+
+                        <strong id="manualSelectedCount">
+                            0
+                        </strong>
+
+                    </div> -->
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-success"
+                            id="manualBulkSubmit">
+
+                        Save
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 @endsection
 
 
@@ -175,18 +344,42 @@ var table = $('#trainers-table').DataTable({
 
         // ✅ CHECKBOX COLUMN
         {
-            data: 0,
-            render: function (data, type, row) {
-                
-                if (row.is_moved_to_enquiry == 1) {
-                    return '<span class="badge bg-info">Moved</span>';
+    data: 0,
+
+    render: function (data, type, row) {
+
+        let checked = selectedIds.has(String(row.row_id))
+            ? 'checked'
+            : '';
+
+        return `
+            <div class="d-inline-flex align-items-center gap-1">
+
+                <input type="checkbox"
+                       id="${row.row_id}"
+                       class="record_checkbox"
+                       value="${row.row_id}"
+                       ${checked}>
+
+                ${
+                    row.is_moved_to_enquiry == 1
+                    ? `
+                          <i class="fas fa-arrow-right-arrow-left text-warning"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="top"
+                           title="Moved">
+                        </i>
+                      `
+                    : ''
                 }
 
-                return `<input type="checkbox" id="${row.row_id}" class="record_checkbox" value="${data}">`;
-            },
-            orderable: false,
-            searchable: false
-        },
+            </div>
+        `;
+    },
+
+    orderable: false,
+    searchable: false
+},
 
         { data: 0 },
         { data: 1 },
@@ -202,6 +395,26 @@ var table = $('#trainers-table').DataTable({
 
     ]
 });
+
+// ======================================
+// RESTORE SELECTION AFTER DATATABLE DRAW
+// ======================================
+table.on('draw.dt', function () {
+
+    $('.record_checkbox').each(function () {
+
+        let id = String($(this).val());
+
+        $(this).prop(
+            'checked',
+            selectedIds.has(id)
+        );
+
+    });
+
+    syncCheckAll();
+
+});
 $('#filterForm input, #filterForm select').on('keyup change', function () {
     table.ajax.reload();
 });
@@ -210,37 +423,123 @@ $('#filterForm input, #filterForm select').on('keyup change', function () {
 
 
 // ✅ SELECT SINGLE
+// $(document).on('change', '.record_checkbox', function () {
+//     let id = $(this).val();
+//     let record_id = $(this).attr('id');
+//     // console.log('Checkbox changed:', { id, record_id, checked: $(this).is(':checked') });
+//     if ($(this).is(':checked')) {
+//         selectedIds.add(id);
+//         selectedRecordIds.add(record_id);
+//     } else {
+//         selectedIds.delete(id);
+//         selectedRecordIds.delete(record_id);
+//     }
+// });
+
+
+// ======================================
+// SELECT / UNSELECT SINGLE RECORD
+// ======================================
 $(document).on('change', '.record_checkbox', function () {
-    let id = $(this).val();
-    let record_id = $(this).attr('id');
-    // console.log('Checkbox changed:', { id, record_id, checked: $(this).is(':checked') });
+
+    let id = String($(this).val());
+
     if ($(this).is(':checked')) {
+
         selectedIds.add(id);
-        selectedRecordIds.add(record_id);
+        selectedRecordIds.add(id);
+
     } else {
+
         selectedIds.delete(id);
-        selectedRecordIds.delete(record_id);
+        selectedRecordIds.delete(id);
     }
+
+    syncCheckAll();
+
 });
 
 
+// ======================================
+// SYNC SELECT ALL FOR CURRENT PAGE
+// ======================================
+function syncCheckAll() {
+
+    let currentPageCheckboxes = $('.record_checkbox');
+
+    if (currentPageCheckboxes.length === 0) {
+
+        $('#checkAll').prop('checked', false);
+
+        return;
+    }
+
+    let checkedCount =
+        currentPageCheckboxes.filter(':checked').length;
+
+    $('#checkAll').prop(
+        'checked',
+        checkedCount === currentPageCheckboxes.length
+    );
+    console.log(checkedCount);
+}
+
+
 // ✅ SELECT ALL
+// $('#checkAll').on('change', function () {
+//     let checked = this.checked;
+
+//     $('.record_checkbox').each(function () {
+//         let id = $(this).val();
+//         let record_id = $(this).attr('id');
+//         if (checked) {
+//             selectedIds.add(id);
+//             selectedRecordIds.add(record_id);
+//         } else {
+//             selectedIds.delete(id);
+//             selectedRecordIds.delete(record_id);
+//         }
+
+//         $(this).prop('checked', checked);
+//     });
+// });
+
+// ======================================
+// SELECT ALL - CURRENT PAGE ONLY
+// ======================================
 $('#checkAll').on('change', function () {
+
     let checked = this.checked;
 
     $('.record_checkbox').each(function () {
-        let id = $(this).val();
-        let record_id = $(this).attr('id');
-        if (checked) {
-            selectedIds.add(id);
-            selectedRecordIds.add(record_id);
-        } else {
-            selectedIds.delete(id);
-            selectedRecordIds.delete(record_id);
-        }
+
+        let id = String($(this).val());
 
         $(this).prop('checked', checked);
+
+        if (checked) {
+
+            selectedIds.add(id);
+            selectedRecordIds.add(id);
+
+        } else {
+
+            selectedIds.delete(id);
+            selectedRecordIds.delete(id);
+
+        }
+
     });
+
+    console.log(
+        'Select All:',
+        checked,
+        'Selected IDs:',
+        Array.from(selectedIds)
+    );
+
+    syncCheckAll();
+
 });
 $('#exportExcel').click(function () {
 
@@ -383,5 +682,274 @@ $(document).on('click', '#sendWhatsappNotification', function () {
     });
 });
 
+
+$('#bulkManualActionBtn').on('click', function () {
+
+    if (selectedIds.size === 0) {
+
+        showPopup('Please select at least one record.');
+
+        return;
+    }
+
+    // Show selected count
+    $('#manualSelectedCount')
+        .text(selectedIds.size);
+
+    // Reset modal
+    $('#manualBulkAction').val('');
+
+    $('#manualMoveSection').hide();
+
+    // $('#manualCloseSection').hide();
+
+    $('#manualSessionId').val('');
+
+    // $('#manualCloseReason').val('');
+
+    // Open modal
+    let modal = new bootstrap.Modal(
+        document.getElementById('moveManualDataModal')
+    );
+
+    modal.show();
+
+});
+
+$('#manualBulkAction').on('change', function () {
+
+    let action = $(this).val();
+
+    $('#manualMoveSection').hide();
+
+    // $('#manualCloseSection').hide();
+
+
+    if (action === 'move') {
+
+        $('#manualMoveSection').show();
+
+    }
+
+
+    if (action === 'close') {
+
+        // $('#manualCloseSection').show();
+
+    }
+
+});
+
+$('#moveManualDataForm').on('submit', function (e) {
+
+    e.preventDefault();
+
+
+    let action = $('#manualBulkAction').val();
+
+    let ids = Array.from(selectedIds);
+
+
+    // --------------------------------
+    // CHECK IDS
+    // --------------------------------
+
+    if (ids.length === 0) {
+
+        showPopup('Please select at least one record.');
+
+        return;
+    }
+
+
+    // --------------------------------
+    // CHECK ACTION
+    // --------------------------------
+
+    if (!action) {
+
+        showPopup('Please select an action.');
+
+        return;
+    }
+
+
+    // --------------------------------
+    // MOVE VALIDATION
+    // --------------------------------
+
+    if (action === 'move') {
+
+        let sessionId =
+            $('#manualSessionId').val();
+
+        if (!sessionId) {
+
+            showPopup('Please select a session.');
+
+            return;
+        }
+
+    }
+
+
+    // --------------------------------
+    // CLOSE VALIDATION
+    // --------------------------------
+
+    // if (action === 'close') {
+
+    //     let reason =
+            $('#manualCloseReason').val().trim();
+
+    //     if (!reason) {
+
+    //         showPopup('Please enter close reason.');
+
+    //         return;
+    //     }
+
+    // }
+
+
+    // --------------------------------
+    // PREPARE DATA
+    // --------------------------------
+
+    let formData = {
+
+        _token: "{{ csrf_token() }}",
+
+        ids: ids,
+
+        action: action
+
+    };
+
+
+    if (action === 'move') {
+
+        formData.session_id =
+            $('#manualSessionId').val();
+
+    }
+
+
+    // if (action === 'close') {
+
+        formData.reason =
+            $('#manualCloseReason').val().trim();
+
+    // }
+
+
+    // --------------------------------
+    // SUBMIT
+    // --------------------------------
+
+    $('#manualBulkSubmit')
+        .prop('disabled', true)
+        .text('Processing...');
+
+
+    $.ajax({
+
+        url: "{{ route('admin.manual_data.bulk.action') }}",
+
+        type: "POST",
+
+        data: formData,
+
+
+        success: function (response) {
+
+            // Clear selections
+            selectedIds.clear();
+            selectedRecordIds.clear();
+
+            $('#checkAll')
+                .prop('checked', false);
+
+            $('.record_checkbox')
+                .prop('checked', false);
+
+
+            // Close modal
+            let modalElement =
+                document.getElementById(
+                    'moveManualDataModal'
+                );
+
+            let modal =
+                bootstrap.Modal.getInstance(
+                    modalElement
+                );
+
+            if (modal) {
+                modal.hide();
+            }
+
+
+            // Reload table
+            table.ajax.reload(null, false);
+
+
+            showPopup(
+                response.message ||
+                'Operation completed successfully.'
+            );
+
+        },
+
+
+        error: function (xhr) {
+
+            let message =
+                xhr.responseJSON?.message ||
+                'Something went wrong.';
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Clear selection on error
+            |--------------------------------------------------------------------------
+            */
+
+            selectedIds.clear();
+            selectedRecordIds.clear();
+
+            $('#checkAll')
+                .prop('checked', false);
+
+            $('.record_checkbox')
+                .prop('checked', false);
+
+
+            showPopup(message);
+
+        },
+
+
+        complete: function () {
+
+            $('#manualBulkSubmit')
+                .prop('disabled', false)
+                .text('Save');
+
+        }
+
+    });
+
+});
+
+function showPopup($msg){
+    Swal.fire({
+            icon: 'warning',
+            text: $msg
+        });
+
+        return;
+
+}
 </script>
 @endpush

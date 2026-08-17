@@ -170,6 +170,7 @@ use Spatie\Permission\PermissionRegistrar;
 use App\Models\ExternalAttendanceTest;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\TestAnalyticsController;
+use App\Http\Controllers\Sales\ClosedDataController;
 
 
  Route::get('/download/{file}', function ($file) {
@@ -521,6 +522,26 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
         Route::post('/manual-data/move-enquiries',
             [ManualDataController::class, 'moveManualToEnquiries']
         )->name('manual_data.move.enquiries');
+
+        Route::post(
+            '/manual-data/bulk-action',
+            [ManualDataController::class, 'bulkAction']
+        )->name('manual_data.bulk.action');
+
+        Route::post(
+            '/hard-data/bulk-action',
+            [HardDataController::class, 'bulkAction']
+        )->name('hard_data.bulk.action');
+
+        Route::get(
+            '/closed-data',
+            [ClosedDataController::class, 'index']
+        )->name('closed_data.index');
+
+        Route::post(
+            '/closed-data/bulk-action',
+            [ClosedDataController::class, 'bulkAction']
+        )->name('closed_data.bulk_action');
 
         Route::post('/send_whatsapp_message', [WhatsappController::class, 'sendWhatsappMessage'])->name('message.send_whatsapp');
         Route::get('/setup_whatsapp', [WhatsappController::class, 'setupWhatsapp'])->name('message.setup_whatsapp');
@@ -1791,6 +1812,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('courses/data', [CourseController::class, 'data'])->name('courses.data');
     Route::resource('courses', CourseController::class);
 
+    Route::post('/colleges/bulk-update', [CollegeController::class, 'bulkUpdate'])
+    ->name('colleges.bulkUpdate');
+    
     Route::get('/colleges/{college}/students', [CollegeController::class, 'students']);
     Route::get('/colleges/{college}/students/export-excel', [CollegeController::class, 'exportStudentsExcel']);
     // Route::post('/colleges/{id}/toggle-status', [CollegeController::class, 'toggleStatus']);

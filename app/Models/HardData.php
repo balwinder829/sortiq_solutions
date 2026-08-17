@@ -27,12 +27,18 @@ class HardData extends Model
         'source',
         'is_moved_to_enquiry',
         'gender',
+        'enquiry_status',
+        'closed_reason',
+        'closed_at',
+        'closed_by',
     ];
 
     protected $casts = [
         'session_id'   => 'integer',
         'college_id'   => 'integer',
         'semester'     => 'integer',
+         'closed_at'    => 'datetime',
+        'closed_by'    => 'integer',
         'created_at'   => 'datetime',
         'updated_at'   => 'datetime',
         'deleted_at'   => 'datetime',
@@ -51,11 +57,17 @@ class HardData extends Model
 
     public function session()
     {
-        return $this->belongsTo(Session::class);
+        return $this->belongsTo(StudentSession::class);
     }
 
     public function college()
     {
         return $this->belongsTo(College::class);
+    }
+
+    public function allSession()
+    {
+        return $this->belongsTo(StudentSession::class, 'session_id')
+            ->withoutGlobalScopes();
     }
 }

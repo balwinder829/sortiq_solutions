@@ -15,6 +15,12 @@
             Move to Enquiries
         </button>
 
+        <button type="button"
+                id="bulkHardActionBtn"
+                class="btn btn-warning mb-3">
+            Move / Close Selected
+        </button>
+
         <a href="{{ route('admin.hard_data.create') }}"
            class="btn btn-primary mb-3"
            style="background:#6b51df;">
@@ -138,7 +144,153 @@
 </div>
 
 </div>
+<!-- Move / Close Hard Data Modal -->
 
+<div class="modal fade"
+     id="moveHardDataModal"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <form id="moveHardDataForm">
+
+            @csrf
+
+            <input type="hidden"
+                   name="ids"
+                   id="hardBulkIds">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Move / Close Records
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Action
+                        </label>
+
+                        <select class="form-control"
+                                name="action"
+                                id="hardBulkAction"
+                                required>
+
+                            <option value="">
+                                Select Action
+                            </option>
+
+                            <option value="move">
+                                Move To Another Session
+                            </option>
+
+                            <option value="close">
+                                Close Record
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- MOVE SECTION -->
+
+                    <div id="hardMoveSection"
+                         style="display:none;">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Session
+                            </label>
+
+                            <select class="form-control"
+                                    name="session_id"
+                                    id="hardSessionId">
+
+                                <option value="">
+                                    Select Session
+                                </option>
+
+                                @foreach($saleSessions as $id => $name)
+
+                                    <option value="{{ $id }}">
+                                        {{ $name }}
+                                    </option>
+
+                                @endforeach
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- CLOSE SECTION -->
+
+                    <div id="hardCloseSection"
+                         style="display:block;">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Reason
+                            </label>
+
+                            <textarea class="form-control"
+                                      name="reason"
+                                      id="hardCloseReason"
+                                      rows="3"
+                                      placeholder="Enter reason"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-success"
+                            id="hardBulkSubmit">
+
+                        Save
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
 @endsection
 
 
@@ -147,6 +299,7 @@
 <script>
 
 let selectedIds = new Set();
+let selectedRecordIds = new Set();
 
 // ✅ DATATABLE
 var table = $('#trainers-table').DataTable({
@@ -168,18 +321,44 @@ var table = $('#trainers-table').DataTable({
 
         // ✅ CHECKBOX COLUMN
         {
-            data: 0,
-            render: function (data, type, row) {
+    data: 0,
 
-                if (row.is_moved_to_enquiry == 1) {
-                    return '<span class="badge bg-info">Moved</span>';
+    render: function (data, type, row) {
+
+        let id = String(row.id);
+
+        let checked = selectedIds.has(id)
+            ? 'checked'
+            : '';
+
+        return `
+            <div class="d-inline-flex align-items-center gap-1">
+
+                <input type="checkbox"
+                       id="${id}"
+                       class="record_checkbox"
+                       value="${id}"
+                       ${checked}>
+
+                ${
+                    row.is_moved_to_enquiry == 1
+                    ? `
+                        <i class="fas fa-arrow-right-arrow-left text-warning"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="top"
+                           title="Moved">
+                        </i>
+                      `
+                    : ''
                 }
 
-                return `<input type="checkbox" class="record_checkbox" value="${data}">`;
-            },
-            orderable: false,
-            searchable: false
-        },
+            </div>
+        `;
+    },
+
+    orderable: false,
+    searchable: false
+},
 
         { data: 0 },
         { data: 1 },
@@ -195,37 +374,130 @@ var table = $('#trainers-table').DataTable({
 
     ]
 });
+
+table.on('draw.dt', function () {
+
+    $('.record_checkbox').each(function () {
+
+        let id = String($(this).val());
+
+        $(this).prop(
+            'checked',
+            selectedIds.has(id)
+        );
+
+    });
+
+    syncCheckAll();
+
+});
 $('#filterForm input, #filterForm select').on('keyup change', function () {
     table.ajax.reload();
 });
 
 // ✅ SELECT SINGLE
+// $(document).on('change', '.record_checkbox', function () {
+//     let id = $(this).val();
+
+//     if ($(this).is(':checked')) {
+//         selectedIds.add(id);
+//     } else {
+//         selectedIds.delete(id);
+//     }
+// });
+
 $(document).on('change', '.record_checkbox', function () {
-    let id = $(this).val();
+
+    let id = String($(this).val());
 
     if ($(this).is(':checked')) {
+
         selectedIds.add(id);
+        selectedRecordIds.add(id);
+
     } else {
+
         selectedIds.delete(id);
+        selectedRecordIds.delete(id);
     }
+
+    syncCheckAll();
+
 });
+
+function syncCheckAll() {
+
+    let currentPageCheckboxes =
+        $('.record_checkbox');
+
+    if (currentPageCheckboxes.length === 0) {
+
+        $('#checkAll').prop('checked', false);
+
+        return;
+    }
+
+    let checkedCount =
+        currentPageCheckboxes.filter(':checked').length;
+
+    $('#checkAll').prop(
+        'checked',
+        checkedCount === currentPageCheckboxes.length
+    );
+
+}
 
 
 // ✅ SELECT ALL
+// $('#checkAll').on('change', function () {
+//     let checked = this.checked;
+
+//     $('.record_checkbox').each(function () {
+//         let id = $(this).val();
+
+//         if (checked) {
+//             selectedIds.add(id);
+//         } else {
+//             selectedIds.delete(id);
+//         }
+
+//         $(this).prop('checked', checked);
+//     });
+// });
+
 $('#checkAll').on('change', function () {
+
     let checked = this.checked;
 
     $('.record_checkbox').each(function () {
-        let id = $(this).val();
 
-        if (checked) {
-            selectedIds.add(id);
-        } else {
-            selectedIds.delete(id);
-        }
+        let id = String($(this).val());
 
         $(this).prop('checked', checked);
+
+        if (checked) {
+
+            selectedIds.add(id);
+            selectedRecordIds.add(id);
+
+        } else {
+
+            selectedIds.delete(id);
+            selectedRecordIds.delete(id);
+
+        }
+
     });
+
+    console.log(
+        'Select All:',
+        checked,
+        'Selected IDs:',
+        Array.from(selectedIds)
+    );
+
+    syncCheckAll();
+
 });
 
 
@@ -298,6 +570,222 @@ $('#resetFilters').click(function () {
     // Reload table
     table.ajax.reload();
 });
+
+$('#bulkHardActionBtn').on('click', function () {
+
+    if (selectedIds.size === 0) {
+
+        showPopup(
+            'Please select at least one record.'
+        );
+
+        return;
+    }
+
+    $('#hardBulkAction').val('');
+
+    $('#hardMoveSection').hide();
+
+    // Same behavior as your final Manual Data
+    $('#hardCloseSection').show();
+
+    $('#hardSessionId').val('');
+
+    $('#hardCloseReason').val('');
+
+    let modal = new bootstrap.Modal(
+        document.getElementById('moveHardDataModal')
+    );
+
+    modal.show();
+
+});
+
+$('#hardBulkAction').on('change', function () {
+
+    let action = $(this).val();
+
+    $('#hardMoveSection').hide();
+
+    if (action === 'move') {
+
+        $('#hardMoveSection').show();
+
+    }
+
+    if (action === 'close') {
+
+        // Reason is optional
+        $('#hardCloseSection').show();
+
+    }
+
+});
+
+$('#moveHardDataForm').on('submit', function (e) {
+
+    e.preventDefault();
+
+    let action = $('#hardBulkAction').val();
+
+    let ids = Array.from(selectedIds);
+
+
+    if (ids.length === 0) {
+
+        showPopup(
+            'Please select at least one record.'
+        );
+
+        return;
+    }
+
+
+    if (!action) {
+
+        showPopup(
+            'Please select an action.'
+        );
+
+        return;
+    }
+
+
+    // MOVE
+
+    if (action === 'move') {
+
+        let sessionId =
+            $('#hardSessionId').val();
+
+        if (!sessionId) {
+
+            showPopup(
+                'Please select a session.'
+            );
+
+            return;
+        }
+
+    }
+
+
+    let formData = {
+
+        _token: "{{ csrf_token() }}",
+
+        ids: ids,
+
+        action: action
+
+    };
+
+
+    if (action === 'move') {
+
+        formData.session_id =
+            $('#hardSessionId').val();
+
+    }
+
+
+    if (action === 'close') {
+
+        // OPTIONAL
+        formData.reason =
+            $('#hardCloseReason').val().trim();
+
+    }
+
+
+    $('#hardBulkSubmit')
+        .prop('disabled', true)
+        .text('Processing...');
+
+
+    $.ajax({
+
+        url: "{{ route('admin.hard_data.bulk.action') }}",
+
+        type: "POST",
+
+        data: formData,
+
+
+        success: function (response) {
+
+            selectedIds.clear();
+            selectedRecordIds.clear();
+
+            $('#checkAll')
+                .prop('checked', false);
+
+            $('.record_checkbox')
+                .prop('checked', false);
+
+
+            let modalElement =
+                document.getElementById(
+                    'moveHardDataModal'
+                );
+
+            let modal =
+                bootstrap.Modal.getInstance(
+                    modalElement
+                );
+
+            if (modal) {
+
+                modal.hide();
+
+            }
+
+
+            table.ajax.reload(null, false);
+
+
+            showPopup(
+                response.message ||
+                'Operation completed successfully.'
+            );
+
+        },
+
+
+        error: function (xhr) {
+
+            let message =
+                xhr.responseJSON?.message ||
+                'Something went wrong.';
+
+            showPopup(message);
+
+        },
+
+
+        complete: function () {
+
+            $('#hardBulkSubmit')
+                .prop('disabled', false)
+                .text('Save');
+
+        }
+
+    });
+
+});
+
+function showPopup($msg) {
+
+    Swal.fire({
+
+        icon: 'warning',
+
+        text: $msg
+
+    });
+
+}
 
 </script>
 

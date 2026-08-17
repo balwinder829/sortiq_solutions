@@ -28,6 +28,25 @@
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
+    <div class="mb-3">
+    <ul class="nav nav-tabs">
+
+        <li class="nav-item">
+            <a href="{{ route('sessions.index', ['type' => 'normal']) }}"
+               class="nav-link {{ $type === 'normal' ? 'active' : '' }}">
+                Normal Sessions
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ route('sessions.index', ['type' => 'sale']) }}"
+               class="nav-link {{ $type === 'sale' ? 'active' : '' }}">
+                Sale Sessions
+            </a>
+        </li>
+
+    </ul>
+</div>
     <div class="table-responsive">
 
                 <table id="sessions-table" class="table table-bordered table-striped">

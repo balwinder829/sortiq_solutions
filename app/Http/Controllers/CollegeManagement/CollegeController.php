@@ -244,6 +244,7 @@ class CollegeController extends Controller
 
         $data = [];
         foreach ($colleges as $index => $college) {
+            
             $rowNum = $start + $index + 1;
             // $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
             $collegeType = $college->college_type_label;
@@ -256,6 +257,9 @@ class CollegeController extends Controller
                     <span class="slider round"></span>
                 </label>';
             $data[] = [
+                '<input type="checkbox"
+                class="record_checked"
+                value="'.$college->id.'">',
                 $rowNum,
                 $college->id,
                 // $college->college_name,
@@ -807,5 +811,83 @@ public function exportExcel(Request $request)
         $college->save();
 
         return response()->json(['success' => true]);
+    }
+
+    public function bulkUpdate2(Request $request)
+    {
+        dd( $request);
+
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+        $request->validate([
+            'ids'               => 'required|string',
+            'college_type'      => 'nullable',
+            'offer_training'    => 'nullable',
+            'training_in_year'  => 'nullable',
+            'is_important'      => 'nullable|in:0,1',
+            'ownership_type'    => 'nullable|in:0,1',
+            'connection_type'   => 'nullable|in:0,1',
+            'departments'       => 'nullable|array',
+            'departments.*'     => 'string',
+        ]);
+
+        $ids = array_filter(explode(',', $request->ids));
+
+        if (empty($ids)) {
+            return redirect()
+                ->route('colleges.index')
+                ->with('error', 'Please select at least one college.');
+        }
+
+        $updateData = [];
+
+        // College Type
+        if ($request->college_type !== null && $request->college_type !== '') {
+            $updateData['college_type'] = $request->college_type;
+        }
+
+        // Offer Training
+        if ($request->offer_training !== null && $request->offer_training !== '') {
+            $updateData['offer_training'] = $request->offer_training;
+        }
+
+        // Training Per Year
+        if ($request->training_in_year !== null && $request->training_in_year !== '') {
+            $updateData['training_in_year'] = $request->training_in_year;
+        }
+
+        // Important College
+        if ($request->is_important !== null && $request->is_important !== '') {
+            $updateData['is_important'] = $request->is_important;
+        }
+
+        // Government / Private
+        if ($request->ownership_type !== null && $request->ownership_type !== '') {
+            $updateData['ownership_type'] = $request->ownership_type;
+        }
+
+        // Old / New Connection
+        if ($request->connection_type !== null && $request->connection_type !== '') {
+            $updateData['connection_type'] = $request->connection_type;
+        }
+
+        // Departments
+        if ($request->has('departments')) {
+            $updateData['departments'] = $request->departments ?? [];
+        }
+
+        if (empty($updateData)) {
+            return redirect()
+                ->route('colleges.index')
+                ->with('error', 'Please select at least one field to update.');
+        }
+
+        College::whereIn('id', $ids)->update($updateData);
+
+        return redirect()
+            ->route('colleges.index')
+            ->with('success', count($ids) . ' college(s) updated successfully.');
     }
 }

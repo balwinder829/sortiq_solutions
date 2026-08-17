@@ -107,6 +107,7 @@ class EnquiriesImport implements
     /* ================= MAIN ================= */
     public function model(array $row)
     {
+        // dd($row);
         $this->totalRows++;
 
         // Track row number (Excel row starts from 2 due to heading)
@@ -178,9 +179,21 @@ class EnquiriesImport implements
                 : null;
         }
 
+        /* ===== DEPARTMENTS ===== */
+        $departments = null;
+
+        /* ===== DEPARTMENTS ===== */
+        $departments = $this->extractDepartments(
+            $row['departments'] ?? null
+        );
+// dd($departments);
         $this->insertedRows++;
 
-         $activeSessionId = session('admin_session_id');
+         // $activeSessionId = session('admin_session_id');
+         $activeSessionId = session(
+            'admin_header_session_id',
+            session('admin_session_id')
+        );
 
         return new Enquiry([
             'name'       => $row['name'],
@@ -194,9 +207,143 @@ class EnquiriesImport implements
             'created_by' => $this->creator,
             'source'     => 'excel',
             'is_passout' => $this->isPassout,
+             'departments' => $departments,
         ]);
     }
 
+    /* ================= DEPARTMENT PARSER ================= */
+private function extractDepartments($value): ?array
+{
+    // Already an array
+    if (is_array($value)) {
+        return array_values(array_filter(
+            array_map(
+                fn($item) => trim((string) $item),
+                $value
+            ),
+            fn($item) => $item !== ''
+        ));
+    }
+
+    if ($value === null) {
+        return null;
+    }
+
+    $value = trim((string) $value);
+
+    if ($value === '') {
+        return null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Clean Excel / CSV quoting
+    |--------------------------------------------------------------------------
+    */
+
+    // Remove outer quotes repeatedly:
+    // "abc"       -> abc
+    // '"abc"'     -> abc
+    // "[...]"     -> [...]
+    for ($i = 0; $i < 2; $i++) {
+
+        if (
+            strlen($value) >= 2 &&
+            (
+                ($value[0] === '"' && substr($value, -1) === '"') ||
+                ($value[0] === "'" && substr($value, -1) === "'")
+            )
+        ) {
+            $value = substr($value, 1, -1);
+            $value = trim($value);
+        }
+    }
+
+    // Convert escaped quotes:
+    // [\"MBA\",\"Civil\"] -> ["MBA","Civil"]
+    $value = str_replace(['\\"', "\\'"], ['"', "'"], $value);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Try JSON
+    |--------------------------------------------------------------------------
+    */
+
+    $decoded = json_decode($value, true);
+
+    if (json_last_error() === JSON_ERROR_NONE) {
+
+        // JSON array
+        if (is_array($decoded)) {
+
+            return array_values(array_filter(
+                array_map(
+                    fn($item) => trim(
+                        trim((string) $item),
+                        "\"' "
+                    ),
+                    $decoded
+                ),
+                fn($item) => $item !== ''
+            ));
+        }
+
+        // JSON string:
+        // "abc" -> abc
+        if (is_string($decoded) && trim($decoded) !== '') {
+            $value = trim($decoded);
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Remove [ ] if it looks like an array but was not valid JSON
+    |--------------------------------------------------------------------------
+    |
+    | Example:
+    | [MBA,Civil,EC]
+    |
+    */
+
+    if (
+        strlen($value) >= 2 &&
+        $value[0] === '[' &&
+        substr($value, -1) === ']'
+    ) {
+        $value = substr($value, 1, -1);
+        $value = trim($value);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normal text / comma / semicolon / pipe / new line
+    |--------------------------------------------------------------------------
+    |
+    | abc
+    | xyz,123
+    | MBA,Civil,EC
+    | MBA;Civil;EC
+    | MBA|Civil|EC
+    |
+    */
+
+    $departments = preg_split(
+        '/\s*[,;|\r\n]+\s*/',
+        $value
+    );
+
+    $departments = array_map(
+        fn($item) => trim($item, " \t\n\r\0\x0B\"'[]"),
+        $departments
+    );
+
+    $departments = array_values(array_filter(
+        $departments,
+        fn($item) => $item !== ''
+    ));
+
+    return !empty($departments) ? $departments : null;
+}
     public function onError(Throwable $e)
     {
         // silently ignore system errors

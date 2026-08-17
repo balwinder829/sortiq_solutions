@@ -115,6 +115,42 @@
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
                 </div>
+                 @php
+            $departmentList = [
+                'CSE',
+                'MBA',
+                'BBA',
+                'Civil',
+                'EC',
+                'Mechanical',
+            ];
+
+            $selectedDepartments = old(
+                'departments',
+                $enquiry->departments ?? []
+            );
+        @endphp
+                {{-- Departments --}}
+        <div class="form-group col-md-6">
+            <label>Departments</label>
+
+            <select name="departments[]" class="form-control select2" multiple>
+
+                @foreach($departmentList as $department)
+
+                    <option value="{{ $department }}"
+                        {{ in_array($department, $selectedDepartments) ? 'selected' : '' }}>
+                        {{ $department }}
+                    </option>
+
+                @endforeach
+
+            </select>
+
+            <small class="text-muted">
+                Hold Ctrl (Windows) or Cmd (Mac) to select multiple departments.
+            </small>
+        </div>
 
             </div>
 

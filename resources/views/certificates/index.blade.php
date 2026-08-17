@@ -669,6 +669,7 @@ value="{{ request('registration_fee') }}">
         <button id="markCertificateSent" class="btn btn-success">Mark Certificate Sent</button>
         <button id="markCertificateNotSent" class="btn btn-secondary mt-0 ml-2">Mark Certificate Not Sent</button>
         <button id="movedropout" class="btn btn-success">Move to Dropout</button>
+        <button id="editBulkStudents" class="btn btn-primary">Edit Students</button>
     </div>
 
      
@@ -740,6 +741,142 @@ value="{{ request('registration_fee') }}">
     @csrf
     <input type="hidden" name="ids" id="bulkPlacementIds">
 </form>
+
+
+{{-- Bulk Edit Students Modal --}}
+<div class="modal fade" id="bulkEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+
+        <form method="POST"
+              action="{{ route('students.bulkUpdate') }}"
+              id="bulkEditForm">
+
+            @csrf
+
+            <input type="hidden"
+                   name="ids"
+                   id="bulkEditIds">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Edit Selected Students
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    {{-- College --}}
+                    <div class="mb-3">
+                        <label class="form-label">
+                            College
+                        </label>
+
+                        <select name="college_id"
+                                id="bulkCollege"
+                                class="form-control">
+
+                            <option value="">
+                                Keep Existing
+                            </option>
+
+                            @foreach($colleges as $college)
+                                <option value="{{ $college->id }}">
+                                    {{ $college->FullName }}
+                                </option>
+                            @endforeach
+
+                        </select>
+                    </div>
+
+
+                    {{-- Technology --}}
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Technology
+                        </label>
+
+                        <select name="technology"
+                                class="form-control">
+
+                            <option value="">
+                                Keep Existing
+                            </option>
+
+                            @foreach($courses as $course)
+                                <option value="{{ $course->id }}">
+                                    {{ $course->course_name }}
+                                </option>
+                            @endforeach
+
+                        </select>
+
+                    </div>
+
+
+                    {{-- Start Date --}}
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Start Date
+                        </label>
+
+                        <input type="date"
+                               name="start_date"
+                               class="form-control">
+
+                    </div>
+
+
+                    {{-- End Date --}}
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            End Date
+                        </label>
+
+                        <input type="date"
+                               name="end_date"
+                               class="form-control">
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Update Selected
+
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
 <!-- Copy Students Modal -->
 <div class="modal fade" id="copyStudentsModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
@@ -1356,6 +1493,45 @@ $('#markCertificateNotSent').click(function () {
         });
     });
     
+    // ===============================
+// BULK EDIT STUDENTS
+// ===============================
+$('#editBulkStudents').click(function () {
+
+    let idss = getSelectedIds();
+console.log(idss);
+    if (idss.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Select at least one student'
+        });
+
+        return;
+    }
+
+    // Put selected IDs into hidden input
+    $('#bulkEditIds').val(JSON.stringify(idss));
+
+    // Open bulk edit modal
+    $('#bulkEditModal').modal('show');
+
+});
+$('#bulkEditModal').on('shown.bs.modal', function () {
+
+    if (!$('#bulkCollege').hasClass("select2-hidden-accessible")) {
+
+        $('#bulkCollege').select2({
+            dropdownParent: $('#bulkEditModal'),
+            width: '100%',
+            placeholder: 'Keep Existing',
+            allowClear: true
+        });
+
+    }
+
+});
+
     $('#copySelected').on('click', function () {
 
         let ids = getSelectedIds();
