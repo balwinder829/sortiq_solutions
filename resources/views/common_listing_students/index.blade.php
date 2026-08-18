@@ -172,10 +172,51 @@
             </select>
         </div>
 
+        <div class="col-md-2 col-12">
+            <select name="is_intern" class="form-control filterchange">
+                <option value="">--Is Intern--</option>
+                <option value="1" {{ request('is_intern') === '1' ? 'selected' : '' }}>Yes</option>
+                <option value="0" {{ request('is_intern') === '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+
+          {{-- Study Mode --}}
+        <div class="col-md-2">
+
+        <select name="is_online"
+        class="form-control filterchange">
+
+        <option value="">--Study Mode--</option>
+
+        <option value="0"
+        {{ request('is_online')==='0'?'selected':'' }}>
+        Offline
+        </option>
+
+        <option value="1"
+        {{ request('is_online')==='1'?'selected':'' }}>
+        Online
+        </option>
+
+        </select>
+
+        </div>
+
+        <div class="col-md-2 col-12">
+            <select name="confirmation_sent" class="form-control filterchange">
+                <option value="">--Confirmation Sent--</option>
+                <option value="1" {{ request('confirmation_sent') === '1' ? 'selected' : '' }}>Yes</option>
+                <option value="0" {{ request('confirmation_sent') === '0' ? 'selected' : '' }}>No</option>
+            </select>
+        </div>
+
         <div class="col-md-3 col-6">
             <select name="fee_filter" class="form-control filterchange">
                 <option value="">-- Fee Related Filter --</option>
-
+                <option value="not_paid"
+                    {{ request('fee_filter') == 'not_paid' ? 'selected' : '' }}>
+                    Not Paid
+                </option>
                 {{-- Fee Status --}}
                 <option value="completed"
                     {{ request('fee_filter')=='completed' ? 'selected' : '' }}>
@@ -226,28 +267,14 @@
                 </option>
             </select>
         </div>
+    <div class="col-md-2 col-12">
+        <input type="date"
+       name="next_due_date"
+       class="form-control filterchange"
+       value="{{ request('next_due_date') }}">
+   </div>
 
-        {{-- Study Mode --}}
-        <div class="col-md-2">
-
-        <select name="is_online"
-        class="form-control filterchange">
-
-        <option value="">--Study Mode--</option>
-
-        <option value="0"
-        {{ request('is_online')==='0'?'selected':'' }}>
-        Offline
-        </option>
-
-        <option value="1"
-        {{ request('is_online')==='1'?'selected':'' }}>
-        Online
-        </option>
-
-        </select>
-
-        </div>
+      
         
 {{-- Regsiteration Fee --}}
 <div class="col-md-2">
@@ -388,7 +415,10 @@ value="{{ request('registration_fee') }}">
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
-                <td>{{ $student->sessionData->session_name ?? '-' }}</td>
+                
+                <td>
+                    {{ $student->sessionData->session_display_name ?? $student->sessionData->session_name ?? '-' }}
+                </td>
                 <td>{{ $student->collegeData->FullName ?? '-' }}</td>
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>

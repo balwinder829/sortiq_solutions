@@ -33,6 +33,7 @@ use App\Imports\StudentsFeeImport;
 use App\Exports\StudentsFeeTemplateExport;
 use App\Models\Placement;
 use App\Rules\NotBlockedNumber;
+use App\Models\BlockedNumber;
 
 
 class StudentController extends Controller
@@ -2754,5 +2755,67 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
                 ? 'Confirmation Letter marked as sent.'
                 : 'Confirmation Letter marked as not sent.'
         );
+    }
+
+    public function bulkBlockNumbers(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|json',
+        ]);
+
+        $ids = json_decode($request->ids, true);
+
+        if (!is_array($ids) || empty($ids)) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Get selected students
+        $students = Student::whereIn('id', $ids)
+            ->whereNotNull('contact')
+            ->where('contact', '!=', '')
+            ->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'No valid contact numbers found.');
+        }
+
+        // Get unique contact numbers
+        $numbers = $students
+            ->pluck('contact')
+            ->map(function ($number) {
+                return trim($number);
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        $blockedCount = 0;
+        $alreadyBlockedCount = 0;
+
+        foreach ($numbers as $number) {
+
+            // Already blocked → skip and continue
+            if (BlockedNumber::where('number', $number)->exists()) {
+                $alreadyBlockedCount++;
+                continue;
+            }
+
+            // Only add to blocked_numbers
+            BlockedNumber::create([
+                'number'           => $number,
+                'occurrence_count' => 0,
+                'blocked_at'       => now(),
+            ]);
+
+            $blockedCount++;
+        }
+
+        $message = "{$blockedCount} number(s) added to block list.";
+
+        if ($alreadyBlockedCount > 0) {
+            $message .= " {$alreadyBlockedCount} number(s) already blocked and skipped.";
+        }
+
+        return back()->with('success', $message);
     }
 }

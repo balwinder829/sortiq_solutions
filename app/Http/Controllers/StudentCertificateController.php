@@ -144,7 +144,7 @@ class StudentCertificateController extends Controller
     {
         try {
             $request->validate([
-                'certificateId' => 'required|integer',
+                'certificateId' => 'required',
             ]);
 
            
@@ -155,12 +155,21 @@ class StudentCertificateController extends Controller
             ->where('sno', $request->certificateId)
             ->get();
 
-            if (!$allCertificates) {
+
+            // No certificate found
+            if ($allCertificates->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Unverified certificate.'
+                    'message' => 'No certificate found. Please check the certificate number.'
                 ]);
             }
+
+            // if (!$allCertificates) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'Unverified certificate.'
+            //     ]);
+            // }
 
             $all_certificates = [];
             foreach($allCertificates as $certificate) {

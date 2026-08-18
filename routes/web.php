@@ -1153,6 +1153,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/students/copy', [StudentController::class, 'copyStudents'])->name('students.copy');
         Route::post('/students/make_interns', [StudentController::class, 'makeInterns'])->name('students.make_interns');
+        Route::post(
+            '/students/bulk-block-numbers',
+            [StudentController::class, 'bulkBlockNumbers']
+        )->name('students.bulkBlockNumbers');
 
         Route::post('/students/move_to_dropout', [StudentController::class, 'moveToDropout'])->name('students.move_to_dropout');
 

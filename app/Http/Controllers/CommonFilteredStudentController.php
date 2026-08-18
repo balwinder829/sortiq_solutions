@@ -150,6 +150,19 @@ class CommonFilteredStudentController extends Controller
                 $query->where('is_online', $request->is_online);
             }
 
+            if ($request->filled('is_intern')) {
+                $query->where('is_intern', $request->is_intern);
+            }
+
+            if ($request->filled('confirmation_sent')) {
+                $query->where('confirmation_sent', $request->confirmation_sent);
+            }
+
+            if ($request->filled('next_due_date')) {
+                $query->whereDate('next_due_date', $request->next_due_date)
+                      ->where('pending_fees', '>', 0);
+            }
+
             if ($request->filled('fee_filter')) {
                 switch ($request->fee_filter) {
 
@@ -177,6 +190,10 @@ class CommonFilteredStudentController extends Controller
 
                     case 'fees_low':
                         $query->orderBy('total_fees', 'asc');
+                        break;
+
+                    case 'not_paid':
+                        $query->where('paid_fees', '<', 1);
                         break;
                 }
             }

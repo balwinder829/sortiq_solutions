@@ -733,7 +733,9 @@ Copy to Session
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
-                <td>{{ $student->sessionData->session_name ?? '-' }}</td>
+                <td>
+                    {{ $student->sessionData->session_display_name ?? $student->sessionData->session_name ?? '-' }}
+                </td>
                 <td>{{ $student->collegeData->FullName ?? '-' }}</td>
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
@@ -1140,10 +1142,26 @@ Copy to Session
     <button id="markCertificateSent" class="btn btn-success">Mark Confirmaton Sent</button>
     <button id="markCertificateNotSent" class="btn btn-secondary">Mark Confirmaton Not Sent</button>
     <button id="editBulkStudents" class="btn btn-secondary">Edit Students</button>
+    <button id="blockSelected" class="btn btn-danger">Block Numbers</button>
+
 
 </div>
 
 </div>
+
+{{-- Block selected student numbers --}}
+<form id="bulkBlockForm"
+      method="POST"
+      action="{{ route('students.bulkBlockNumbers') }}"
+      style="display:none;">
+
+    @csrf
+
+    <input type="hidden"
+           name="ids"
+           id="bulkBlockIds">
+
+</form>
 
 {{-- Hidden form for bulk issuing (submits like single-row form) --}}
 <input type="hidden" id="isInternshipHidden">
@@ -2049,6 +2067,43 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
                 $('#deleteIds').val(JSON.stringify(ids));
                 $('#bulkDeleteForm').submit();
             });
+        });
+
+
+        $('#blockSelected').click(function () {
+
+            let ids = getSelectedIds();
+
+            console.log('Block Numbers IDs:', JSON.stringify(ids));
+
+            if (ids.length === 0) {
+
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Select at least one student'
+                });
+
+                return;
+            }
+
+            Swal.fire({
+                title: 'Block Numbers?',
+                text: 'Selected contact numbers will be added to the block list.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Block',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                $('#bulkBlockIds').val(JSON.stringify(ids));
+
+                $('#bulkBlockForm').submit();
+            });
+
         });
 
         $('#copySelected').on('click', function () {

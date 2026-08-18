@@ -533,7 +533,9 @@ value="{{ request('registration_fee') }}">
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
-                <td>{{ $student->sessionData->session_name ?? '-' }}</td>
+                <td>
+                    {{ $student->sessionData->session_display_name ?? $student->sessionData->session_name ?? '-' }}
+                </td>
                 <td>{{ $student->collegeData->FullName ?? '-' }}</td>
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
@@ -670,10 +672,25 @@ value="{{ request('registration_fee') }}">
         <button id="markCertificateNotSent" class="btn btn-secondary mt-0 ml-2">Mark Certificate Not Sent</button>
         <button id="movedropout" class="btn btn-success">Move to Dropout</button>
         <button id="editBulkStudents" class="btn btn-primary">Edit Students</button>
+        <button id="blockSelected" class="btn btn-danger">Block Numbers</button>
     </div>
 
      
 </div>
+
+{{-- Block selected student numbers --}}
+<form id="bulkBlockForm"
+      method="POST"
+      action="{{ route('students.bulkBlockNumbers') }}"
+      style="display:none;">
+
+    @csrf
+
+    <input type="hidden"
+           name="ids"
+           id="bulkBlockIds">
+
+</form>
 
 {{-- Hidden form for bulk issuing (submits like single-row form) --}}
 <form id="bulkIssueForm" method="POST" action="{{ route('students.issueMultiple') }}" style="display:none;">
@@ -1185,7 +1202,7 @@ $(document).ready(function () {
         );
 
         // console.log('selectedStudents', selectedStudents);
-        // console.log('getSelectedIds()', getSelectedIds());
+        // console.log('in syncCheckAll', getSelectedIds());
     }
 
     table.on('draw.dt', function () {
@@ -1250,7 +1267,7 @@ $(document).ready(function () {
             }
 
         });
-
+        // console.log('in getseelcted fn', selectedStudents);
         return selectedStudents;
     }
 
@@ -1499,7 +1516,12 @@ $('#markCertificateNotSent').click(function () {
 $('#editBulkStudents').click(function () {
 
     let idss = getSelectedIds();
-console.log(idss);
+// console.log(idss);
+
+//  console.log('getSelectedIds direct:', getSelectedIds());
+//     console.log('idss:', idss);
+//     console.log('count direct:', getSelectedIds().length);
+//     console.log('count idss:', idss.length);
     if (idss.length === 0) {
 
         Swal.fire({
@@ -1568,6 +1590,42 @@ $('#bulkEditModal').on('shown.bs.modal', function () {
             });
         });
 
+     $('#blockSelected').click(function () {
+
+            let ids = getSelectedIds();
+
+            console.log('Block Numbers IDs:', JSON.stringify(ids));
+
+            if (ids.length === 0) {
+
+                Swal.fire({
+                    icon: 'warning',
+                    text: 'Select at least one student'
+                });
+
+                return;
+            }
+
+            Swal.fire({
+                title: 'Block Numbers?',
+                text: 'Selected contact numbers will be added to the block list.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Block',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                $('#bulkBlockIds').val(JSON.stringify(ids));
+
+                $('#bulkBlockForm').submit();
+            });
+
+        });
+
      $('#moveToPlacement').click(function () {
 
             let ids = getSelectedIds();
@@ -1592,6 +1650,22 @@ $('#bulkEditModal').on('shown.bs.modal', function () {
 
                 $('#bulkPlacementIds').val(JSON.stringify(ids));
                 $('#bulkPlacementForm').submit();
+            });
+        });
+
+
+     $('#deleteSelected').click(function() {
+            var ids = getSelectedIds();
+
+            // if(ids.length === 0) {
+            //     alert('Select at least one student');
+            //     return;
+            // }
+            pageBulkConfirm(ids, 'Delete selected students?', function () {
+            // if(confirm('Delete selected students?')) {
+                // $('#deleteIds').val(ids);
+                $('#deleteIds').val(JSON.stringify(ids));
+                $('#bulkDeleteForm').submit();
             });
         });
 

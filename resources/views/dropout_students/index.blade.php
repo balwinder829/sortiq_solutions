@@ -714,7 +714,9 @@ class="btn btn-primary">Without Fee Download Excel</a> -->
                 <td>{{ $student->student_name }}</td>
                 <td>{{ $student->f_name }}</td>
                 <td>{{ $student->gender }}</td>
-                <td>{{ $student->sessionData->session_name ?? '-' }}</td>
+                <td>
+                    {{ $student->sessionData->session_display_name ?? $student->sessionData->session_name ?? '-' }}
+                </td>
                 <td>{{ $student->collegeData->FullName ?? '-' }}</td>
                 <td>{{ $student->contact }}</td>
                 <td>{{ $student->email_id }}</td>
@@ -734,7 +736,9 @@ class="btn btn-primary">Without Fee Download Excel</a> -->
                 <td>{{ \Carbon\Carbon::parse($student->join_date)->format('d M Y') }}</td>
                 
                 <!-- <td>{{ $student->durationData->name ?? '-' }}</td> -->
-                <td>{{ $student->sessionData->session_display_name ?? '-' }}</td>
+                <td>
+                    {{ $student->sessionData->session_display_name ?? $student->sessionData->session_name ?? '-' }}
+                </td>
                 <td>{{ \Carbon\Carbon::parse($student->start_date)->format('d M Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->end_date)->format('d M Y') }}</td>
                 <td class="text-center">
