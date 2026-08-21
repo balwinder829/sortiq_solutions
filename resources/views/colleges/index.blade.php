@@ -277,6 +277,9 @@ input:checked + .slider:before {
                 <th>State</th>
                 <th>District</th>
                 <th>Students</th>
+                <th>Confirmation</th>
+                <th>Certificate</th>
+                <!-- <th>Dropout</th> -->
                 <th>College Type</th>
                 <th>Offer Training</th>
                 <th>No of times in year</th>
@@ -533,11 +536,30 @@ $(document).ready(function () {
             { data: 4, name: 'state' },
             { data: 5, name: 'district' },
             { data: 6, name: 'students_count', orderable: true, searchable: false },
-            { data: 7, name: 'college_type' },
-            { data: 8, name: 'offer_training' },
-            { data: 9, name: 'training_in_year' },
+            { 
+                data: 7,
+                name: 'confirmation_students_count',
+                orderable: true,
+                searchable: false
+            },
+
+            { 
+                data: 8,
+                name: 'certificate_students_count',
+                orderable: true,
+                searchable: false
+            },
+            // { 
+            //     data: 9,
+            //     name: 'certificate_students_count',
+            //     orderable: true,
+            //     searchable: false
+            // },
+            { data: 9, name: 'college_type' },
+            { data: 10, name: 'offer_training' },
+            { data: 11, name: 'training_in_year' },
             // { data: 8, name: 'call_status', orderable: false, searchable: false },
-            { data: 10, name: 'actions', orderable: false, searchable: false }
+            { data: 12, name: 'actions', orderable: false, searchable: false }
         ],
         pageLength: 50,
         lengthMenu: [5, 10, 25, 50, 100],

@@ -1044,12 +1044,12 @@ body.menu-toggle .sidebar-collapse-btn{
                 </li> -->
 
                 {{-- HR Management --}}
-                <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*','jd*']) }}">
+                <li class="{{ isParent(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*','jd*','admin.visitor_records*','admin.interview_candidates*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fa-regular fa-file-lines"></i>
                         <span class="nav-text">HR Management </span>
                     </a>
-                    <ul class="{{ showSubmenu(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*','jd*']) }}">
+                    <ul class="{{ showSubmenu(['attendance*','employees*','letters*','salary-slips*','accepted-letters*','managements_letters*','jd*','admin.visitor_records*','admin.interview_candidates*']) }}">
                         <li>
                             <a class="{{ isChildActive('employees*') }}"
                                 href="{{ route('employees.index') }}">
@@ -1101,6 +1101,18 @@ body.menu-toggle .sidebar-collapse-btn{
                             <a class="{{ isChildActive('admin.employee.leave*') }}"
                                 href="{{ route('admin.employee.leave.index') }}">
                                 Employees Leaves
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('admin.visitor_records*') }}"
+                                href="{{ route('admin.visitor_records.index') }}">
+                                Visitor's Record
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('admin.interview_candidates*') }}"
+                                href="{{ route('admin.interview_candidates.index') }}">
+                                Interview Candidates
                             </a>
                         </li>
                         

@@ -105,8 +105,39 @@
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
-
         {{-- Technology --}}
+<div class="form-group col-md-6">
+    <label>Technology</label>
+
+    @php
+        $selectedTech = old('technology', []);
+    @endphp
+
+    <select name="technology[]"
+            class="form-control technology select2 @error('technology') is-invalid @enderror"
+            id="txttechnology"
+            multiple
+             data-placeholder="Select technology"
+            required>
+
+        @foreach($courses as $course)
+            <option value="{{ $course->id }}"
+                {{ in_array($course->id, $selectedTech) ? 'selected' : '' }}>
+                {{ $course->course_name }}
+            </option>
+        @endforeach
+
+    </select>
+
+    <small class="text-muted">
+        Hold Ctrl (Windows) or Cmd (Mac) to select multiple Technologies.
+    </small>
+
+    @error('technology')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
+</div>
+       <!--  {{-- Technology --}}
         <div class="form-group col-md-6">
             <label>Technology</label>
             <select name="technology[]" 
@@ -126,7 +157,7 @@
             @error('technology')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
-        </div>
+        </div> -->
 
         {{-- Status --}}
         <div class="form-group col-md-6">
@@ -145,4 +176,6 @@
 </div>
     </form>
 </div>
+
+
 @endsection

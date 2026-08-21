@@ -131,7 +131,7 @@
                 <option value="inactive" {{ $trainer->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
             </select>
         </div>
-
+<!-- 
         {{-- Technology (MULTIPLE) --}}
         <div class="form-group col-md-6">
             <label>Technology</label>
@@ -158,7 +158,45 @@
             @error('technology')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
-        </div>
+        </div> -->
+
+        {{-- Technology --}}
+<div class="form-group col-md-6">
+    <label>Technology</label>
+
+    @php
+        $selectedTech = old(
+            'technology',
+            $trainer->technology
+                ? explode(',', $trainer->technology)
+                : []
+        );
+    @endphp
+
+    <select name="technology[]"
+            class="form-control technology select2 @error('technology') is-invalid @enderror"
+            id="txttechnology"
+            multiple
+            data-placeholder="Select technology"
+            required>
+
+        @foreach($courses as $course)
+            <option value="{{ $course->id }}"
+                {{ in_array($course->id, $selectedTech) ? 'selected' : '' }}>
+                {{ $course->course_name }}
+            </option>
+        @endforeach
+
+    </select>
+
+    <small class="text-muted">
+        Hold Ctrl (Windows) or Cmd (Mac) to select multiple Technologies.
+    </small>
+
+    @error('technology')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
+</div>
 
 
         <div class="form-group col-md-12">

@@ -172,6 +172,12 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\TestAnalyticsController;
 use App\Http\Controllers\Sales\ClosedDataController;
 
+use App\Http\Controllers\VisitorRecordController as FrontVisitorRecordController;;
+use App\Http\Controllers\Admin\VisitorRecordController;
+
+use App\Http\Controllers\InterviewCandidateController as FrontInterviewCandidateController;
+use App\Http\Controllers\Admin\InterviewCandidateController as AdminInterviewCandidateController;
+
 
  Route::get('/download/{file}', function ($file) {
             $path = storage_path('app/public/whatsapp-files/' . $file);
@@ -212,6 +218,17 @@ Route::post('/student/leave/apply', [StudentLeaveController::class, 'store'])
 Route::get('/register_student', [StudentRegistrationController::class, 'create'])->name('student.register.form');
 Route::post('/join_student', [StudentRegistrationController::class, 'store'])->name('student.register');
 
+Route::get('/visit-office', [FrontVisitorRecordController::class, 'create'])
+    ->name('visitor.create');
+
+Route::post('/visit-office', [FrontVisitorRecordController::class, 'store'])
+    ->name('visitor.store');
+
+Route::get('/schedule-interview', [FrontInterviewCandidateController::class, 'create'])
+    ->name('interview.create');
+
+Route::post('/schedule-interview', [FrontInterviewCandidateController::class, 'store'])
+    ->name('interview.store');
 
 Route::model('external_attendance', ExternalAttendanceTest::class);
 
@@ -1018,6 +1035,49 @@ Route::middleware(['auth'])->group(function () {
             'student-custom-letters',
             StudentCustomLetterController::class
     );
+
+    Route::get('/visitor-records', [VisitorRecordController::class, 'index'])
+        ->name('admin.visitor_records.index');
+
+    Route::get('/visitor-records/{id}/edit', [VisitorRecordController::class, 'edit'])
+        ->name('admin.visitor_records.edit');
+
+    Route::put('/visitor-records/{id}', [VisitorRecordController::class, 'update'])
+        ->name('admin.visitor_records.update');
+
+    Route::delete('/visitor-records/{id}', [VisitorRecordController::class, 'destroy'])
+        ->name('admin.visitor_records.destroy');
+
+    Route::get('/visitor-records/{id}', [
+        VisitorRecordController::class,
+        'show'
+    ])->name('admin.visitor_records.show');
+
+
+    Route::get('/interview-candidates', [
+        AdminInterviewCandidateController::class,
+        'index'
+    ])->name('admin.interview_candidates.index');
+
+    Route::get('/interview-candidates/{id}/edit', [
+        AdminInterviewCandidateController::class,
+        'edit'
+    ])->name('admin.interview_candidates.edit');
+
+    Route::put('/interview-candidates/{id}', [
+        AdminInterviewCandidateController::class,
+        'update'
+    ])->name('admin.interview_candidates.update');
+
+    Route::delete('/interview-candidates/{id}', [
+        AdminInterviewCandidateController::class,
+        'destroy'
+    ])->name('admin.interview_candidates.destroy');
+
+    Route::get('/interview-candidates/{id}', [
+        AdminInterviewCandidateController::class,
+        'show'
+    ])->name('admin.interview_candidates.show');
 
     Route::get(
         'student-custom-letters/{studentCustomLetter}/pdf',

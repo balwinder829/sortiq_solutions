@@ -59,10 +59,36 @@ class CollegeController extends Controller
 
         $query = College::query()
             ->with(['state', 'district'])
+            // ->withCount([
+            //     'students as students_count' => function ($q) use ($activeSessionId) {
+            //         $q->where('session', $activeSessionId);
+            //     }
+            // ]);
+
             ->withCount([
+                // Total students
                 'students as students_count' => function ($q) use ($activeSessionId) {
                     $q->where('session', $activeSessionId);
-                }
+                },
+
+                // Confirmation students
+                'students as confirmation_students_count' => function ($q) use ($activeSessionId) {
+                    $q->where('session', $activeSessionId)
+                      ->where('certificate_status', 0);
+                },
+
+                // Certificate students
+                'students as certificate_students_count' => function ($q) use ($activeSessionId) {
+                    $q->where('session', $activeSessionId)
+                      ->whereIn('certificate_status', [1, 2])
+                        ->where('send_to_close', 0);
+                },
+
+                // Dropout
+                // 'students as dropout_students_count' => function ($q) use ($activeSessionId) {
+                //     $q->where('session', $activeSessionId)
+                //       ->where('certificate_status', 4);
+                // },
             ]);
 
         // State filter (by state name from dropdown)
@@ -150,9 +176,12 @@ class CollegeController extends Controller
             3 => 'state',
             4 => 'district',
             5 => 'students_count',
-            6 => 'college_type',
-            7 => 'offer_training',
-            8 => 'training_in_year'
+            6 => 'confirmation_students_count',
+            7 => 'certificate_students_count',
+            // 8 => 'dropout_students_count',
+            8 => 'college_type',
+            9 => 'offer_training',
+            10 => 'training_in_year'
         ];
 
         $orderField = $orderable[$orderCol] ?? null;
@@ -269,6 +298,37 @@ class CollegeController extends Controller
                 $college->state->name ?? '-',
                 $college->district->name ?? '-',
                 '<a href="' . route('common_filtered_student', ['college_name' => $college->id]) . '" class="text-decoration-none"><span class="badge bg-success">' . $college->students_count . '</span></a>',
+
+                // Total
+                
+
+                    // Confirmation
+                    '<a href="' . route('students.index', [
+                        'college_name' => $college->id
+                    ]) . '" class="text-decoration-none">
+                        <span class="badge bg-info">'
+                            . $college->confirmation_students_count .
+                        '</span>
+                    </a>',
+
+                    // Certificate
+                    '<a href="' . route('certificates.index', [
+                        'college_name' => $college->id
+                        
+                    ]) . '" class="text-decoration-none">
+                        <span class="badge bg-primary">'
+                            . $college->certificate_students_count .
+                        '</span>
+                    </a>',
+
+                    // Dropout
+                    // '<a href="' . route('dropout-students.index', [
+                    //     'college_name' => $college->id
+                    // ]) . '" class="text-decoration-none">
+                    //     <span class="badge bg-danger">'
+                    //         . $college->dropout_students_count .
+                    //     '</span>
+                    // </a>',
                 $collegeType,
                 $training,
                 $college->training_in_year,
