@@ -56,9 +56,10 @@ class CollegeController extends Controller
     public function data(Request $request)
     {
         $activeSessionId = session('admin_session_id');
-
+        $status = $request->get('status', 'active');
         $query = College::query()
             ->with(['state', 'district'])
+            ->where('colleges.status', $status)
             // ->withCount([
             //     'students as students_count' => function ($q) use ($activeSessionId) {
             //         $q->where('session', $activeSessionId);
@@ -891,6 +892,7 @@ public function exportExcel(Request $request)
             'connection_type'   => 'nullable|in:0,1',
             'departments'       => 'nullable|array',
             'departments.*'     => 'string',
+            'status' => 'nullable|in:active,closed,blocked',
         ]);
 
         $ids = array_filter(explode(',', $request->ids));
@@ -936,6 +938,11 @@ public function exportExcel(Request $request)
         // Departments
         if ($request->has('departments')) {
             $updateData['departments'] = $request->departments ?? [];
+        }
+
+        // Status
+        if ($request->status !== null && $request->status !== '') {
+            $updateData['status'] = $request->status;
         }
 
         if (empty($updateData)) {

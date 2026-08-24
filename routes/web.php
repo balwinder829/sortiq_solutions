@@ -177,7 +177,11 @@ use App\Http\Controllers\Admin\VisitorRecordController;
 
 use App\Http\Controllers\InterviewCandidateController as FrontInterviewCandidateController;
 use App\Http\Controllers\Admin\InterviewCandidateController as AdminInterviewCandidateController;
+use App\Http\Controllers\PlacementFrontendController;
 
+
+Route::get('/placed-students', [PlacementFrontendController::class, 'index'])
+    ->name('placements.index');
 
  Route::get('/download/{file}', function ($file) {
             $path = storage_path('app/public/whatsapp-files/' . $file);
