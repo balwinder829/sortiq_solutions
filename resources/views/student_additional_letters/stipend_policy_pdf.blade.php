@@ -74,6 +74,7 @@
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:5px; font-family: 'Inter', sans-serif;">
                         Intern Name: {{ ucwords($letter->student->student_name) }}<br>
+                        Father’s Name: {{ ucwords($letter->student->f_name) }}<br>
                         Internship Domain: ____________________________<br>
                         College/Institute: {{ $collegeOrPlace }}<br>
                         Internship Duration: ___________________________<br>
@@ -144,7 +145,7 @@
                                     Task completion<br>
                                     Project contribution<br>
                                     Assignment submission<br>
-                                    Practical implementation<br>
+                                    
                                 </td>
                             </tr>
                         </table>
@@ -159,6 +160,7 @@
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
+                                    Practical implementation<br>
                                     Communication and reporting<br>
                                     Discipline and professionalism<br>
                                     Attendance and punctuality</b>

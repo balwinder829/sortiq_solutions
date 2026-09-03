@@ -216,8 +216,12 @@ class WorkshopController extends Controller
                 $dateText = 'in ' . $diff . ' days';
             }
             $rowNum = $start + $index + 1;
+            $checkbox = '<input type="checkbox"
+                class="record_checked"
+                value="' . $workshop->id . '">';
 
             return [
+                $checkbox,
                 $rowNum,
                 e($workshop->title),                          // Title (using name column)
                 e(optional($workshop->college)->FullName),   // College
@@ -510,4 +514,50 @@ public function analytics(Request $request)
         ]
     ]);
 }
+
+    public function bulkUpdate(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|json',
+            'status' => 'nullable|in:done,decided,meeting,hold,cancel',
+            'type' => 'nullable|in:office,campus',
+            'event_type' => 'nullable|in:seminar,placement_drive,both',
+        ]);
+
+        $ids = json_decode($request->ids, true);
+
+        if (!is_array($ids) || empty($ids)) {
+            return back()->with('error', 'No workshops selected.');
+        }
+
+        /*
+         * Only update fields that were actually selected.
+         * Empty value = Keep Existing
+         */
+        $updateData = [];
+
+        if ($request->filled('status')) {
+            $updateData['status'] = $request->status;
+        }
+
+        if ($request->filled('type')) {
+            $updateData['type'] = $request->type;
+        }
+
+        if ($request->filled('event_type')) {
+            $updateData['event_type'] = $request->event_type;
+        }
+
+        if (empty($updateData)) {
+            return back()->with('error', 'Please select at least one field to update.');
+        }
+
+        $updatedCount = Workshop::whereIn('id', $ids)
+            ->update($updateData);
+
+        return back()->with(
+            'success',
+            "{$updatedCount} workshop(s) updated successfully."
+        );
+    }
 }

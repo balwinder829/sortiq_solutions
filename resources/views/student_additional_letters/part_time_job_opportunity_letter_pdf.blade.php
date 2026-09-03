@@ -88,6 +88,16 @@
           ? Carbon::parse($letter->student->end_date)->format($format)
           : '';
 
+          $gender = strtolower($letter->student->gender ?? '');
+
+            $title = ($gender === 'female')
+                        ? ($letter->student->is_married ? 'Mrs' : 'Miss')
+                        : 'Mr';
+
+            $relation = ($gender === 'female')
+                            ? ($letter->student->is_married ? 'W/O' : 'D/O')
+                            : 'S/O';
+
                 @endphp
 
                 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:30px;">
@@ -107,7 +117,7 @@
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:10px; font-family: 'Inter', sans-serif;">                        Dear Sir/Madam,                 </td>
                   </tr>
                   <tr>
-                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:10px; font-family: 'Inter', sans-serif; text-align:justify;">We are pleased to confirm that <strong>{{ ucwords($letter->student->student_name) }},</strong> a student of your esteemed institution, has been enrolled in our <strong>{{ ucwords($sessionName) }}</strong> Training Program for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>.                 </td>
+                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:10px; font-family: 'Inter', sans-serif; text-align:justify;">We are pleased to confirm that <strong>{{ ucwords($letter->student->student_name) }},</strong> {{ $relation}} <strong>{{ ucwords($letter->student->father_name_with_title) }}</strong> a student of your esteemed institution, has been enrolled in our <strong>{{ ucwords($sessionName) }}</strong> Training Program for the session <strong>{{ $sessionStart }}</strong> to <strong>{{ $sessionEnd }}</strong>.                 </td>
                   </tr>
                   <tr>
                      <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:10px; font-family: 'Inter', sans-serif; text-align:justify;">

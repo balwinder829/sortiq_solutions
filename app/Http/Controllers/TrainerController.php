@@ -111,6 +111,182 @@ class TrainerController extends Controller
     }
 
     public function data(Request $request)
+{
+    $currentSession = session('admin_session_id');
+    $today = now()->toDateString();
+    $currentTime = now()->format('H:i:s');
+
+    $trainersQuery = Trainer::withCount([
+        'batches as session_batches_count' => function ($q) use ($currentSession) {
+            $q->where('session_name', $currentSession);
+        },
+        'batches as online_batches_count' => function ($q) use ($currentSession) {
+            $q->where('session_name', $currentSession)->where('batch_mode', 'online');
+        },
+        'batches as offline_batches_count' => function ($q) use ($currentSession) {
+            $q->where('session_name', $currentSession)->where('batch_mode', 'offline');
+        },
+        'batches as today_remaining_batches_count' => function ($q) use ($today, $currentTime) {
+            $q->whereDate('start_time', $today)->where('end_time', '>', $currentTime);
+        },
+    ]);
+
+    if ($request->filled('course')) {
+        $trainersQuery->whereRaw('FIND_IN_SET(?, technology)', [$request->course]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS FILTER - NEW
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('status')) {
+        $trainersQuery->where('status', $request->status);
+    }
+
+    $trainersQuery = $trainersQuery->latest('updated_at');
+
+    return DataTablesServerSide::response($request, $trainersQuery, [
+        'orderable'  => ['id', 'username', 'name', 'gender', 'phone', 'email', 'technology'],
+        'searchable' => ['username', 'name', 'email', 'phone'],
+    ], function ($trainer, $index, $start) {
+
+        $techIds = $trainer->technology ? explode(',', $trainer->technology) : [];
+
+        $techNames = Course::whereIn('id', $techIds)->pluck('course_name');
+
+        $techHtml = '';
+
+        foreach ($techNames as $name) {
+            $techHtml .= '<span class="badge bg-primary">' . e($name) . '</span> ';
+        }
+
+        $totalBat = '<div class="batch-circle batch-link" data-id="' . $trainer->id . '" data-name="' . e($trainer->name ?? 'N/A') . '" data-type="all" title="View All Batches">' . (int) ($trainer->session_batches_count ?? 0) . '</div>';
+
+        $onlineBat = '<div class="batch-circle" style="background:#198754" title="Online Batches">' . (int) ($trainer->online_batches_count ?? 0) . '</div>';
+
+        $offlineBat = '<div class="batch-circle" style="background:#fd7e14" title="Offline Batches">' . (int) ($trainer->offline_batches_count ?? 0) . '</div>';
+
+        $todayBat = '<div class="batch-circle batch-link" data-id="' . $trainer->id . '" data-name="' . e($trainer->name ?? 'N/A') . '" data-type="remaining" title="View Today\'s Remaining Batches">' . (int) ($trainer->today_remaining_batches_count ?? 0) . '</div>';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIONS
+        |--------------------------------------------------------------------------
+        */
+
+       $actions = '<div class="d-flex align-items-center gap-1">';
+
+
+// EDIT
+$actions .= '
+    <a href="' . route('trainers.edit', $trainer->id) . '"
+       class="btn btn-sm"
+       title="Edit">
+        <i class="fa fa-edit"></i>
+    </a>
+';
+
+
+// ACTIVE / INACTIVE
+if ($trainer->status === 'active') {
+
+    $actions .= '
+        <form
+            action="' . route('trainers.toggleStatus', $trainer->id) . '"
+            method="POST"
+            class="d-inline m-0 trainer-action-form"
+            data-title="Deactivate Trainer?"
+            data-text="Are you sure you want to deactivate this trainer?"
+            data-confirm="Yes, Deactivate"
+        >
+            ' . csrf_field() . '
+
+            <button
+                type="submit"
+                class="btn btn-sm"
+                title="Deactivate"
+            >
+                <i class="fa fa-toggle-on"></i>
+            </button>
+        </form>
+    ';
+
+} else {
+
+    $actions .= '
+        <form
+            action="' . route('trainers.toggleStatus', $trainer->id) . '"
+            method="POST"
+            class="d-inline m-0 trainer-action-form"
+            data-title="Activate Trainer?"
+            data-text="Are you sure you want to activate this trainer?"
+            data-confirm="Yes, Activate"
+        >
+            ' . csrf_field() . '
+
+            <button
+                type="submit"
+                class="btn btn-sm"
+                title="Activate"
+            >
+                <i class="fa fa-toggle-off"></i>
+            </button>
+        </form>
+    ';
+
+}
+
+
+// DELETE
+$actions .= '
+    <form
+        action="' . route('trainers.destroy', $trainer->id) . '"
+        method="POST"
+        class="d-inline m-0 trainer-action-form"
+        data-title="Delete Trainer?"
+        data-text="Are you sure you want to delete this trainer?"
+        data-confirm="Yes, Delete"
+    >
+        ' . csrf_field() . '
+        ' . method_field('DELETE') . '
+
+        <button
+            type="submit"
+            class="btn btn-sm"
+            title="Delete"
+        >
+            <i class="fa fa-trash"></i>
+        </button>
+    </form>
+';
+
+
+$actions .= '</div>';
+
+
+        $rowNum = $start + $index + 1;
+
+        return [
+            $rowNum,
+            e($trainer->username ?? ''),
+            ucwords($trainer->name ?? ''),
+            ucfirst($trainer->gender ?? '-'),
+            e($trainer->phone ?? 'N/A'),
+            e($trainer->email ?? 'N/A'),
+            $techHtml,
+            $totalBat,
+            $onlineBat,
+            $offlineBat,
+            $todayBat,
+            $actions,
+        ];
+    });
+}
+
+    public function data_26aug(Request $request)
     {
         $currentSession = session('admin_session_id');
         $today = now()->toDateString();
@@ -168,119 +344,6 @@ class TrainerController extends Controller
                 $actions,
             ];
         });
-    }
-
-
-    public function index2()
-{
-
-
-
-    $currentSession = session('admin_session_id');
-    $today = now()->toDateString();
-    $currentTime = now()->format('H:i:s');
-
-    $trainers = Trainer::whereHas('user', function ($q) {
-        $q->whereNull('deleted_at');
-    })
-    ->with(['user', 'courseData'])
-    ->withCount([
-
-        // 🔵 TOTAL batches in current session
-        'batches as session_batches_count' => function($q) use ($currentSession) {
-            $q->where('session_name', $currentSession);
-        },
-
-        // 🔵 ONLINE batches in current session
-        'batches as online_batches_count' => function($q) use ($currentSession) {
-            $q->where('session_name', $currentSession)
-              ->where('batch_mode', 'online');
-        },
-
-        // 🔵 OFFLINE batches in current session
-        'batches as offline_batches_count' => function($q) use ($currentSession) {
-            $q->where('session_name', $currentSession)
-              ->where('batch_mode', 'offline');
-        },
-
-        // 🔵 TODAY remaining batches (your existing logic, unchanged)
-        'batches as today_remaining_batches_count' => function($q) use ($currentSession, $today, $currentTime) {
-            $q->whereDate('start_time', $today)
-              ->where('end_time', '>', $currentTime);
-        },
-
-    ])
-    ->latest()
-    ->get();
-
-
-    return view('trainers.index', compact('trainers'));
-}
- public function index20jan()
-{
-
-
-
-    $currentSession = session('admin_session_id');
-    $today = now()->toDateString();
-    $currentTime = now()->format('H:i:s');
-
-    $trainers = Trainer::whereHas('user', function ($q) {
-            $q->whereNull('deleted_at');
-        })
-        ->with(['user', 'courseData'])
-        ->withCount([
-            // All batches for this session
-            'batches as session_batches_count' => function($q) use ($currentSession) {
-                $q->where('session_name', $currentSession);
-            },
-
-            // Today remaining batches (pending)
-            // 'batches as today_remaining_batches_count' => function($q) use ($currentSession, $today, $currentTime) {
-            //     $q->where('session_name', $currentSession)
-            //       ->whereDate('start_time', $today)  // USE YOUR BATCH DATE COLUMN HERE
-            //       ->where('end_time', '>', $currentTime); // pending
-            // },
-
-            'batches as today_remaining_batches_count' => function($q) use ($currentSession, $today, $currentTime) {
-                $q->whereDate('start_time', $today)  // USE YOUR BATCH DATE COLUMN HERE
-                  ->where('end_time', '>', $currentTime); // pending
-            },
-        ])
-        ->latest()
-        ->get();
-
-    return view('trainers.index', compact('trainers'));
-}
-
-
-    public function indexOld()
-    {
-        $sessions = StudentSession::all();
-        $colleges = \App\Models\College::all();
-        $courses  = \App\Models\Course::all();
-        $batches  = \App\Models\Batch::all();
-        $departments = \App\Models\Department::all();
-
-        // $trainers = Trainer::with('user')->latest()->get();
-        // $trainers = Trainer::with(['user', 'batches', 'courseData'])->latest()->get();
-        // $trainers = Trainer::with([
-        //     'user' => function ($q) {
-        //         $q->withTrashed();
-        //     },
-        //     'batches',
-        //     'courseData'
-        // ])->latest()->get();
-
-        $trainers = Trainer::whereHas('user', function ($q) {
-            $q->whereNull('deleted_at'); // only active users
-        })
-        ->with(['user', 'batches', 'courseData'])
-        ->latest()
-        ->get();
-
-
-        return view('trainers.index', compact('trainers', 'sessions', 'colleges','batches', 'courses', 'departments'));
     }
 
     public function create()
@@ -406,7 +469,46 @@ class TrainerController extends Controller
     //         ->with('success', 'Trainer deleted successfully!');
     // }
 
+    public function toggleStatus(Trainer $trainer)
+    {
+        if ($trainer->status === 'active') {
+
+            $trainer->status = 'inactive';
+
+        } else {
+
+            $trainer->status = 'active';
+
+        }
+
+        $trainer->save();
+
+        return redirect()
+            ->route('trainers.index')
+            ->with('success', 'Trainer status updated successfully.');
+    }
+
     public function destroy(Trainer $trainer)
+{
+    $hasBatches = Batch::where('batch_assign', $trainer->id)
+        ->whereNull('deleted_at')
+        ->exists();
+
+    if ($hasBatches) {
+        return redirect()
+            ->route('trainers.index')
+            ->with('error', 'Cannot delete trainer because batch is assigned.');
+    }
+
+    $trainer->delete();
+
+    return redirect()
+        ->route('trainers.index')
+        ->with('success', 'Trainer deleted successfully.');
+}
+
+
+    public function destroy_26aug(Trainer $trainer)
     {
         $currentSession = session('admin_session_id');
 
@@ -423,38 +525,7 @@ class TrainerController extends Controller
             ->with('success', 'Trainer deleted successfully!');
     }
 
-    public function destroy27jan(Trainer $trainer)
-    {
-        $currentSession = session('admin_session_id');
-
-        // Check if trainer has ANY batches in this session
-        $sessionBatchCount = Batch::where('batch_assign', $trainer->id)
-            ->where('session_name', $currentSession)
-            ->count();
-
-        if ($sessionBatchCount > 0) {
-            return redirect()->route('trainers.index')
-                ->with('error', 'Cannot delete trainer because they have assigned batches in the active session.');
-        }
-
-        // Optional: Check ANY batches globally
-        $totalBatchCount = Batch::where('batch_assign', $trainer->id)->count();
-
-        if ($totalBatchCount > 0) {
-            return redirect()->route('trainers.index')
-                ->with('error', 'Cannot delete trainer because they have assigned batches.');
-        }
-
-        // Safe delete both user and trainer
-        if ($trainer->user) {
-            $trainer->user->delete(); // Soft delete user
-        }
-
-        $trainer->delete(); // Soft delete trainer
-
-        return redirect()->route('trainers.index')
-            ->with('success', 'Trainer deleted successfully!');
-    }
+    
 
 
     public function batchesAjax($trainerId)

@@ -71,6 +71,14 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
                 $query->where('is_online', $request->is_online);
             }
 
+            if ($request->filled('referred_by')) {
+                if ($request->referred_by === 'direct') {
+                    $query->whereNull('referred_by');
+                } else {
+                    $query->where('referred_by', $request->referred_by);
+                }
+            }
+
             if ($request->filled('registration_fee')) {
                 $query->where('reg_fees', $request->registration_fee);
             }

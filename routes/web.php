@@ -179,9 +179,18 @@ use App\Http\Controllers\InterviewCandidateController as FrontInterviewCandidate
 use App\Http\Controllers\Admin\InterviewCandidateController as AdminInterviewCandidateController;
 use App\Http\Controllers\PlacementFrontendController;
 
+use App\Http\Controllers\StudentFeedbackController;
+use App\Http\Controllers\StudentFeedbackAdminController;
+
+Route::get('/student-feedback', [StudentFeedbackController::class, 'create'])
+    ->name('student-feedback.create');
+
+Route::post('/student-feedback', [StudentFeedbackController::class, 'store'])
+    ->name('student-feedback.store');
+
 
 Route::get('/placed-students', [PlacementFrontendController::class, 'index'])
-    ->name('placements.index');
+    ->name('front_placements.index');
 
  Route::get('/download/{file}', function ($file) {
             $path = storage_path('app/public/whatsapp-files/' . $file);
@@ -464,6 +473,10 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
 
         // });
 
+            Route::post(
+                '/college-emails/bulk-mark-manually-sent',
+                [CollegeEmailController::class, 'bulkMarkManuallySent']
+            )->name('college-emails.bulkMarkManuallySent');
 
         Route::prefix('college-emails')->name('college-emails.')->group(function () {
 
@@ -1057,6 +1070,35 @@ Route::middleware(['auth'])->group(function () {
         'show'
     ])->name('admin.visitor_records.show');
 
+    Route::get('/student-feedback', [
+            StudentFeedbackAdminController::class,
+            'index'
+        ])->name('admin.student_feedback.index');
+
+        Route::get('/student-feedback/data', [
+            StudentFeedbackAdminController::class,
+            'data'
+        ])->name('admin.student_feedback.data');
+
+        Route::get('/student-feedback/{id}', [
+            StudentFeedbackAdminController::class,
+            'show'
+        ])->name('admin.student_feedback.show');
+
+        Route::patch('/student-feedback/{id}/status', [
+            StudentFeedbackAdminController::class,
+            'updateStatus'
+        ])->name('admin.student_feedback.status');
+
+        Route::delete('/student-feedback/{id}', [
+            StudentFeedbackAdminController::class,
+            'destroy'
+        ])->name('admin.student_feedback.destroy');
+
+        Route::patch('/student-feedback/{id}/note', [
+            StudentFeedbackAdminController::class,
+            'updateNote'
+        ])->name('admin.student_feedback.note');
 
     Route::get('/interview-candidates', [
         AdminInterviewCandidateController::class,
@@ -1109,6 +1151,11 @@ Route::middleware(['auth'])->group(function () {
         'student-ppt/{studentPpt}/admin-download',
         [StudentPptController::class, 'adminDownload']
     )->name('student_ppt.admin.download');
+
+        Route::post(
+            '/workshops/bulk-update',
+            [WorkshopController::class, 'bulkUpdate']
+        )->name('workshops.bulkUpdate');
 
         Route::get('/workshops/analytics', [WorkshopController::class, 'analytics'])
         ->name('workshops.analytics');
@@ -1908,6 +1955,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('references/data', [ReferenceController::class, 'data'])->name('references.data');
     Route::resource('references', ReferenceController::class);
     Route::resource('student_certificates', StudentCertificateController::class);
+
+    Route::post('/batches/{id}/close', [BatchController::class, 'close'])
+    ->name('batches.close');
+
+    Route::post('/batches/{id}/reopen', [BatchController::class, 'reopen'])
+        ->name('batches.reopen');
+
+    Route::post('/batches/{id}/restore', [BatchController::class, 'restore'])
+        ->name('batches.restore');
+        
     Route::resource('batches', BatchController::class);
 
 
@@ -2093,6 +2150,10 @@ Route::get(
 Route::middleware(['auth'])->group(function () {
 
     // route to download skipped rows: type = txt|csv|xlsx
+    Route::post(
+        '/trainers/{trainer}/toggle-status',
+        [TrainerController::class, 'toggleStatus']
+    )->name('trainers.toggleStatus');
     Route::get('/trainers/import/skipped/download/{type}', [TrainerController::class, 'downloadSkipped'])
         ->name('trainers.skipped.download');
     Route::get('/trainers/data', [TrainerController::class, 'data'])->name('trainers.data');

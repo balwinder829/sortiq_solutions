@@ -24,6 +24,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use ZipArchive;
 use Illuminate\Support\Str;
 use App\Rules\NotBlockedNumber;
+use Illuminate\Support\Facades\DB;
 
 class CertificateController extends Controller
 {
@@ -117,6 +118,14 @@ public function index(Request $request)
         }
         if ($request->filled('is_online')) {
             $query->where('is_online', $request->is_online);
+        }
+
+        if ($request->filled('referred_by')) {
+            if ($request->referred_by === 'direct') {
+                $query->whereNull('referred_by');
+            } else {
+                $query->where('referred_by', $request->referred_by);
+            }
         }
 
         // if ($request->filled('technology')) {
@@ -266,6 +275,12 @@ if (!$request->filled('fee_filter')) {
     $departments = \App\Models\Department::all();
     $student_status = StudentStatus::all();
 
+    $salesStaff = DB::table('sales_staff')
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->orderBy('name')
+            ->get();
+
     $dismissed = session('dismiss_pending_fee');
     $pendingStudents = !$dismissed
                 ? Student::where('pending_fees', '>', 0)
@@ -277,6 +292,8 @@ if (!$request->filled('fee_filter')) {
                     ->get()
                 : collect();
 
+
+
     return view('certificates.index', compact(
         'students',
         'sessions',
@@ -286,6 +303,7 @@ if (!$request->filled('fee_filter')) {
         'departments',
         'users',
         'pendingStudents',
+        'salesStaff',
         'student_status'
     ));
 }
@@ -306,7 +324,13 @@ if (!$request->filled('fee_filter')) {
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
 
-        return view('certificates.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status','activeSession'));
+        $salesStaff = DB::table('sales_staff')
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->orderBy('name')
+            ->get();
+
+        return view('certificates.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status','activeSession','salesStaff'));
         // return view('certificates.edit', compact('student'));
     }
 
@@ -372,6 +396,7 @@ if (!$request->filled('fee_filter')) {
             'is_intern'         => 'required|boolean',
             'is_married'         => 'nullable|boolean',
             'is_online'         => 'nullable|boolean',
+            'referred_by' => 'nullable|exists:sales_staff,id',
         ]);
         // dd('Passed validation', $validates);
          /**

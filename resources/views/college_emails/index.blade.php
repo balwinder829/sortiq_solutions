@@ -9,7 +9,15 @@
             <h3 class="page_heading">Colleges Email Panel</h3>
         </div>
 
+        
+
         <div class="col-md-6 text-end">
+            <button id="markManuallySent"
+                type="button"
+                class="btn btn-success">
+            Manually Sent
+        </button>
+
             <button id="sendSelected" class="btn btn-primary">
                 Send Email (Selected)
             </button>
@@ -436,6 +444,139 @@ $('#filter-range').on('change', function(){
 $('#date_from, #date_to, #filter-range').on('change', function () {
     table.ajax.reload();
 });
+
+// MARK SELECTED COLLEGES AS MANUALLY SENT
+$('#markManuallySent').on('click', function () {
+
+    // No selection
+    if (selectedIds.size === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Selection',
+            text: 'Please select at least one college'
+        });
+
+        return;
+    }
+
+
+    // Confirmation
+    Swal.fire({
+
+        title: 'Mark as Manually Sent?',
+
+        text: 'Selected email records will be marked as sent. No email will be sent.',
+
+        icon: 'question',
+
+        showCancelButton: true,
+
+        confirmButtonText: 'Yes, Mark Sent',
+
+        cancelButtonText: 'Cancel'
+
+    }).then(function (result) {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+
+        // Send selected college IDs to controller
+        $.ajax({
+
+            url: "{{ route('admin.college-emails.bulkMarkManuallySent') }}",
+
+            type: 'POST',
+
+            data: {
+                _token: "{{ csrf_token() }}",
+
+                ids: Array.from(selectedIds),
+
+                purpose_id: $('select[name="purpose_id"]').val(),
+
+                sender_id: $('select[name="sender_id"]').val(),
+
+                subject: $('input[name="subject"]').val(),
+
+                body: $('textarea[name="body"]').val(),
+
+                types: getSelectedTypes()
+            },
+
+            success: function (response) {
+
+                if (response.status) {
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Done',
+                        text: response.message
+                    });
+
+
+                    // Clear selected IDs
+                    selectedIds.clear();
+
+
+                    // Uncheck Select All
+                    $('#checkAll').prop('checked', false);
+
+
+                    // Reload DataTable
+                    table.ajax.reload(null, false);
+
+                }
+
+            },
+
+            error: function (xhr) {
+
+                let message = 'Something went wrong.';
+
+                if (
+                    xhr.responseJSON &&
+                    xhr.responseJSON.message
+                ) {
+                    message = xhr.responseJSON.message;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: message
+                });
+
+            }
+
+        });
+
+    });
+
+});
+
+
+function getSelectedTypes() {
+
+    let types = {};
+
+    $('.type_checkbox:checked').each(function () {
+
+        let collegeId = $(this).data('row');
+        let type = $(this).val();
+
+        if (!types[collegeId]) {
+            types[collegeId] = [];
+        }
+
+        types[collegeId].push(type);
+
+    });
+
+    return types;
+}
 </script>
 
 @endpush

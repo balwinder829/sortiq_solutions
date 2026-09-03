@@ -477,6 +477,25 @@ Online
         </select>
     </div>
 
+    {{-- Referred By --}}
+    <div class="col-md-2">
+        <select name="referred_by" class="form-control filterchange">
+            <option value="">--Referred By--</option>
+
+            <option value="direct"
+                {{ request('referred_by') === 'direct' ? 'selected' : '' }}>
+                Direct
+            </option>
+
+            @foreach($salesStaff as $staff)
+                <option value="{{ $staff->id }}"
+                    {{ request('referred_by') == $staff->id ? 'selected' : '' }}>
+                    {{ $staff->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
 
 
 {{-- Fee Filter --}}

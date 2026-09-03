@@ -151,6 +151,7 @@ $(document).ready(function() {
     var table = $('#pagesTable').DataTable({
         pageLength: 10,
         lengthMenu: [5,10,25,50,100],
+        scrollX: true,
         columnDefs: [
                 {
                     targets: 0, // first column

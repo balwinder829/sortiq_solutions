@@ -22,11 +22,22 @@ class GmailController extends Controller
 
 {
 
-     public function __construct()
+    //  public function __construct()
+    // {
+       
+    //     $this->middleware('permission:gmail_queries.view')->only(['index','replyForm','sendReply']);
+       
+    // }
+
+    public function __construct(GmailService $gmail)
     {
-       
-        $this->middleware('permission:gmail_queries.view')->only(['index','replyForm','sendReply']);
-       
+        $this->gmail = $gmail;
+
+        $this->middleware('permission:gmail_queries.view')->only([
+            'index',
+            'replyForm',
+            'sendReply'
+        ]);
     }
 
 

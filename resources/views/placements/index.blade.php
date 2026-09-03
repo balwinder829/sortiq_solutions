@@ -23,6 +23,48 @@
         </div>
     </div>   
 
+    {{-- PLACED STUDENTS FRONTEND URL --}}
+<div class="row mb-3">
+
+    <div class="col-md-8">
+
+        <label class="form-label fw-bold">
+            Placed Students Page URL
+        </label>
+
+        <div class="input-group">
+
+            <input
+                type="text"
+                id="placementFrontendUrl"
+                class="form-control"
+                style="color: blue;"
+                value="{{ route('front_placements.index') }}"
+                readonly
+            >
+
+            <button
+                type="button"
+                class="btn btn-outline-secondary"
+                id="copyPlacementUrl"
+                title="Copy URL"
+            >
+                <i class="fa fa-copy"></i>
+            </button>
+
+        </div>
+
+        <small
+            id="placementCopyMessage"
+            class="text-success d-none"
+        >
+            Link copied successfully!
+        </small>
+
+    </div>
+
+</div>
+
     {{-- SUCCESS MESSAGE --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
@@ -242,6 +284,43 @@ $(document).on('click', '.placement-img', function(){
 $(document).on('click', '.thumb-img', function(){
     $('#modalMainImage').attr('src', $(this).attr('src'));
 });
+
+$('#copyPlacementUrl').click(function () {
+
+    let url = $('#placementFrontendUrl').val();
+
+    navigator.clipboard.writeText(url).then(function () {
+
+        $('#placementCopyMessage')
+            .removeClass('d-none')
+            .text('Link copied successfully!');
+
+        setTimeout(function () {
+            $('#placementCopyMessage').addClass('d-none');
+        }, 2000);
+
+    }).catch(function () {
+
+        let input = document.getElementById('placementFrontendUrl');
+
+        input.select();
+        input.setSelectionRange(0, 99999);
+
+        document.execCommand('copy');
+
+        $('#placementCopyMessage')
+            .removeClass('d-none')
+            .text('Link copied successfully!');
+
+        setTimeout(function () {
+            $('#placementCopyMessage').addClass('d-none');
+        }, 2000);
+
+    });
+
+});
 </script>
+
+
 
 @endpush

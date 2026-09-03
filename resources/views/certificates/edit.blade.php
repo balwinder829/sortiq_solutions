@@ -253,7 +253,7 @@
                                 <!-- Dates -->
                                 <div class="form-group col-md-6">
                                     <label>Registered date</label>
-                                    <input type="date" name="join_date" class="form-control" id="join_date" required 
+                                    <input type="date" name="join_date" class="form-control" id="join_date1" required 
                                         value="{{ old('join_date', $student->join_date) }}">
                                 </div>
 
@@ -362,6 +362,29 @@
             <option value="1" {{ $student->is_placed == 1 ? 'selected' : '' }}>Placed</option>
         </select>
     </div>
+
+    <div class="col-md-6">
+            <label for="referred_by" class="form-label">
+                Referred By
+            </label>
+
+            <select name="referred_by"
+                    id="referred_by"
+                    class="form-select">
+
+                <option value="">
+                    Direct
+                </option>
+
+                @foreach($salesStaff as $staff)
+                    <option value="{{ $staff->id }}"
+                        {{ old('referred_by', $student->referred_by) == $staff->id ? 'selected' : '' }}>
+                        {{ $staff->name }}
+                    </option>
+                @endforeach
+
+            </select>
+        </div>
 
     <div class="form-group col-md-6">
                 <label>Address</label>

@@ -3,6 +3,8 @@
 @section('content')
  
 <div class="container">
+
+    
     <form method="POST" action="{{ route('students.store') }}">
         @csrf
 
@@ -259,7 +261,7 @@
                 
                     <div class="form-group col-md-6">
                         <label>Registered Date</label>
-                        <input type="date" name="join_date" class="form-control" id="join_date"
+                        <input type="date" name="join_date" class="form-control" id="join_date1"
                             value="{{ old('join_date') }}" >
                         <small class="text-danger d-none" id="join_error">
                             Sunday is not allowed
@@ -397,6 +399,29 @@
                     @endforeach
                 </select>
                 @error('reference') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="col-md-6">
+                <label for="referred_by" class="form-label">
+                    Referred By
+                </label>
+
+                <select name="referred_by"
+                        id="referred_by"
+                        class="form-select">
+
+                    <option value="">
+                        Direct
+                    </option>
+
+                    @foreach($salesStaff as $staff)
+                        <option value="{{ $staff->id }}"
+                            {{ old('referred_by') == $staff->id ? 'selected' : '' }}>
+                            {{ $staff->name }}
+                        </option>
+                    @endforeach
+
+                </select>
             </div>
 
             <div class="form-group col-md-6">

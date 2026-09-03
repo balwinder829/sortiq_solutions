@@ -113,6 +113,17 @@
                             {{-- EDIT --}}
                             <td>
 
+                                 {{-- PREVIEW BUTTON --}}
+    <button type="button"
+            class="btn btn-sm btn-info college-preview-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#collegePreviewModal"
+            data-college="{{ $college->full_name }}"
+            data-hod-email="{{ $hodEmail?->email ?? '' }}"
+            data-tpo-email="{{ $tpoEmail?->email ?? '' }}">
+        Preview
+    </button>
+
     @if($hod)
 
         <a href="{{ route('hods.edit', $hod->id) }}" target="_blank" 
@@ -147,6 +158,95 @@
         </div>
 
     </form>
+    
+{{-- COLLEGE PREVIEW MODAL --}}
+<div class="modal fade"
+     id="collegePreviewModal"
+     tabindex="-1"
+     aria-labelledby="collegePreviewModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title"
+                    id="collegePreviewModalLabel">
+                    College Email Details
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                {{-- COLLEGE --}}
+                <div class="mb-3">
+
+                    <label class="fw-bold">
+                        College
+                    </label>
+
+                    <div id="previewCollegeName"
+                         class="mt-1">
+                    </div>
+
+                </div>
+
+
+                {{-- HOD --}}
+                <div class="mb-3">
+
+                    <label class="fw-bold">
+                        HOD Email
+                    </label>
+
+                    <div id="previewHodEmail"
+                         class="mt-1">
+                    </div>
+
+                </div>
+
+
+                {{-- TPO --}}
+                <div class="mb-3">
+
+                    <label class="fw-bold">
+                        TPO Email
+                    </label>
+
+                    <div id="previewTpoEmail"
+                         class="mt-1">
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 </div>
 
@@ -226,7 +326,54 @@ $('#emailForm').submit(function (e) {
 
 });
 
+// COLLEGE PREVIEW
+$(document).on('click', '.college-preview-btn', function () {
 
+    let collegeName = $(this).attr('data-college');
+    let hodEmail = $(this).attr('data-hod-email');
+    let tpoEmail = $(this).attr('data-tpo-email');
+
+
+    // College Name
+    $('#previewCollegeName').text(collegeName);
+
+
+    // HOD Email
+    if (hodEmail) {
+
+        $('#previewHodEmail')
+            .text(hodEmail)
+            .removeClass('text-danger')
+            .addClass('text-success');
+
+    } else {
+
+        $('#previewHodEmail')
+            .text('No mail added')
+            .removeClass('text-success')
+            .addClass('text-danger');
+
+    }
+
+
+    // TPO Email
+    if (tpoEmail) {
+
+        $('#previewTpoEmail')
+            .text(tpoEmail)
+            .removeClass('text-danger')
+            .addClass('text-success');
+
+    } else {
+
+        $('#previewTpoEmail')
+            .text('No mail added')
+            .removeClass('text-success')
+            .addClass('text-danger');
+
+    }
+
+});
 </script>
 
 

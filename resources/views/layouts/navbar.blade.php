@@ -690,12 +690,12 @@ body.menu-toggle .sidebar-collapse-btn{
                 </li>
 
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status','admin.student_feedback*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status','admin.student_feedback*']) }}">
                         
 
                         
@@ -809,7 +809,15 @@ body.menu-toggle .sidebar-collapse-btn{
                                 <i class="fas fa-file-signature"></i>
                                 Students Leaves
                             </a>
-                        </li>   
+                        </li> 
+
+                       <li>
+                            <a class="{{ isChildActive('admin.student_feedback*') }}"
+                               href="{{ route('admin.student_feedback.index') }}">
+                                <i class="fas fa-comment-dots"></i>
+                                Students Feedback
+                            </a>
+                        </li>  
 
                         <li class="{{ request()->route('type') == 'fee.pending.summary' ? 'mm-active' : '' }}">
                             <a href="{{ route('notifications.byType', 'fee.pending.summary') }}">

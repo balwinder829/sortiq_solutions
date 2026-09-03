@@ -15,7 +15,7 @@ use App\Services\CollegeResolver;
 use App\Imports\CollegesImport;
 use App\Exports\CollegeStudentsExport;
 use Illuminate\Validation\Rule;
-
+use Illuminate\Support\Facades\DB;
 
 class CollegeController extends Controller
 {
@@ -720,10 +720,511 @@ public function update(Request $request, $id)
     return redirect()->route('colleges.index')->with('success', 'College updated successfully.');
 }
 
+public function destroy(College $college)
+{
+    $collegeId = $college->id;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Table => college columns + soft delete setting
+    |--------------------------------------------------------------------------
+    |
+    | All these columns contain the COLLEGE ID.
+    |
+    | soft_delete:
+    | true  = check only active records (deleted_at IS NULL)
+    | false = count all records
+    |
+    */
+
+    $checks = [
+
+        // -------------------------------------------------
+        // College Call / Email
+        // -------------------------------------------------
+
+        // 'college_call_logs' => [
+        //     'columns' => ['college_id'],
+        //     'soft_delete' => false,
+        //     'name' => 'College Call Logs',
+        // ],
+
+        // 'college_email_recipients' => [
+        //     'columns' => ['college_id'],
+        //     'soft_delete' => false,
+        //     'name' => 'College Email Recipients',
+        // ],
+
+        // -------------------------------------------------
+        // Events
+        // -------------------------------------------------
+
+        'events' => [
+            'columns' => ['college_id'],
+            'soft_delete' => false,
+            'name' => 'Events',
+        ],
+
+        // -------------------------------------------------
+        // External Attendance
+        // -------------------------------------------------
+
+        'external_attendance_links' => [
+            'columns' => ['college_id'],
+            'soft_delete' => true,
+            'name' => 'External Attendance Links',
+        ],
+
+        'external_attendance_submissions' => [
+            'columns' => ['college_id'],
+            'soft_delete' => false,
+            'name' => 'External Attendance Submissions',
+        ],
+
+        'external_attendance_tests' => [
+            'columns' => ['college_id'],
+            'soft_delete' => true,
+            'name' => 'External Attendance Tests',
+        ],
+
+        // -------------------------------------------------
+        // Student Data
+        // -------------------------------------------------
+
+        'hard_data' => [
+            'columns' => ['college_id', 'college_name'],
+            'soft_delete' => true,
+            'name' => 'Hard Data',
+        ],
+
+        'manual_data' => [
+            'columns' => ['college_id', 'college_name'],
+            'soft_delete' => true,
+            'name' => 'Manual Data',
+        ],
+
+        'student_pending_registration' => [
+            'columns' => [
+                'college_id',
+                'college_name_input'
+            ],
+            'soft_delete' => false,
+            'name' => 'Pending Student Registration',
+        ],
+
+        'student_tests' => [
+            'columns' => ['college_id'],
+            'soft_delete' => false,
+            'name' => 'Student Tests',
+        ],
+
+        'students_detail' => [
+            'columns' => ['college_name'],
+            'soft_delete' => true,
+            'name' => 'Students',
+        ],
+
+        // -------------------------------------------------
+        // College Management
+        // -------------------------------------------------
+
+        'hods' => [
+            'columns' => ['college_id'],
+            'soft_delete' => true,
+            'name' => 'HOD / TPO Records',
+        ],
+
+        'mous' => [
+            'columns' => ['college_id'],
+            'soft_delete' => true,
+            'name' => 'MOUs',
+        ],
+
+        'workshops' => [
+            'columns' => ['college_id'],
+            'soft_delete' => false,
+            'name' => 'Workshops',
+        ],
+
+        // -------------------------------------------------
+        // Tests
+        // -------------------------------------------------
+
+        'tests' => [
+            'columns' => ['college_id'],
+            'soft_delete' => true,
+            'name' => 'Tests',
+        ],
+
+        'test_links' => [
+            'columns' => ['college_id'],
+            'soft_delete' => true,
+            'name' => 'Test Links',
+        ],
+
+        // -------------------------------------------------
+        // Enquiries
+        // -------------------------------------------------
+
+        'enquiries' => [
+            'columns' => ['college'],
+            'soft_delete' => true,
+            'name' => 'Enquiries',
+        ],
+
+        // -------------------------------------------------
+        // Joining Students
+        // -------------------------------------------------
+
+        'joining_students' => [
+            'columns' => ['college'],
+            'soft_delete' => true,
+            'name' => 'Joining Students',
+        ],
+
+        // -------------------------------------------------
+        // Student Custom Letters
+        // -------------------------------------------------
+
+        // 'student_custom_letters' => [
+        //     'columns' => ['college'],
+        //     'soft_delete' => true,
+        //     'name' => 'Student Custom Letters',
+        // ],
+
+        // -------------------------------------------------
+        // Placements
+        // -------------------------------------------------
+
+        'placements' => [
+            'columns' => ['college_name'],
+            'soft_delete' => true,
+            'name' => 'Placements',
+        ],
+
+        // -------------------------------------------------
+        // Internship Registrations
+        // -------------------------------------------------
+
+        'internship_registrations' => [
+            'columns' => [
+                'college',
+                'college_name'
+            ],
+            'soft_delete' => true,
+            'name' => 'Internship Registrations',
+        ],
+    ];
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Check all tables
+    |--------------------------------------------------------------------------
+    */
 
-    public function destroy(College $college)
+    $usedIn = [];
+
+    foreach ($checks as $table => $config) {
+
+        foreach ($config['columns'] as $column) {
+
+            $query = DB::table($table)
+                ->where($column, $collegeId);
+
+            if ($config['soft_delete']) {
+                $query->whereNull('deleted_at');
+            }
+
+            $count = $query->count();
+
+            if ($count > 0) {
+
+                // Friendly name => count
+                $usedIn[$config['name']] = $count;
+
+                break;
+            }
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Records found - DON'T DELETE
+    |--------------------------------------------------------------------------
+    */
+
+    if (!empty($usedIn)) {
+
+        return redirect()
+            ->route('colleges.index')
+            ->with('delete_error', [
+                'college' => $college->college_name,
+                'records' => $usedIn,
+            ]);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | No records found - DELETE COLLEGE
+    |--------------------------------------------------------------------------
+    */
+
+    $college->delete();
+
+    return redirect()
+        ->route('colleges.index')
+        ->with('success', 'College deleted successfully.');
+}
+ public function destroy_27aug(College $college)
+{
+    $collegeId = $college->id;
+
+    $checks = [
+
+        // college_id
+        // 'college_call_logs' => ['college_id'],
+        // 'college_email_recipients' => ['college_id'],
+        'events' => ['college_id'],
+
+        'external_attendance_links' => ['college_id'],
+        'external_attendance_submissions' => ['college_id'],
+        'external_attendance_tests' => ['college_id'],
+
+        'hard_data' => ['college_id', 'college_name'],
+        'hods' => ['college_id'],
+        'manual_data' => ['college_id', 'college_name'],
+        'mous' => ['college_id'],
+
+        'student_pending_registration' => [
+            'college_id',
+            'college_name_input'
+        ],
+
+        'student_tests' => ['college_id'],
+        'tests' => ['college_id'],
+        'test_links' => ['college_id'],
+        'workshops' => ['college_id'],
+
+        // college stored in a differently named column
+        'enquiries' => ['college'],
+        
+        'joining_students' => ['college'],
+        'student_custom_letters' => ['college'],
+
+        // college ID stored in college_name
+        'students_detail' => ['college_name'],
+        'placements' => ['college_name'],
+
+        // both columns contain college ID
+        'internship_registrations' => [
+            'college',
+            'college_name'
+        ],
+    ];
+
+    $usedIn = [];
+
+    foreach ($checks as $table => $columns) {
+
+        foreach ($columns as $column) {
+
+            $count = DB::table($table)
+                ->where($column, $collegeId)
+                ->count();
+
+            if ($count > 0) {
+
+                $usedIn[$table] = $count;
+
+                // Don't check the second column
+                // once this table has been found.
+                break;
+            }
+        }
+    }
+
+    if (!empty($usedIn)) {
+
+        return redirect()
+            ->route('colleges.index')
+            ->with('delete_error', [
+                'college' => $college->college_name,
+                'records' => $usedIn,
+            ]);
+    }
+
+    $college->delete();
+
+    return redirect()
+        ->route('colleges.index')
+        ->with('success', 'College deleted successfully.');
+}
+
+public function destroy_final(College $college)
+{
+    $collegeId   = $college->id;
+    $collegeName = trim($college->college_name);
+
+    /*
+    |--------------------------------------------------------------------------
+    | table => column
+    |--------------------------------------------------------------------------
+    */
+    $checks = [
+
+        // =========================
+        // college_id
+        // =========================
+
+        'college_call_logs' => 'college_id',
+        'college_email_recipients' => 'college_id',
+        'events' => 'college_id',
+        'external_attendance_links' => 'college_id',
+        'external_attendance_submissions' => 'college_id',
+        'external_attendance_tests' => 'college_id',
+        'hard_data' => 'college_id',
+        'hods' => 'college_id',
+        'mous' => 'college_id',
+        'student_pending_registration' => 'college_id',
+        'student_tests' => 'college_id',
+        'tests' => 'college_id',
+        'test_links' => 'college_id',
+        'workshops' => 'college_id',
+
+        // =========================
+        // college_name
+        // =========================
+
+        'students_detail' => 'college_name',
+        'placements' => 'college_name',
+
+        // =========================
+        // college
+        // =========================
+
+        'leads' => 'college',
+        'joining_students' => 'college',
+        'student_custom_letters' => 'college',
+
+        // =========================
+        // college_name_input
+        // =========================
+
+        'student_pending_registration' => 'college_name_input',
+
+        // =========================
+        // internship registrations
+        // =========================
+
+        'internship_registrations' => 'college',
+        'internship_registrations' => 'college_name',
+    ];
+
+    $usedIn = [];
+
+    foreach ($checks as $table => $column) {
+
+        /*
+         * Decide whether this column stores the College ID
+         * or the College Name.
+         */
+        $value = $column === 'college_id'
+            ? $collegeId
+            : $collegeName;
+
+        $count = DB::table($table)
+            ->where($column, $value)
+            ->count();
+
+        if ($count > 0) {
+            $usedIn[$table . '.' . $column] = $count;
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | College is being used somewhere
+    |--------------------------------------------------------------------------
+    */
+    if (!empty($usedIn)) {
+
+        return redirect()
+            ->route('colleges.index')
+            ->with('delete_error', [
+                'college' => $collegeName,
+                'records' => $usedIn,
+            ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | No records found - safe to delete
+    |--------------------------------------------------------------------------
+    */
+    $college->delete();
+
+    return redirect()
+        ->route('colleges.index')
+        ->with('success', 'College deleted successfully.');
+}
+    public function destroy12(College $college)
+{
+    $collegeId = $college->id;
+
+    $checks = [
+        'College Call Logs' => DB::table('college_call_logs'),
+        'College Email Recipients' => DB::table('college_email_recipients'),
+        'Events' => DB::table('events'),
+        'External Attendance Links' => DB::table('external_attendance_links'),
+        'External Attendance Submissions' => DB::table('external_attendance_submissions'),
+        'External Attendance Tests' => DB::table('external_attendance_tests'),
+        'Hard Data' => DB::table('hard_data'),
+        'HODs' => DB::table('hods'),
+        'MOUs' => DB::table('mous'),
+        'Student Pending Registration' => DB::table('student_pending_registration'),
+        'Student Tests' => DB::table('student_tests'),
+        'Tests' => DB::table('tests'),
+        'Test Links' => DB::table('test_links'),
+        'Workshops' => DB::table('workshops'),
+    ];
+
+    $usedIn = [];
+
+    foreach ($checks as $module => $table) {
+        $count = $table->where('college_id', $collegeId)->count();
+
+        if ($count > 0) {
+            $usedIn[$module] = $count;
+        }
+    }
+
+    if (!empty($usedIn)) {
+        $message = 'Cannot delete "' . $college->college_name . '". Records exist in: ';
+
+        $details = [];
+
+        foreach ($usedIn as $module => $count) {
+            $details[] = $module . ' (' . $count . ')';
+        }
+
+        $message .= implode(', ', $details);
+
+        return redirect()
+            ->route('colleges.index')
+            ->with('error', $message);
+    }
+
+    $college->delete();
+
+    return redirect()
+        ->route('colleges.index')
+        ->with('success', 'College deleted successfully.');
+}
+
+    public function destroy_26aug(College $college)
     {
         $college->delete();
 

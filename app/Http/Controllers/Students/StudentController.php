@@ -123,6 +123,14 @@ class StudentController extends Controller
                 $query->where('is_online', $request->is_online);
             }
 
+            if ($request->filled('referred_by')) {
+                if ($request->referred_by === 'direct') {
+                    $query->whereNull('referred_by');
+                } else {
+                    $query->where('referred_by', $request->referred_by);
+                }
+            }
+
             if ($request->filled('confirmation_sent')) {
                 $query->where('confirmation_sent', $request->confirmation_sent);
             }
@@ -276,6 +284,12 @@ class StudentController extends Controller
         $users = User::all();
         $student_status = StudentStatus::all();
 
+        $salesStaff = DB::table('sales_staff')
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->orderBy('name')
+            ->get();
+
         //pending fee
         $dismissed = session('dismiss_pending_fee');
         $activeSessionNo = session('admin_session_id');
@@ -291,7 +305,7 @@ class StudentController extends Controller
                 : collect();
         
 
-        return view('students.index', compact('students','sessions','colleges','courses','batches','references','departments','users','student_status','pendingStudents'));
+        return view('students.index', compact('students','sessions','colleges','courses','batches','references','departments','users','student_status','pendingStudents','salesStaff'));
     }
 
     public function show(Student $student)
@@ -310,12 +324,25 @@ class StudentController extends Controller
         // $batches = Batch::all();
         // $department = Department::all();
         // $references = Reference::all();
-        $colleges    = College::orderBy('college_display_name', 'asc')->get();
+        // $colleges    = College::orderBy('college_display_name', 'asc')->get();
+        $colleges = College::where('status', 'active')
+            ->orderBy('college_display_name', 'asc')
+            ->get();
+
+        $batches = Batch::where('session_name', $activeSessionId)
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->orderBy('batch_name', 'asc')
+            ->get();
+
+
         $courses     = Course::orderBy('course_name', 'asc')->get();
         // $batches     = Batch::orderBy('batch_name', 'asc')->get();        
-        $batches = Batch::where('session_name', $activeSessionId)
-                ->orderBy('batch_name', 'asc')
-                ->get();
+        // $batches = Batch::where('session_name', $activeSessionId)
+        //         ->orderBy('batch_name', 'asc')
+        //         ->get();
+
+
         $references  = Reference::orderBy('name', 'asc')->get();
 
         // $users = User::all();
@@ -334,7 +361,13 @@ class StudentController extends Controller
 
         $defaultTechnology = Course::where('course_name', 'Not Selected')->value('id'); 
 
-        return view('students.create', compact('sessions','activeSession','colleges','courses','batches','references','course_duration','student_status','nextSno','defaultTechnology'));
+        $salesStaff = DB::table('sales_staff')
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->orderBy('name')
+            ->get();
+
+        return view('students.create', compact('sessions','activeSession','colleges','courses','batches','references','course_duration','student_status','nextSno','defaultTechnology','salesStaff'));
     }
 
     // Store student
@@ -396,6 +429,7 @@ class StudentController extends Controller
             'pg_offer'         => 'nullable|boolean',
             'is_married'         => 'nullable|boolean',
             'is_online'         => 'nullable|boolean',
+            'referred_by' => 'nullable|exists:sales_staff,id',
         ]);
 
         if (($validate['reg_fees'] + $validate['paid_fees']) > $validate['total_fees']) {
@@ -520,16 +554,31 @@ class StudentController extends Controller
         $colleges    = College::orderBy('college_display_name', 'asc')->get();
         $courses     = Course::orderBy('course_name', 'asc')->get();
         // $batches     = Batch::orderBy('batch_name', 'asc')->get();  
-        $batches = Batch::where('session_name', $activeSessionId)
-                ->orderBy('batch_name', 'asc')
-                ->get();      
+        // $batches = Batch::where('session_name', $activeSessionId)
+        //         ->orderBy('batch_name', 'asc')
+        //         ->get();      
         $references  = Reference::orderBy('name', 'asc')->get();
+        // $colleges = College::where('status', 'active')
+        //     ->orderBy('college_display_name', 'asc')
+        //     ->get();
 
+        $batches = Batch::where('session_name', $activeSessionId)
+            ->where('status', 'active')
+            ->whereNull('deleted_at')
+            ->orderBy('batch_name', 'asc')
+            ->get();
+            
         $users = User::all();
         $course_duration = Duration::all();
         $student_status = StudentStatus::all();
 
-        return view('students.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status','activeSession'));
+        $salesStaff = DB::table('sales_staff')
+        ->where('status', 'active')
+        ->whereNull('deleted_at')
+        ->orderBy('name')
+        ->get();
+
+        return view('students.edit', compact('student','sessions','colleges','courses','batches','references','users','course_duration','student_status','activeSession','salesStaff'));
         // return view('students.edit', compact('student','sessions','colleges','courses','batches','department','references','users'));
     }
 
@@ -602,6 +651,7 @@ class StudentController extends Controller
             'is_married'         => 'nullable|boolean',
             'is_online'         => 'nullable|boolean',
             'password' => 'nullable|min:6',
+            'referred_by' => 'nullable|exists:sales_staff,id',
         ]);
         // dd('Passed validation', $validates);
 

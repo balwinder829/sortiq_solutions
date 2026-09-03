@@ -48,85 +48,590 @@ class BatchController extends Controller
             )->only($method);
         }
     }
-
-    public function index(Request $request)
+public function index(Request $request)
 {
-    $currentSession = session('admin_session_id');
+    // $sessionId = session('session_id');
+    $sessionId = session('admin_session_id');
 
-    // $query = Batch::with(['trainerData', 'courseData', 'durationData'])
-    //     ->withCount('students')
-    //     ->where('session_name', $currentSession)
-    //     ->latest();
+    // dd($sessionId);
 
-    $query = Batch::with(['trainerData', 'courseData', 'durationData'])
-        ->withCount([
-            'students as students_count' => function ($q) use ($currentSession) {
-                $q->where('session', $currentSession);
-            }
+    /*
+    |--------------------------------------------------------------------------
+    | Tab
+    |--------------------------------------------------------------------------
+    */
+
+    $tab = $request->get('tab', 'normal');
+
+    // Only allow our three tabs
+    if (!in_array($tab, ['normal', 'closed', 'deleted'])) {
+        $tab = 'normal';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Base Query
+    |--------------------------------------------------------------------------
+    |
+    | withTrashed() allows us to explicitly control deleted_at below.
+    |
+    */
+
+    $query = Batch::withTrashed()
+        ->with([
+            'sessionData',
+            'trainerData',
+            'students',
         ])
-        ->where('session_name', $currentSession);
-        // ->latest();
+        ->withCount('students')
+        ->where('session_name', $sessionId);
 
-    // Trainer filter
-    if ($request->trainer) {
-        $query->where('batch_assign', $request->trainer);
+
+    /*
+    |--------------------------------------------------------------------------
+    | TAB FILTER
+    |--------------------------------------------------------------------------
+    */
+
+    if ($tab === 'normal') {
+
+        // Normal:
+        // - Not deleted
+        // - Status can be active/inactive/completed/cancelled
+        // - Closed batches excluded
+
+        $query->whereNull('deleted_at')
+              ->where('status', '!=', 'closed');
+
+    } elseif ($tab === 'closed') {
+
+        // Closed:
+        // - Not deleted
+        // - Status = closed
+
+        $query->whereNull('deleted_at')
+              ->where('status', 'closed');
+
+    } elseif ($tab === 'deleted') {
+
+        // Deleted:
+        // - Soft deleted only
+
+        $query->whereNotNull('deleted_at');
+
     }
 
-    // Technology filter
-    if ($request->technology) {
-        $query->where('class_assign', $request->technology);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mentor Filter
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('trainer')) {
+
+        $query->where(
+            'batch_assign',
+            $request->trainer
+        );
+
     }
 
-    // Status filter
-    if ($request->status) {
-        $query->where('status', $request->status);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Technology Filter
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('technology')) {
+
+        $technology = $request->technology;
+
+        $query->where(function ($q) use ($technology) {
+
+            $q->where(
+                'class_assign',
+                $technology
+            )
+            ->orWhere(
+                'class_assign',
+                'LIKE',
+                $technology . ',%'
+            )
+            ->orWhere(
+                'class_assign',
+                'LIKE',
+                '%,' . $technology
+            )
+            ->orWhere(
+                'class_assign',
+                'LIKE',
+                '%,' . $technology . ',%'
+            );
+
+        });
+
     }
 
-    // Start time filter
+
+    /*
+    |--------------------------------------------------------------------------
+    | Start Time Filter
+    |--------------------------------------------------------------------------
+    */
+
     if ($request->filled('start_time')) {
-        $startTime = Carbon::createFromFormat('g:i A', $request->start_time)
-                       ->format('H:i:s');
 
-        $query->whereTime('start_time', '>=', $startTime);
+        try {
 
-        // $query->whereTime('start_time', '>=', $request->start_time);
+            $startTime = \Carbon\Carbon::createFromFormat(
+                'h:i A',
+                $request->start_time
+            )->format('H:i:s');
+
+            $query->where(
+                'start_time',
+                $startTime
+            );
+
+        } catch (\Exception $e) {
+
+            // Ignore invalid time
+
+        }
+
     }
 
-    // End time filter
+
+    /*
+    |--------------------------------------------------------------------------
+    | End Time Filter
+    |--------------------------------------------------------------------------
+    */
+
     if ($request->filled('end_time')) {
-         $endTime = Carbon::createFromFormat('g:i A', $request->end_time)
-                     ->format('H:i:s');
 
-        $query->whereTime('end_time', '<=', $endTime);
-        // $query->whereTime('end_time', '<=', $request->end_time);
+        try {
+
+            $endTime = \Carbon\Carbon::createFromFormat(
+                'h:i A',
+                $request->end_time
+            )->format('H:i:s');
+
+            $query->where(
+                'end_time',
+                $endTime
+            );
+
+        } catch (\Exception $e) {
+
+            // Ignore invalid time
+
+        }
+
     }
 
-    // Mode filter
-    if ($request->mode) {
-        $query->where('batch_mode', $request->mode);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status Filter
+    |--------------------------------------------------------------------------
+    |
+    | Status filter is only relevant to Normal tab.
+    |
+    */
+
+    if (
+        $tab === 'normal' &&
+        $request->filled('status')
+    ) {
+
+        $query->where(
+            'status',
+            $request->status
+        );
+
     }
 
-    // Students Count Sorting
-    if ($request->student_sort == 'low_to_high') {
-        $query->orderBy('students_count', 'asc');
-    } elseif ($request->student_sort == 'high_to_low') {
-        $query->orderBy('students_count', 'desc');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Batch Mode Filter
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('mode')) {
+
+        $query->where(
+            'batch_mode',
+            $request->mode
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Student Sorting
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->student_sort === 'low_to_high') {
+
+        $query->orderBy(
+            'students_count',
+            'asc'
+        );
+
+    } elseif ($request->student_sort === 'high_to_low') {
+
+        $query->orderBy(
+            'students_count',
+            'desc'
+        );
+
     } else {
-        // Default order when no student_sort selected
-        $query->latest('updated_at');
+
+        $query->latest('id');
+
     }
 
-    $batches  = $query->get();
-    // dd($batches);
-    // $trainers = Trainer::with('user')->get();
-    $trainers = Trainer::where('status', 'active')->orderBy('name', 'asc')->get();
-    // dd($trainers->user);
-    
-    // $courses  = Course::all();
-    $courses = Course::orderBy('course_name', 'asc')->get();
 
-    return view('batches.index', compact('batches','trainers','courses'));
+    /*
+    |--------------------------------------------------------------------------
+    | Get Batches
+    |--------------------------------------------------------------------------
+    */
+
+    $batches = $query->get();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Filters Data
+    |--------------------------------------------------------------------------
+    */
+
+    $trainers = Trainer::orderBy('name')->get();
+
+    $courses = Course::orderBy('course_name')->get();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | View
+    |--------------------------------------------------------------------------
+    */
+
+    return view(
+        'batches.index',
+        compact(
+            'batches',
+            'trainers',
+            'courses',
+            'tab'
+        )
+    );
 }
+    public function index12(Request $request)
+    {
+        $sessionId = session('session_id');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Base Query
+        |--------------------------------------------------------------------------
+        */
+
+        $query = Batch::with([
+            'sessionData',
+            'trainerData',
+            'students',
+        ])
+        ->withCount('students')
+        ->where('session_name', $sessionId);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tabs
+        |--------------------------------------------------------------------------
+        |
+        | normal  = all non-deleted batches except closed
+        | closed  = non-deleted closed batches
+        | deleted = soft deleted batches
+        |
+        */
+
+        $tab = $request->get('tab', 'normal');
+
+        if ($tab === 'closed') {
+
+            $query->where('status', 'closed');
+
+        } elseif ($tab === 'deleted') {
+
+            // Deleted records only
+            $query->onlyTrashed();
+
+        } else {
+
+            // Normal = everything except closed
+            $query->where('status', '!=', 'closed');
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Mentor Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('trainer')) {
+
+            $query->where('batch_assign', $request->trainer);
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Technology Filter
+        |--------------------------------------------------------------------------
+        |
+        | class_assign contains comma-separated course IDs.
+        |
+        */
+
+        if ($request->filled('technology')) {
+
+            $technology = $request->technology;
+
+            $query->where(function ($q) use ($technology) {
+
+                $q->where('class_assign', $technology)
+                    ->orWhere('class_assign', 'LIKE', $technology . ',%')
+                    ->orWhere('class_assign', 'LIKE', '%,' . $technology)
+                    ->orWhere('class_assign', 'LIKE', '%,' . $technology . ',%');
+
+            });
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Start Time Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('start_time')) {
+
+            try {
+
+                $startTime = \Carbon\Carbon::createFromFormat(
+                    'h:i A',
+                    $request->start_time
+                )->format('H:i:s');
+
+                $query->where('start_time', $startTime);
+
+            } catch (\Exception $e) {
+                // Ignore invalid time
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | End Time Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('end_time')) {
+
+            try {
+
+                $endTime = \Carbon\Carbon::createFromFormat(
+                    'h:i A',
+                    $request->end_time
+                )->format('H:i:s');
+
+                $query->where('end_time', $endTime);
+
+            } catch (\Exception $e) {
+                // Ignore invalid time
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status Filter
+        |--------------------------------------------------------------------------
+        |
+        | On normal tab, status filter works normally.
+        | Closed tab is always closed.
+        | Deleted tab uses deleted_at and ignores normal status filtering.
+        |
+        */
+
+        if (
+            $request->filled('status') &&
+            $tab === 'normal'
+        ) {
+
+            $query->where('status', $request->status);
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Batch Mode Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('mode')) {
+
+            $query->where('batch_mode', $request->mode);
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Student Sorting
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->student_sort === 'low_to_high') {
+
+            $query->orderBy('students_count', 'asc');
+
+        } elseif ($request->student_sort === 'high_to_low') {
+
+            $query->orderBy('students_count', 'desc');
+
+        } else {
+
+            $query->latest('id');
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get Batches
+        |--------------------------------------------------------------------------
+        */
+
+        $batches = $query->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filters Data
+        |--------------------------------------------------------------------------
+        */
+
+        $trainers = Trainer::orderBy('name')->get();
+
+        $courses = Course::orderBy('course_name')->get();
+
+
+        return view('batches.index', compact(
+            'batches',
+            'trainers',
+            'courses',
+            'tab'
+        ));
+    }
+
+
+    public function index_25aug(Request $request)
+    {
+        $currentSession = session('admin_session_id');
+
+        // $query = Batch::with(['trainerData', 'courseData', 'durationData'])
+        //     ->withCount('students')
+        //     ->where('session_name', $currentSession)
+        //     ->latest();
+
+        $query = Batch::with(['trainerData', 'courseData', 'durationData'])
+            ->withCount([
+                'students as students_count' => function ($q) use ($currentSession) {
+                    $q->where('session', $currentSession);
+                }
+            ])
+            ->where('session_name', $currentSession);
+            // ->latest();
+
+        // Trainer filter
+        if ($request->trainer) {
+            $query->where('batch_assign', $request->trainer);
+        }
+
+        // Technology filter
+        if ($request->technology) {
+            $query->where('class_assign', $request->technology);
+        }
+
+        // Status filter
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // Start time filter
+        if ($request->filled('start_time')) {
+            $startTime = Carbon::createFromFormat('g:i A', $request->start_time)
+                           ->format('H:i:s');
+
+            $query->whereTime('start_time', '>=', $startTime);
+
+            // $query->whereTime('start_time', '>=', $request->start_time);
+        }
+
+        // End time filter
+        if ($request->filled('end_time')) {
+             $endTime = Carbon::createFromFormat('g:i A', $request->end_time)
+                         ->format('H:i:s');
+
+            $query->whereTime('end_time', '<=', $endTime);
+            // $query->whereTime('end_time', '<=', $request->end_time);
+        }
+
+        // Mode filter
+        if ($request->mode) {
+            $query->where('batch_mode', $request->mode);
+        }
+
+        // Students Count Sorting
+        if ($request->student_sort == 'low_to_high') {
+            $query->orderBy('students_count', 'asc');
+        } elseif ($request->student_sort == 'high_to_low') {
+            $query->orderBy('students_count', 'desc');
+        } else {
+            // Default order when no student_sort selected
+            $query->latest('updated_at');
+        }
+
+        $batches  = $query->get();
+        // dd($batches);
+        // $trainers = Trainer::with('user')->get();
+        $trainers = Trainer::where('status', 'active')->orderBy('name', 'asc')->get();
+        // dd($trainers->user);
+        
+        // $courses  = Course::all();
+        $courses = Course::orderBy('course_name', 'asc')->get();
+
+        return view('batches.index', compact('batches','trainers','courses'));
+    }
 
 
     public function create()
@@ -345,14 +850,14 @@ class BatchController extends Controller
         $batch = Batch::with('sessionData')->findOrFail($id);
 
         // Rule 1: Session is active
-        if ($batch->sessionData && $batch->sessionData->status === 'active') {
-            return back()->with('error', 'Cannot delete batch because the session is active.');
-        }
+        // if ($batch->sessionData && $batch->sessionData->status === 'active') {
+        //     return back()->with('error', 'Cannot delete batch because the session is active.');
+        // }
 
         // Rule 2: Session end date is pending (future)
-        if ($batch->sessionData && $batch->sessionData->end_date > now()->toDateString()) {
-            return back()->with('error', 'Cannot delete batch because the session end date has not passed yet.');
-        }
+        // if ($batch->sessionData && $batch->sessionData->end_date > now()->toDateString()) {
+        //     return back()->with('error', 'Cannot delete batch because the session end date has not passed yet.');
+        // }
 
         // OPTIONAL Rule 3: Batch has students
         if ($batch->students()->exists()) {
@@ -411,6 +916,100 @@ class BatchController extends Controller
 
         return view('trainers.trainer_index', compact('batches'));
     }
+
+     /**
+     * Restore soft deleted batch.
+     */
+    public function restore($id)
+    {
+        $batch = Batch::onlyTrashed()->findOrFail($id);
+
+
+        $batch->restore();
+
+
+        return back()->with(
+            'success',
+            'Batch restored successfully.'
+        );
+    }
+
+
+    /**
+     * Get students assigned to batch.
+     */
+    public function students($id)
+    {
+        $batch = Batch::with([
+            'students.collegeData'
+        ])->findOrFail($id);
+
+
+        return response()->json(
+            $batch->students
+        );
+    }
+
+
+    /**
+     * Close batch.
+     */
+    public function close($id)
+    {
+        $batch = Batch::findOrFail($id);
+
+
+        if ($batch->status === 'closed') {
+
+            return back()->with(
+                'error',
+                'Batch is already closed.'
+            );
+
+        }
+
+
+        $batch->update([
+            'status' => 'closed',
+        ]);
+
+
+        return back()->with(
+            'success',
+            'Batch closed successfully.'
+        );
+    }
+
+
+    /**
+     * Reopen closed batch.
+     */
+    public function reopen($id)
+    {
+        $batch = Batch::findOrFail($id);
+
+
+        if ($batch->status !== 'closed') {
+
+            return back()->with(
+                'error',
+                'Only closed batches can be reopened.'
+            );
+
+        }
+
+
+        $batch->update([
+            'status' => 'active',
+        ]);
+
+
+        return back()->with(
+            'success',
+            'Batch reopened successfully.'
+        );
+    }
+
 
 
 

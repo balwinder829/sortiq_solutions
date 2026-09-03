@@ -109,7 +109,7 @@
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
-						This is to certify that <strong>{{ $title }}</strong> <strong>{{ ucwords($student->student_name) }}</strong> From <strong>{{ $collegename }}</strong>
+						This is to certify that <strong>{{ $title }}</strong> <strong>{{ ucwords($student->student_name) }}</strong> {{ $relation }} <strong>{{ ucwords($student->father_name_with_title) }}</strong> From <strong>{{ $collegename }}</strong>
 						Who has undertaken an internship program of <strong>{{ $courseName }}</strong> under technical department from <strong>{{ $sessionStart }}</strong>
 						to <strong>{{ $sessionEnd }}</strong> in <strong>{{ ucwords($sessionName) }}</strong> from the company <strong>"Sortiq Solutions Pvt. Ltd."</strong>
 					

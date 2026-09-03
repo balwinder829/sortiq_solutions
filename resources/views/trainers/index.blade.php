@@ -31,45 +31,14 @@ table.dataTable td {
 <div class="row mb-2 align-items-end">
 
     {{-- LEFT: PAGE TITLE --}}
-    <div class="col-md-2">
+    <div class="col-md-6">
         <h1 class="page_heading">Mentors</h1>
     </div>
 
-    {{-- MIDDLE: FILTER FORM --}}
-    <div class="col-md-6">
-        <form method="GET"id="filterForm" class="row g-2 align-items-end">
-
-            {{-- COURSE FILTER --}}
-            <div class="col-md-6">
-                <!-- <label class="fw-bold">Course (Technology)</label> -->
-                <select name="course" id="filtercourse" class="form-control filterchange">
-                    <option value="">-- All Courses --</option>
-
-                    @foreach($courses as $course)
-                        <option value="{{ $course->id }}"
-                            {{ request('course') == $course->id ? 'selected' : '' }}>
-                            {{ $course->course_name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            {{-- BUTTONS WITH SMALL GAP --}}
-            <div class="col-md-6 d-flex gap-2">
-                <!-- <button type="submit" class="btn btn-primary">
-                    Search
-                </button> -->
-
-                <a href="{{ route('trainers.index') }}" class="btn btn-secondary">
-                    Reset
-                </a>
-            </div>
-
-        </form>
-    </div>
+    
 
     {{-- RIGHT: ADD MENTOR BUTTON --}}
-    <div class="col-md-4">
+    <div class="col-md-6">
          <div class="d-flex justify-content-end gap-2">
 
         {{-- Responsibility Letter --}}
@@ -86,6 +55,68 @@ table.dataTable td {
     </div>
 
 </div>
+<div class="row mb-2 align-items-end">
+    <div class="col-md-2">
+        <h1 class="page_heading">Filters</h1>
+    </div>
+    {{-- MIDDLE: FILTER FORM --}}
+    <div class="col-md-10">
+        <form method="GET"id="filterForm" class="row g-2 align-items-end">
+
+            {{-- COURSE FILTER --}}
+            <div class="col-md-4">
+                <!-- <label class="fw-bold">Course (Technology)</label> -->
+                <select name="course" id="filtercourse" class="form-control filterchange">
+                    <option value="">-- All Courses --</option>
+
+                    @foreach($courses as $course)
+                        <option value="{{ $course->id }}"
+                            {{ request('course') == $course->id ? 'selected' : '' }}>
+                            {{ $course->course_name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            {{-- STATUS FILTER --}}
+            <div class="col-md-4">
+
+                <select name="status"
+                        id="filterstatus"
+                        class="form-control filterchange">
+
+                    <option value="">
+                        -- All Status --
+                    </option>
+
+                    <option value="active"
+                        {{ request('status') == 'active' ? 'selected' : '' }}>
+                        Active
+                    </option>
+
+                    <option value="inactive"
+                        {{ request('status') == 'inactive' ? 'selected' : '' }}>
+                        Inactive
+                    </option>
+
+                </select>
+
+            </div>
+
+            {{-- BUTTONS WITH SMALL GAP --}}
+            <div class="col-md-2 d-flex gap-2">
+                <!-- <button type="submit" class="btn btn-primary">
+                    Search
+                </button> -->
+
+                <a href="{{ route('trainers.index') }}" class="btn btn-secondary">
+                    Reset
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
 <div class="col-md-8 mb-4">
     <p class="mb-1 fw-bold">Mentors Login URL</p>
 
@@ -186,6 +217,7 @@ $(document).ready(function () {
             url: "{{ route('trainers.data') }}",
             data: function (d) {
                 d.course =  $('#filtercourse').val();
+                d.status = $('#filterstatus').val();
             }
         },
         columns: [
@@ -205,7 +237,7 @@ $(document).ready(function () {
         pageLength: 50,
         lengthMenu: [5, 10, 25, 50, 100]
     });
-     $('#filtercourse').change(function () {
+     $('#filtercourse, #filterstatus').change(function () {
         table.ajax.reload();
     });
 });
@@ -245,6 +277,53 @@ function copyLoginUrl() {
         }, 2000);
     });
 }
+
+
 </script>
 
+<script>
+
+$(document).on('submit', '.trainer-action-form', function (e) {
+
+    e.preventDefault();
+
+    const form = this;
+
+    const title = $(form).data('title') || 'Are you sure?';
+
+    const text = $(form).data('text') || '';
+
+    const confirmText =
+        $(form).data('confirm') || 'Yes, Continue';
+
+
+    Swal.fire({
+
+        title: title,
+
+        text: text,
+
+        icon: 'warning',
+
+        showCancelButton: true,
+
+        confirmButtonText: confirmText,
+
+        cancelButtonText: 'Cancel',
+
+        reverseButtons: true
+
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+
+            form.submit();
+
+        }
+
+    });
+
+});
+
+</script>
 @endpush

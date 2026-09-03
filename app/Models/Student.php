@@ -64,6 +64,8 @@ class Student extends Authenticatable
         'pursuing_issue_date',
         'certificate_sent',
         'confirmation_sent',
+        'referral_type',
+        'referred_by',
     ];
 
      // Automatically hash password when setting it
@@ -184,6 +186,11 @@ class Student extends Authenticatable
     public function placement()
     {
         return $this->hasOne(Placement::class, 'student_id');
+    }
+
+    public function referredBy()
+    {
+        return $this->belongsTo(SalesStaff::class, 'referred_by');
     }
 
 }

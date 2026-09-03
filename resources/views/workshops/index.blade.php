@@ -31,12 +31,12 @@ table.dataTable td {
 <div class="row mb-2 align-items-end">
 
     {{-- LEFT: PAGE TITLE --}}
-    <div class="col-md-8">
+    <div class="col-md-6">
         <h1 class="page_heading">Workshops</h1>
     </div>
 
     {{-- RIGHT: ADD MENTOR BUTTON --}}
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="d-flex justify-content-end  gap-2">
            <!--  <a href="{{ route('workshops.export.excel') }}" class="btn btn-primary mb-3">
                 Export
@@ -51,6 +51,14 @@ table.dataTable td {
                class="btn btn-primary mb-3">
                 Add Workshop
             </a>
+            <!-- <div class="mt-3 tble-bts"> -->
+                <a href="javascript:void(0)" id="editBulkWorkshops" class="btn btn-primary mb-3">
+                    Edit Workshops
+                </a>
+                 <a href="javascript:void(0)" id="resetWorkshopSelection" class="btn btn-secondary mb-3">
+                    Reset Selection
+                </a>
+            </div>
         </div>
     </div>
 
@@ -234,6 +242,9 @@ table.dataTable td {
         <table id="trainers-table" class="table table-bordered table-striped">
             <thead>
                 <tr>
+                    <th>
+                        <input type="checkbox" id="checkAll">
+                    </th>
                     <th>ID</th>
                     <th>Title</th>
                     <th>College</th>
@@ -250,7 +261,160 @@ table.dataTable td {
     </div>
 
 </div>
+{{-- Bulk Edit Workshops Modal --}}
+<div class="modal fade"
+     id="bulkEditWorkshopModal"
+     tabindex="-1"
+     aria-hidden="true">
 
+    <div class="modal-dialog">
+
+        <form method="POST"
+              action="{{ route('workshops.bulkUpdate') }}"
+              id="bulkEditWorkshopForm">
+
+            @csrf
+
+            <input type="hidden"
+                   name="ids"
+                   id="bulkWorkshopIds">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Edit Selected Workshops
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    {{-- STATUS --}}
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Status
+                        </label>
+
+                        <select name="status"
+                                class="form-select">
+
+                            <option value="">
+                                Keep Existing
+                            </option>
+
+                            <option value="done">
+                                Done
+                            </option>
+
+                            <option value="decided">
+                                Decided
+                            </option>
+
+                            <option value="meeting">
+                                Meeting
+                            </option>
+
+                            <option value="hold">
+                                Hold
+                            </option>
+
+                            <option value="cancel">
+                                Cancel
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    {{-- TYPE --}}
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Workshop Type
+                        </label>
+
+                        <select name="type"
+                                class="form-select">
+
+                            <option value="">
+                                Keep Existing
+                            </option>
+
+                            <option value="office">
+                                Office
+                            </option>
+
+                            <option value="campus">
+                                Campus
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    {{-- EVENT TYPE --}}
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Event Type
+                        </label>
+
+                        <select name="event_type"
+                                class="form-select">
+
+                            <option value="">
+                                Keep Existing
+                            </option>
+
+                            <option value="seminar">
+                                Seminar
+                            </option>
+
+                            <option value="placement_drive">
+                                Placement Drive
+                            </option>
+
+                            <option value="both">
+                                Both
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Update Selected
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -333,20 +497,179 @@ $(document).ready(function () {
             }
         },
         columns: [
-            { data: 0, name: 'id' },        // ID
-            { data: 1, name: 'name' },      // Title
-            { data: 2, name: 'college_id', orderable:false, searchable:false }, 
-            { data: 3, name: 'date' },      // Date
-            { data: 4, name: 'status' },    // Status
-            { data: 5, name: 'type' },    // Status
-            { data: 6, name: 'event_type' },
-            { data: 7, name: 'actions', orderable:false, searchable:false } // Actions
+            { data: 0 , orderable:false, searchable:false},        // ID
+            { data: 1, name: 'id' },        // ID
+            { data: 2, name: 'name' },      // Title
+            { data: 3, name: 'college_id', orderable:false, searchable:false }, 
+            { data: 4, name: 'date' },      // Date
+            { data: 5, name: 'status' },    // Status
+            { data: 6, name: 'type' },    // Status
+            { data: 7, name: 'event_type' },
+            { data: 8, name: 'actions', orderable:false, searchable:false } // Actions
         ],
-        pageLength: 50,
+        pageLength: 5,
         lengthMenu: [5, 10, 25, 50, 100],
         orders: []
     });
 
+let selectedWorkshops = [];
+function getSelectedWorkshopIds() {
+    return selectedWorkshops;
+}
+
+$('#trainers-table').on(
+    'change',
+    '.record_checked',
+    function () {
+
+        let id = String($(this).val());
+
+        if ($(this).is(':checked')) {
+
+            if (!selectedWorkshops.includes(id)) {
+                selectedWorkshops.push(id);
+            }
+
+        } else {
+
+            selectedWorkshops = selectedWorkshops.filter(
+                function (selectedId) {
+                    return selectedId !== id;
+                }
+            );
+
+        }
+
+        console.log(
+            'selectedWorkshops:',
+            JSON.stringify(selectedWorkshops)
+        );
+
+        syncWorkshopCheckAll();
+    }
+);
+$('#checkAll').on('change', function () {
+
+    const checked = this.checked;
+
+    $(table.rows({ page: 'current' }).nodes())
+        .find('.record_checked')
+        .each(function () {
+
+            let id = String($(this).val());
+
+            this.checked = checked;
+
+            if (checked) {
+
+                if (!selectedWorkshops.includes(id)) {
+                    selectedWorkshops.push(id);
+                }
+
+            } else {
+
+                selectedWorkshops = selectedWorkshops.filter(
+                    function (selectedId) {
+                        return selectedId !== id;
+                    }
+                );
+
+            }
+
+        });
+
+    console.log(
+        'Select All:',
+        JSON.stringify(selectedWorkshops)
+    );
+
+    syncWorkshopCheckAll();
+});
+
+function syncWorkshopCheckAll() {
+
+    var currentPageCheckboxes =
+        $(table.rows({ page: 'current' }).nodes())
+            .find('.record_checked');
+
+    var checkedCount =
+        currentPageCheckboxes.filter(':checked').length;
+
+    $('#checkAll').prop(
+        'checked',
+        currentPageCheckboxes.length > 0 &&
+        checkedCount === currentPageCheckboxes.length
+    );
+}
+table.on('draw.dt', function () {
+
+    $(table.rows({ page: 'current' }).nodes())
+        .find('.record_checked')
+        .each(function () {
+
+            let id = String($(this).val());
+
+            $(this).prop(
+                'checked',
+                selectedWorkshops.includes(id)
+            );
+
+        });
+
+    syncWorkshopCheckAll();
+
+});
+
+$('#editBulkWorkshops').click(function () {
+
+    let ids = getSelectedWorkshopIds();
+
+    console.log(
+        'Bulk Edit Workshop IDs:',
+        JSON.stringify(ids)
+    );
+
+    console.log(
+        'Total selected:',
+        ids.length
+    );
+
+    if (ids.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Select at least one workshop'
+        });
+
+        return;
+    }
+
+    $('#bulkWorkshopIds').val(
+        JSON.stringify(ids)
+    );
+
+    $('#bulkEditWorkshopModal').modal('show');
+
+});
+
+$('#resetWorkshopSelection').click(function () {
+
+    selectedWorkshops = [];
+
+    // Uncheck current page checkboxes
+    $(table.rows({ page: 'current' }).nodes())
+        .find('.record_checked')
+        .prop('checked', false);
+
+    // Uncheck Select All
+    $('#checkAll').prop('checked', false);
+
+    console.log(
+        'Workshop selection reset:',
+        JSON.stringify(selectedWorkshops)
+    );
+
+});
     // $('select[name=college_id], select[name=status], select[name=range]').on('change', function () {
     //     table.ajax.reload();
     // });

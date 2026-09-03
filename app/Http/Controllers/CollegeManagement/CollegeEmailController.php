@@ -651,4 +651,250 @@ class CollegeEmailController extends Controller
 
         return view('college_emails.view', compact('recipient'));
     }
+
+    public function oldbulkMarkManuallySent(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:colleges,id',
+        ]);
+
+        $activeSessionId = session('admin_session_id');
+
+        DB::transaction(function () use ($request, $activeSessionId) {
+
+            $recipients = EmailRecipient::whereIn(
+                    'college_id',
+                    $request->ids
+                )
+                ->where('session_id', $activeSessionId)
+                ->where('status', '!=', 'sent')
+                ->get();
+
+            foreach ($recipients as $recipient) {
+
+                $meta = $recipient->meta ?? [];
+
+                $meta['manually_sent'] = true;
+                $meta['manually_sent_at'] = now()->toDateTimeString();
+
+                $recipient->update([
+                    'status' => 'sent',
+                    'sent_at' => now(),
+                    'error_message' => null,
+                    'meta' => $meta,
+                ]);
+
+                EmailCampaign::where('id', $recipient->campaign_id)
+                    ->increment('sent_count');
+            }
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Selected emails marked as manually sent.',
+        ]);
+    }
+
+    public function bulkMarkManuallySent(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array|min:1',
+        'ids.*' => 'integer|exists:colleges,id',
+    ]);
+
+    $activeSessionId = session('admin_session_id');
+
+    if (!$activeSessionId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'No active session selected.'
+        ], 422);
+    }
+
+    DB::beginTransaction();
+
+    try {
+
+        /*
+         * Fixed details for manually sent email
+         */
+        $purposeId = 1;
+        $senderId  = 1;
+        $subject   = 'Workshop';
+
+        $template = 'college_emails.college_visit';
+
+        /*
+         * Create ONE NEW CAMPAIGN.
+         *
+         * This represents one manual sending activity.
+         */
+        $campaign = EmailCampaign::create([
+            'purpose_id'       => $purposeId,
+            'sender_id'        => $senderId,
+            'session_id'       => $activeSessionId,
+            'subject'          => $subject,
+            'body'             => null,
+            'total_recipients' => 0,
+            'sent_count'       => 0,
+            'failed_count'     => 0,
+        ]);
+
+        $totalRecipients = 0;
+
+        $colleges = College::with('hod')
+            ->whereIn('id', $request->ids)
+            ->get();
+
+       foreach ($colleges as $college) {
+
+    $hod = $college->hod;
+
+    /*
+     * Find previous email history for this college.
+     */
+    $latestRecipients = EmailRecipient::where('college_id', $college->id)
+        ->where('session_id', $activeSessionId)
+        ->latest('id')
+        ->get();
+
+    /*
+     * If previous history exists:
+     * use the same recipient types again.
+     *
+     * Example:
+     * HOD
+     * HOD + TPO
+     */
+    if ($latestRecipients->isNotEmpty()) {
+
+        $types = $latestRecipients
+            ->pluck('type')
+            ->unique()
+            ->values();
+
+    } else {
+
+        /*
+         * No previous history.
+         *
+         * Since this is a manual send, create
+         * one HOD history record by default.
+         *
+         * This also works when HOD does not exist.
+         */
+        $types = collect(['hod']);
+    }
+
+    foreach ($types as $type) {
+
+        /*
+         * Default values for manual entry.
+         */
+        $email = 'manual@system.com';
+        $recipientName = 'Manual Entry';
+
+        $emailObj = null;
+        $hodId = null;
+
+        /*
+         * If HOD record exists, use it.
+         */
+        if ($hod) {
+
+            $hodId = $hod->id;
+
+            if ($type === 'hod') {
+
+                $emailObj = $hod->firstHodEmail;
+                $name = $hod->hod_name;
+
+            } elseif ($type === 'tpo') {
+
+                $emailObj = $hod->firstTpoEmail;
+                $name = $hod->tpo_name;
+
+            } else {
+
+                continue;
+            }
+
+            /*
+             * If real email exists, use it.
+             * Otherwise keep manual entry.
+             */
+            if ($emailObj && $emailObj->email) {
+
+                $email = $emailObj->email;
+                $recipientName = $name;
+            }
+        }
+
+        /*
+         * CREATE EMAIL HISTORY
+         *
+         * No actual email is sent.
+         */
+        EmailRecipient::create([
+
+            'campaign_id'    => $campaign->id,
+            'session_id'     => $activeSessionId,
+            'college_id'     => $college->id,
+
+            // NULL when HOD does not exist
+            'hod_id'         => $hodId,
+
+            // NULL when actual email record does not exist
+            'hod_email_id'   => $emailObj?->id,
+
+            'email'          => $email,
+            'recipient_name' => $recipientName,
+            'type'           => $type,
+
+            'status'         => 'sent',
+            'sent_at'        => now(),
+
+            'error_message'  => null,
+
+            'meta' => [
+                'template'         => $template,
+                'manually_sent'    => true,
+                'manually_sent_at' => now()->toDateTimeString(),
+            ],
+        ]);
+
+        $totalRecipients++;
+    }
+}
+
+        /*
+         * Update campaign statistics.
+         */
+        $campaign->update([
+            'total_recipients' => $totalRecipients,
+            'sent_count'       => $totalRecipients,
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'status' => true,
+            'message' => $totalRecipients .
+                ' recipient(s) marked as manually sent.',
+            'campaign_id' => $campaign->id,
+            'total_recipients' => $totalRecipients,
+            'sent_count' => $totalRecipients,
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+}
 }

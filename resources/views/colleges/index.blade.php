@@ -268,7 +268,30 @@
 
     </div>
 
+@if(session('delete_error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>College cannot be deleted!</strong>
 
+        <div class="mt-2">
+            <strong>{{ session('delete_error.college') }}</strong>
+            has existing records in:
+        </div>
+
+        <ul class="mb-0 mt-2">
+            @foreach(session('delete_error.records') as $table => $count)
+                <li>
+                    <strong>{{ $table }}</strong>
+                    — {{ $count }} record{{ $count > 1 ? 's' : '' }}
+                </li>
+            @endforeach
+        </ul>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"></button>
+    </div>
+@endif
     {{-- ================================
         SUCCESS MESSAGE
     ================================= --}}
