@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\DataTables\DataTablesServerSide;
 use App\Models\State;
 use App\Models\District;
+use App\Models\CollegeEmailStatus;
 
 class CollegeEmailController extends Controller
 {
@@ -31,274 +32,334 @@ class CollegeEmailController extends Controller
     */
 
     public function index(Request $request)
-{
-    if ($request->ajax()) {
+    {
+        if ($request->ajax()) {
 
-        $activeSessionId = session('admin_session_id');
+            $activeSessionId = session('admin_session_id');
 
-        $query = College::with(['state', 'district']);
+            $query = College::with(['state', 'district']);
 
-        /*
-        |------------------------------------------
-        | FILTER: Email Status
-        |------------------------------------------
-        */
+            /*
+            |------------------------------------------
+            | FILTER: Email Status
+            |------------------------------------------
+            */
 
-        if ($request->college_id) {
-            $query->where('id', $request->college_id);
-        }
-
-        if ($request->state_id) {
-            $query->where('state_id', $request->state_id);
-        }
-
-        if ($request->district_id) {
-            $query->where('district_id', $request->district_id);
-        }
-
-        if ($request->college_type !== null && $request->college_type !== '') {
-            $query->where('college_type', $request->college_type);
-        }
-
-        if ($request->email_status == 'sent') {
-            $query->whereHas('emailRecipients', function ($q) use ($activeSessionId) {
-                $q->where('session_id', $activeSessionId)
-                  ->where('status', 'sent');
-            });
-        }
-
-        if ($request->email_status == 'failed') {
-            $query->whereHas('emailRecipients', function ($q) use ($activeSessionId) {
-                $q->where('session_id', $activeSessionId)
-                  ->where('status', 'failed');
-            });
-        }
-
-        if ($request->email_status == 'not_sent') {
-            $query->whereDoesntHave('emailRecipients', function ($q) use ($activeSessionId) {
-                $q->where('session_id', $activeSessionId);
-            });
-        }
-
-        // if ($request->date_from) {
-        //     $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
-        //         $q->where('session_id', $activeSessionId)
-        //           ->whereDate('sent_at', '>=', $request->date_from);
-        //     });
-        // }
-
-        // if ($request->date_to) {
-        //     $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
-        //         $q->where('session_id', $activeSessionId)
-        //           ->whereDate('sent_at', '<=', $request->date_to);
-        //     });
-        // }
-
-        if (!$request->range) {
-
-            if ($request->date_from) {
-                $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
-                    $q->where('session_id', $activeSessionId)
-                      ->whereDate('sent_at', '>=', $request->date_from);
-                });
+            if ($request->college_id) {
+                $query->where('id', $request->college_id);
             }
 
-            if ($request->date_to) {
-                $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
-                    $q->where('session_id', $activeSessionId)
-                      ->whereDate('sent_at', '<=', $request->date_to);
-                });
+            if ($request->state_id) {
+                $query->where('state_id', $request->state_id);
             }
 
-        }
+            if ($request->district_id) {
+                $query->where('district_id', $request->district_id);
+            }
 
-        if ($request->range) {
+            if ($request->college_type !== null && $request->college_type !== '') {
+                $query->where('college_type', $request->college_type);
+            }
 
-            $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
+            // if ($request->email_status == 'sent') {
+            //     $query->whereHas('emailRecipients', function ($q) use ($activeSessionId) {
+            //         $q->where('session_id', $activeSessionId)
+            //           ->where('status', 'sent');
+            //     });
+            // }
 
-                $q->where('session_id', $activeSessionId);
+            // if ($request->email_status == 'failed') {
+            //     $query->whereHas('emailRecipients', function ($q) use ($activeSessionId) {
+            //         $q->where('session_id', $activeSessionId)
+            //           ->where('status', 'failed');
+            //     });
+            // }
 
-                switch ($request->range) {
+            // if ($request->email_status == 'not_sent') {
+            //     $query->whereDoesntHave('emailRecipients', function ($q) use ($activeSessionId) {
+            //         $q->where('session_id', $activeSessionId);
+            //     });
+            // }
 
-                    case 'today':
-                        $q->whereDate('sent_at', today());
-                        break;
 
-                    case 'yesterday':
-                        $q->whereDate('sent_at', today()->subDay());
-                        break;
+            // if ($request->email_sent_status === 'sent') {
 
-                    case 'current_week_past':
-                        $q->whereBetween('sent_at', [
-                            now()->startOfWeek(),
-                            now()
-                        ]);
-                        break;
+            //     $query->whereHas('emailStatus', function ($q) use ($activeSessionId) {
+            //         $q->where('session_id', $activeSessionId)
+            //           ->where('email_sent', 1);
+            //     });
 
-                    case 'last_week':
-                        $q->whereBetween('sent_at', [
-                            now()->subWeek()->startOfWeek(),
-                            now()->subWeek()->endOfWeek()
-                        ]);
-                        break;
+            // }
 
-                    case 'last_month':
-                        $q->whereBetween('sent_at', [
-                            now()->subMonth()->startOfMonth(),
-                            now()->subMonth()->endOfMonth()
-                        ]);
-                        break;
+            // if ($request->email_sent_status === 'not_sent') {
 
-                    case 'last_30_days':
-                        $q->whereBetween('sent_at', [
-                            now()->subDays(30),
-                            now()
-                        ]);
-                        break;
+            //     $query->where(function ($q) use ($activeSessionId) {
+
+            //         $q->whereDoesntHave('emailStatus', function ($sub) use ($activeSessionId) {
+            //             $sub->where('session_id', $activeSessionId);
+            //         })
+            //         ->orWhereHas('emailStatus', function ($sub) use ($activeSessionId) {
+            //             $sub->where('session_id', $activeSessionId)
+            //                 ->where('email_sent', 0);
+            //         });
+
+            //     });
+
+            // }
+
+                if ($request->email_status === 'sent') {
+
+                    $query->whereHas('emailStatus', function ($q) use ($activeSessionId) {
+                        $q->where('session_id', $activeSessionId)
+                          ->where('email_sent', 1);
+                    });
+
+                } elseif ($request->email_status === 'not_sent') {
+
+                    $query->where(function ($q) use ($activeSessionId) {
+
+                        $q->whereDoesntHave('emailStatus', function ($sub) use ($activeSessionId) {
+                            $sub->where('session_id', $activeSessionId);
+                        })
+                        ->orWhereHas('emailStatus', function ($sub) use ($activeSessionId) {
+                            $sub->where('session_id', $activeSessionId)
+                                ->where('email_sent', 0);
+                        });
+
+                    });
                 }
+            // if ($request->date_from) {
+            //     $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
+            //         $q->where('session_id', $activeSessionId)
+            //           ->whereDate('sent_at', '>=', $request->date_from);
+            //     });
+            // }
+
+            // if ($request->date_to) {
+            //     $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
+            //         $q->where('session_id', $activeSessionId)
+            //           ->whereDate('sent_at', '<=', $request->date_to);
+            //     });
+            // }
+
+            if (!$request->range) {
+
+                if ($request->date_from) {
+                    $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
+                        $q->where('session_id', $activeSessionId)
+                          ->whereDate('sent_at', '>=', $request->date_from);
+                    });
+                }
+
+                if ($request->date_to) {
+                    $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
+                        $q->where('session_id', $activeSessionId)
+                          ->whereDate('sent_at', '<=', $request->date_to);
+                    });
+                }
+
+            }
+
+            if ($request->range) {
+
+                $query->whereHas('emailRecipients', function ($q) use ($request, $activeSessionId) {
+
+                    $q->where('session_id', $activeSessionId);
+
+                    switch ($request->range) {
+
+                        case 'today':
+                            $q->whereDate('sent_at', today());
+                            break;
+
+                        case 'yesterday':
+                            $q->whereDate('sent_at', today()->subDay());
+                            break;
+
+                        case 'current_week_past':
+                            $q->whereBetween('sent_at', [
+                                now()->startOfWeek(),
+                                now()
+                            ]);
+                            break;
+
+                        case 'last_week':
+                            $q->whereBetween('sent_at', [
+                                now()->subWeek()->startOfWeek(),
+                                now()->subWeek()->endOfWeek()
+                            ]);
+                            break;
+
+                        case 'last_month':
+                            $q->whereBetween('sent_at', [
+                                now()->subMonth()->startOfMonth(),
+                                now()->subMonth()->endOfMonth()
+                            ]);
+                            break;
+
+                        case 'last_30_days':
+                            $q->whereBetween('sent_at', [
+                                now()->subDays(30),
+                                now()
+                            ]);
+                            break;
+                    }
+                });
+            }
+
+
+
+            return DataTablesServerSide::response($request, $query, [
+                'orderable'  => ['id'],
+                'searchable' => ['college_name'],
+            ], function ($college, $index, $start) use ($activeSessionId) {
+
+                /*
+                |------------------------------------------
+                | EMAIL COUNT
+                |------------------------------------------
+                */
+                $emailCount = EmailRecipient::where('college_id', $college->id)
+                    ->where('session_id', $activeSessionId)
+                    ->count();
+
+                // $emailCount = EmailRecipient::where('college_id', $college->id)
+                //     ->where('session_id', $activeSessionId)
+                //     ->count();
+
+                if ($emailCount > 0) {
+                    $emailCount = '<a href="'.route('admin.college-emails.logs', $college->id).'"  target="_blank"  class="text-primary fw-bold">'
+                        .$emailCount.
+                        '</a>';
+                }
+                /*
+                |------------------------------------------
+                | SENT TO (HOD / TPO / BOTH)
+                |------------------------------------------
+                */
+                $types = EmailRecipient::where('college_id', $college->id)
+                    ->where('session_id', $activeSessionId)
+                    ->select('type')
+                    ->distinct()
+                    ->pluck('type')
+                    ->toArray();
+
+                if (empty($types)) {
+                    $sentTo = '-';
+                } elseif (count($types) == 2) {
+                    $sentTo = '<span class="badge bg-info">Both</span>';
+                } else {
+                    $sentTo = '<span class="badge bg-primary">'.strtoupper($types[0]).'</span>';
+                }
+
+                /*
+                |------------------------------------------
+                | STATUS (LATEST)
+                |------------------------------------------
+                */
+                $latest = EmailRecipient::where('college_id', $college->id)
+                    ->where('session_id', $activeSessionId)
+                    ->latest()
+                    ->first();
+
+                if (!$latest) {
+                    $status = '<span class="badge bg-secondary">Not Sent</span>';
+                } else {
+                    $color = $latest->status == 'sent' ? 'success' : ($latest->status == 'failed' ? 'danger' : 'secondary');
+                    $status = '<span class="badge bg-'.$color.'">'.ucfirst($latest->status).'</span>';
+                }
+
+                /*
+                |------------------------------------------
+                | CHECKBOX
+                |------------------------------------------
+                */
+                $checkbox = '<input type="checkbox" class="record_checkbox" value="'.$college->id.'">';
+
+                /*
+                |------------------------------------------
+                | ACTIONS
+                |------------------------------------------
+                */
+
+                $failedCount = EmailRecipient::where('college_id', $college->id)
+                    ->where('session_id', $activeSessionId)
+                    ->where('status', 'failed')
+                    ->count();
+
+                $totalCount = EmailRecipient::where('college_id', $college->id)
+                    ->where('session_id', $activeSessionId)
+                    ->count();
+
+                if ($failedCount > 0) {
+
+                    $actions = '
+                        <button class="btn btn-sm btn-warning retry-single" data-id="'.$college->id.'">
+                            Retry
+                        </button>
+                    ';
+
+                } elseif ($totalCount == 0) {
+
+                    $actions = '
+                        <button class="btn btn-sm btn-primary send-single" data-id="'.$college->id.'">
+                            Send
+                        </button>
+                    ';
+
+                } else {
+
+                    // $actions = '<span class="badge bg-success">Completed</span>';
+                    $actions = '
+                        <button class="btn btn-sm btn-primary send-single" data-id="'.$college->id.'">
+                            Send
+                        </button>
+                    ';
+                }
+                // $actions = '
+                //     <button class="btn btn-sm btn-primary send-single" data-id="'.$college->id.'">
+                //         Send
+                //     </button>
+
+                //     <button class="btn btn-sm btn-warning retry-single" data-id="'.$college->id.'">
+                //         Retry
+                //     </button>
+                // ';
+                $rowNum = $start + $index + 1;
+
+                $emailStatus = CollegeEmailStatus::where('college_id', $college->id)
+                    ->where('session_id', $activeSessionId)
+                    ->first();
+
+                if ($emailStatus && $emailStatus->email_sent) {
+                    $emailSent = '<span class="badge bg-success">Sent</span>';
+                } else {
+                    $emailSent = '<span class="badge bg-secondary">Not Sent</span>';
+                }
+
+                return [
+                    $checkbox,
+                    $rowNum,
+                    e($college->full_name),
+                    $emailCount,
+                    $sentTo,
+                    $emailSent,
+                    $actions
+                ];
             });
         }
 
-        return DataTablesServerSide::response($request, $query, [
-            'orderable'  => ['id'],
-            'searchable' => ['college_name'],
-        ], function ($college, $index, $start) use ($activeSessionId) {
+        $colleges = College::orderBy('college_name','asc')->get();
+        $states = State::orderBy('name')->get();
 
-            /*
-            |------------------------------------------
-            | EMAIL COUNT
-            |------------------------------------------
-            */
-            $emailCount = EmailRecipient::where('college_id', $college->id)
-                ->where('session_id', $activeSessionId)
-                ->count();
+        $districtsGrouped = District::with('state')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('state_id');
 
-            // $emailCount = EmailRecipient::where('college_id', $college->id)
-            //     ->where('session_id', $activeSessionId)
-            //     ->count();
-
-            if ($emailCount > 0) {
-                $emailCount = '<a href="'.route('admin.college-emails.logs', $college->id).'"  target="_blank"  class="text-primary fw-bold">'
-                    .$emailCount.
-                    '</a>';
-            }
-            /*
-            |------------------------------------------
-            | SENT TO (HOD / TPO / BOTH)
-            |------------------------------------------
-            */
-            $types = EmailRecipient::where('college_id', $college->id)
-                ->where('session_id', $activeSessionId)
-                ->select('type')
-                ->distinct()
-                ->pluck('type')
-                ->toArray();
-
-            if (empty($types)) {
-                $sentTo = '-';
-            } elseif (count($types) == 2) {
-                $sentTo = '<span class="badge bg-info">Both</span>';
-            } else {
-                $sentTo = '<span class="badge bg-primary">'.strtoupper($types[0]).'</span>';
-            }
-
-            /*
-            |------------------------------------------
-            | STATUS (LATEST)
-            |------------------------------------------
-            */
-            $latest = EmailRecipient::where('college_id', $college->id)
-                ->where('session_id', $activeSessionId)
-                ->latest()
-                ->first();
-
-            if (!$latest) {
-                $status = '<span class="badge bg-secondary">Not Sent</span>';
-            } else {
-                $color = $latest->status == 'sent' ? 'success' : ($latest->status == 'failed' ? 'danger' : 'secondary');
-                $status = '<span class="badge bg-'.$color.'">'.ucfirst($latest->status).'</span>';
-            }
-
-            /*
-            |------------------------------------------
-            | CHECKBOX
-            |------------------------------------------
-            */
-            $checkbox = '<input type="checkbox" class="record_checkbox" value="'.$college->id.'">';
-
-            /*
-            |------------------------------------------
-            | ACTIONS
-            |------------------------------------------
-            */
-
-            $failedCount = EmailRecipient::where('college_id', $college->id)
-                ->where('session_id', $activeSessionId)
-                ->where('status', 'failed')
-                ->count();
-
-            $totalCount = EmailRecipient::where('college_id', $college->id)
-                ->where('session_id', $activeSessionId)
-                ->count();
-
-            if ($failedCount > 0) {
-
-                $actions = '
-                    <button class="btn btn-sm btn-warning retry-single" data-id="'.$college->id.'">
-                        Retry
-                    </button>
-                ';
-
-            } elseif ($totalCount == 0) {
-
-                $actions = '
-                    <button class="btn btn-sm btn-primary send-single" data-id="'.$college->id.'">
-                        Send
-                    </button>
-                ';
-
-            } else {
-
-                // $actions = '<span class="badge bg-success">Completed</span>';
-                $actions = '
-                    <button class="btn btn-sm btn-primary send-single" data-id="'.$college->id.'">
-                        Send
-                    </button>
-                ';
-            }
-            // $actions = '
-            //     <button class="btn btn-sm btn-primary send-single" data-id="'.$college->id.'">
-            //         Send
-            //     </button>
-
-            //     <button class="btn btn-sm btn-warning retry-single" data-id="'.$college->id.'">
-            //         Retry
-            //     </button>
-            // ';
-            $rowNum = $start + $index + 1;
-
-            return [
-                $checkbox,
-                $rowNum,
-                e($college->full_name),
-                $emailCount,
-                $sentTo,
-                $status,
-                $actions
-            ];
-        });
+        return view('college_emails.index', compact('colleges','states','districtsGrouped'));
     }
-
-    $colleges = College::orderBy('college_name','asc')->get();
-    $states = State::orderBy('name')->get();
-
-    $districtsGrouped = District::with('state')
-        ->orderBy('name')
-        ->get()
-        ->groupBy('state_id');
-
-    return view('college_emails.index', compact('colleges','states','districtsGrouped'));
-}
+    
     public function index2(Request $request)
     {
         if ($request->ajax()) {
@@ -894,6 +955,52 @@ class CollegeEmailController extends Controller
         return response()->json([
             'status' => false,
             'message' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+public function updateEmailStatus(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array|min:1',
+        'ids.*' => 'integer|exists:colleges,id',
+        'email_sent' => 'required|boolean',
+    ]);
+
+    $activeSessionId = session('admin_session_id');
+
+    if (!$activeSessionId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'No active session selected.'
+        ], 422);
+    }
+
+    try {
+
+        foreach ($request->ids as $collegeId) {
+
+            CollegeEmailStatus::updateOrCreate(
+                [
+                    'session_id' => $activeSessionId,
+                    'college_id' => $collegeId,
+                ],
+                [
+                    'email_sent' => $request->email_sent,
+                ]
+            );
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => count($request->ids) . ' college(s) email status updated successfully.'
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
         ], 500);
     }
 }

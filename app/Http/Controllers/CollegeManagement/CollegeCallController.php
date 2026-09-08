@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\DataTables\DataTablesServerSide;
 use App\Models\State;
 use App\Models\District;
+use App\Models\CollegeCallStatus;
 
 class CollegeCallController extends Controller
 {
@@ -50,23 +51,45 @@ class CollegeCallController extends Controller
                 $query->where('district_id', $request->district_id);
             }
 
-            if ($request->call_status == 'connected') {
-                $query->whereHas('callLogs', function ($q) use ($activeSessionId) {
-                    $q->where('session_id', $activeSessionId)
-                      ->where('status', 'connected');
-                });
-            }
+            // if ($request->call_status == 'connected') {
+            //     $query->whereHas('callLogs', function ($q) use ($activeSessionId) {
+            //         $q->where('session_id', $activeSessionId)
+            //           ->where('status', 'connected');
+            //     });
+            // }
 
-            if ($request->call_status == 'not_called') {
-                $query->whereDoesntHave('callLogs', function ($q) use ($activeSessionId) {
-                    $q->where('session_id', $activeSessionId);
-                });
-            }
+            // if ($request->call_status == 'not_called') {
+            //     $query->whereDoesntHave('callLogs', function ($q) use ($activeSessionId) {
+            //         $q->where('session_id', $activeSessionId);
+            //     });
+            // }
 
-            if ($request->call_status == 'failed') {
-                $query->whereHas('callLogs', function ($q) use ($activeSessionId) {
+            // if ($request->call_status == 'failed') {
+            //     $query->whereHas('callLogs', function ($q) use ($activeSessionId) {
+            //         $q->where('session_id', $activeSessionId)
+            //           ->where('status', '!=', 'connected');
+            //     });
+            // }
+
+            if ($request->call_status === 'called') {
+
+                $query->whereHas('callStatus', function ($q) use ($activeSessionId) {
                     $q->where('session_id', $activeSessionId)
-                      ->where('status', '!=', 'connected');
+                      ->where('call_done', 1);
+                });
+
+            } elseif ($request->call_status === 'not_called') {
+
+                $query->where(function ($q) use ($activeSessionId) {
+
+                    $q->whereDoesntHave('callStatus', function ($sub) use ($activeSessionId) {
+                        $sub->where('session_id', $activeSessionId);
+                    })
+                    ->orWhereHas('callStatus', function ($sub) use ($activeSessionId) {
+                        $sub->where('session_id', $activeSessionId)
+                            ->where('call_done', 0);
+                    });
+
                 });
             }
 
@@ -212,13 +235,24 @@ class CollegeCallController extends Controller
                 $checkbox = '<input type="checkbox" class="record_checkbox" value="'.$college->id.'">';
 
                 $rowNum = $start + $index + 1;
+
+                $callStatus = CollegeCallStatus::where('college_id', $college->id)
+                    ->where('session_id', $activeSessionId)
+                    ->first();
+
+                if ($callStatus && $callStatus->call_done == 1) {
+                    $callDone = '<span class="badge bg-success">Called</span>';
+                } else {
+                    $callDone = '<span class="badge bg-secondary">Not Called</span>';
+                }
+                
                 return [
                     $checkbox,
                     $rowNum,
                     e($college->full_name),
                     $callCountHtml,
                     $calledTo,
-                    $status,
+                    $callDone,
                     $actions
                 ];
             });
@@ -417,5 +451,51 @@ class CollegeCallController extends Controller
         $log = CallLog::with(['college','hod','campaign'])->findOrFail($id);
 
         return view('college_calls.view', compact('log'));
+    }
+
+    public function updateCallStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:colleges,id',
+            'call_done' => 'required|boolean',
+        ]);
+
+        $activeSessionId = session('admin_session_id');
+
+        if (!$activeSessionId) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No active session selected.'
+            ], 422);
+        }
+
+        try {
+
+            foreach ($request->ids as $collegeId) {
+
+                CollegeCallStatus::updateOrCreate(
+                    [
+                        'session_id' => $activeSessionId,
+                        'college_id' => $collegeId,
+                    ],
+                    [
+                        'call_done' => $request->call_done,
+                    ]
+                );
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => count($request->ids) . ' college(s) call status updated successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -10,6 +10,12 @@
         </div>
 
         <div class="col-md-6 text-end">
+            <button id="editCallStatus"
+                type="button"
+                class="btn btn-success">
+                Edit Status
+            </button>
+
             <button id="callSelected" class="btn btn-primary">
                 Start Calling (Selected)
             </button>
@@ -44,9 +50,8 @@
             <div class="col-md-2">
                 <select id="filter-call-status" class="form-select">
                     <option value="">Call Status</option>
-                    <option value="connected">Connected</option>
+                    <option value="called">Called</option>
                     <option value="not_called">Not Called</option>
-                    <option value="failed">Failed</option>
                 </select>
             </div>
 
@@ -97,7 +102,77 @@
     </div>
 
 </div>
+{{-- CALL STATUS MODAL --}}
+<div class="modal fade" id="callStatusModal" tabindex="-1" aria-hidden="true">
 
+    <div class="modal-dialog modal-md modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Call Status
+                </h5>
+
+                <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Call Done <span class="text-danger">*</span>
+                    </label>
+
+                    <select id="callDoneValue"
+                        class="form-select"
+                        required>
+
+                        <option value="">
+                            Select Status
+                        </option>
+
+                        <option value="1">
+                            Called
+                        </option>
+
+                        <option value="0">
+                            Not Called
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                    id="saveCallStatus"
+                    class="btn btn-success">
+                    Update
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 @endsection
 
 @push('scripts')
@@ -338,6 +413,109 @@ $('#filter-district').on('change', function(){
 // 🔥 COLLEGE CHANGE
 $('#filter-college').on('change', function(){
     table.ajax.reload();
+});
+
+// EDIT CALL STATUS
+$('#editCallStatus').on('click', function () {
+
+    if (selectedIds.size === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Selection',
+            text: 'Please select at least one college'
+        });
+
+        return;
+    }
+
+    // Reset status
+    $('#callDoneValue').val('');
+
+    // Open modal
+    $('#callStatusModal').modal('show');
+});
+
+
+// SAVE CALL STATUS
+$('#saveCallStatus').on('click', function () {
+
+    if (selectedIds.size === 0) {
+        return;
+    }
+
+    let callDone = $('#callDoneValue').val();
+
+    // Required
+    if (callDone === '') {
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'Status Required',
+            text: 'Please select Call Status.'
+        });
+
+        return;
+    }
+
+    $.ajax({
+
+        url: "{{ route('admin.college-calls.updateCallStatus') }}",
+
+        type: 'POST',
+
+        data: {
+
+            _token: "{{ csrf_token() }}",
+
+            ids: Array.from(selectedIds),
+
+            call_done: callDone
+
+        },
+
+        success: function (response) {
+
+            if (response.status) {
+
+                $('#callStatusModal').modal('hide');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Updated',
+                    text: response.message
+                });
+
+                selectedIds.clear();
+
+                $('#checkAll').prop('checked', false);
+
+                table.ajax.reload(null, false);
+            }
+
+        },
+
+        error: function (xhr) {
+
+            let message = 'Something went wrong.';
+
+            if (
+                xhr.responseJSON &&
+                xhr.responseJSON.message
+            ) {
+                message = xhr.responseJSON.message;
+            }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message
+            });
+
+        }
+
+    });
+
 });
 </script>
 

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 
 use App\Mail\CollegeEmailMailable;
+use App\Models\CollegeEmailStatus;
 
 class SendCollegeEmailJob implements ShouldQueue
 {
@@ -105,6 +106,21 @@ class SendCollegeEmailJob implements ShouldQueue
 
             $recipient->refresh();
 
+            /*
+            |--------------------------------------------------------------------------
+            | Update College Email Sent Status
+            |--------------------------------------------------------------------------
+            */
+            CollegeEmailStatus::updateOrCreate(
+                [
+                    'session_id' => $campaign->session_id,
+                    'college_id' => $recipient->college_id,
+                ],
+                [
+                    'email_sent' => 1,
+                ]
+            );
+
             $campaign->increment('sent_count');
 
         } catch (\Exception $e) {
@@ -113,6 +129,16 @@ class SendCollegeEmailJob implements ShouldQueue
                 'status' => 'failed',
                 'error_message' => $e->getMessage(),
             ]);
+
+            CollegeEmailStatus::updateOrCreate(
+                [
+                    'session_id' => $recipient->campaign->session_id,
+                    'college_id' => $recipient->college_id,
+                ],
+                [
+                    'email_sent' => 0,
+                ]
+            );
 
             $recipient->campaign->increment('failed_count');
         }

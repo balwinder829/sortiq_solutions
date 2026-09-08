@@ -182,6 +182,8 @@ use App\Http\Controllers\PlacementFrontendController;
 use App\Http\Controllers\StudentFeedbackController;
 use App\Http\Controllers\StudentFeedbackAdminController;
 
+use App\Http\Controllers\StudentGeneratedCvController;
+
 Route::get('/student-feedback', [StudentFeedbackController::class, 'create'])
     ->name('student-feedback.create');
 
@@ -478,6 +480,12 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
                 [CollegeEmailController::class, 'bulkMarkManuallySent']
             )->name('college-emails.bulkMarkManuallySent');
 
+
+            Route::post(
+                '/college-emails/update-email-status',
+                [CollegeEmailController::class, 'updateEmailStatus']
+            )->name('college-emails.updateEmailStatus');
+
         Route::prefix('college-emails')->name('college-emails.')->group(function () {
 
             Route::get('/', [CollegeEmailController::class, 'index'])->name('index');
@@ -499,6 +507,11 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
             Route::get('/view/{recipient}', [CollegeEmailController::class, 'view'])->name('view');
 
         });
+
+        Route::post(
+            '/college-calls/update-call-status',
+            [CollegeCallController::class, 'updateCallStatus']
+        )->name('college-calls.updateCallStatus');
 
 
         Route::prefix('college-calls')->name('college-calls.')->group(function () {
@@ -1053,6 +1066,14 @@ Route::middleware(['auth'])->group(function () {
             StudentCustomLetterController::class
     );
 
+        Route::get(
+            'student-generated-cvs/{id}/download/{template}',
+            [StudentGeneratedCvController::class, 'download']
+        )->name('student-generated-cvs.download');
+
+        
+        Route::resource('student-generated-cvs', StudentGeneratedCvController::class);
+
     Route::get('/visitor-records', [VisitorRecordController::class, 'index'])
         ->name('admin.visitor_records.index');
 
@@ -1069,6 +1090,8 @@ Route::middleware(['auth'])->group(function () {
         VisitorRecordController::class,
         'show'
     ])->name('admin.visitor_records.show');
+
+
 
     Route::get('/student-feedback', [
             StudentFeedbackAdminController::class,

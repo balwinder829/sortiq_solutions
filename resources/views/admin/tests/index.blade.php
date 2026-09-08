@@ -95,31 +95,7 @@
             </select>
         </div>
 
-        <div class="col-md-2 mb-2">
-            <label>Course</label>
-            <select name="student_course_id" class="form-select filterchange">
-                <option value="">All</option>
-                @foreach($courses as $c)
-                    <option value="{{ $c->id }}"
-                        {{ request('student_course_id') == $c->id ? 'selected' : '' }}>
-                        {{ $c->course_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="col-md-2 mb-2">
-            <label>Semester</label>
-            <select name="semester_id" class="form-select filterchange">
-                <option value="">All</option>
-                @foreach($semesters as $sem)
-                    <option value="{{ $sem->id }}"
-                        {{ request('semester_id') == $sem->id ? 'selected' : '' }}>
-                        {{ $sem->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+        
         <div class="col-md-2">
             <label>Gender</label>
             <select name="gender" class="form-select filterchange">
@@ -193,11 +169,11 @@
     <th>Title</th>
     <th>Category</th>
     <th>College</th>
-    <th>Course</th>
-    <th>Semester</th>
+    
     <th>Status</th>
     <th>Active</th>
-    <th>Date</th>
+    <th>Start Date</th>
+    <th>End Date</th>
     <th>Total Questions</th>
     <th>Total Students</th>
     <th>Selected</th>
@@ -235,8 +211,7 @@
         @endif
 
         </td>
-    <td>{{ $test->course?->course_name ?? '-' }}</td>
-    <td>{{ $test->semester?->name ?? '-' }}</td>
+    
 
     <td>
         @if($test->status == 'published')
@@ -257,8 +232,14 @@
     </td>
 
     <td>
-        {{ $test->test_date 
-            ? \Carbon\Carbon::parse($test->test_date)->format('d M Y') 
+        {{ $test->exam_start_at 
+            ? \Carbon\Carbon::parse($test->exam_start_at)->format('d M Y') 
+            : '-' 
+        }}
+    </td>
+    <td>
+        {{ $test->exam_end_at 
+            ? \Carbon\Carbon::parse($test->exam_end_at)->format('d M Y') 
             : '-' 
         }}
     </td>

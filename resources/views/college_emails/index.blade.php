@@ -12,10 +12,12 @@
         
 
         <div class="col-md-6 text-end">
-            <button id="markManuallySent"
-                type="button"
-                class="btn btn-success">
-            Manually Sent
+        
+
+        <button id="markEmailStatus"
+            type="button"
+            class="btn btn-success">
+            Edit Email Status
         </button>
 
             <button id="sendSelected" class="btn btn-primary">
@@ -76,7 +78,7 @@
                 <option value="">Email Status</option>
                 <option value="sent">Sent</option>
                 <option value="not_sent">Not Sent</option>
-                <option value="failed">Failed</option>
+                <!-- <option value="failed">Failed</option> -->
             </select>
         </div>
 
@@ -127,6 +129,66 @@
                 </tr>
             </thead>
         </table>
+    </div>
+
+</div>
+
+{{-- EMAIL STATUS MODAL --}}
+<div class="modal fade" id="emailStatusModal" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog modal-md modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Email Status</h5>
+
+                <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Email Sent <span class="text-danger">*</span>
+                    </label>
+
+                    <select id="emailSentValue" class="form-select" required>
+
+                        <option value="">Select Status</option>
+
+                        <option value="1">Sent</option>
+
+                        <option value="0">Not Sent</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button type="button"
+                    id="saveEmailStatus"
+                    class="btn btn-success">
+                    Update
+                </button>
+
+            </div>
+
+        </div>
+
     </div>
 
 </div>
@@ -446,9 +508,9 @@ $('#date_from, #date_to, #filter-range').on('change', function () {
 });
 
 // MARK SELECTED COLLEGES AS MANUALLY SENT
-$('#markManuallySent').on('click', function () {
+// EDIT EMAIL STATUS
+$('#markEmailStatus').on('click', function () {
 
-    // No selection
     if (selectedIds.size === 0) {
 
         Swal.fire({
@@ -460,98 +522,93 @@ $('#markManuallySent').on('click', function () {
         return;
     }
 
+    // Reset status selection
+    $('#emailSentValue').val('');
 
-    // Confirmation
-    Swal.fire({
-
-        title: 'Mark as Manually Sent?',
-
-        text: 'Selected email records will be marked as sent. No email will be sent.',
-
-        icon: 'question',
-
-        showCancelButton: true,
-
-        confirmButtonText: 'Yes, Mark Sent',
-
-        cancelButtonText: 'Cancel'
-
-    }).then(function (result) {
-
-        if (!result.isConfirmed) {
-            return;
-        }
+    // Open modal
+    $('#emailStatusModal').modal('show');
+});
 
 
-        // Send selected college IDs to controller
-        $.ajax({
+// SAVE EMAIL STATUS
+$('#saveEmailStatus').on('click', function () {
 
-            url: "{{ route('admin.college-emails.bulkMarkManuallySent') }}",
+    if (selectedIds.size === 0) {
+        return;
+    }
 
-            type: 'POST',
+    let emailSent = $('#emailSentValue').val();
 
-            data: {
-                _token: "{{ csrf_token() }}",
+    // Status required
+    if (emailSent === '') {
 
-                ids: Array.from(selectedIds),
+        Swal.fire({
+            icon: 'warning',
+            title: 'Status Required',
+            text: 'Please select Email Sent status.'
+        });
 
-                purpose_id: $('select[name="purpose_id"]').val(),
+        return;
+    }
 
-                sender_id: $('select[name="sender_id"]').val(),
+    $.ajax({
 
-                subject: $('input[name="subject"]').val(),
+        url: "{{ route('admin.college-emails.updateEmailStatus') }}",
 
-                body: $('textarea[name="body"]').val(),
+        type: 'POST',
 
-                types: getSelectedTypes()
-            },
+        data: {
 
-            success: function (response) {
+            _token: "{{ csrf_token() }}",
 
-                if (response.status) {
+            ids: Array.from(selectedIds),
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Done',
-                        text: response.message
-                    });
+            email_sent: emailSent
 
+        },
 
-                    // Clear selected IDs
-                    selectedIds.clear();
+        success: function (response) {
 
+            if (response.status) {
 
-                    // Uncheck Select All
-                    $('#checkAll').prop('checked', false);
-
-
-                    // Reload DataTable
-                    table.ajax.reload(null, false);
-
-                }
-
-            },
-
-            error: function (xhr) {
-
-                let message = 'Something went wrong.';
-
-                if (
-                    xhr.responseJSON &&
-                    xhr.responseJSON.message
-                ) {
-                    message = xhr.responseJSON.message;
-                }
+                $('#emailStatusModal').modal('hide');
 
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: message
+                    icon: 'success',
+                    title: 'Updated',
+                    text: response.message
                 });
 
+                // Clear selection
+                selectedIds.clear();
+
+                // Uncheck select all
+                $('#checkAll').prop('checked', false);
+
+                // Reload table
+                table.ajax.reload(null, false);
             }
 
-        });
+        },
+
+        error: function (xhr) {
+
+            let message = 'Something went wrong.';
+
+            if (
+                xhr.responseJSON &&
+                xhr.responseJSON.message
+            ) {
+                message = xhr.responseJSON.message;
+            }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message
+            });
+
+        }
 
     });
 

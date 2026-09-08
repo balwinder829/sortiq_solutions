@@ -690,12 +690,12 @@ body.menu-toggle .sidebar-collapse-btn{
                 </li>
 
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status','admin.student_feedback*']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status','admin.student_feedback*','student-generated-cvs*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status','admin.student_feedback*']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','student-accepted-letters*','admin.office-tests*','admin.office-online-tests*','student-custom-letters*','dropout.fee.status','admin.student_feedback*','student-generated-cvs*']) }}">
                         
 
                         
@@ -899,14 +899,14 @@ body.menu-toggle .sidebar-collapse-btn{
                                         </a>
                                     </li>
 
-                                     <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
+                                    <!--  <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
                                         <a href="{{ route('admin.student.cv-templates.index') }}">
                                             <span class="nav-text">CVs Templates</span>
                                         </a>
-                                    </li>
+                                    </li> -->
 
-                                    <li class="{{ request()->routeIs('admin.student.cv.*') ? 'mm-active' : '' }}">
-                                        <a href="{{ route('admin.student.cv.index') }}">
+                                    <li class="{{ request()->routeIs('student-generated-cvs*') ? 'mm-active' : '' }}">
+                                        <a href="{{ route('student-generated-cvs.index') }}">
                                             <span class="nav-text">Generated CVs</span>
                                         </a>
                                     </li>
@@ -1960,12 +1960,12 @@ body.menu-toggle .sidebar-collapse-btn{
 
                 @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view','student_request.view','online_exam.view','student_leave.view','projects.view','tutorials.view','latest_tech_articles.view','seo_tips.view','interview_preparation_blogs.view','cpanel_explanation.view','hosting.view','faqs_section.view','helpdesk_categories.view','student_projects.view','student_project_assignments.view','student_project_submissions.view','student_project_reviews.view','cv_templates.view','student_cvs.view','student_ppt.view','placement_companies.view','part_time_jobs.view','pgs.view','placements.view','references.view'])
                 {{-- Student Main Admin --}}
-                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*', 'dropout.fee.status']) }}">
+                <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*', 'dropout.fee.status','student-generated-cvs*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-user-check"></i>
                         <span class="nav-text">Student Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*', 'dropout.fee.status']) }}">
+                    <ul class="{{ showSubmenu(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*', 'dropout.fee.status','student-generated-cvs*']) }}">
                         
 
                         
@@ -2171,15 +2171,15 @@ body.menu-toggle .sidebar-collapse-btn{
                         </li>
                         @endcan
                         @can('cv_templates.view')
-                         <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
+                         <!-- <li class="{{ request()->routeIs('admin.student.cv-templates.*') ? 'mm-active' : '' }}">
                             <a href="{{ route('admin.student.cv-templates.index') }}">
                                 <span class="nav-text">CVs Templates</span>
                             </a>
-                        </li>
+                        </li> -->
                         @endcan
                         @can('student_cvs.view')
-                        <li class="{{ request()->routeIs('admin.student.cv.*') ? 'mm-active' : '' }}">
-                            <a href="{{ route('admin.student.cv.index') }}">
+                        <li class="{{ request()->routeIs('student-generated-cvs.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('student-generated-cvs.index') }}">
                                 <span class="nav-text">Generated CVs</span>
                             </a>
                         </li> 

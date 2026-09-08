@@ -215,6 +215,16 @@ class College extends Model
                     ->where('session_id', $sessionId)
                     ->latestOfMany();
     }
+
+    public function emailStatus()
+    {
+        return $this->hasOne(CollegeEmailStatus::class, 'college_id');
+    }
+
+    public function callStatus()
+    {
+        return $this->hasOne(CollegeCallStatus::class, 'college_id');
+    }
 }
 
 

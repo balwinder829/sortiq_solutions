@@ -132,11 +132,11 @@ class TestController extends Controller
         });
     }
 
-    if ($request->student_course_id)
-        $tests->where('student_course_id', $request->student_course_id);
+    // if ($request->student_course_id)
+    //     $tests->where('student_course_id', $request->student_course_id);
 
-    if ($request->semester_id)
-        $tests->where('semester_id', $request->semester_id);
+    // if ($request->semester_id)
+    //     $tests->where('semester_id', $request->semester_id);
 
     if ($request->test_category_id)
         $tests->where('test_category_id', $request->test_category_id);
@@ -147,11 +147,19 @@ class TestController extends Controller
     if ($request->filled('is_active'))
         $tests->where('is_active', $request->is_active);
 
-    if ($request->from_date)
-        $tests->whereDate('test_date', '>=', $request->from_date);
+    // if ($request->from_date)
+    //     $tests->whereDate('exam_start_at', '>=', $request->from_date);
 
-    if ($request->to_date)
-        $tests->whereDate('test_date', '<=', $request->to_date);
+    // if ($request->to_date)
+    //     $tests->whereDate('exam_end_at', '<=', $request->to_date);
+
+    if ($request->from_date) {
+        $tests->whereDate('exam_end_at', '>=', $request->from_date);
+    }
+
+    if ($request->to_date) {
+        $tests->whereDate('exam_start_at', '<=', $request->to_date);
+    }
 
     // ✅ FILTER TESTS BY GENDER (EXISTS)
     if ($gender) {
@@ -164,131 +172,17 @@ class TestController extends Controller
     return view('admin.tests.index', [
         'tests'     => $tests->latest('updated_at')->get(),
         'colleges'  => College::all(),
-        'courses'   => Course::all(),
         'semesters' => Semester::all(),
         'branches'  => [],
         'categories'=> TestCategory::all(),
     ]);
 }
-
-
-     public function index20dec(Request $request)
-{
-    $tests = Test::where('test_mode', 'online')
-        ->with(['category','college','course','semester'])
-        ->withCount([
-            // total registrations (online only)
-            'studentTests as total_registered' => function ($q) {
-                $q->where('source', 'online');
-            },
-            // finalized selections
-            'studentTests as selected_count' => function ($q) {
-                $q->where('source', 'online')
-                  ->where('is_finalized', 1);
-            }
-        ]);
-
-    /* ===== EXISTING FILTERS (UNCHANGED) ===== */
-
-    if ($request->college_id)
-        $tests->where('college_id', $request->college_id);
-
-    if ($request->student_course_id)
-        $tests->where('student_course_id', $request->student_course_id);
-
-    if ($request->semester_id)
-        $tests->where('semester_id', $request->semester_id);
-
-    if ($request->test_category_id)
-        $tests->where('test_category_id', $request->test_category_id);
-
-    if ($request->status)
-        $tests->where('status', $request->status);
-
-    if ($request->filled('is_active'))
-        $tests->where('is_active', $request->is_active);
-
-    if ($request->from_date)
-        $tests->whereDate('test_date', '>=', $request->from_date);
-
-    if ($request->to_date)
-        $tests->whereDate('test_date', '<=', $request->to_date);
-
-    return view('admin.tests.index', [
-        'tests'     => $tests->latest()->get(),
-        'colleges'  => College::all(),
-        'courses'   => Course::all(),
-        'semesters' => Semester::all(),
-        'branches'  => [],
-        'categories'=> TestCategory::all(),
-    ]);
-}
-
-    public function index16dec(Request $request)
-    {
-        $tests = Test::query();
-
-        if ($request->college_id)
-            $tests->where('college_id', $request->college_id);
-
-        if ($request->student_course_id)
-            $tests->where('student_course_id', $request->student_course_id);
-
-        if ($request->semester_id)
-            $tests->where('semester_id', $request->semester_id);
-
-        // if ($request->branch_id)
-        //     $tests->where('branch_id', $request->branch_id);
-
-        if ($request->test_category_id)
-            $tests->where('test_category_id', $request->test_category_id);
-
-        if ($request->test_id)
-            $tests->where('id', $request->test_id);
-
-        if ($request->from_date)
-            $tests->whereDate('test_date', '>=', $request->from_date);
-
-        if ($request->to_date)
-            $tests->whereDate('test_date', '<=', $request->to_date);
-
-         // ✅ ADD: Status filter
-        if ($request->status)
-            $tests->where('status', $request->status);
-
-        // ✅ ADD: Active / Inactive filter
-        if ($request->filled('is_active'))
-            $tests->where('is_active', $request->is_active);
-
-
-            $tests->where('test_mode', 'online');
-
-        return view('admin.tests.index', [
-            'tests'     => $tests->latest()->get(),
-            'colleges'  => College::all(),
-            'courses'   => Course::all(),
-            'semesters' => Semester::all(),
-             'branches'  => array(),
-             // 'branches'  => Branch::all(),
-            'categories' => TestCategory::all(),
-            'titles'    => Test::select('id','title')->get(),
-        ]);
-    }
-
-
-
-    // Show form to create test
-    public function create1()
-    {
-        $courses = StudentCourse::all();
-        return view('admin.tests.create', compact('courses'));
-    }
 
     public function create()
     {
         return view('admin.tests.create', [
             'colleges'  => College::all(),
-            'courses'   => Course::all(),
+            // 'courses'   => Course::all(),
             'semesters' => Semester::all(),
             'branches'  => array(),
             'categories' => TestCategory::all(),
@@ -306,15 +200,15 @@ class TestController extends Controller
             // 'college_id'        => 'required',
             'college_ids' => 'required|array',
             'college_ids.*' => 'exists:colleges,id',
-            'student_course_id' => 'required',
-            'semester_id'       => 'required',
+            // 'student_course_id' => 'required',
+            // 'semester_id'       => 'required',
             // 'branch_id'         => 'required',
             'test_category_id'  => 'required',
             'status'            => 'required|in:draft,published,unpublished',
             'is_active'         => 'nullable|boolean',
             'exam_start_at' => 'required|date',
-            'exam_end_at'   => 'required|date|after:exam_start_at',
-            'timer_type'    => 'required|in:fixed,individual',
+            'exam_end_at'   => 'required|date|after_or_equal:exam_start_at',
+            // 'timer_type'    => 'required|in:fixed,individual',
         ]);
         // dd(Str::random(30));
 
@@ -323,14 +217,14 @@ class TestController extends Controller
             'slug'              => Str::random(30), // ✅ RANDOM URL NAME
             'access_key'        => Str::random(10),
             'college_id'        => $request->college_id,
-            'student_course_id' => $request->student_course_id,
-            'semester_id'       => $request->semester_id,
+            // 'student_course_id' => $request->student_course_id,
+            // 'semester_id'       => $request->semester_id,
             'test_category_id'  => $request->test_category_id,
             'status'            => $request->status,
             'is_active'            => $request->is_active,
-            'exam_start_at'     => $request->exam_start_at,
-            'exam_end_at'       => $request->exam_end_at,
-            'timer_type'        => $request->timer_type,
+            'exam_start_at' => Carbon::parse($request->exam_start_at)->startOfDay(),
+            'exam_end_at'   => Carbon::parse($request->exam_end_at)->endOfDay(),
+            'timer_type' => 'fixed',
         ]);
 
         // Test::create($request->all());
@@ -348,15 +242,7 @@ class TestController extends Controller
                          ->with('success', "Test '{$test->title}' created successfully.");
     }
 
-    // public function regenerateLink(Test $test)
-    // {
-    //     $test->update([
-    //         'slug' => Str::random(30),
-    //         'access_key' => Str::random(10)
-    //     ]);
-
-    //     return back()->with('success', 'Test link regenerated successfully.');
-    // }
+    
 
     public function regenerateCollegeLink(TestLink $link)
     {
@@ -418,7 +304,7 @@ class TestController extends Controller
         return view('admin.tests.edit', [
             'test'      => $test,
             'colleges'  => College::all(),
-            'courses'   => Course::all(),
+            // 'courses'   => Course::all(),
             'semesters' => Semester::all(),
             // 'branches'  => Branch::all(),
             'categories' => TestCategory::all(),
@@ -434,8 +320,8 @@ class TestController extends Controller
             // 'access_key'        => 'required|unique:tests,access_key,' . $test->id,
             'status'            => 'required|in:draft,published,unpublished',
             'exam_start_at' => 'required|date',
-            'exam_end_at'   => 'required|date|after:exam_start_at',
-            'timer_type'    => 'required|in:fixed,individual',
+            'exam_end_at'   => 'required|date|after_or_equal:exam_start_at',
+            // 'timer_type'    => 'required|in:fixed,individual',
             'is_active'         => 'nullable|boolean',
             'college_ids' => 'required|array',
             'college_ids.*' => 'exists:colleges,id',
@@ -444,14 +330,14 @@ class TestController extends Controller
         // $test->update($request->all());
         $test->update([
             'title'             => $request->title,
-            'student_course_id' => $request->student_course_id,
-            'semester_id'       => $request->semester_id,
+            // 'student_course_id' => $request->student_course_id,
+            // 'semester_id'       => $request->semester_id,
             'test_category_id'  => $request->test_category_id,
             'status'            => $request->status,
             'is_active'         => $request->is_active,
-            'exam_start_at'     => $request->exam_start_at,
-            'exam_end_at'       => $request->exam_end_at,
-            'timer_type'        => $request->timer_type,
+            'exam_start_at' => Carbon::parse($request->exam_start_at)->startOfDay(),
+            'exam_end_at'   => Carbon::parse($request->exam_end_at)->endOfDay(),
+            'timer_type' => 'fixed',
         ]);
 
         $existingCollegeIds = TestLink::where('test_id', $test->id)
@@ -533,36 +419,7 @@ class TestController extends Controller
         // dd($test);
         return view('admin.tests.show', compact('test','backRoute'));
     }
-    // Show form to edit test
-    // public function edit(Test $test)
-    // {
-    //     $courses = StudentCourse::all();
-    //     return view('admin.tests.edit', compact('test','courses'));
-    // }
-
-    // Update test
-    // public function update(Request $request, Test $test)
-    // {
-    //     $request->validate([
-    //         'title'=>'required',
-    //         'student_course_id'=>'required',
-    //     ]);
-
-    //     $test->update([
-    //         'title'=>$request->title,
-    //         'student_course_id'=>$request->student_course_id,
-    //         'description'=>$request->description,
-    //     ]);
-
-    //     return redirect()->route('admin.tests.index')->with('success','Test Updated Successfully');
-    // }
-
-    // Delete test
-    // public function destroy(Test $test)
-    // {
-    //     $test->delete();
-    //     return redirect()->route('admin.tests.index')->with('success','Test Deleted Successfully');
-    // }
+   
     public function selectedStudents(Test $test)
     {
         $students = $test->studentTests()
