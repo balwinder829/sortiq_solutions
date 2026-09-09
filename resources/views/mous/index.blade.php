@@ -66,7 +66,7 @@
         @foreach($mous as $mou)
             <tr>
                 <td>{{ $loop->iteration }}</td>
-                <td>{{ $mou->college->college_name }}</td>
+                <td>{{ $mou->college?->college_name ?? '-' }}</td>
                 <td>{{ $mou->mou_title }}</td>
                 <td>{{ optional($mou->issue_date)->format('d M Y') ?? '-' }}</td>
                 <td>

@@ -24,3 +24,7 @@ Homestead.yaml
 Thumbs.db
 public/paymentReceipts
 *.zip 
+public/studentConfirmation
+public/student_certificate
+public/images/certificates_images/1certified.png
+public/images/confirmation_images/21footer-shape-1.png

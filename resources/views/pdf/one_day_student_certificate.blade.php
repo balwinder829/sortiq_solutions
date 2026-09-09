@@ -55,18 +55,18 @@
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
-						This is to certify that <strong>{{ ucwords($student->student_name) }}</strong> has successfully participated in the <strong>1-Day Industrial Training Seminar</strong> conducted by <strong>Sortiq Solutions Pvt. Ltd.</strong> on <strong>{{ $testdate }}</strong>
+						This is to certify that <strong>{{ ucwords($student->student_name) }}</strong> has successfully participated in the <strong>One Day Workshop</strong> conducted by <strong>Sortiq Solutions Pvt. Ltd.</strong> on <strong>{{ $testdate }}</strong>
 						
 					</td>
 				</tr>
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
-						During this seminar, the participant gained knowledge about industrial practices, live project development, and career opportunities in the IT sector.
+						During this workshop, the participant gained knowledge about industrial practices, live project development, and career opportunities in the IT sector.
 					</td>
 				</tr>
 				
 				<tr>
-					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;text-align: justify;">
 						We appreciate their active participation and wish them success in their future endeavors.
 					</td>
 				</tr>
