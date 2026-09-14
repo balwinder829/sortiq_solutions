@@ -553,6 +553,9 @@ public function store(Request $request)
         'departments.*' => 'string',
         'ownership_type' => 'required|in:0,1',
         'connection_type' => 'required|in:0,1',
+        'seminar_count'        => 'nullable|integer|min:0',
+        'placement_count'      => 'nullable|integer|min:0',
+        'connected_to'         => 'nullable|string|max:100',
     ], [
         'college_name.unique' => 'This college already exists in the selected district.'
     ]);
@@ -616,6 +619,9 @@ public function update(Request $request, $id)
         'departments.*'  => 'string',
         'ownership_type' => 'nullable|in:0,1',
         'connection_type'=> 'nullable|in:0,1',
+        'seminar_count' => 'nullable|integer|min:0',
+        'placement_count' => 'nullable|integer|min:0',
+        'connected_to' => 'nullable|string|max:100',
 
     ], [
         'college_name.unique' => 'This college already exists in the selected district.'
@@ -661,6 +667,9 @@ public function update(Request $request, $id)
         'departments'          => $data['departments'] ?? [],
         'ownership_type'       => $data['ownership_type'] ?? 0,
         'connection_type'      => $data['connection_type'] ?? 0,
+        'seminar_count'        => $data['seminar_count'] ?? 0,
+        'placement_count'      => $data['placement_count'] ?? 0,
+        'connected_to'         => $data['connected_to'] ?? null,
     ]);
 // dd($college);
     return redirect()

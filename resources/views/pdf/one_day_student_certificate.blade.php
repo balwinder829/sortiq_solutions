@@ -55,7 +55,7 @@
 			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
 				<tr>
 					<td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif; text-align: justify;">
-						This is to certify that <strong>{{ ucwords($student->student_name) }}</strong> has successfully participated in the <strong>One Day Workshop</strong> conducted by <strong>Sortiq Solutions Pvt. Ltd.</strong> on <strong>{{ $testdate }}</strong>
+						This is to certify that <strong>{{ ucwords($student->student_name) }}</strong> has successfully participated in the <strong>One Day Workshop</strong> conducted by <strong>Sortiq Solutions Pvt. Ltd.</strong> on <strong>{{ ucwords($courseName ?? '-') }}</strong>
 						
 					</td>
 				</tr>

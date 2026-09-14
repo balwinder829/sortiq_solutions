@@ -110,4 +110,43 @@ class BlockedNumberController extends Controller
             ->route('admin.blocked-numbers.index')
             ->with('success', 'Number unblocked and records restored.');
     }
+
+    public function bulkDelete(Request $request, BlockNumberService $service)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_filter(
+            array_map('intval', explode(',', $request->ids))
+        );
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No blocked numbers selected.'
+            ], 422);
+        }
+
+        $count = 0;
+
+        foreach ($ids as $id) {
+            $blockedNumber = BlockedNumber::find($id);
+
+            if (!$blockedNumber) {
+                continue;
+            }
+
+            // IMPORTANT:
+            // Use the existing unblock logic instead of directly deleting.
+            $service->unblock($blockedNumber);
+
+            $count++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' blocked number' . ($count == 1 ? '' : 's') . ' unblocked successfully.',
+        ]);
+    }
 }

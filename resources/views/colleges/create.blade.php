@@ -87,6 +87,60 @@
             </select>
         </div>
 
+        {{-- Seminar Count --}}
+        <div class="form-group col-md-6">
+            <label>Seminar</label>
+            <input type="number"
+                   name="seminar_count"
+                   class="form-control @error('seminar_count') is-invalid @enderror"
+                   value="{{ old('seminar_count', 0) }}"
+                   min="0">
+
+            @error('seminar_count')
+                <div class="invalid-feedback">
+                    {{ $message }}
+                </div>
+            @enderror
+        </div>
+
+        {{-- Placement Count --}}
+        <div class="form-group col-md-6">
+            <label>Placement</label>
+            <input type="number"
+                   name="placement_count"
+                   class="form-control @error('placement_count') is-invalid @enderror"
+                   value="{{ old('placement_count', 0) }}"
+                   min="0">
+
+            @error('placement_count')
+                <div class="invalid-feedback">
+                    {{ $message }}
+                </div>
+            @enderror
+        </div>
+
+        {{-- Whom to Connect --}}
+        <div class="form-group col-md-6">
+            <label>Whom to Connect</label>
+            <select name="connected_to"
+                    class="form-control @error('connected_to') is-invalid @enderror">
+
+                <option value="">-- Select --</option>
+                <option value="HOD" {{ old('connected_to') == 'HOD' ? 'selected' : '' }}>
+                    HOD
+                </option>
+                <option value="TPO" {{ old('connected_to') == 'TPO' ? 'selected' : '' }}>
+                    TPO
+                </option>
+            </select>
+
+            @error('connected_to')
+                <div class="invalid-feedback">
+                    {{ $message }}
+                </div>
+            @enderror
+        </div>
+
         {{-- Important College --}}
         <div class="form-group col-md-6">
             <label>Important College</label>

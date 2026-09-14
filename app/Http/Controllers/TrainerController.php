@@ -120,6 +120,847 @@ class TrainerController extends Controller
         'batches as session_batches_count' => function ($q) use ($currentSession) {
             $q->where('session_name', $currentSession);
         },
+
+        'batches as online_batches_count' => function ($q) use ($currentSession) {
+            $q->where('session_name', $currentSession)
+              ->where('batch_mode', 'online');
+        },
+
+        'batches as offline_batches_count' => function ($q) use ($currentSession) {
+            $q->where('session_name', $currentSession)
+              ->where('batch_mode', 'offline');
+        },
+
+        'batches as today_remaining_batches_count' => function ($q) use ($today, $currentTime) {
+            $q->whereDate('start_time', $today)
+              ->where('end_time', '>', $currentTime);
+        },
+    ]);
+
+    if ($request->filled('course')) {
+        $trainersQuery->whereRaw(
+            'FIND_IN_SET(?, technology)',
+            [$request->course]
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS FILTER
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('status')) {
+        $trainersQuery->where('status', $request->status);
+    } else {
+        $trainersQuery->where('status', 'active');
+    }
+
+    $trainersQuery = $trainersQuery->latest('updated_at');
+
+    return DataTablesServerSide::response(
+        $request,
+        $trainersQuery,
+        [
+            'orderable' => [
+                'id',
+                'username',
+                'name',
+                'gender',
+                'phone',
+                'email',
+                'technology'
+            ],
+
+            'searchable' => [
+                'username',
+                'name',
+                'email',
+                'phone'
+            ],
+        ],
+
+        function ($trainer, $index, $start) {
+
+            $techIds = $trainer->technology
+                ? explode(',', $trainer->technology)
+                : [];
+
+            $techNames = Course::whereIn('id', $techIds)
+                ->pluck('course_name');
+
+            $techHtml = '';
+
+            foreach ($techNames as $name) {
+                $techHtml .=
+                    '<span class="badge bg-primary">'
+                    . e($name) .
+                    '</span> ';
+            }
+
+            $totalBat =
+                '<div class="batch-circle batch-link"
+                    data-id="' . $trainer->id . '"
+                    data-name="' . e($trainer->name ?? 'N/A') . '"
+                    data-type="all"
+                    title="View All Batches">'
+                    . (int) ($trainer->session_batches_count ?? 0) .
+                '</div>';
+
+            $onlineBat =
+                '<div class="batch-circle"
+                    style="background:#198754"
+                    title="Online Batches">'
+                    . (int) ($trainer->online_batches_count ?? 0) .
+                '</div>';
+
+            $offlineBat =
+                '<div class="batch-circle"
+                    style="background:#fd7e14"
+                    title="Offline Batches">'
+                    . (int) ($trainer->offline_batches_count ?? 0) .
+                '</div>';
+
+            $todayBat =
+                '<div class="batch-circle batch-link"
+                    data-id="' . $trainer->id . '"
+                    data-name="' . e($trainer->name ?? 'N/A') . '"
+                    data-type="remaining"
+                    title="View Today\'s Remaining Batches">'
+                    . (int) ($trainer->today_remaining_batches_count ?? 0) .
+                '</div>';
+
+            /*
+            |--------------------------------------------------------------------------
+            | ACTIONS
+            |--------------------------------------------------------------------------
+            */
+
+            $actions = '<div class="d-flex align-items-center gap-1">';
+
+            // EDIT
+            $actions .= '
+                <a href="' . route('trainers.edit', $trainer->id) . '"
+                   class="btn btn-sm"
+                   title="Edit">
+                    <i class="fa fa-edit"></i>
+                </a>
+            ';
+
+            // ACTIVE / INACTIVE
+            if ($trainer->status === 'active') {
+
+                $actions .= '
+                    <form
+                        action="' . route('trainers.toggleStatus', $trainer->id) . '"
+                        method="POST"
+                        class="d-inline m-0 trainer-action-form"
+                        data-title="Deactivate Trainer?"
+                        data-text="Are you sure you want to deactivate this trainer?"
+                        data-confirm="Yes, Deactivate"
+                    >
+                        ' . csrf_field() . '
+
+                        <button
+                            type="submit"
+                            class="btn btn-sm"
+                            title="Deactivate"
+                        >
+                            <i class="fa fa-toggle-on"></i>
+                        </button>
+                    </form>
+                ';
+
+            } else {
+
+                $actions .= '
+                    <form
+                        action="' . route('trainers.toggleStatus', $trainer->id) . '"
+                        method="POST"
+                        class="d-inline m-0 trainer-action-form"
+                        data-title="Activate Trainer?"
+                        data-text="Are you sure you want to activate this trainer?"
+                        data-confirm="Yes, Activate"
+                    >
+                        ' . csrf_field() . '
+
+                        <button
+                            type="submit"
+                            class="btn btn-sm"
+                            title="Activate"
+                        >
+                            <i class="fa fa-toggle-off"></i>
+                        </button>
+                    </form>
+                ';
+            }
+
+            // DELETE
+            $actions .= '
+                <form
+                    action="' . route('trainers.destroy', $trainer->id) . '"
+                    method="POST"
+                    class="d-inline m-0 trainer-action-form"
+                    data-title="Delete Trainer?"
+                    data-text="Are you sure you want to delete this trainer?"
+                    data-confirm="Yes, Delete"
+                >
+                    ' . csrf_field() . '
+                    ' . method_field('DELETE') . '
+
+                    <button
+                        type="submit"
+                        class="btn btn-sm"
+                        title="Delete"
+                    >
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </form>
+            ';
+
+            $actions .= '</div>';
+
+            $rowNum = $start + $index + 1;
+
+            /*
+            |--------------------------------------------------------------------------
+            | CHECKBOX
+            |--------------------------------------------------------------------------
+            */
+
+            $checkbox =
+                '<div class="form-check">
+                    <input
+                        type="checkbox"
+                        class="form-check-input record_checked"
+                        value="' . $trainer->id . '"
+                    >
+                </div>';
+
+            return [
+                $checkbox,
+                $rowNum,
+                e($trainer->username ?? ''),
+                ucwords($trainer->name ?? ''),
+                ucfirst($trainer->gender ?? '-'),
+                e($trainer->phone ?? 'N/A'),
+                e($trainer->email ?? 'N/A'),
+                $techHtml,
+                $totalBat,
+                $onlineBat,
+                $offlineBat,
+                $todayBat,
+                $actions,
+            ];
+        }
+    );
+}
+
+public function wdata(Request $request)
+{
+    $currentSession = session('admin_session_id');
+
+    $today = now()->toDateString();
+    $currentTime = now()->format('H:i:s');
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS
+    |--------------------------------------------------------------------------
+    | Active / Inactive is now controlled by the tabs in Blade.
+    */
+    $status = $request->get('status', 'active');
+
+    /*
+    |--------------------------------------------------------------------------
+    | TRAINER QUERY
+    |--------------------------------------------------------------------------
+    */
+    $query = Trainer::query()
+        ->withCount([
+
+            /*
+            |--------------------------------------------------------------------------
+            | TOTAL BATCHES FOR CURRENT SESSION
+            |--------------------------------------------------------------------------
+            */
+            'batches as session_batches_count' => function ($q) use ($currentSession) {
+                $q->where('session_name', $currentSession);
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | ONLINE BATCHES
+            |--------------------------------------------------------------------------
+            */
+            'batches as online_batches_count' => function ($q) use ($currentSession) {
+                $q->where('session_name', $currentSession)
+                  ->where('batch_mode', 'online');
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | OFFLINE BATCHES
+            |--------------------------------------------------------------------------
+            */
+            'batches as offline_batches_count' => function ($q) use ($currentSession) {
+                $q->where('session_name', $currentSession)
+                  ->where('batch_mode', 'offline');
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | TODAY REMAINING BATCHES
+            |--------------------------------------------------------------------------
+            */
+            'batches as today_remaining_batches_count' => function ($q) use (
+                $currentSession,
+                $today,
+                $currentTime
+            ) {
+                $q->where('session_name', $currentSession)
+                  ->whereDate('start_date', $today)
+                  ->where('end_time', '>', $currentTime);
+            },
+
+        ])
+
+        /*
+        |--------------------------------------------------------------------------
+        | STATUS FILTER
+        |--------------------------------------------------------------------------
+        */
+        ->where('status', $status);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | COURSE FILTER
+    |--------------------------------------------------------------------------
+    */
+    if ($request->filled('course')) {
+
+        $query->whereRaw(
+            'FIND_IN_SET(?, technology)',
+            [$request->course]
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DEFAULT ORDER
+    |--------------------------------------------------------------------------
+    */
+    $query->latest('updated_at');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DATATABLES SEARCH
+    |--------------------------------------------------------------------------
+    */
+    if ($request->filled('search.value')) {
+
+        $search = $request->input('search.value');
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where('username', 'like', '%' . $search . '%')
+              ->orWhere('name', 'like', '%' . $search . '%')
+              ->orWhere('email', 'like', '%' . $search . '%')
+              ->orWhere('phone', 'like', '%' . $search . '%');
+
+        });
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DATATABLES ORDERING
+    |--------------------------------------------------------------------------
+    |
+    | Column 0 is now checkbox.
+    | Therefore actual trainer columns start from column 1.
+    |
+    */
+    $orderColumn = $request->input('order.0.column');
+    $orderDir = $request->input('order.0.dir', 'asc') === 'desc'
+        ? 'desc'
+        : 'asc';
+
+
+    $orderable = [
+
+        1 => 'id',
+        2 => 'username',
+        3 => 'name',
+        4 => 'gender',
+        5 => 'phone',
+        6 => 'email',
+        7 => 'technology',
+
+    ];
+
+
+    $orderField = $orderable[$orderColumn] ?? null;
+
+
+    if ($orderField) {
+
+        $query->orderBy(
+            $orderField,
+            $orderDir
+        );
+
+    } else {
+
+        $query->latest('updated_at');
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TOTAL / FILTERED COUNT
+    |--------------------------------------------------------------------------
+    */
+    $total = Trainer::query()
+        ->where('status', $status)
+        ->count();
+
+
+    $filteredTotal = $query->count();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAGINATION
+    |--------------------------------------------------------------------------
+    */
+    $start = (int) $request->input('start', 0);
+
+    $length = (int) $request->input('length', 50);
+
+    if ($length < 1 || $length > 100) {
+        $length = 50;
+    }
+
+
+    $trainers = $query
+        ->skip($start)
+        ->take($length)
+        ->get();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DATA
+    |--------------------------------------------------------------------------
+    */
+    $data = [];
+
+
+    foreach ($trainers as $index => $trainer) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | ROW NUMBER
+        |--------------------------------------------------------------------------
+        */
+        $rowNum = $start + $index + 1;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TECHNOLOGY / COURSE BADGES
+        |--------------------------------------------------------------------------
+        */
+        $techHtml = '-';
+
+
+        if (!empty($trainer->technology)) {
+
+            $technologyIds = array_filter(
+                array_map(
+                    'trim',
+                    explode(',', $trainer->technology)
+                )
+            );
+
+
+            if (!empty($technologyIds)) {
+
+                $courses = \App\Models\Course::whereIn(
+                    'id',
+                    $technologyIds
+                )
+                ->pluck('name', 'id');
+
+
+                $techHtml = '';
+
+                foreach ($technologyIds as $courseId) {
+
+                    if ($courses->has($courseId)) {
+
+                        $techHtml .=
+                            '<span class="badge bg-primary me-1 mb-1">'
+                            . e($courses[$courseId])
+                            . '</span>';
+
+                    }
+
+                }
+
+
+                if ($techHtml === '') {
+                    $techHtml = '-';
+                }
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL SESSION BATCHES
+        |--------------------------------------------------------------------------
+        */
+        $totalBat = '
+            <a href="javascript:void(0)"
+               class="batch-circle batch-link bg-primary text-white"
+               data-trainer-id="' . $trainer->id . '"
+               data-type="all"
+               data-trainer-name="' . e($trainer->name) . '"
+               title="All Batches">
+                ' . $trainer->session_batches_count . '
+            </a>
+        ';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ONLINE BATCHES
+        |--------------------------------------------------------------------------
+        */
+        $onlineBat = '
+            <a href="javascript:void(0)"
+               class="batch-circle batch-link bg-success text-white"
+               data-trainer-id="' . $trainer->id . '"
+               data-type="online"
+               data-trainer-name="' . e($trainer->name) . '"
+               title="Online Batches">
+                ' . $trainer->online_batches_count . '
+            </a>
+        ';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | OFFLINE BATCHES
+        |--------------------------------------------------------------------------
+        */
+        $offlineBat = '
+            <a href="javascript:void(0)"
+               class="batch-circle batch-link bg-warning text-dark"
+               data-trainer-id="' . $trainer->id . '"
+               data-type="offline"
+               data-trainer-name="' . e($trainer->name) . '"
+               title="Offline Batches">
+                ' . $trainer->offline_batches_count . '
+            </a>
+        ';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TODAY REMAINING BATCHES
+        |--------------------------------------------------------------------------
+        */
+        $todayBat = '
+            <a href="javascript:void(0)"
+               class="batch-circle batch-link bg-danger text-white"
+               data-trainer-id="' . $trainer->id . '"
+               data-type="remaining"
+               data-trainer-name="' . e($trainer->name) . '"
+               title="Today Pending Batches">
+                ' . $trainer->today_remaining_batches_count . '
+            </a>
+        ';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIONS
+        |--------------------------------------------------------------------------
+        |
+        | Existing functionality retained.
+        |
+        */
+
+        $editButton = '
+            <a href="' . route('trainers.edit', $trainer->id) . '"
+               class="btn btn-sm"
+               data-bs-toggle="tooltip"
+               title="Edit">
+                <i class="fa fa-edit"></i>
+            </a>
+        ';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIVATE / DEACTIVATE
+        |--------------------------------------------------------------------------
+        */
+        if ($trainer->status === 'active') {
+
+            $toggleButton = '
+                <form action="' . route(
+                    'trainers.toggleStatus',
+                    $trainer->id
+                ) . '"
+                method="POST"
+                class="trainer-action-form"
+                style="display:inline;"
+                data-swal-confirm="Are you sure you want to deactivate this mentor?">
+
+                    ' . csrf_field() . '
+
+                    <button type="submit"
+                            class="btn btn-sm"
+                            data-bs-toggle="tooltip"
+                            title="Deactivate">
+
+                        <i class="fa fa-ban"></i>
+
+                    </button>
+
+                </form>
+            ';
+
+        } else {
+
+            $toggleButton = '
+                <form action="' . route(
+                    'trainers.toggleStatus',
+                    $trainer->id
+                ) . '"
+                method="POST"
+                class="trainer-action-form"
+                style="display:inline;"
+                data-swal-confirm="Are you sure you want to activate this mentor?">
+
+                    ' . csrf_field() . '
+
+                    <button type="submit"
+                            class="btn btn-sm"
+                            data-bs-toggle="tooltip"
+                            title="Activate">
+
+                        <i class="fa fa-check"></i>
+
+                    </button>
+
+                </form>
+            ';
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DELETE
+        |--------------------------------------------------------------------------
+        */
+        $deleteButton = '
+            <form action="' . route(
+                'trainers.destroy',
+                $trainer->id
+            ) . '"
+            method="POST"
+            class="trainer-action-form"
+            style="display:inline;"
+            data-swal-confirm="Are you sure you want to delete this mentor?">
+
+                ' . csrf_field() . '
+                ' . method_field('DELETE') . '
+
+                <button type="submit"
+                        class="btn btn-sm"
+                        data-bs-toggle="tooltip"
+                        title="Delete">
+
+                    <i class="fa fa-trash"></i>
+
+                </button>
+
+            </form>
+        ';
+
+
+        $actions =
+            '<div class="mb-2">'
+            . $editButton
+            . $toggleButton
+            . $deleteButton
+            . '</div>';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FINAL ROW
+        |--------------------------------------------------------------------------
+        |
+        | IMPORTANT:
+        | Checkbox is column 0.
+        |
+        */
+        $data[] = [
+
+            /*
+            |--------------------------------------------------------------------------
+            | 0 - CHECKBOX
+            |--------------------------------------------------------------------------
+            */
+            '<input type="checkbox"
+                    class="record_checked"
+                    value="' . $trainer->id . '">',
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 1 - ROW NUMBER
+            |--------------------------------------------------------------------------
+            */
+            $rowNum,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2 - USERNAME
+            |--------------------------------------------------------------------------
+            */
+            e($trainer->username),
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 3 - NAME
+            |--------------------------------------------------------------------------
+            */
+            e($trainer->name),
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 4 - GENDER
+            |--------------------------------------------------------------------------
+            */
+            e($trainer->gender ?? '-'),
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 5 - PHONE
+            |--------------------------------------------------------------------------
+            */
+            e($trainer->phone ?? '-'),
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 6 - EMAIL
+            |--------------------------------------------------------------------------
+            */
+            e($trainer->email ?? '-'),
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 7 - TECHNOLOGY
+            |--------------------------------------------------------------------------
+            */
+            $techHtml,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 8 - TOTAL BATCHES
+            |--------------------------------------------------------------------------
+            */
+            $totalBat,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 9 - ONLINE
+            |--------------------------------------------------------------------------
+            */
+            $onlineBat,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 10 - OFFLINE
+            |--------------------------------------------------------------------------
+            */
+            $offlineBat,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 11 - TODAY PENDING
+            |--------------------------------------------------------------------------
+            */
+            $todayBat,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 12 - ACTIONS
+            |--------------------------------------------------------------------------
+            */
+            $actions,
+
+        ];
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DATATABLE RESPONSE
+    |--------------------------------------------------------------------------
+    */
+    return response()->json([
+
+        'draw' => intval(
+            $request->input('draw')
+        ),
+
+        'recordsTotal' => $total,
+
+        'recordsFiltered' => $filteredTotal,
+
+        'data' => $data,
+
+    ]);
+}
+    public function data_14sep(Request $request)
+{
+    $currentSession = session('admin_session_id');
+    $today = now()->toDateString();
+    $currentTime = now()->format('H:i:s');
+
+    $trainersQuery = Trainer::withCount([
+        'batches as session_batches_count' => function ($q) use ($currentSession) {
+            $q->where('session_name', $currentSession);
+        },
         'batches as online_batches_count' => function ($q) use ($currentSession) {
             $q->where('session_name', $currentSession)->where('batch_mode', 'online');
         },
@@ -143,6 +984,8 @@ class TrainerController extends Controller
 
     if ($request->filled('status')) {
         $trainersQuery->where('status', $request->status);
+    }else{
+        $trainersQuery->where('status', 'active');
     }
 
     $trainersQuery = $trainersQuery->latest('updated_at');
@@ -734,5 +1577,28 @@ $actions .= '</div>';
                 'Content-Disposition',
                 'attachment; filename="'.$fileName.'"'
             );
+    }
+
+    public function bulkStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+
+        $ids = array_filter(array_map('intval', explode(',', $request->ids)));
+
+        if (empty($ids)) {
+            return back()->with('error', 'No mentors selected.');
+        }
+
+        Trainer::whereIn('id', $ids)->update([
+            'status' => $request->status,
+        ]);
+
+        return back()->with(
+            'success',
+            count($ids) . ' mentor(s) updated successfully.'
+        );
     }
 }

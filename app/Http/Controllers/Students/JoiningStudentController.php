@@ -80,8 +80,8 @@ class JoiningStudentController extends Controller
 
         $adminEmail = config('app.admin_email', 'admin@example.com');
         // Send email to admin
-        Mail::to($adminEmail)
-            ->send(new StudentJoinedMail($student));
+        // Mail::to($adminEmail)
+        //     ->send(new StudentJoinedMail($student));
 
         return redirect()->back()
             ->with('success', '🎉 Welcome to joining!');

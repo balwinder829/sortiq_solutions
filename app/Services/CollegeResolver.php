@@ -220,6 +220,9 @@ class CollegeResolver
                 'departments'    => $data['departments'] ?? null,   // or [] if you prefer empty array
                 'ownership_type' => $data['ownership_type'] ?? 0,   // 0 = Private
                 'connection_type'=> $data['connection_type'] ?? 0,  // 0 = New Connection
+                'seminar_count'        => $data['seminar_count'] ?? 0,
+                'placement_count'      => $data['placement_count'] ?? 0,
+                'connected_to'         => $data['connected_to'] ?? null,
             ]
         );
     }

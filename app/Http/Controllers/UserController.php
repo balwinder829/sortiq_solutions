@@ -70,8 +70,324 @@ class UserController extends Controller
         return view('users.index', compact('users'));
     }
 
+     public function data(Request $request)
+{
+    $tab = $request->get('tab', 'active');
 
-    public function data(Request $request)
+    if (!in_array($tab, ['active', 'inactive', 'deleted'])) {
+        $tab = 'active';
+    }
+
+    $query = User::withTrashed()
+        ->role(['Admin', 'Sales', 'Manager', 'HR', 'Custom'])
+        ->with(['roles', 'permissions']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTIVE / INACTIVE / DELETED
+    |--------------------------------------------------------------------------
+    */
+
+    if ($tab === 'deleted') {
+
+        $query->onlyTrashed();
+
+    } elseif ($tab === 'inactive') {
+
+        $query->whereNull('deleted_at')
+              ->where('status', 'inactive');
+
+    } else {
+
+        $query->whereNull('deleted_at')
+              ->where('status', 'active');
+    }
+
+    return DataTablesServerSide::response(
+        $request,
+        $query,
+        [
+            'orderable'  => ['id', 'name', 'username', 'role', 'status', 'created_at'],
+            'searchable' => ['name', 'username', 'email'],
+        ],
+        function ($user, $index, $start) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | CHECKBOX
+            |--------------------------------------------------------------------------
+            */
+
+            $checkbox = '';
+
+            if (!$user->trashed()) {
+
+                $checkbox = '
+                    <input type="checkbox"
+                           class="user-checkbox"
+                           value="' . $user->id . '">
+                ';
+
+            } else {
+
+                $checkbox = '
+                    <input type="checkbox"
+                           class="user-checkbox"
+                           value="' . $user->id . '">
+                ';
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | ROLE BADGES
+            |--------------------------------------------------------------------------
+            */
+
+            $roleHtml = '';
+
+            foreach ($user->getRoleNames() as $role) {
+
+                $roleColor = match ($role) {
+                    'Admin'   => 'danger',
+                    'Manager' => 'primary',
+                    'HR'      => 'success',
+                    'Custom'  => 'warning',
+                    default   => 'secondary'
+                };
+
+                $roleHtml .= '
+                    <span class="badge bg-' . $roleColor . ' me-1">
+                        ' . e($role) . '
+                    </span>
+                ';
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | GROUP PERMISSIONS - NOT ADMIN
+            |--------------------------------------------------------------------------
+            */
+
+            if (!$user->hasRole('Admin')) {
+
+                $groupedPermissions = collect($user->getPermissionNames())
+                    ->groupBy(function ($permission) {
+                        return explode('.', $permission)[0];
+                    });
+
+                $roleHtml .= '<div class="mt-1">';
+
+                if ($groupedPermissions->count()) {
+
+                    foreach ($groupedPermissions as $group => $permissions) {
+
+                        $popoverContent = $permissions
+                            ->map(fn($p) => '• ' . str_replace($group . '.', '', $p))
+                            ->implode('<br>');
+
+                        $roleHtml .= '
+                            <span class="badge bg-light text-dark border permission-group"
+                                data-bs-toggle="popover"
+                                data-bs-trigger="hover"
+                                data-bs-placement="top"
+                                data-bs-html="true"
+                                data-bs-content="<div class=\'perm-popover\'>'
+                                    . e($popoverContent) .
+                                '</div>">
+                                ' . e(ucfirst($group)) . ' (' . $permissions->count() . ')
+                            </span>
+                        ';
+                    }
+
+                } else {
+
+                    $roleHtml .= '
+                        <span class="text-muted small">
+                            No Permissions
+                        </span>
+                    ';
+                }
+
+                $roleHtml .= '</div>';
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | STATUS
+            |--------------------------------------------------------------------------
+            */
+
+            if ($user->trashed()) {
+
+                $status = '
+                    <span class="badge bg-danger">
+                        Deleted
+                    </span>
+                ';
+
+            } elseif ($user->status === 'inactive') {
+
+                $status = '
+                    <span class="badge bg-warning text-dark">
+                        Inactive
+                    </span>
+                ';
+
+            } else {
+
+                $status = '
+                    <span class="badge bg-success">
+                        Active
+                    </span>
+                ';
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | USERNAME
+            |--------------------------------------------------------------------------
+            */
+
+            $usernameCell = $user->trashed()
+                ? '<span class="text-danger">' . e($user->username) . '</span>'
+                : e($user->username);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | ACTIONS
+            |--------------------------------------------------------------------------
+            */
+
+            $actions = '';
+
+            if (!$user->trashed()) {
+
+                if (
+                    auth()->user()->hasRole('Admin') &&
+                    $user->hasAnyRole(['Manager', 'HR', 'Custom'])
+                ) {
+
+                    $actions .= '
+                        <a href="' .
+                            route(
+                                'admin.manager.permissions.edit',
+                                ['user_id' => $user->id]
+                            ) .
+                        '"
+                        class="btn btn-sm btn-outline-primary"
+                        title="Manage Permissions">
+
+                            <i class="fas fa-key"></i>
+
+                        </a>
+                    ';
+                }
+
+
+                $actions .= '
+                    <a href="' .
+                        route('users.edit', $user) .
+                    '"
+                    class="btn btn-sm"
+                    title="Edit User">
+
+                        <i class="fa fa-edit"></i>
+
+                    </a>
+                ';
+
+
+                $actions .= '
+                    <form
+                        action="' .
+                            route('users.destroy', $user) .
+                        '"
+                        method="POST"
+                        class="d-inline m-0 user-action-form"
+                        data-title="Delete User?"
+                        data-text="Are you sure you want to delete this user?"
+                        data-confirm="Yes, Delete">
+
+                        ' . csrf_field() . '
+
+                        ' . method_field('DELETE') . '
+
+                        <button
+                            type="submit"
+                            class="btn btn-sm"
+                            title="Delete">
+
+                            <i class="fa fa-trash"></i>
+
+                        </button>
+
+                    </form>
+                ';
+
+            } else {
+
+                $actions .= '
+                    <form
+                        action="' .
+                            route('users.restore', $user->id) .
+                        '"
+                        method="POST"
+                        class="d-inline m-0 user-restore-form">
+
+                        ' . csrf_field() . '
+
+                        <button
+                            type="submit"
+                            class="btn btn-sm btn-success"
+                            title="Restore">
+
+                            <i class="fa fa-undo"></i>
+
+                        </button>
+
+                    </form>
+                ';
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | ROW NUMBER
+            |--------------------------------------------------------------------------
+            */
+
+            $rowNum = $start + $index + 1;
+
+
+            return [
+
+                $checkbox,
+
+                $rowNum,
+
+                ucwords($user->name ?? ''),
+
+                $usernameCell,
+
+                $roleHtml,
+
+                $status,
+
+                $user->created_at
+                    ? $user->created_at->format('d M Y')
+                    : '',
+
+                $actions,
+            ];
+        }
+    );
+}
+    public function data14sep(Request $request)
     {
         // $query = User::whereIn('role', [1, 3, 4])
         //     ->withTrashed()
@@ -427,6 +743,70 @@ if (!$user->hasRole('Admin')) {
 
         return redirect()->route('users.index')->with('success', 'User restored successfully.');
     }
+
+    public function bulkStatus(Request $request)
+{
+    $request->validate([
+        'ids' => ['required', 'string'],
+        'status' => ['required', 'in:active,inactive'],
+    ]);
+
+    $ids = array_filter(
+        array_map('intval', explode(',', $request->ids))
+    );
+
+    if (empty($ids)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No users selected.'
+        ], 422);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Only NON-DELETED users can have their status changed
+    |--------------------------------------------------------------------------
+    */
+
+    $count = User::whereNull('deleted_at')
+        ->whereIn('id', $ids)
+        ->update([
+            'status' => $request->status,
+        ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => $count . ' user' . ($count == 1 ? '' : 's') . ' updated successfully.',
+        'status' => $request->status,
+    ]);
+}
+
+public function bulkRestore(Request $request)
+{
+    $request->validate([
+        'ids' => ['required', 'string'],
+    ]);
+
+    $ids = array_filter(
+        array_map('intval', explode(',', $request->ids))
+    );
+
+    if (empty($ids)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No users selected.'
+        ], 422);
+    }
+
+    $count = User::onlyTrashed()
+        ->whereIn('id', $ids)
+        ->restore();
+
+    return response()->json([
+        'success' => true,
+        'message' => $count . ' user' . ($count == 1 ? '' : 's') . ' restored successfully.',
+    ]);
+}
 
 
     // API: optional methods for JSON if you still want

@@ -1389,6 +1389,11 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('sales_staff/inactive-all', [SalesStaffController::class, 'inactiveAll'])
     ->name('sales_staff.inactiveAll');
+        Route::post(
+            '/sales-staff/bulk-status',
+            [SalesStaffController::class, 'bulkStatus']
+        )->name('sales_staff.bulkStatus');
+
         Route::resource('sales_staff', SalesStaffController::class);
 
     });
@@ -1902,6 +1907,10 @@ Route::get('/payroll/process/{year}/{month}', [PayrollController::class, 'proces
         Route::resource('payroll', PayrollController::class)
     ->only(['index', 'store']);
 
+        Route::post(
+            'blocked-numbers/bulk-delete',
+            [BlockedNumberController::class, 'bulkDelete']
+        )->name('blocked-numbers.bulkDelete');
 
         Route::resource(
             'blocked-numbers',
@@ -1969,6 +1978,16 @@ Route::middleware(['auth'])->group(function () {
     // Route::resource('certificates', CertificateController::class);
     Route::resource('certificates', CertificateController::class)
      ->parameters(['certificates' => 'student']);
+
+     Route::post(
+    'users/bulk-status',
+        [UserController::class, 'bulkStatus']
+    )->name('users.bulkStatus');
+
+    Route::post(
+        'users/bulk-restore',
+        [UserController::class, 'bulkRestore']
+    )->name('users.bulkRestore');
 
     Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
     Route::get('users/data', [UserController::class, 'data'])->name('users.data');
@@ -2173,6 +2192,8 @@ Route::get(
 Route::middleware(['auth'])->group(function () {
 
     // route to download skipped rows: type = txt|csv|xlsx
+    Route::post('/trainers/bulk-status', [TrainerController::class, 'bulkStatus'])
+    ->name('trainers.bulkStatus');
     Route::post(
         '/trainers/{trainer}/toggle-status',
         [TrainerController::class, 'toggleStatus']

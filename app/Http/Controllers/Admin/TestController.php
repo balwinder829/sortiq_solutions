@@ -968,10 +968,12 @@ return back()->with('success', "$count student(s) moved successfully");
         ];
 
         // ✅ Require course ONLY for letters
-        if (in_array($mode, ['internship', 'offer'])) {
-            $rules['course_name'] = 'required|string|max:255';
-        }
+        // if (in_array($mode, ['internship', 'offer'])) {
+        //     $rules['course_name'] = 'required|string|max:255';
+        // }
 
+        $rules['course_name'] = 'required|string|max:255';
+        
         $messages = [
             'student_test_ids.required' => 'Please select at least one student.',
             'course_name.required' => 'Course name is required for this letter.'
@@ -988,9 +990,11 @@ return back()->with('success', "$count student(s) moved successfully");
         // ]);
 
         // $courseName = "training";
-        $courseName = $mode 
-        ? $request->course_name   // letters
-        : 'training';   
+        // $courseName = $mode 
+        // ? $request->course_name   // letters
+        // : 'training';   
+
+        $courseName = $request->course_name ?? 'training';
         // $courseName = $request->course_name;
         $ids = $request->student_test_ids;
         
@@ -1104,7 +1108,7 @@ return back()->with('success', "$count student(s) moved successfully");
             
 
             if($mode  == null){
-                $html = View::make($view, compact('student'))->render();
+                $html = View::make($view, compact('student', 'courseName'))->render();
                 $mpdf->SetHTMLHeader($this->getPDFHeader());
                 $mpdf->WriteHTML($html);
                 $mpdf->SetHTMLFooter($this->getPDFFooter());

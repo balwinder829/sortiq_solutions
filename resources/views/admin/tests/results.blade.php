@@ -240,9 +240,10 @@
 </button>
 
    {{-- ✅ NEW BUTTON --}}
-    <button type="submit"
-            class="btn btn-primary"
-            formaction="{{ route('admin.tests.certificate.download', $test->id) }}">
+    <button type="button"
+            class="btn btn-primary download-letter"
+            data-type="letter3"
+            data-action="{{ route('admin.tests.certificate.download', $test->id) }}">
         Download Certificate
     </button>
 

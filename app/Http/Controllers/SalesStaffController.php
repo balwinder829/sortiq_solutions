@@ -6,6 +6,7 @@ use App\Models\SalesStaff;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Rules\NotBlockedNumber;
+use App\Http\DataTables\DataTablesServerSide;
 
 class SalesStaffController extends Controller
 {
@@ -34,7 +35,214 @@ class SalesStaffController extends Controller
     /**
      * List Sales Staff
      */
+
+    // public function index(Request $request)
+    // {
+    //     $status = $request->get('status', 'active');
+
+    //     if (!in_array($status, ['active', 'inactive'])) {
+    //         $status = 'active';
+    //     }
+
+    //     $staff = SalesStaff::where('status', $status)
+    //         ->latest('updated_at')
+    //         ->get();
+
+    //     return view('sales_staff.index', compact('staff', 'status'));
+    // }
+
     public function index(Request $request)
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Current Status
+    |--------------------------------------------------------------------------
+    */
+    $status = $request->get('status', 'active');
+
+    if (!in_array($status, ['active', 'inactive'])) {
+        $status = 'active';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Server-Side DataTable Request
+    |--------------------------------------------------------------------------
+    */
+    if ($request->ajax()) {
+
+        $staffQuery = SalesStaff::query()
+            ->where('status', $status)
+            ->latest('updated_at');
+
+
+        return DataTablesServerSide::response(
+            $request,
+            $staffQuery,
+            [
+                'orderable' => [
+                    'id',
+                    'username',
+                    'name',
+                    'gender',
+                    'phone',
+                    'email',
+                    'status'
+                ],
+
+                'searchable' => [
+                    'username',
+                    'name',
+                    'email',
+                    'phone'
+                ],
+            ],
+
+            function ($sales, $index, $start) {
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CHECKBOX
+                |--------------------------------------------------------------------------
+                */
+                $checkbox = '
+                    <input
+                        type="checkbox"
+                        class="sales-checkbox"
+                        value="' . $sales->id . '"
+                    >
+                ';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | ACTIONS
+                |--------------------------------------------------------------------------
+                */
+                $actions = '
+                    <div class="d-flex justify-content-center align-items-center"
+                         style="gap: 6px;">
+                ';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | EDIT
+                |--------------------------------------------------------------------------
+                */
+                $actions .= '
+                    <a href="' . route(
+                        'sales_staff.edit',
+                        $sales->id
+                    ) . '"
+                       class="btn btn-sm"
+                       title="Edit">
+
+                        <i class="fa fa-edit"></i>
+
+                    </a>
+                ';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | DELETE
+                |--------------------------------------------------------------------------
+                */
+                $actions .= '
+                    <form
+                        action="' . route(
+                            'sales_staff.destroy',
+                            $sales->id
+                        ) . '"
+                        method="POST"
+                        class="d-inline m-0 sales-action-form"
+                        data-title="Delete Sales Staff?"
+                        data-text="Do you want to delete this?"
+                        data-confirm="Yes, Delete"
+                    >
+
+                        ' . csrf_field() . '
+
+                        ' . method_field('DELETE') . '
+
+                        <button
+                            type="submit"
+                            class="btn btn-sm"
+                            title="Delete"
+                        >
+
+                            <i class="fa fa-trash"></i>
+
+                        </button>
+
+                    </form>
+                ';
+
+
+                $actions .= '
+                    </div>
+                ';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | ROW NUMBER
+                |--------------------------------------------------------------------------
+                */
+                $rowNum =
+                    $start +
+                    $index +
+                    1;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | RETURN ROW
+                |--------------------------------------------------------------------------
+                */
+                return [
+
+                    $checkbox,
+
+                    $rowNum,
+
+                    e($sales->username ?? ''),
+
+                    ucwords($sales->name ?? ''),
+
+                    ucfirst($sales->gender ?? '-'),
+
+                    e($sales->phone ?? 'N/A'),
+
+                    e($sales->email ?? 'N/A'),
+
+                    ucwords($sales->status ?? ''),
+
+                    $actions,
+
+                ];
+
+            }
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMAL PAGE LOAD
+    |--------------------------------------------------------------------------
+    */
+    return view(
+        'sales_staff.index',
+        compact('status')
+    );
+}
+
+    public function index14sep(Request $request)
     {
         $staff = SalesStaff::latest('updated_at')->get();
 
@@ -191,5 +399,68 @@ class SalesStaffController extends Controller
 
         return redirect()->route('sales_staff.index')
             ->with('success', 'All sales staff have been set to inactive.');
+    }
+
+    public function bulkStatus(Request $request)
+{
+    $request->validate([
+        'ids' => ['required', 'string'],
+        'status' => ['required', 'in:active,inactive'],
+    ]);
+
+    $ids = array_filter(
+        array_map(
+            'intval',
+            explode(',', $request->ids)
+        )
+    );
+
+    if (empty($ids)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No sales staff selected.'
+        ], 422);
+    }
+
+    SalesStaff::whereIn('id', $ids)->update([
+        'status' => $request->status,
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => count($ids) . ' sales staff updated successfully.',
+        'status' => $request->status,
+    ]);
+}
+
+    public function bulkStatus14sep(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+            'status' => ['required', 'in:active,inactive'],
+        ]);
+
+        $ids = array_filter(
+            array_map(
+                'intval',
+                explode(',', $request->ids)
+            )
+        );
+
+        if (empty($ids)) {
+            return back()->with(
+                'error',
+                'No sales staff selected.'
+            );
+        }
+
+        SalesStaff::whereIn('id', $ids)->update([
+            'status' => $request->status,
+        ]);
+
+        return back()->with(
+            'success',
+            count($ids) . ' sales staff updated successfully.'
+        );
     }
 }

@@ -34,7 +34,10 @@ class College extends Model
         'is_important',
         'departments',
         'ownership_type',
-        'connection_type'
+        'connection_type',
+        'seminar_count',
+        'placement_count',
+        'connected_to',
     ];
 
     const TYPES = [

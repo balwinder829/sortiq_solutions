@@ -96,6 +96,59 @@
             </select>
         </div>
 
+        {{-- Seminar Count --}}
+        <div class="form-group col-md-6">
+            <label>Seminar</label>
+            <input type="number"
+                   name="seminar_count"
+                   class="form-control @error('seminar_count') is-invalid @enderror"
+                   value="{{ old('seminar_count', $college->seminar_count ?? 0) }}"
+                   min="0">
+
+            @error('seminar_count')
+                <span class="invalid-feedback">{{ $message }}</span>
+            @enderror
+        </div>
+
+        {{-- Placement Count --}}
+        <div class="form-group col-md-6">
+            <label>Placement</label>
+            <input type="number"
+                   name="placement_count"
+                   class="form-control @error('placement_count') is-invalid @enderror"
+                   value="{{ old('placement_count', $college->placement_count ?? 0) }}"
+                   min="0">
+
+            @error('placement_count')
+                <span class="invalid-feedback">{{ $message }}</span>
+            @enderror
+        </div>
+
+        {{-- Whom to Connect --}}
+        <div class="form-group col-md-6">
+            <label>Whom to Connect</label>
+            <select name="connected_to"
+                    class="form-control @error('connected_to') is-invalid @enderror">
+
+                <option value="">-- Select --</option>
+
+                <option value="HOD"
+                    {{ old('connected_to', $college->connected_to) == 'HOD' ? 'selected' : '' }}>
+                    HOD
+                </option>
+
+                <option value="TPO"
+                    {{ old('connected_to', $college->connected_to) == 'TPO' ? 'selected' : '' }}>
+                    TPO
+                </option>
+
+            </select>
+
+            @error('connected_to')
+                <span class="invalid-feedback">{{ $message }}</span>
+            @enderror
+        </div>
+
         @php
             $departmentList = [
                 'CSE',

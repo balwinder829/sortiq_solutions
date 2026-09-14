@@ -61,7 +61,7 @@
                 <th>Actions</th>
             </tr>
         </thead>
-
+         
         <tbody>
         @foreach($mous as $mou)
             <tr>
