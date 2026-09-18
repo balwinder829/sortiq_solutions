@@ -184,6 +184,7 @@ class KeyTestController extends Controller
         //     ->with('questions.options')
         //     ->firstOrFail();
 
+        
 
         $link = TestLink::where('slug', $slug)->first();
 
@@ -202,6 +203,10 @@ class KeyTestController extends Controller
                 ->where('is_active', 1)
                 ->with('questions.options')
                 ->firstOrFail();
+        }
+
+        if (session('current_test_id') === null) {
+            return redirect()->route('student.already.submitted', $test->slug);
         }
 
         if (session('current_test_id') != $test->id) {
@@ -370,10 +375,11 @@ class KeyTestController extends Controller
         // }
 
         if (!$studentTestId) {
-            return redirect()->route('student.enter.key');
+            // return redirect()->route('student.enter.key');
         }
 
-        return view('student.result', compact('studentTest'));
+        // return view('student.result', compact('studentTest'));
+        return view('student.result');
     }
 
 }

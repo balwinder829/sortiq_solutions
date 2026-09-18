@@ -66,6 +66,7 @@ class UpcomingEventController extends Controller
             'name'        => $request->name,
             'description' => $request->description,
             'event_date'  => $request->event_date,
+            'category'    => $request->category,
             'notify'      => $request->boolean('notify'),
         ]);
 
@@ -89,6 +90,7 @@ class UpcomingEventController extends Controller
         $event->update([
             'name'        => $request->name,
             'description' => $request->description,
+            'category'    => $request->category,
             'event_date'  => $request->event_date,
             'notify'      => $request->boolean('notify'),
         ]);

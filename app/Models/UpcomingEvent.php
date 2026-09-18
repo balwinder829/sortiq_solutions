@@ -16,6 +16,7 @@ class UpcomingEvent extends Model
         'event_date',
         'notify',
         'dismissed',
+        'category',
         'last_notified_at'
     ];
 

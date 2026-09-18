@@ -12,6 +12,15 @@
             <input type="text" name="name" class="form-control" required>
         </div>
 
+         {{-- Category --}}
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select" required>
+                <option value="other" selected>Other</option>
+                <option value="birthday">Birthday</option>
+            </select>
+        </div>
+        
         <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea name="description" class="form-control"></textarea>

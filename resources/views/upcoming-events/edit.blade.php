@@ -14,6 +14,18 @@
                    value="{{ $event->name }}" required>
         </div>
 
+         {{-- Category --}}
+        <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select" required>
+                <option value="other" {{ $event->category == 'other' ? 'selected' : '' }}>
+                    Other
+                </option>
+                <option value="birthday" {{ $event->category == 'birthday' ? 'selected' : '' }}>
+                    Birthday
+                </option>
+            </select>
+        </div>
         <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea name="description"

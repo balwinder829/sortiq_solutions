@@ -12,7 +12,7 @@
             <h4 class="mb-3">Test Submitted Successfully</h4>
 
             <p>
-                Thank you <strong>{{ $studentTest->student_name }}</strong> for completing the test.
+                Thank you for completing the test.
             </p>
 
             <p>Your responses have been recorded successfully.</p>
@@ -26,4 +26,17 @@
  -->
     </div>
 </div>
+<script>
+    // Add multiple history entries so Back button stays on this page
+    history.pushState(null, '', location.href);
+    history.pushState(null, '', location.href);
+    history.pushState(null, '', location.href);
+    history.pushState(null, '', location.href);
+    history.pushState(null, '', location.href);
+
+    window.addEventListener('popstate', function () {
+        // Immediately restore the history state
+        history.pushState(null, '', location.href);
+    });
+</script>
 @endsection

@@ -72,7 +72,7 @@ li {
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" style="text-align: center;">
-                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 30px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Bond Agreement (Senior Employee)</strong></h2>
+                        <h2 style="font-family: 'Katibeh', serif; text-align: center; font-size: 30px; font-weight: 700; color: #2c2e35; margin: 0 0 30px;"><strong>Bond Agreement</strong></h2>
                     </td>
                 </tr>
             </table>

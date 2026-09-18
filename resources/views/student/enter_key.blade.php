@@ -64,11 +64,6 @@
                 </select>
             </div>
 
-            {{-- Course --}}
-            <div class="mb-3">
-                <label class="fw-bold">Course</label>
-                <select name="class" id="courseField" class="form-control"></select>
-            </div>
 
             {{-- Branch --}}
             <div class="mb-3">
@@ -90,22 +85,40 @@
     </div>
 </div>
 </div>
-
+ <style>
+@media (max-width: 867px) {
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+</style>
+<!-- <style>
+    @media screen and (max-width: 767px) {
+        #testAccessForm input,
+        #testAccessForm select,
+        #testAccessForm textarea {
+            font-size: 16px !important;
+        }
+    }
+</style> -->
 <script>
 const courseData = {
     Degree: {
         courses: {
             "BCA": {
-                branches: ["Software Development", "Web Development", "Data Science"],
-                semesters: 6
+                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical"],
+                semesters: 8
             },
             "MCA": {
-                branches: ["Software Development", "Web Development", "Data Science"],
-                semesters: 4
+                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical"],
+                semesters: 8
             },
             "BSc IT": {
-                branches: ["Software Development", "Web Development", "Data Science"],
-                semesters: 6
+                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical"],
+                semesters: 8
             },
             "B.Tech": {
                 branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical"],
@@ -117,69 +130,93 @@ const courseData = {
         courses: {
             "Polytechnic": {
                 branches: ["Computer Engineering", "IT", "Mechanical", "Civil", "Electrical"],
-                semesters: 6
+                semesters: 8
             }
         }
     }
 };
 
+
 const courseType = document.getElementById('courseType');
-const courseField = document.getElementById('courseField');
 const branchField = document.getElementById('branchField');
 const semesterField = document.getElementById('semesterField');
 
-function populateCourses(selectedCourse = null) {
+
+// Course Type Change
+courseType.addEventListener('change', function () {
+
     let type = courseType.value;
-    courseField.innerHTML = '<option value="">Select Course</option>';
 
-    Object.keys(courseData[type].courses).forEach(course => {
-        let selected = selectedCourse === course ? 'selected' : '';
-        courseField.innerHTML += `<option value="${course}" ${selected}>${course}</option>`;
-    });
+    branchField.innerHTML = '<option value="">Select Branch</option>';
+    semesterField.innerHTML = '<option value="">Select Semester</option>';
 
-    branchField.innerHTML = '';
-    semesterField.innerHTML = '';
-}
+    if (!type) {
+        return;
+    }
 
-function populateBranchesAndSemesters(selectedBranch = null, selectedSemester = null) {
-    let type = courseType.value;
-    let course = courseField.value;
+    // Get first course of selected Course Type
+    let courses = courseData[type].courses;
+    let firstCourse = Object.keys(courses)[0];
 
-    if (!course) return;
+    let data = courses[firstCourse];
 
-    let data = courseData[type].courses[course];
 
     // Branch
-    branchField.innerHTML = '<option value="">Select Branch</option>';
-    data.branches.forEach(branch => {
-        let selected = selectedBranch === branch ? 'selected' : '';
-        branchField.innerHTML += `<option value="${branch}" ${selected}>${branch}</option>`;
+    data.branches.forEach(function (branch) {
+
+        branchField.innerHTML +=
+            '<option value="' + branch + '">' +
+            branch +
+            '</option>';
+
     });
 
+
     // Semester
-    semesterField.innerHTML = '<option value="">Select Semester</option>';
     for (let i = 1; i <= data.semesters; i++) {
-        let selected = selectedSemester == i ? 'selected' : '';
-        semesterField.innerHTML += `<option value="${i}" ${selected}>${i}</option>`;
+
+        semesterField.innerHTML +=
+            '<option value="' + i + '">' +
+            i +
+            '</option>';
+
     }
-}
 
-courseType.addEventListener('change', () => populateCourses());
-courseField.addEventListener('change', () => populateBranchesAndSemesters());
+});
 
-// 🔥 Keep old values after validation error
+
+// Keep old values after validation error
 window.onload = function () {
-    let oldCourse = "{{ old('course') }}";
+
+    let oldType = "{{ old('course_type', 'Degree') }}";
     let oldBranch = "{{ old('student_branch') }}";
     let oldSemester = "{{ old('semester') }}";
 
-    populateCourses(oldCourse);
+    courseType.value = oldType;
 
-    if (oldCourse) {
-        courseField.value = oldCourse;
-        populateBranchesAndSemesters(oldBranch, oldSemester);
-    }
+    courseType.dispatchEvent(new Event('change'));
+
+    branchField.value = oldBranch;
+    semesterField.value = oldSemester;
+
 };
+ 
 </script>
+<script>
+document.querySelector('form').addEventListener('submit', function () {
 
+    Object.keys(localStorage).forEach(function (key) {
+
+        if (
+            key.startsWith('exam_submitted_test_') ||
+            key.startsWith('exam_answers_') ||
+            key.startsWith('exam_pending_')
+        ) {
+            localStorage.removeItem(key);
+        }
+
+    });
+
+});
+</script>
 @endsection
