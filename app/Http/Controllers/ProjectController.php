@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\ProjectCategory;
 
 class ProjectController extends Controller
 {
@@ -55,7 +56,25 @@ class ProjectController extends Controller
     /**
      * Display a listing of the resource (all projects).
      */
-    public function index()
+    public function index(Request $request)
+    {
+        $query = Project::with('category')
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        $projects = $query->get();
+
+        $categories = ProjectCategory::where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        return view('projects.index', compact('projects', 'categories'));
+    }
+    
+    public function index18()
     {
 
         $projects = Project::orderBy('created_at', 'desc')->get();
@@ -67,7 +86,12 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+         $categories = ProjectCategory::where('status', 'active')
+        ->orderBy('name')
+        ->get();
+
+        return view('projects.create', compact('categories'));
+        // return view('projects.create');
     }
 
     /**
@@ -100,8 +124,25 @@ class ProjectController extends Controller
     {
         // Add authorization check here (e.g., Policy)
         // $this->authorize('update', $project);
+        $categories = ProjectCategory::where('status', 'active')
+        ->orderBy('name')
+        ->get();
 
-        return view('projects.edit', compact('project'));
+        /*
+         * If the project's existing category has been made inactive,
+         * include it so it can still be displayed on the edit form.
+         */
+        if ($project->category_id) {
+            $currentCategory = ProjectCategory::withTrashed()
+                ->find($project->category_id);
+
+            if ($currentCategory && !$categories->contains('id', $currentCategory->id)) {
+                $categories->push($currentCategory);
+            }
+        }
+
+        return view('projects.edit', compact('project', 'categories'));
+        // return view('projects.edit', compact('project'));
     }
 
     /**
@@ -139,6 +180,10 @@ class ProjectController extends Controller
     {
         return [
             'name' => ['required', 'string', 'max:100', Rule::unique('projects')->ignore($ignoreId)],
+            'category_id' => [
+                'required',
+                'exists:project_categories,id',
+            ],
             'tech_stack' => ['required', 'string', 'max:255'],
             'backend_lang' => ['nullable', 'string', 'max:50'],
             'frontend_framework' => ['nullable', 'string', 'max:50'],

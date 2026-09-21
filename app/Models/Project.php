@@ -15,11 +15,17 @@ class Project extends Model
     protected $fillable = [
         'name',
         'tech_stack',
+        'category_id',
         'backend_lang',
         'frontend_framework',
         'versions',
         'description',
         'github_link',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(ProjectCategory::class, 'category_id');
+    }
 
 }

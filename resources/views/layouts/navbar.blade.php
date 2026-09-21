@@ -833,12 +833,19 @@ body.menu-toggle .sidebar-collapse-btn{
                         </li> 
                         {{-- Student help desk start--}}               
                         {{-- Help Desk --}}
-                            <li class="{{ request()->routeIs('admin.helpdesk.*') || isParent(['projects*','tutorials*']) ? 'mm-active' : '' }}">
+                            <li class="{{ request()->routeIs('admin.helpdesk.*') || isParent(['projects*','tutorials*','project-categories*']) ? 'mm-active' : '' }}">
                                 <a class="has-arrow" href="javascript:void(0)">
                                     <i class="fas fa-pen-to-square"></i>
                                     <span class="nav-text">Student Help Desk</span>
                                 </a>
-                                <ul class="{{ request()->routeIs('admin.helpdesk.*') || showSubmenu(['projects*','tutorials*']) ? 'mm-show' : '' }}">
+                                <ul class="{{ request()->routeIs('admin.helpdesk.*') || showSubmenu(['projects*','tutorials*','project-categories*']) ? 'mm-show' : '' }}">
+                                    <li>
+                                        <a class="{{ isChildActive('project-categories*') }}"
+                                           href="{{ route('project-categories.index') }}">
+                                            <!-- <i class="fas fa-user-clock me-2"></i> -->
+                                            Projects Categories
+                                        </a>
+                                    </li>
                                      <li>
                                         <a class="{{ isChildActive('projects*') }}"
                                            href="{{ route('projects.index') }}">

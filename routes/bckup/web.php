@@ -85,8 +85,6 @@ use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\Letters\LetterController;
 use App\Http\Controllers\Letters\ManagementsLetterController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\ProjectCategoryController;
-
 use App\Http\Controllers\TutorialController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\DailyInterviewController;
@@ -1644,10 +1642,6 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
     Route::prefix('admin')
     ->middleware(['auth'])   // admin users only
     ->group(function () {
-
-        Route::resource('project-categories', ProjectCategoryController::class)
-            ->except(['show']);
-
         Route::resource('enquiries', EnquiryController::class);
         Route::post('enquiries/import', [EnquiryController::class, 'import'])
         ->name('enquiries.import');

@@ -24,6 +24,40 @@
                 @enderror
             </div>
 
+            {{-- Project Category --}}
+            <div class="form-group col-md-6 mb-3">
+
+                <label>
+                    <strong>Category *</strong>
+                </label>
+
+                <select name="category_id"
+                        class="form-control @error('category_id') is-invalid @enderror"
+                        required>
+
+                    <option value="">-- Select Category --</option>
+
+                    @foreach($categories as $category)
+
+                        <option value="{{ $category->id }}"
+                            {{ old('category_id') == $category->id ? 'selected' : '' }}>
+
+                            {{ $category->name }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+                @error('category_id')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                @enderror
+
+            </div>
+
             {{-- Primary Tech Stack --}}
             <div class="form-group col-md-6 mb-3">
                 <label for="tech_stack">Primary Tech Stack *</label>

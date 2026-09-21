@@ -90,7 +90,7 @@
 				<tr>
 					@foreach($question->options as $oIndex => $option)
 					<td style="font-size: 14px; line-height: 15px; padding-bottom:20px; font-family: 'Inter', sans-serif; width:25%;">
-						{{ $option->option_text }}
+						{{ chr(97 + $oIndex) }}) {{ $option->option_text }}
 					</td>
 					 @endforeach
 					 
