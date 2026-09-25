@@ -369,7 +369,7 @@
 
 
         <!-- Reference -->
-        <div class="form-group col-md-6">
+        <!-- <div class="form-group col-md-6">
             <label>Reference</label>
             <select name="reference" class="form-control">
                 <option value="" disabled>--Choose--</option>
@@ -403,7 +403,70 @@
                 @endforeach
 
             </select>
-        </div>
+        </div> -->
+
+        {{-- Referred By --}}
+<div class="form-group col-md-6">
+    <label for="referred_by" class="form-label">
+        Referred By
+    </label>
+
+    <select name="referred_by"
+            id="referred_by"
+            class="form-control">
+
+        {{-- Direct --}}
+        <option value=""
+            {{ old('referred_by', $student->referred_by) === null ||
+               old('referred_by', $student->referred_by) === '' ? 'selected' : '' }}>
+            Direct
+        </option>
+
+        {{-- Reference --}}
+        <optgroup label="Reference">
+            @foreach($references as $reference)
+                <option value="{{ $reference->id }}"
+                        data-type="reference"
+                        {{ old('referred_by', $student->referred_by) == $reference->id &&
+                           old('referred_by_type', $student->referred_by_type) == 'reference'
+                           ? 'selected'
+                           : '' }}>
+                    {{ $reference->name }}
+                </option>
+            @endforeach
+        </optgroup>
+
+        {{-- Sales Staff --}}
+        <optgroup label="Sales Staff">
+            @foreach($salesStaff as $staff)
+                <option value="{{ $staff->id }}"
+                        data-type="staff"
+                        {{ old('referred_by', $student->referred_by) == $staff->id &&
+                           old('referred_by_type', $student->referred_by_type) == 'staff'
+                           ? 'selected'
+                           : '' }}>
+                    {{ $staff->name }}
+                </option>
+            @endforeach
+        </optgroup>
+
+    </select>
+
+    <input type="hidden"
+           name="referred_by_type"
+           id="referred_by_type"
+           value="{{ old('referred_by_type', $student->referred_by_type) }}">
+
+    @error('referred_by')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+
+    @error('referred_by_type')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
+
+        
                                            {{-- Password --}}
                 <div class="form-group col-md-6">
                     <label>Password</label>
@@ -1099,6 +1162,27 @@ $(document).ready(function () {
 
 });
 </script> -->
+<script>
+    $(document).ready(function () {
 
+        function setReferredByType() {
+
+            const selectedOption = $('#referred_by option:selected');
+
+            const type = selectedOption.attr('data-type') || '';
+
+            $('#referred_by_type').val(type);
+        }
+
+        // When user changes Referred By
+        $('#referred_by').on('change', function () {
+            setReferredByType();
+        });
+
+        // Set correct type when edit page loads
+        setReferredByType();
+
+    });
+</script>
 
 @endpush

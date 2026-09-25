@@ -95,6 +95,8 @@ use App\Http\Controllers\SalarySlipController;
 use App\Http\Controllers\Letters\StudentAdditionalLetterController;
 use App\Http\Controllers\Letters\AcceptedLetterController;
 use App\Http\Controllers\CompanyPptController;
+use App\Http\Controllers\PaymentUpiAccountController;
+use App\Http\Controllers\PaymentUpiAssignmentController;
 
 use App\Http\Controllers\FrontendPageController;
 
@@ -1381,6 +1383,12 @@ Route::middleware(['auth'])->group(function () {
          Route::get('/dropout-fee-status', [DropoutFeeStatusController::class, 'index'])->name('dropout.fee.status');   
         Route::get('/dropout-fee-status/export', [DropoutFeeStatusController::class, 'export'])->name('dropout.fee.status.export');
 
+        Route::get('/colleges/shift', [CollegeController::class, 'shift'])
+            ->name('colleges.shift');
+
+        Route::post('/colleges/shift', [CollegeController::class, 'processShift'])
+            ->name('colleges.processShift');
+
         Route::get('/colleges/import', [CollegeController::class, 'showImport'])
             ->name('colleges.import.view');
 
@@ -1645,6 +1653,41 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
     ->middleware(['auth'])   // admin users only
     ->group(function () {
 
+        Route::resource(
+        'payment-upi-accounts',
+        PaymentUpiAccountController::class
+    );
+
+    Route::post(
+        'payment-upi-accounts/{paymentUpiAccount}/set-default',
+        [PaymentUpiAccountController::class, 'setDefault']
+    )->name('payment-upi-accounts.set-default');
+
+    Route::post(
+        'payment-upi-accounts/{paymentUpiAccount}/toggle-status',
+        [PaymentUpiAccountController::class, 'toggleStatus']
+    )->name('payment-upi-accounts.toggle-status');
+
+    // Route::post(
+    //     'payment-upi-accounts/assign-to-form',
+    //     [PaymentUpiAccountController::class, 'assignToForm']
+    // )->name('payment-upi-accounts.assign-to-form');
+
+    // Route::post(
+    //     'payment-upi-accounts/remove-from-form',
+    //     [PaymentUpiAccountController::class, 'removeFromForm']
+    // )->name('payment-upi-accounts.remove-from-form');
+
+    Route::post(
+        'payment-upi-accounts/assign-to-form',
+        [PaymentUpiAssignmentController::class, 'assignToForm']
+    )->name('payment-upi-accounts.assign-to-form');
+
+    Route::post(
+        'payment-upi-accounts/remove-from-form',
+        [PaymentUpiAssignmentController::class, 'removeFromForm']
+    )->name('payment-upi-accounts.remove-from-form');
+
         Route::resource('project-categories', ProjectCategoryController::class)
             ->except(['show']);
 
@@ -1657,9 +1700,9 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
 
 
     Route::post(
-    '/enquiries/bulk-move',
-    [EnquiryController::class,'bulkMove']
-)->name('enquiries.bulkMove');
+        '/enquiries/bulk-move',
+        [EnquiryController::class,'bulkMove']
+    )->name('enquiries.bulkMove');
 
 
     //Office expenses
@@ -1951,6 +1994,11 @@ Route::middleware(['auth'])->group(function () {
     // Route::post('/payroll/store', [PayrollController::class, 'store'])
     //     ->name('payroll.store');
 
+    Route::get('/sessions/{session}/export-students', [SessionController::class, 'exportStudents'])
+    ->name('sessions.exportStudents');
+
+    Route::get('/sessions/{session}/export-colleges', [SessionController::class, 'exportColleges'])
+        ->name('sessions.exportColleges');
 
     Route::resource('sessions', SessionController::class);
     // routes/web.php

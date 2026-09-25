@@ -108,8 +108,6 @@
                             <small class="text-danger">{{ $message }}</small>
                         @enderror
                     </div>
-
-
                     
                   {{-- Study --}}
                     <div class="form-group col-md-6">
@@ -130,11 +128,38 @@
                         <select name="semester" class="form-control" required>
                             <option value="">Select Semester</option>
                             @for ($i = 1; $i <= 8; $i++)
-                                <option value="{{ $i }}" {{ old('semester') == $i ? 'selected' : '' }}>
+                        <option value="{{ $i }}" {{ old('semester') == $i ? 'selected' : '' }}>
                                     {{ $i }}
                                 </option>
                             @endfor
                         </select>
+                    </div>
+
+                    {{-- Competitor / Company / Institute --}}
+                    <div class="form-group col-md-6">
+                        <label><strong>Competitor / Company / Institute</strong></label>
+                        <input type="text"
+                               name="competitor_name"
+                               class="form-control @error('competitor_name') is-invalid @enderror"
+                               value="{{ old('competitor_name') }}"
+                               placeholder="Enter competitor/company/institute name">
+
+                        @error('competitor_name')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    {{-- General Reason --}}
+                    <div class="form-group col-md-6">
+                        <label><strong>Reason</strong></label>
+                        <textarea name="competitor_reason"
+                                  rows="2"
+                                  class="form-control @error('competitor_reason') is-invalid @enderror"
+                                  placeholder="Enter general reason">{{ old('competitor_reason') }}</textarea>
+
+                        @error('competitor_reason')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
 
                    

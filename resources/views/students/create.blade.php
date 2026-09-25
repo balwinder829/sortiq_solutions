@@ -387,7 +387,7 @@
 
 
 
-            <div class="form-group col-md-6">
+            <!-- <div class="form-group col-md-6">
                 <label>Reference</label>
                 <select name="reference" class="form-control">
                     <option value="" disabled {{ old('reference') ? '' : 'selected' }}>Choose one</option>
@@ -399,9 +399,9 @@
                     @endforeach
                 </select>
                 @error('reference') <small class="text-danger">{{ $message }}</small> @enderror
-            </div>
+            </div> -->
 
-            <div class="col-md-6">
+            <!-- <div class="col-md-6">
                 <label for="referred_by" class="form-label">
                     Referred By
                 </label>
@@ -422,7 +422,55 @@
                     @endforeach
 
                 </select>
-            </div>
+            </div> -->
+
+            {{-- Referred By --}}
+<div class="form-group col-md-6">
+    <label for="referred_by" class="form-label">
+        Referred By
+    </label>
+
+    <select name="referred_by"
+            id="referred_by"
+            class="form-control">
+
+        <option value="">Direct</option>
+
+        <optgroup label="Reference">
+            @foreach($references as $reference)
+                <option value="{{ $reference->id }}"
+                        data-type="reference"
+                        {{ old('referred_by') == $reference->id && old('referred_by_type') == 'reference' ? 'selected' : '' }}>
+                    {{ $reference->name }}
+                </option>
+            @endforeach
+        </optgroup>
+
+        <optgroup label="Sales Staff">
+            @foreach($salesStaff as $staff)
+                <option value="{{ $staff->id }}"
+                        data-type="staff"
+                        {{ old('referred_by') == $staff->id && old('referred_by_type') == 'staff' ? 'selected' : '' }}>
+                    {{ $staff->name }}
+                </option>
+            @endforeach
+        </optgroup>
+
+    </select>
+
+    <input type="hidden"
+           name="referred_by_type"
+           id="referred_by_type"
+           value="{{ old('referred_by_type') }}">
+
+    @error('referred_by')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+
+    @error('referred_by_type')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
 
             <div class="form-group col-md-6">
                 <label>Address</label>
@@ -864,5 +912,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateLabel();
 });
+</script>
+<script>
+    $(document).ready(function () {
+
+        $('#referred_by').on('change', function () {
+
+            let selectedOption = $(this).find('option:selected');
+
+            let type = selectedOption.data('type') || '';
+
+            $('#referred_by_type').val(type);
+        });
+
+        // Set type on page load
+        $('#referred_by').trigger('change');
+
+    });
 </script>
 @endpush

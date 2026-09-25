@@ -69,6 +69,44 @@
     input:checked + .slider:before {
         transform: translateX(18px);
     }
+
+    /* Department Filter Dropdown */
+.department-dropdown-menu {
+    min-width: 400px !important;
+    max-width: 450px !important;
+    max-height: 450px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Each department row */
+.department-dropdown-menu .department-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 0 !important;
+}
+
+/* Checkbox */
+.department-dropdown-menu .department-option .form-check-input {
+    position: static !important;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    margin: 3px 0 0 0 !important;
+}
+
+/* Department text */
+.department-dropdown-menu .department-option .form-check-label {
+    display: block;
+    flex: 1;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: normal;
+    line-height: 1.5;
+    cursor: pointer;
+}
 </style>
 
 <div class="container">
@@ -78,12 +116,12 @@
     ================================= --}}
     <div class="row mb-2 align-items-center">
 
-        <div class="col-md-8">
+        <div class="col-md-6">
             <h1 class="page_heading">Colleges / Places</h1>
         </div>
 
         {{-- ACTION BUTTONS --}}
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="d-flex justify-content-end gap-2">
 
                 {{-- IMPORT COLLEGES --}}
@@ -106,6 +144,11 @@
                    class="btn mb-3"
                    style="background-color:#6b51df; color:#fff;">
                     Add
+                </a>
+
+                <a href="{{ route('colleges.shift') }}"
+                   class="btn mb-3" style="background-color:#6b51df; color:#fff;">
+                    Shift / Merge College
                 </a>
 
             </div>
@@ -150,123 +193,271 @@
     </div>
 
 
-    {{-- ================================
-        FILTERS
-    ================================= --}}
-    <div class="row mb-2 align-items-center">
+  {{-- ================================
+    FILTERS
+================================ --}}
 
-        <div class="col-md-1">
-            <h1 class="page_heading">Filters</h1>
-        </div>
+{{-- ROW 1 --}}
+<div class="row mb-2 align-items-center">
 
-        {{-- Student Count --}}
-        <div class="col-md-2">
-            <select id="student_filter" class="form-select">
-                <option value="">Student Count</option>
-                <option value="asc">Low to High</option>
-                <option value="desc">High to Low</option>
-            </select>
-        </div>
-
-        {{-- State --}}
-        <div class="col-md-2">
-            <select id="filter-state" class="form-control">
-                <option value="">All States</option>
-
-                @foreach($states as $state)
-                    <option value="{{ $state->name }}">
-                        {{ $state->name }}
-                    </option>
-                @endforeach
-
-            </select>
-        </div>
-
-        {{-- District --}}
-        <div class="col-md-2">
-            <select id="filter-district" class="form-control">
-                <option value="">All Districts</option>
-            </select>
-        </div>
-
-        {{-- College Type --}}
-        <div class="col-md-2">
-            <select id="filter_college_type" class="form-control">
-
-                <option value="">College Type</option>
-
-                @foreach(\App\Models\College::TYPES as $key => $value)
-
-                    <option value="{{ $key }}">
-                        {{ $value }}
-                    </option>
-
-                @endforeach
-
-            </select>
-        </div>
-
-        {{-- Training --}}
-        <div class="col-md-2">
-            <select id="filter_training" class="form-control">
-                <option value="">Training</option>
-                <option value="1">Providing Training</option>
-                <option value="0">Not Providing</option>
-            </select>
-        </div>
-
-        {{-- Important --}}
-        <div class="col-md-2">
-            <select id="filter_important" class="form-control">
-                <option value="">Important</option>
-                <option value="1">Important</option>
-                <option value="0">Normal</option>
-            </select>
-        </div>
-
-        {{-- Ownership --}}
-        <div class="col-md-2">
-            <select id="filter_ownership" class="form-control">
-                <option value="">Ownership</option>
-                <option value="1">Government</option>
-                <option value="0">Private</option>
-            </select>
-        </div>
-
-        {{-- Connection --}}
-        <div class="col-md-2">
-            <select id="filter_connection" class="form-control">
-                <option value="">Connection</option>
-                <option value="1">Old Connection</option>
-                <option value="0">New Connection</option>
-            </select>
-        </div>
-
-        {{-- Department --}}
-        <div class="col-md-2">
-            <select id="filter_department" class="form-control">
-
-                <option value="">Department</option>
-
-                <option value="CSE">CSE</option>
-                <option value="MBA">MBA</option>
-                <option value="BBA">BBA</option>
-                <option value="Civil">Civil</option>
-                <option value="EC">EC</option>
-                <option value="Mechanical">Mechanical</option>
-
-            </select>
-        </div>
-
-        {{-- Reset --}}
-        <div class="col-md-1 mt-2">
-            <a href="{{ route('colleges.index') }}"
-               class="btn btn-secondary w-100">
-                Reset
-            </a>
-        </div>
-
+    {{-- Filters Title --}}
+    <div class="col-md-1">
+        <h1 class="page_heading">Filters</h1>
     </div>
+
+    {{-- Student Count --}}
+    <div class="col-md-2">
+        <select id="student_filter" class="form-select">
+            <option value="">Student Count</option>
+            <option value="asc">Low to High</option>
+            <option value="desc">High to Low</option>
+        </select>
+    </div>
+
+    {{-- State --}}
+    <div class="col-md-2">
+        <select id="filter-state" class="form-control">
+            <option value="">All States</option>
+
+            @foreach($states as $state)
+                <option value="{{ $state->name }}">
+                    {{ $state->name }}
+                </option>
+            @endforeach
+
+        </select>
+    </div>
+
+    {{-- District --}}
+    <div class="col-md-2">
+        <select id="filter-district" class="form-control">
+            <option value="">All Districts</option>
+        </select>
+    </div>
+
+    {{-- College Type --}}
+    <div class="col-md-2">
+        <select id="filter_college_type" class="form-control">
+            <option value="">College Type</option>
+
+            @foreach(\App\Models\College::TYPES as $key => $value)
+                <option value="{{ $key }}">
+                    {{ $value }}
+                </option>
+            @endforeach
+
+        </select>
+    </div>
+
+    {{-- Training --}}
+    <div class="col-md-2">
+        <select id="filter_training" class="form-control">
+            <option value="">Training</option>
+            <option value="1">Providing Training</option>
+            <option value="0">Not Providing</option>
+        </select>
+    </div>
+
+</div>
+
+
+{{-- ROW 2 --}}
+<div class="row mb-2 align-items-center">
+
+    {{-- Important --}}
+    <div class="col-md-2 offset-md-1">
+        <select id="filter_important" class="form-control">
+            <option value="">Important</option>
+            <option value="1">Important</option>
+            <option value="0">Normal</option>
+        </select>
+    </div>
+
+    {{-- Ownership --}}
+    <div class="col-md-2">
+        <select id="filter_ownership" class="form-control">
+            <option value="">Ownership</option>
+            <option value="1">Government</option>
+            <option value="0">Private</option>
+        </select>
+    </div>
+
+    {{-- Connection --}}
+    <div class="col-md-2">
+        <select id="filter_connection" class="form-control">
+            <option value="">Connection</option>
+            <option value="1">Old Connection</option>
+            <option value="0">New Connection</option>
+        </select>
+    </div>
+
+    {{-- Department --}}
+<div class="col-md-2">
+    <div class="dropdown">
+
+        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                type="button"
+                id="departmentFilterButton"
+                data-bs-toggle="dropdown"
+                aria-expanded="false">
+            Department
+        </button>
+
+        <div class="dropdown-menu p-3 department-dropdown-menu"
+             aria-labelledby="departmentFilterButton">
+
+            {{-- Degree Departments --}}
+            <div class="department-group">
+
+                <div class="mb-2">
+                    <strong>Degree</strong>
+                </div>
+
+                @foreach($collegeDepartments->where('type', 'degree') as $department)
+
+                    <div class="form-check department-option">
+
+                        <input class="form-check-input department-filter"
+                               type="checkbox"
+                               value="{{ $department->name }}"
+                               id="dept_{{ $department->id }}">
+
+                        <label class="form-check-label"
+                               for="dept_{{ $department->id }}">
+                            {{ $department->name }}
+                        </label>
+
+                    </div>
+
+                @endforeach
+
+            </div>
+
+
+            {{-- Diploma Departments --}}
+            <div class="department-group mt-3">
+
+                <div class="mb-2">
+                    <strong>Diploma</strong>
+                </div>
+
+                @foreach($collegeDepartments->where('type', 'diploma') as $department)
+
+                    <div class="form-check department-option">
+
+                        <input class="form-check-input department-filter"
+                               type="checkbox"
+                               value="{{ $department->name }}"
+                               id="dept_{{ $department->id }}">
+
+                        <label class="form-check-label"
+                               for="dept_{{ $department->id }}">
+                            {{ $department->name }}
+                        </label>
+
+                    </div>
+
+                @endforeach
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    {{-- Training In --}}
+    <div class="col-md-2">
+        <select id="filter_training_in" class="form-control">
+            <option value="">Training In</option>
+            <option value="Degree">Degree</option>
+            <option value="Diploma">Diploma</option>
+            <option value="Both">Both</option>
+        </select>
+    </div>
+
+</div>
+
+
+{{-- ROW 3 - TRAINING DURATION --}}
+<div class="row mb-2 align-items-center">
+
+    {{-- 21 Days --}}
+    <div class="col-md-2 offset-md-1">
+        <select id="filter_training_21_days" class="form-control">
+            <option value="">21 Days</option>
+
+            @for($i = 0; $i <= 8; $i++)
+                <option value="{{ $i }}">
+                    {{ $i }} Times / Year
+                </option>
+            @endfor
+
+        </select>
+    </div>
+
+    {{-- 45 Days --}}
+    <div class="col-md-2">
+        <select id="filter_training_45_days" class="form-control">
+            <option value="">45 Days</option>
+
+            @for($i = 0; $i <= 8; $i++)
+                <option value="{{ $i }}">
+                    {{ $i }} Times / Year
+                </option>
+            @endfor
+
+        </select>
+    </div>
+
+    {{-- 6 Months --}}
+    <div class="col-md-2">
+        <select id="filter_training_6_months" class="form-control">
+            <option value="">6 Months</option>
+
+            @for($i = 0; $i <= 8; $i++)
+                <option value="{{ $i }}">
+                    {{ $i }} Times / Year
+                </option>
+            @endfor
+
+        </select>
+    </div>
+
+</div>
+
+
+{{-- ROW 4 --}}
+<div class="row mb-2 align-items-center">
+
+    {{-- Whom to Connect --}}
+    <div class="col-md-2 offset-md-1">
+        <select id="filter_connected_to" class="form-control">
+            <option value="">Whom to Connect</option>
+            <option value="HOD">HOD</option>
+            <option value="TPO">TPO</option>
+            <option value="Principal">Principal</option>
+            <option value="other">Some Other</option>
+            <option value="Both">Both (HOD + TPO)</option>
+        </select>
+    </div>
+
+    {{-- Reference By --}}
+    <div class="col-md-2">
+        <input type="text"
+               id="filter_reference_by"
+               class="form-control"
+               placeholder="Reference By">
+    </div>
+
+    {{-- Reset --}}
+    <div class="col-md-1">
+        <a href="{{ route('colleges.index') }}"
+           class="btn btn-secondary w-100">
+            Reset
+        </a>
+    </div>
+
+</div>
 
 @if(session('delete_error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -409,31 +600,7 @@
 
                     <div class="row">
 
-                        {{-- College Type --}}
-                        <div class="form-group col-md-6 mb-3">
-
-                            <label>
-                                <strong>College Type</strong>
-                            </label>
-
-                            <select name="college_type"
-                                    class="form-control">
-
-                                <option value="">
-                                    Keep Existing
-                                </option>
-
-                                @foreach(\App\Models\College::TYPES as $key => $value)
-
-                                    <option value="{{ $key }}">
-                                        {{ $value }}
-                                    </option>
-
-                                @endforeach
-
-                            </select>
-
-                        </div>
+                        
 
 
                         {{-- Offer Training --}}
@@ -599,47 +766,158 @@
 
         </div>
 
-                        {{-- Departments --}}
-                        <div class="form-group col-md-12 mb-3">
+        {{-- Training In --}}
+<div class="form-group col-md-6 mb-3">
+    <label>
+        <strong>Training In</strong>
+    </label>
+
+    <select name="training_in" class="form-control">
+        <option value="">
+            Keep Existing
+        </option>
+
+        <option value="Degree">
+            Degree
+        </option>
+
+        <option value="Diploma">
+            Diploma
+        </option>
+
+        <option value="Both">
+            Both
+        </option>
+    </select>
+</div>
+{{-- Training Months --}}
+<div class="form-group col-md-6 mb-3">
+
+    <label>
+        <strong>Training Months</strong>
+    </label>
+
+    <input type="text"
+           name="training_months"
+           class="form-control"
+           placeholder="Keep Existing if blank">
+
+     
+
+</div>
+{{-- Whom to Connect --}}
+<div class="form-group col-md-6 mb-3">
+    <label>
+        <strong>Whom to Connect</strong>
+    </label>
+
+    <select name="connected_to" class="form-control">
+        <option value="">
+            Keep Existing
+        </option>
+
+        <option value="HOD">
+            HOD
+        </option>
+
+        <option value="TPO">
+            TPO
+        </option>
+
+        <option value="Principal">
+            Principal
+        </option>
+
+        <option value="other">
+            Some Other
+        </option>
+
+        <option value="Both">
+            Both (HOD + TPO)
+        </option>
+    </select>
+</div>
+{{-- Reference By --}}
+<div class="form-group col-md-6 mb-3">
+    <label>
+        <strong>Reference By</strong>
+    </label>
+
+    <input type="text"
+           name="reference_by"
+           class="form-control"
+           placeholder="Keep Existing if blank">
+</div>
+                       {{-- College Type --}}
+                        <div class="form-group col-md-6 mb-3">
 
                             <label>
-                                <strong>Departments</strong>
+                                <strong>College Type</strong>
                             </label>
 
-                            @php
+                            <select name="college_type"
+                                id="bulkCollegeType"
+                                    class="form-control">
 
-                                $departmentList = [
-                                    'CSE',
-                                    'MBA',
-                                    'BBA',
-                                    'Civil',
-                                    'EC',
-                                    'Mechanical',
-                                ];
+                                <option value="">
+                                    Keep Existing
+                                </option>
 
-                            @endphp
+                                @foreach(\App\Models\College::TYPES as $key => $value)
 
-                            <select
-                                name="departments[]"
-                                id="bulkDepartments"
-                                class="form-control"
-                                multiple>
-
-                                @foreach($departmentList as $department)
-
-                                    <option value="{{ $department }}">
-                                        {{ $department }}
+                                    <option value="{{ $key }}">
+                                        {{ $value }}
                                     </option>
 
                                 @endforeach
 
                             </select>
 
-                            <small class="text-muted">
-                                Hold Ctrl to select multiple departments.
-                            </small>
-
                         </div>
+{{-- Departments --}}
+<div class="form-group col-md-12 mb-3">
+
+    <label>
+        <strong>Departments</strong>
+    </label>
+
+    <select
+        name="departments[]"
+        id="bulkDepartments"
+        class="form-control"
+        multiple>
+
+        @foreach($collegeDepartments->where('type', 'degree') as $department)
+
+            <option
+                value="{{ $department->name }}"
+                data-type="degree">
+
+                {{ $department->name }}
+
+            </option>
+
+        @endforeach
+
+        @foreach($collegeDepartments->where('type', 'diploma') as $department)
+
+            <option
+                value="{{ $department->name }}"
+                data-type="diploma">
+
+                {{ $department->name }}
+
+            </option>
+
+        @endforeach
+
+    </select>
+
+    <small class="text-muted">
+        Select departments to apply to all selected colleges.
+    </small>
+
+</div>
 
                     </div>
 
@@ -742,7 +1020,23 @@
 
                     d.connection_type = $('#filter_connection').val();
 
-                    d.department = $('#filter_department').val();
+                    d.departments = $('.department-filter:checked')
+                        .map(function () {
+                            return $(this).val();
+                        })
+                        .get();
+
+                    d.training_in = $('#filter_training_in').val();
+
+                    d.training_21_days = $('#filter_training_21_days').val();
+                    d.training_45_days = $('#filter_training_45_days').val();
+                    d.training_6_months = $('#filter_training_6_months').val();
+
+                    d.connected_to = $('#filter_connected_to').val();
+
+                    d.reference_by = $('#filter_reference_by').val();
+
+                    // d.contact_person = $('#filter_contact_person').val();
 
                 }
 
@@ -870,14 +1164,50 @@
         // FILTER CHANGE
         // ==========================================
 
-        $('#student_filter, #filter_college_type, #filter_training, #filter_important, #filter_ownership, #filter_connection, #filter_department')
-            .change(function () {
+        // $('#student_filter, #filter_college_type, #filter_training, #filter_important, #filter_ownership, #filter_connection, #filter_department')
+        //     .change(function () {
 
+        //         table.ajax.reload();
+
+        //     });
+
+            // $('#student_filter, #filter_college_type, #filter_training, #filter_important, #filter_ownership, #filter_connection, #filter_training_in, #filter_training_year, #filter_connected_to')
+            //     .change(function () {
+
+            //         table.ajax.reload();
+
+            //     });
+
+
+            $('#student_filter, #filter_training, #filter_important, #filter_ownership, #filter_connection, #filter_training_in, #filter_training_21_days, #filter_training_45_days, #filter_training_6_months, #filter_connected_to')
+                .change(function () {
+
+                    table.ajax.reload();
+
+                });
+                $('#filter_college_type').on('change', function () {
+
+                    filterDepartmentOptionsByCollegeType();
+
+                    table.ajax.reload();
+                });
+
+            $('.department-filter').on('change', function () {
                 table.ajax.reload();
-
             });
 
 
+            let filterTimer;
+
+            $('#filter_reference_by, #filter_contact_person').on('keyup', function () {
+
+                clearTimeout(filterTimer);
+
+                filterTimer = setTimeout(function () {
+                    table.ajax.reload();
+                }, 400);
+
+            });
         // ==========================================
         // STATE FILTER
         // ==========================================
@@ -1094,99 +1424,149 @@
 
     $('#exportExcel').on('click', function () {
 
-        let $btn = $(this);
+    let $btn = $(this);
+
+    if ($btn.prop('disabled')) {
+        return false;
+    }
+
+    $btn.prop('disabled', true)
+        .text('Exporting...');
+
+    let state =
+        $('#filter-state').val() ?? '';
+
+    let district =
+        $('#filter-district').val() ?? '';
+
+    let student =
+        $('#student_filter').val() ?? '';
+
+    let college_type =
+        $('#filter_college_type').val() ?? '';
+
+    let offer_training =
+        $('#filter_training').val() ?? '';
+
+    let call_status =
+        $('#filter_status').val() ?? '';
+
+    let is_important =
+        $('#filter_important').val() ?? '';
+
+    let ownership_type =
+        $('#filter_ownership').val() ?? '';
+
+    let connection_type =
+        $('#filter_connection').val() ?? '';
+
+    // NEW FILTERS
+
+    let training_in =
+        $('#filter_training_in').val() ?? '';
+
+    let training_in_year =
+        $('#filter_training_year').val() ?? '';
+
+    let connected_to =
+        $('#filter_connected_to').val() ?? '';
+
+    let reference_by =
+        $('#filter_reference_by').val() ?? '';
+
+    let contact_person =
+        $('#filter_contact_person').val() ?? '';
+
+    let training_21_days =
+    $('#filter_training_21_days').val() ?? '';
+
+    let training_45_days =
+        $('#filter_training_45_days').val() ?? '';
+
+    let training_6_months =
+        $('#filter_training_6_months').val() ?? '';
 
 
-        if ($btn.prop('disabled')) {
+    // Build URL
+    let url =
+        "{{ route('colleges.export.excel') }}?" +
 
-            return false;
+        "status=" +
+        encodeURIComponent(currentStatus) +
 
-        }
+        "&state_name=" +
+        encodeURIComponent(state) +
 
+        "&district_name=" +
+        encodeURIComponent(district) +
 
-        $btn.prop('disabled', true)
-            .text('Exporting...');
+        "&student_filter=" +
+        encodeURIComponent(student) +
 
+        "&college_type=" +
+        encodeURIComponent(college_type) +
 
-        let state =
-            $('#filter-state').val() ?? '';
+        "&call_status=" +
+        encodeURIComponent(call_status) +
 
-        let district =
-            $('#filter-district').val() ?? '';
+        "&offer_training=" +
+        encodeURIComponent(offer_training) +
 
-        let student =
-            $('#student_filter').val() ?? '';
+        "&is_important=" +
+        encodeURIComponent(is_important) +
 
-        let college_type =
-            $('#filter_college_type').val();
+        "&ownership_type=" +
+        encodeURIComponent(ownership_type) +
 
-        let offer_training =
-            $('#filter_training').val();
+        "&connection_type=" +
+        encodeURIComponent(connection_type) +
 
-        let call_status =
-            $('#filter_status').val();
+        "&training_in=" +
+        encodeURIComponent(training_in) +
 
-        let is_important =
-            $('#filter_important').val();
+        "&training_in_year=" +
+        encodeURIComponent(training_in_year) +
 
-        let ownership_type =
-            $('#filter_ownership').val();
+        "&connected_to=" +
+        encodeURIComponent(connected_to) +
 
-        let connection_type =
-            $('#filter_connection').val();
+        "&reference_by=" +
+        encodeURIComponent(reference_by) +
 
-        let department =
-            $('#filter_department').val();
+        "&training_21_days=" +
+        encodeURIComponent(training_21_days) +
 
+        "&training_45_days=" +
+        encodeURIComponent(training_45_days) +
 
-        let url =
-            "{{ route('colleges.export.excel') }}?" +
+        "&training_6_months=" +
+        encodeURIComponent(training_6_months) +
 
-            "status=" +
-            encodeURIComponent(currentStatus) +
-
-            "&state_name=" +
-            encodeURIComponent(state) +
-
-            "&district_name=" +
-            encodeURIComponent(district) +
-
-            "&student_filter=" +
-            encodeURIComponent(student) +
-
-            "&college_type=" +
-            encodeURIComponent(college_type) +
-
-            "&call_status=" +
-            encodeURIComponent(call_status) +
-
-            "&offer_training=" +
-            encodeURIComponent(offer_training) +
-
-            "&is_important=" +
-            encodeURIComponent(is_important) +
-
-            "&ownership_type=" +
-            encodeURIComponent(ownership_type) +
-
-            "&connection_type=" +
-            encodeURIComponent(connection_type) +
-
-            "&department=" +
-            encodeURIComponent(department);
+        "&contact_person=" +
+        encodeURIComponent(contact_person);
 
 
-        window.location.href = url;
+    // Multiple departments
+    $('.department-filter:checked').each(function () {
 
-
-        setTimeout(function () {
-
-            $btn.prop('disabled', false)
-                .text('Export');
-
-        }, 3000);
+        url +=
+            "&departments[]=" +
+            encodeURIComponent($(this).val());
 
     });
+
+
+    window.location.href = url;
+
+
+    setTimeout(function () {
+
+        $btn.prop('disabled', false)
+            .text('Export');
+
+    }, 3000);
+
+});
 
 
     // ==========================================
@@ -1242,8 +1622,182 @@
         });
 
     });
+function filterDepartmentOptionsByCollegeType() {
 
+    const collegeType = $('#filter_college_type').val();
+
+    const $degreeGroup = $('.department-group').eq(0);
+    const $diplomaGroup = $('.department-group').eq(1);
+
+    if (collegeType == '0') {
+
+        // Degree
+        $degreeGroup.show();
+        $diplomaGroup.hide();
+
+    } else if (collegeType == '1') {
+
+        // Diploma
+        $degreeGroup.hide();
+        $diplomaGroup.show();
+
+    } else {
+
+        // Both / Unknown / Nothing selected
+        $degreeGroup.show();
+        $diplomaGroup.show();
+    }
+}
+
+filterDepartmentOptionsByCollegeType();
+
+// ==========================================
+// BULK EDIT - DEPARTMENT FILTER
+// ==========================================
+
+ $(document).ready(function () {
+
+    // ==========================================
+// DELETE COLLEGE - SWEETALERT CONFIRMATION
+// ==========================================
+
+$(document).on('submit', '.college-delete-form', function (e) {
+
+    e.preventDefault();
+
+    const form = this;
+
+    Swal.fire({
+
+        icon: 'warning',
+
+        title: 'Delete College?',
+
+        text: 'Are you sure you want to delete this college?',
+
+        showCancelButton: true,
+
+        confirmButtonText: 'Yes, Delete',
+
+        cancelButtonText: 'Cancel',
+
+        confirmButtonColor: '#d33',
+
+        cancelButtonColor: '#6c757d',
+
+        reverseButtons: false
+
+    }).then(function (result) {
+
+        if (result.isConfirmed) {
+
+            form.submit();
+
+        }
+
+    });
+
+});
+
+    // ==========================================
+    // BULK EDIT - DEPARTMENT FILTER
+    // ==========================================
+
+    const $bulkCollegeType = $('#bulkCollegeType');
+    const $bulkDepartments = $('#bulkDepartments');
+
+    // Store all departments once
+    const allBulkDepartments = [];
+
+    $bulkDepartments.find('option').each(function () {
+
+        allBulkDepartments.push({
+            value: $(this).val(),
+            text: $(this).text().trim(),
+            type: $(this).data('type')
+        });
+
+    });
+
+
+    function filterBulkDepartments() {
+
+        const collegeType = $bulkCollegeType.val();
+
+        let allowedTypes = [];
+
+        if (collegeType == '0') {
+
+            // Degree
+            allowedTypes = ['degree'];
+
+        } else if (collegeType == '1') {
+
+            // Diploma
+            allowedTypes = ['diploma'];
+
+        } else if (collegeType == '2' || collegeType == '3') {
+
+            // Both / Unknown
+            allowedTypes = ['degree', 'diploma'];
+
+        } else {
+
+            // Keep Existing / blank
+            allowedTypes = ['degree', 'diploma'];
+        }
+
+
+        // Remove current options
+        $bulkDepartments.empty();
+
+
+        // Add Degree first, then Diploma
+        allowedTypes.forEach(function (type) {
+
+            allBulkDepartments.forEach(function (department) {
+
+                if (department.type === type) {
+
+                    const option = new Option(
+                        department.text,
+                        department.value,
+                        false,
+                        false
+                    );
+
+                    $(option).attr('data-type', department.type);
+
+                    $bulkDepartments.append(option);
+                }
+
+            });
+
+        });
+
+
+        // Refresh Select2 if it is being used
+        if ($bulkDepartments.hasClass('select2-hidden-accessible')) {
+            $bulkDepartments.trigger('change.select2');
+        }
+
+    }
+
+
+    // Use delegated event so it also works when modal is opened
+    $(document).on('change', '#bulkCollegeType', function () {
+
+        filterBulkDepartments();
+
+    });
+
+
+    // Initial state
+    filterBulkDepartments();
+
+});
 </script>
+
 
 @endpush
 

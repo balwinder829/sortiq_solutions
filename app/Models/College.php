@@ -17,6 +17,7 @@ class College extends Model
     protected $casts = [
         'departments' => 'array',
         'is_important' => 'boolean',
+        'training_schedule' => 'array',
     ];
 
     protected $fillable = [
@@ -38,6 +39,11 @@ class College extends Model
         'seminar_count',
         'placement_count',
         'connected_to',
+        'training_in',
+        'reference_by',
+        'contact_person',
+        'training_schedule',
+        'training_months',
     ];
 
     const TYPES = [

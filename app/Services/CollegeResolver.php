@@ -215,6 +215,7 @@ class CollegeResolver
                 // ✅ New fields
                 'college_type'         => $data['college_type'],
                 'offer_training'       => $data['offer_training'],
+                'training_in'          => $data['training_in'] ?? null,
                 'training_in_year'     => $data['training_in_year'],
                 'is_important'   => $data['is_important'] ?? 0,
                 'departments'    => $data['departments'] ?? null,   // or [] if you prefer empty array
@@ -223,6 +224,14 @@ class CollegeResolver
                 'seminar_count'        => $data['seminar_count'] ?? 0,
                 'placement_count'      => $data['placement_count'] ?? 0,
                 'connected_to'         => $data['connected_to'] ?? null,
+                'reference_by'   => $data['reference_by'] ?? null,
+                'contact_person' => $data['contact_person'] ?? null,
+                'training_schedule'    => $data['training_schedule'] ?? [
+                    '21_days'  => 0,
+                    '45_days'  => 0,
+                    '6_months' => 0,
+                ],
+                'training_months'  => $data['training_months'] ?? null,
             ]
         );
     }

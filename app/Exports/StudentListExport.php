@@ -70,14 +70,60 @@ class StudentListExport implements FromCollection, WithHeadings, WithMapping, Sh
             if ($request->filled('is_online')) {
                 $query->where('is_online', $request->is_online);
             }
+            // if ($request->filled('referred_by')) {
+
+            //     if ($request->referred_by === 'direct') {
+
+            //         $query->whereNull('referred_by');
+
+            //     } else {
+
+            //         $query->where('referred_by', $request->referred_by);
+            //     }
+            // }
 
             if ($request->filled('referred_by')) {
+
                 if ($request->referred_by === 'direct') {
+
                     $query->whereNull('referred_by');
+
                 } else {
-                    $query->where('referred_by', $request->referred_by);
+
+                    if ($request->filled('referred_by_type')) {
+
+                        $query->where('referred_by', $request->referred_by)
+                              ->where('referred_by_type', $request->referred_by_type);
+
+                    } else {
+
+                        $query->where('referred_by', $request->referred_by);
+                    }
                 }
             }
+            // if ($request->filled('referred_by')) {
+
+            //     // Direct
+            //     if ($request->referred_by === 'direct') {
+
+            //         $query->whereNull('referred_by');
+
+            //     } else {
+
+            //         // Reference / Sales Staff
+            //         if ($request->filled('referred_by_type')) {
+
+            //             $query->where('referred_by', $request->referred_by)
+            //                   ->where('referred_by_type', $request->referred_by_type);
+
+            //         } else {
+
+            //             // Backward compatibility
+            //             $query->where('referred_by', $request->referred_by);
+
+            //         }
+            //     }
+            // }
 
             if ($request->filled('registration_fee')) {
                 $query->where('reg_fees', $request->registration_fee);

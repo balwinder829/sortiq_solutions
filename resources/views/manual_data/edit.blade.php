@@ -149,7 +149,10 @@ document.addEventListener("DOMContentLoaded", function () {
         "BTech",
         "BSc",
         "BSc IT",
-        "BSc CS"
+        "BSc CS",
+        "BBA",
+        "MBA",
+        "B.Com",
     ];
 
     const diplomaCourses = [

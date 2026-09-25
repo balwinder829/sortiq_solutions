@@ -417,6 +417,8 @@ public function index(Request $request)
             'mobile' => ['required', 'digits:10', new NotBlockedNumber],
             'study' => 'required',
             'semester' => 'required',
+            'competitor_name' => 'nullable',
+            'competitor_reason' => 'nullable',
              // 'college_id' => 'nullable|exists:colleges,id',
         ]);
 
@@ -435,6 +437,8 @@ public function index(Request $request)
             'college' => $request->college,
             'study' => $request->study,
             'semester' => $request->semester,
+            'competitor_name' => $request->competitor_name,
+            'competitor_reason' => $request->competitor_reason,
             'created_by' => auth()->id(),
             'source' => 'manual',
         ]);
@@ -463,6 +467,8 @@ public function index(Request $request)
             'study' => 'nullable',
             'semester' => 'nullable',
             'is_passout' => 'nullable',
+            'competitor_name' => 'nullable',
+            'competitor_reason' => 'nullable',
         ]);
 
         // $validated['session_id'] = session('admin_session_id');

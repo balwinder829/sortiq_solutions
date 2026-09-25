@@ -22,7 +22,16 @@ class StudentPendingRegistration extends Model
         'sent_to_detail_at',
         'semester',
         'study_mode',
-        'start_date'
+        'start_date',
+        // Payment fields
+        'payment_amount',
+        'payment_status',
+        'payment_upi_account_id',
+        'payment_transaction_id',
+        'payment_date',
+        'payment_proof',
+        'payment_verified_at',
+        'payment_verified_by',
     ];
 
     public function collegeData()
@@ -33,5 +42,13 @@ class StudentPendingRegistration extends Model
     public function courseData()
     {
         return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function paymentUpiAccount()
+    {
+        return $this->belongsTo(
+            \App\Models\PaymentUpiAccount::class,
+            'payment_upi_account_id'
+        );
     }
 }

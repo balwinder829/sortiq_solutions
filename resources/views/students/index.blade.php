@@ -478,7 +478,7 @@ Online
     </div>
 
     {{-- Referred By --}}
-    <div class="col-md-2">
+    <!-- <div class="col-md-2">
         <select name="referred_by" class="form-control filterchange">
             <option value="">--Referred By--</option>
 
@@ -494,7 +494,57 @@ Online
                 </option>
             @endforeach
         </select>
-    </div>
+    </div> -->
+
+   {{-- Referred By Filter --}}
+<div class="col-md-3">
+
+    <select name="referred_by"
+        id="filter_referred_by"
+        class="form-control filterchange">
+
+    <option value="">--Referred By--</option>
+
+    <option value="direct"
+            data-type="direct"
+            {{ request('referred_by') === 'direct' ? 'selected' : '' }}>
+        Direct
+    </option>
+
+    <optgroup label="Reference">
+        @foreach($references as $reference)
+            <option value="{{ $reference->id }}"
+                    data-type="reference"
+                    {{ request('referred_by') == $reference->id
+                       && request('referred_by_type') == 'reference'
+                       ? 'selected'
+                       : '' }}>
+                {{ $reference->name }}
+            </option>
+        @endforeach
+    </optgroup>
+
+    <optgroup label="Sales Staff">
+        @foreach($salesStaff as $staff)
+            <option value="{{ $staff->id }}"
+                    data-type="staff"
+                    {{ request('referred_by') == $staff->id
+                       && request('referred_by_type') == 'staff'
+                       ? 'selected'
+                       : '' }}>
+                {{ $staff->name }}
+            </option>
+        @endforeach
+    </optgroup>
+
+</select>
+
+<input type="hidden"
+       name="referred_by_type"
+       id="filter_referred_by_type"
+       value="{{ request('referred_by_type') }}">
+
+</div>
 
 
 
@@ -2342,10 +2392,35 @@ $(document).ready(function(){
 
     let timer;
 
-    $('.filterchange').on('change', function(){
-        $('#filterForm').submit();
+    // Referred By → set its type before filter form submits
+    // $('#filter_referred_by').on('change', function () {
+
+    //     const selectedOption = $(this).find('option:selected');
+    //     const type = selectedOption.attr('data-type') || '';
+
+    //     $('#filter_referred_by_type').val(type);
+
+    // });
+
+    // $('.filterchange').on('change', function(){
+    //     $('#filterForm').submit();
         
+    // });
+
+    $('.filterchange').on('change', function () {
+
+        if ($(this).attr('id') === 'filter_referred_by') {
+
+            const selectedOption = $(this).find('option:selected');
+
+            $('#filter_referred_by_type').val(
+                selectedOption.attr('data-type') || ''
+            );
+        }
+
+        $('#filterForm').submit();
     });
+
     $('.filterchangetext').on('input', function(){
         clearTimeout(timer);
 
@@ -2392,6 +2467,16 @@ $(document).on('change', '.certificateToggle', function () {
         }
 
     });
+
+});
+
+$(document).on('change', '#filter_referred_by', function () {
+
+    let selectedOption = $(this).find('option:selected');
+
+    let type = selectedOption.attr('data-type') || '';
+
+    $('#filter_referred_by_type').val(type);
 
 });
 

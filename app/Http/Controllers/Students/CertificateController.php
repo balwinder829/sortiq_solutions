@@ -120,13 +120,28 @@ public function index(Request $request)
             $query->where('is_online', $request->is_online);
         }
 
-        if ($request->filled('referred_by')) {
-            if ($request->referred_by === 'direct') {
-                $query->whereNull('referred_by');
-            } else {
-                $query->where('referred_by', $request->referred_by);
+         if ($request->filled('referred_by')) {
+
+                // Direct
+                if ($request->referred_by === 'direct') {
+
+                    $query->whereNull('referred_by');
+
+                } else {
+
+                    // Reference / Sales Staff
+                    if ($request->filled('referred_by_type')) {
+
+                        $query->where('referred_by', $request->referred_by)
+                              ->where('referred_by_type', $request->referred_by_type);
+
+                    } else {
+
+                        // Backward compatibility
+                        $query->where('referred_by', $request->referred_by);
+                    }
+                }
             }
-        }
 
         // if ($request->filled('technology')) {
         //     $query->where('technology', $request->technology);
@@ -268,7 +283,18 @@ if (!$request->filled('fee_filter')) {
     $sessions    = StudentSession::all();
     // $colleges    = \App\Models\College::all();
     // $courses     = \App\Models\Course::all();
-    $colleges = College::orderBy('college_name')->get();
+    // $colleges = College::orderBy('college_name')->get();
+    $collegeIds = Student::where('session', $activeSessionId)
+        ->whereNotNull('college_name')
+        ->where('college_name', '!=', '')
+        ->whereIn('certificate_status', [1, 2])
+        ->distinct()
+        ->pluck('college_name');
+
+    $colleges = College::whereIn('id', $collegeIds)
+        ->orderBy('college_name')
+        ->get();
+
     $courses = Course::orderBy('course_name')->get();
     $batches     = \App\Models\Batch::all();
     $users       = \App\Models\User::all();
@@ -292,7 +318,7 @@ if (!$request->filled('fee_filter')) {
                     ->get()
                 : collect();
 
-
+    $references = Reference::all();
 
     return view('certificates.index', compact(
         'students',
@@ -304,6 +330,7 @@ if (!$request->filled('fee_filter')) {
         'users',
         'pendingStudents',
         'salesStaff',
+        'references',
         'student_status'
     ));
 }
@@ -396,7 +423,8 @@ if (!$request->filled('fee_filter')) {
             'is_intern'         => 'required|boolean',
             'is_married'         => 'nullable|boolean',
             'is_online'         => 'nullable|boolean',
-            'referred_by' => 'nullable|exists:sales_staff,id',
+            'referred_by'      => 'nullable|integer',
+            'referred_by_type' => 'nullable|in:staff,reference',
         ]);
         // dd('Passed validation', $validates);
          /**
@@ -465,6 +493,28 @@ if (!$request->filled('fee_filter')) {
         // Force lowercase before saving
         // $validates['student_name'] = Str::lower($validates['student_name']);
         // $validates['f_name']       = Str::lower($validates['f_name']);
+
+         if (!empty($validates['referred_by'])) {
+
+            if ($validates['referred_by_type'] === 'staff') {
+
+                $request->validate([
+                    'referred_by' => 'exists:sales_staff,id',
+                ]);
+
+            } elseif ($validates['referred_by_type'] === 'reference') {
+
+                $request->validate([
+                    'referred_by' => 'exists:references,id',
+                ]);
+            }
+        }
+
+        // Direct student — no referral
+        if (empty($validates['referred_by'])) {
+            $validates['referred_by'] = null;
+            $validates['referred_by_type'] = null;
+        }
 
         $validates['paid_fees'] = $validates['paid_fees'] ?? 0;
         $validates['reg_fees'] = $validates['reg_fees'] ?? 0;

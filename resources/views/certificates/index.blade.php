@@ -269,24 +269,58 @@ table.table-striped.dataTable tbody tr.row-due-today:hover > * {
             </select>
         </div>
 
-        {{-- Referred By --}}
-    <div class="col-md-2">
-        <select name="referred_by" class="form-control filterchange">
-            <option value="">--Referred By--</option>
+         {{-- Referred By Filter --}}
+<div class="col-md-3">
 
-            <option value="direct"
+    <select name="referred_by"
+            id="filter_referred_by"
+            class="form-control filterchange">
+
+        <option value="">--Referred By--</option>
+
+        {{-- Direct --}}
+        <option value="direct"
+                data-type="direct"
                 {{ request('referred_by') === 'direct' ? 'selected' : '' }}>
-                Direct
-            </option>
+            Direct
+        </option>
 
+        {{-- Reference --}}
+        <optgroup label="Reference">
+            @foreach($references as $reference)
+                <option value="{{ $reference->id }}"
+                        data-type="reference"
+                        {{ request('referred_by') == $reference->id
+                           && request('referred_by_type') == 'reference'
+                           ? 'selected'
+                           : '' }}>
+                    {{ $reference->name }}
+                </option>
+            @endforeach
+        </optgroup>
+
+        {{-- Sales Staff --}}
+        <optgroup label="Sales Staff">
             @foreach($salesStaff as $staff)
                 <option value="{{ $staff->id }}"
-                    {{ request('referred_by') == $staff->id ? 'selected' : '' }}>
+                        data-type="staff"
+                        {{ request('referred_by') == $staff->id
+                           && request('referred_by_type') == 'staff'
+                           ? 'selected'
+                           : '' }}>
                     {{ $staff->name }}
                 </option>
             @endforeach
-        </select>
-    </div>
+        </optgroup>
+
+    </select>
+
+    <input type="hidden"
+           name="referred_by_type"
+           id="filter_referred_by_type"
+           value="{{ request('referred_by_type') }}">
+
+</div>
 
 
 {{-- Regsiteration Fee --}}
@@ -1748,6 +1782,15 @@ $(document).ready(function(){
 
     let timer;
 
+    $('#filter_referred_by').on('change', function () {
+
+        const selectedOption = $(this).find('option:selected');
+        const type = selectedOption.attr('data-type') || '';
+
+        $('#filter_referred_by_type').val(type);
+
+    });
+    
     $('.filterchange').on('change', function(){
         $('#filterForm').submit();
         
@@ -1797,6 +1840,16 @@ $(document).on('change', '.certificateToggle', function () {
         }
 
     });
+
+});
+
+$(document).on('change', '#filter_referred_by', function () {
+
+    let selectedOption = $(this).find('option:selected');
+
+    let type = selectedOption.attr('data-type') || '';
+
+    $('#filter_referred_by_type').val(type);
 
 });
 </script>

@@ -31,6 +31,10 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
                 }
             ]);
 
+        // Status
+        if (($filters['status'] ?? '') !== '') {
+            $query->where('status', $filters['status']);
+        }
         // State
         if (!empty($filters['state_name'])) {
             $query->whereHas('state', function ($q) use ($filters) {
@@ -75,9 +79,97 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
             $query->where('connection_type', $filters['connection_type']);
         }
 
-        // Department
-        if (!empty($filters['department'])) {
-            $query->whereJsonContains('departments', $filters['department']);
+
+        // Training Schedule - 21 Days
+        if (($this->filters['training_21_days'] ?? '') !== '') {
+            $query->where(
+                'training_schedule->21_days',
+                $this->filters['training_21_days']
+            );
+        }
+
+        // Training Schedule - 45 Days
+        if (($this->filters['training_45_days'] ?? '') !== '') {
+            $query->where(
+                'training_schedule->45_days',
+                $this->filters['training_45_days']
+            );
+        }
+
+        // Training Schedule - 6 Months
+        if (($this->filters['training_6_months'] ?? '') !== '') {
+            $query->where(
+                'training_schedule->6_months',
+                $this->filters['training_6_months']
+            );
+        }
+
+         /*
+        |--------------------------------------------------------------------------
+        | Department - Multiple
+        |--------------------------------------------------------------------------
+        |
+        | Match colleges having ANY selected department.
+        |
+        */
+
+        // Department - Multiple
+if (!empty($filters['departments']) && is_array($filters['departments'])) {
+
+    $departments = array_values(array_filter(
+        $filters['departments'],
+        fn ($department) => $department !== null && $department !== ''
+    ));
+
+    if (!empty($departments)) {
+        $query->where(function ($q) use ($departments) {
+            foreach ($departments as $department) {
+                $q->orWhereJsonContains('colleges.departments', $department);
+            }
+        });
+    }
+}
+
+        // Training In
+        if (($filters['training_in'] ?? '') !== '') {
+            $query->where(
+                'training_in',
+                $filters['training_in']
+            );
+        }
+
+        // Training Times in Year
+        if (($filters['training_in_year'] ?? '') !== '') {
+            $query->where(
+                'training_in_year',
+                $filters['training_in_year']
+            );
+        }
+
+        // Whom to Connect
+        if (($filters['connected_to'] ?? '') !== '') {
+            $query->where(
+                'connected_to',
+                $filters['connected_to']
+            );
+        }
+
+        // Reference By
+        if (($filters['reference_by'] ?? '') !== '') {
+            $query->where(
+                'reference_by',
+                'like',
+                '%' . $filters['reference_by'] . '%'
+            );
+        }
+
+        // Contact Person
+        if (($filters['contact_person'] ?? '') !== '') {
+            $query->where(
+                'contact_person',
+                'like',
+                '%' . $filters['contact_person'] . '%'
+            );
         }
 
         // Student Filter
@@ -106,7 +198,7 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
         return $query->get();
     }
 
-    public function headings(): array
+     public function headings(): array
     {
         return [
             'College / Place Name',
@@ -115,6 +207,11 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
             'Display Name',
             'College Type',
             'Providing Training',
+            'Training In',
+            'Training Times in Year',
+            'Whom to Connect',
+            'Reference By',
+            'Contact Person',
             'Important',
             'Ownership',
             'Connection',
@@ -136,14 +233,39 @@ class CollegesExport implements FromCollection, WithHeadings, WithMapping, Shoul
             $college->state->name ?? '-',
             $college->district->name ?? '-',
             $college->college_display_name,
+
             $collegeType,
-            $college->offer_training ? 'Yes' : 'No',
-            $college->is_important ? 'Yes' : 'No',
-            $college->ownership_type ? 'Government' : 'Private',
-            $college->connection_type ? 'Old Connection' : 'New Connection',
+
+            $college->offer_training
+                ? 'Yes'
+                : 'No',
+
+            $college->training_in ?? '',
+
+            $college->training_in_year ?? '',
+
+            $college->connected_to ?? '',
+
+            $college->reference_by ?? '',
+
+            $college->contact_person ?? '',
+
+            $college->is_important
+                ? 'Yes'
+                : 'No',
+
+            $college->ownership_type
+                ? 'Government'
+                : 'Private',
+
+            $college->connection_type
+                ? 'Old Connection'
+                : 'New Connection',
+
             !empty($college->departments)
                 ? implode(', ', $college->departments)
                 : '',
+
             $college->students_count ?? 0,
         ];
     }

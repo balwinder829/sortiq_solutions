@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\StudentSession;
 use App\Models\Course;
 use App\Models\Student;
+use App\Exports\SessionCollegesExport;
+use App\Exports\SessionStudentsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class SessionController extends Controller
@@ -52,6 +55,12 @@ class SessionController extends Controller
         'students as offline_students_count' => function ($query) {
             $query->where('is_online', 0);
         }
+    ])
+    ->addSelect([
+        'colleges_count' => Student::selectRaw('COUNT(DISTINCT college_name)')
+            ->whereColumn('students_detail.session', 'student_sessions.id')
+            ->whereNotNull('college_name')
+            ->where('college_name', '!=', ''),
     ])
     ->orderByDesc('students_count')
     ->get();
@@ -223,6 +232,129 @@ public function update(Request $request, StudentSession $session)
         // dd($session->batches);
         return response()->json($session->batches);
     }
+
+    public function exportStudents($sessionId)
+{
+    $session = StudentSession::withoutGlobalScope('normalSession')
+        ->findOrFail($sessionId);
+
+    return Excel::download(
+        new SessionStudentsExport($session->id),
+        'students_' . $session->session_name . '.xlsx'
+    );
+}
+
+public function exportColleges($sessionId)
+{
+    $session = StudentSession::withoutGlobalScope('normalSession')
+        ->findOrFail($sessionId);
+
+    return Excel::download(
+        new SessionCollegesExport($session->id),
+        'colleges_' . $session->session_name . '.xlsx'
+    );
+}
+
+    public function csvexportStudents(StudentSession $session)
+{
+    $students = Student::where('session', $session->id)
+        ->orderBy('student_name')
+        ->get();
+
+    $filename = 'students_' . $session->session_name . '_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+    ];
+
+    $columns = [
+        'ID',
+        'Student Name',
+        'Father Name',
+        'Contact',
+        'Email',
+        'Gender',
+        'College ID',
+        'Online/Offline',
+        'Status',
+        'Total Fees',
+        'Registration Fees',
+        'Pending Fees',
+    ];
+
+    $callback = function () use ($students, $columns) {
+
+        $file = fopen('php://output', 'w');
+
+        fputcsv($file, $columns);
+
+        foreach ($students as $student) {
+
+            fputcsv($file, [
+                $student->id,
+                $student->student_name,
+                $student->f_name,
+                $student->contact,
+                $student->email_id,
+                $student->gender,
+                $student->college_name,
+                $student->is_online ? 'Online' : 'Offline',
+                $student->status,
+                $student->total_fees,
+                $student->reg_fees,
+                $student->pending_fees,
+            ]);
+        }
+
+        fclose($file);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
+
+public function csvexportColleges(StudentSession $session)
+{
+    $colleges = Student::where('session', $session->id)
+        ->whereNotNull('college_name')
+        ->where('college_name', '!=', '')
+        ->select('college_name')
+        ->selectRaw('COUNT(*) as students_count')
+        ->groupBy('college_name')
+        ->orderByDesc('students_count')
+        ->get();
+
+    $filename = 'colleges_' . $session->session_name . '_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+    ];
+
+    $columns = [
+        'College ID',
+        'Total Students',
+    ];
+
+    $callback = function () use ($colleges, $columns) {
+
+        $file = fopen('php://output', 'w');
+
+        fputcsv($file, $columns);
+
+        foreach ($colleges as $college) {
+
+            fputcsv($file, [
+                $college->college_name,
+                $college->students_count,
+            ]);
+        }
+
+        fclose($file);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
 
 
 }

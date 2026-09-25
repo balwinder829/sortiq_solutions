@@ -61,6 +61,7 @@
                 <th>End</th>
                 <th>Status</th>
                 <th>Total Batches</th>
+                <th>Total Colleges</th>
                 <th>Total Students</th>
                 <th>Online Students</th>
                 <th>Offline Students</th>
@@ -97,6 +98,11 @@
           data-id="{{ $session->id }}">
         {{ $session->batches->count() }}
 
+    </span>
+</td>
+<td>
+    <span class="badge bg-info">
+        {{ $session->colleges_count ?? 0 }}
     </span>
 </td>
 <!-- <td>
@@ -141,16 +147,57 @@
     </a>
     </td>
 
-                <td class="text-center" style="width: 100px;">
-                    <div class="mb-2"  style="width: 100px;">
-                        <a href="{{ route('sessions.edit', $session->id) }}" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"><i class="fa fa-edit"></i></a>
-                        <form action="{{ route('sessions.destroy', $session->id) }}" method="POST" style="display:inline-block;">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete" data-swal-confirm="Delete this Session?">
-                                        <i class="fa fa-trash"></i>
-                        </form>
-                    </div>
-                </td>
+               <td class="text-center" style="width: 160px;">
+
+    <div class="d-flex justify-content-center align-items-center gap-1">
+
+        {{-- Edit --}}
+        <a href="{{ route('sessions.edit', $session->id) }}"
+           class="btn btn-sm"
+           data-bs-toggle="tooltip"
+           data-bs-placement="top"
+           title="Edit">
+            <i class="fa fa-edit"></i>
+        </a>
+
+        {{-- Export Students --}}
+        <a href="{{ route('sessions.exportStudents', $session->id) }}"
+           class="btn btn-sm"
+           data-bs-toggle="tooltip"
+           data-bs-placement="top"
+           title="Download Students Excel">
+            <i class="fa fa-users"></i>
+        </a>
+
+        {{-- Export Colleges --}}
+        <a href="{{ route('sessions.exportColleges', $session->id) }}"
+           class="btn btn-sm"
+           data-bs-toggle="tooltip"
+           data-bs-placement="top"
+           title="Download Colleges Excel">
+            <i class="fa fa-university"></i>
+        </a>
+
+        {{-- Delete --}}
+        <form action="{{ route('sessions.destroy', $session->id) }}"
+              method="POST"
+              style="display:inline-block;">
+            @csrf
+            @method('DELETE')
+
+            <button type="submit"
+                    class="btn btn-sm"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Delete"
+                    data-swal-confirm="Delete this Session?">
+                <i class="fa fa-trash"></i>
+            </button>
+        </form>
+
+    </div>
+
+</td>
             </tr>
             @endforeach
         </tbody>

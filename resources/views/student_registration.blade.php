@@ -181,6 +181,205 @@
             <input type="date" class="form-control" name="start_date"
                    value="{{ old('start_date') }}" required>
         </div>
+
+        <!-- PAYMENT SECTION -->
+<div class="mt-4">
+
+    <div class="card border">
+
+        <div class="card-header">
+            <strong>Payment</strong>
+        </div>
+
+        <div class="card-body">
+
+            @if($paymentUpi)
+
+                <div class="row">
+
+                    {{-- QR CODE --}}
+                    <div class="col-md-5 text-center mb-3">
+
+                        <h6 class="mb-3">
+                            Scan & Pay
+                        </h6>
+
+                        <div>
+                            <img
+                                src="{{ asset($paymentUpi->qr_image) }}"
+                                alt="Payment QR Code"
+                                style="
+                                    width:220px;
+                                    height:220px;
+                                    object-fit:contain;
+                                    border:1px solid #ddd;
+                                    padding:8px;
+                                    border-radius:8px;
+                                    background:#fff;
+                                "
+                            >
+                        </div>
+
+                        <div class="mt-2">
+
+                            @if($paymentUpi->provider)
+
+                                <strong>
+                                    {{ $paymentUpi->provider }}
+                                </strong>
+
+                                <br>
+
+                            @endif
+
+                            <small class="text-muted">
+                                {{ $paymentUpi->name }}
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    {{-- PAYMENT DETAILS --}}
+                    <div class="col-md-7">
+
+                        @if($paymentUpi->upi_id)
+
+                            <label>
+                                <strong>UPI ID</strong>
+                            </label>
+
+                            <div class="input-group mb-3">
+
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="paymentUpiId"
+                                    value="{{ $paymentUpi->upi_id }}"
+                                    readonly
+                                >
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    onclick="copyPaymentUpi()"
+                                >
+                                    Copy
+                                </button>
+
+                            </div>
+
+                        @endif
+
+
+                        <div class="mb-3">
+
+                            <label>
+                                <strong>Payment Amount</strong>
+                            </label>
+
+                            <input
+                                type="number"
+                                name="payment_amount"
+                                class="form-control"
+                                value="{{ old('payment_amount') }}"
+                                min="1"
+                                step="0.01"
+                                placeholder="Enter amount paid"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label>
+                                <strong>Transaction / UTR ID</strong>
+                            </label>
+
+                            <input
+                                type="text"
+                                name="payment_transaction_id"
+                                class="form-control"
+                                value="{{ old('payment_transaction_id') }}"
+                                maxlength="150"
+                                placeholder="Enter UTR / Transaction ID"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label>
+                                <strong>Payment Date & Time</strong>
+                            </label>
+
+                            <input
+                                type="datetime-local"
+                                name="payment_date"
+                                class="form-control"
+                                value="{{ old('payment_date') }}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <label>
+                                <strong>Payment Screenshot</strong>
+                            </label>
+
+                            <input
+                                type="file"
+                                name="payment_proof"
+                                class="form-control"
+                                accept=".jpg,.jpeg,.png,.webp"
+                                required
+                            >
+
+                            <small class="text-muted">
+                                JPG, PNG or WEBP. Maximum 5 MB.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="alert alert-info mt-3 mb-0">
+
+                    <strong>Payment Instructions:</strong>
+
+                    Scan the QR code using your UPI app, complete the payment,
+                    then enter the transaction/UTR ID and upload the payment screenshot.
+
+                </div>
+
+
+            @else
+
+                <div class="alert alert-danger mb-0">
+
+                    Payment QR is currently unavailable.
+                    Please contact the administrator.
+
+                </div>
+
+            @endif
+
+        </div>
+
+    </div>
+
+</div>
     </div>
 
     <!-- Submit -->
@@ -212,7 +411,33 @@ $(document).ready(function() {
         width: '100%'
     });
 });
+function copyPaymentUpi() {
+
+    const input =
+        document.getElementById('paymentUpiId');
+
+    if (!input) {
+        return;
+    }
+
+    navigator.clipboard.writeText(input.value)
+        .then(function () {
+
+            alert('UPI ID copied.');
+
+        })
+        .catch(function () {
+
+            input.select();
+
+            document.execCommand('copy');
+
+            alert('UPI ID copied.');
+
+        });
+}
 </script>
 
 </body>
 </html>
+

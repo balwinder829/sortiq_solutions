@@ -7,6 +7,7 @@ use App\Models\College;
 use App\Models\State;
 use App\Models\District;
 use App\Models\Student;
+use App\Models\CollegeDepartment;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Exports\CollegesExport;
@@ -31,7 +32,10 @@ class CollegeController extends Controller
     public function create()
     {   
         $states = State::orderBy('name')->get();
-        return view('colleges.create', compact('states'));
+        $collegeDepartments = CollegeDepartment::active()
+        ->orderBy('sort_order')
+        ->get();
+        return view('colleges.create', compact('states','collegeDepartments'));
         // return view('colleges.create');
     }
 
@@ -47,7 +51,11 @@ class CollegeController extends Controller
             ->get()
             ->groupBy('state_id');
 
-        return view('colleges.index', compact('states', 'districtsGrouped'));
+        $collegeDepartments = CollegeDepartment::active()
+        ->orderBy('sort_order')
+        ->get();
+
+        return view('colleges.index', compact('states', 'districtsGrouped','collegeDepartments'));
     }
 
     /**
@@ -55,6 +63,7 @@ class CollegeController extends Controller
      */
     public function data(Request $request)
     {
+
         $activeSessionId = session('admin_session_id');
         $status = $request->get('status', 'active');
         $query = College::query()
@@ -129,10 +138,91 @@ class CollegeController extends Controller
         }
 
         // Department (JSON)
-        if ($request->filled('department')) {
-            $query->whereJsonContains('departments', $request->department);
+        // if ($request->filled('department')) {
+        //     $query->whereJsonContains('departments', $request->department);
+        // }
+
+        // Department filter - multiple departments
+       // Department - Multiple
+
+        \Log::info('COLLEGE FILTER DEBUG', [
+            'college_type' => $request->college_type,
+            'departments' => $request->input('departments'),
+        ]);
+        if (!empty($request->input('departments')) && is_array($request->input('departments'))) {
+
+            $departments = array_values(array_filter(
+                $request->input('departments'),
+                fn ($department) => $department !== null && $department !== ''
+            ));
+
+            if (!empty($departments)) {
+                $query->where(function ($q) use ($departments) {
+
+                    foreach ($departments as $department) {
+                        $q->orWhereJsonContains('departments', $department);
+                    }
+
+                });
+            }
+        }
+        // Training Schedule Filters
+
+        if ($request->filled('training_21_days')) {
+            $query->where('training_schedule->21_days', $request->training_21_days);
         }
 
+        if ($request->filled('training_45_days')) {
+            $query->where('training_schedule->45_days', $request->training_45_days);
+        }
+
+        if ($request->filled('training_6_months')) {
+            $query->where('training_schedule->6_months', $request->training_6_months);
+        }
+
+        // Training In
+        if ($request->filled('training_in')) {
+            $query->where(
+                'training_in',
+                $request->training_in
+            );
+        }
+
+        // Training Times in Year
+        if ($request->filled('training_in_year')) {
+            $query->where(
+                'training_in_year',
+                $request->training_in_year
+            );
+        }
+
+        // Whom to Connect
+        if ($request->filled('connected_to')) {
+            $query->where(
+                'connected_to',
+                $request->connected_to
+            );
+        }
+
+        // Reference By
+        if ($request->filled('reference_by')) {
+
+            $query->where(
+                'reference_by',
+                'like',
+                '%' . $request->reference_by . '%'
+            );
+        }
+
+        // Contact Person
+        // if ($request->filled('contact_person')) {
+
+        //     $query->where(
+        //         'contact_person',
+        //         'like',
+        //         '%' . $request->contact_person . '%'
+        //     );
+        // }
         // 👇 ADD HERE
         if ($request->filled('student_filter')) {
 
@@ -336,10 +426,12 @@ class CollegeController extends Controller
                 
                 '<div class="mb-2">' .
                     '<a href="' . route('colleges.edit', $college->id) . '" class="btn btn-sm" data-bs-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a> ' .
-                    '<form action="' . route('colleges.destroy', $college->id) . '" method="POST" style="display:inline;">' .
-                    csrf_field() . method_field('DELETE') .
-                    '<button type="submit" class="btn btn-sm" data-swal-confirm="Are you sure?" data-bs-toggle="tooltip" title="Delete"><i class="fa fa-trash"></i></button>' .
-                    '</form></div>',
+                        '<form action="' . route('colleges.destroy', $college->id) . '" method="POST" class="college-delete-form" style="display:inline;">' .
+                        csrf_field() . method_field('DELETE') .
+                        '<button type="submit" class="btn btn-sm" data-bs-toggle="tooltip" title="Delete">' .
+                        '<i class="fa fa-trash"></i>' .
+                        '</button>' .
+                        '</form></div>',
             ];
         }
 
@@ -351,183 +443,7 @@ class CollegeController extends Controller
         ]);
     }
 
-    public function data14may(Request $request)
-    {
-        $activeSessionId = session('admin_session_id');
 
-        $query = College::query()
-            ->with(['state', 'district'])
-            ->withCount([
-                'students as students_count' => function ($q) use ($activeSessionId) {
-                    $q->where('session', $activeSessionId);
-                }
-            ]);
-
-        // State filter (by state name from dropdown)
-        if ($request->filled('state_name')) {
-            $query->whereHas('state', fn ($q) => $q->where('name', $request->state_name));
-        }
-        if ($request->filled('district_name')) {
-            $query->whereHas('district', fn ($q) => $q->where('name', $request->district_name));
-        }
-
-        // College Type filter
-        if ($request->filled('college_type')) {
-            $query->where('college_type', $request->college_type);
-        }
-
-        // Training filter
-        if ($request->filled('offer_training')) {
-            $query->where('offer_training', $request->offer_training);
-        }
-        if ($request->call_status !== null && $request->call_status !== '') {
-            $query->where('call_status', $request->call_status);
-        }
-
-        // 👇 ADD HERE
-        if ($request->filled('student_filter')) {
-
-            if ($request->student_filter == 'zero') {
-                $query->having('students_count', '=', 0);
-            }
-
-            if ($request->student_filter == 'more') {
-                $query->having('students_count', '>', 0);
-            }
-        }else{
-            // $query->orderBy('updated_at', 'desc');
-        }
-
-        $total = $query->count();
-
-        // DataTables search (global)
-        if ($request->filled('search.value')) {
-            $term = $request->input('search.value');
-            $query->where(function ($q) use ($term) {
-                $q->where('colleges.college_name', 'like', '%' . $term . '%')
-                    ->orWhereHas('state', fn ($sq) => $sq->where('name', 'like', '%' . $term . '%'))
-                    ->orWhereHas('district', fn ($sq) => $sq->where('name', 'like', '%' . $term . '%'));
-            });
-        }
-
-        $filteredTotal = $query->count();
-
-       
-
-        /* ================= ORDERING SECTION ================= */
-
-        $orderCol = $request->input('order.0.column');
-        $orderDir = $request->input('order.0.dir') === 'asc' ? 'asc' : 'desc';
-
-        $orderable = [
-            0 => 'id',
-            1 => 'college_id',
-            2 => 'college_name',
-            3 => 'state',
-            4 => 'district',
-            5 => 'students_count',
-            6 => 'college_type',
-            7 => 'offer_training',
-            8 => 'training_in_year'
-        ];
-
-        $orderField = $orderable[$orderCol] ?? null;
-
-        if ($request->filled('student_filter') && in_array($request->student_filter, ['asc', 'desc'])) {
-
-            $query->orderBy('students_count', $request->student_filter);
-
-        } elseif ($orderField) {
-
-            if ($orderField === 'college_name' || $orderField === 'id') {
-
-                $query->orderBy('colleges.' . $orderField, $orderDir);
-
-            } elseif ($orderField === 'college_id') {
-
-                $query->orderBy('colleges.id', $orderDir);
-
-            } elseif ($orderField === 'students_count') {
-
-                $query->orderBy('students_count', $orderDir);
-
-            } elseif ($orderField === 'state') {
-
-                $query->orderByRaw('(SELECT name FROM states WHERE states.id = colleges.state_id) ' . $orderDir);
-
-            } elseif ($orderField === 'district') {
-
-                $query->orderByRaw('(SELECT name FROM districts WHERE districts.id = colleges.district_id) ' . $orderDir);
-
-            } elseif ($orderField === 'college_type') {
-
-                $query->orderBy('colleges.college_type', $orderDir);
-
-            } elseif ($orderField === 'offer_training') {
-
-                $query->orderBy('colleges.offer_training', $orderDir);
-
-            } elseif ($orderField === 'training_in_year') {
-
-                $query->orderBy('colleges.training_in_year', $orderDir);
-            }
-
-
-        } else {
-
-            // 🔥 DEFAULT ORDER WHEN PAGE LOADS
-            // $query->orderBy('students_count', 'desc');
-            $query->orderBy('id', 'asc');
-        }
-
-        $start = (int) $request->input('start', 0);
-        $length = (int) $request->input('length', 50);
-        if ($length < 1 || $length > 100) {
-            $length = 50;
-        }
-
-        $colleges = $query->skip($start)->take($length)->get();
-
-        $data = [];
-        foreach ($colleges as $index => $college) {
-            $rowNum = $start + $index + 1;
-            // $collegeType = $college->college_type == 0 ? 'Degree' : 'Diploma';
-            $collegeType = $college->college_type_label;
-            $training = $college->offer_training == 1 ? 'Yes' : 'No';
-            $statusToggle = '
-                <label class="switch">
-                    <input type="checkbox" class="toggle-status"
-                        data-id="'.$college->id.'"
-                        '.($college->call_status ? 'checked' : '').'>
-                    <span class="slider round"></span>
-                </label>';
-            $data[] = [
-                $rowNum,
-                $college->id,
-                $college->college_name,
-                $college->state->name ?? '-',
-                $college->district->name ?? '-',
-                '<a href="' . route('common_filtered_student', ['college_name' => $college->id]) . '" class="text-decoration-none"><span class="badge bg-success">' . $college->students_count . '</span></a>',
-                $collegeType,
-                $training,
-                $college->training_in_year,
-                
-                '<div class="mb-2">' .
-                    '<a href="' . route('colleges.edit', $college->id) . '" class="btn btn-sm" data-bs-toggle="tooltip" title="Edit"><i class="fa fa-edit"></i></a> ' .
-                    '<form action="' . route('colleges.destroy', $college->id) . '" method="POST" style="display:inline;">' .
-                    csrf_field() . method_field('DELETE') .
-                    '<button type="submit" class="btn btn-sm" data-swal-confirm="Are you sure?" data-bs-toggle="tooltip" title="Delete"><i class="fa fa-trash"></i></button>' .
-                    '</form></div>',
-            ];
-        }
-
-        return response()->json([
-            'draw'            => (int) $request->input('draw', 1),
-            'recordsTotal'    => $total,
-            'recordsFiltered' => $filteredTotal,
-            'data'            => $data,
-        ]);
-    }
 
 public function store(Request $request)
 {
@@ -547,7 +463,7 @@ public function store(Request $request)
         'district_id'          => 'required|exists:districts,id',
         'college_type'          => 'required',
         'offer_training'          => 'required',
-        'training_in_year'          => 'required',
+        'training_in_year'          => 'nullable',
         'is_important' => 'required|boolean',
         'departments' => 'nullable|array',
         'departments.*' => 'string',
@@ -556,6 +472,14 @@ public function store(Request $request)
         'seminar_count'        => 'nullable|integer|min:0',
         'placement_count'      => 'nullable|integer|min:0',
         'connected_to'         => 'nullable|string|max:100',
+        'training_in'     => 'nullable|in:Degree,Diploma,Both',
+        'reference_by'    => 'nullable|string|max:255',
+        'contact_person'  => 'nullable|string|max:255',
+        'training_schedule'          => 'nullable|array',
+        'training_schedule.21_days'  => 'nullable|integer|min:0|max:8',
+        'training_schedule.45_days'  => 'nullable|integer|min:0|max:8',
+        'training_schedule.6_months' => 'nullable|integer|min:0|max:8',
+        'training_months' => 'nullable',
     ], [
         'college_name.unique' => 'This college already exists in the selected district.'
     ]);
@@ -569,6 +493,20 @@ public function store(Request $request)
     //     $data['district_id'],
     //     $data['college_display_name'] // 👈 user-entered
     // );
+
+    /*
+     * Normalize training schedule.
+     *
+     * Always store all three durations,
+     * even if the user doesn't select anything.
+     */
+    $data['training_schedule'] = [
+        '21_days'  => (int) ($data['training_schedule']['21_days'] ?? 0),
+        '45_days'  => (int) ($data['training_schedule']['45_days'] ?? 0),
+        '6_months' => (int) ($data['training_schedule']['6_months'] ?? 0),
+    ];
+
+    $data['training_in_year'] = 0;
 
     $college = app(CollegeResolver::class)->resolveWithLocation($data);
     return redirect()
@@ -588,405 +526,663 @@ public function store(Request $request)
          $states = State::orderBy('name')->get();
          // districts for the selected state (so edit form can pre-load)
         $districts = $college->state ? $college->state->districts()->orderBy('name')->get() : collect();
-         return view('colleges.edit', compact('college','states','districts'));
+
+        $collegeDepartments = CollegeDepartment::active()
+            ->orderBy('sort_order')
+            ->get();
+         return view('colleges.edit', compact('college','states','districts','collegeDepartments'));
     }
 
    
-public function update(Request $request, $id)
-{
-    $data = $request->validate([
-        'college_name' => [
-            'required',
-            'string',
-            'max:255',
-            Rule::unique('colleges')
-                ->where(function ($query) use ($request) {
-                    return $query->where('state_id', $request->state_id)
-                                 ->where('district_id', $request->district_id)
-                                 ->whereNull('deleted_at'); 
-                })
-                ->ignore($id),
-        ],
-        'college_display_name'  => 'required|string|max:255',
-        'college_short_name'  => 'required|string|max:255',
-        'state_id'              => 'required|exists:states,id',
-        'district_id'           => 'required|exists:districts,id',
-        'college_type'          => 'required',
-        'offer_training'          => 'required',
-        'training_in_year'          => 'required',
-        'is_important'   => 'nullable|boolean',
-        'departments'    => 'nullable|array',
-        'departments.*'  => 'string',
-        'ownership_type' => 'nullable|in:0,1',
-        'connection_type'=> 'nullable|in:0,1',
-        'seminar_count' => 'nullable|integer|min:0',
-        'placement_count' => 'nullable|integer|min:0',
-        'connected_to' => 'nullable|string|max:100',
+    public function update(Request $request, $id)
+    {
+        $data = $request->validate([
+            'college_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('colleges')
+                    ->where(function ($query) use ($request) {
+                        return $query->where('state_id', $request->state_id)
+                                     ->where('district_id', $request->district_id)
+                                     ->whereNull('deleted_at'); 
+                    })
+                    ->ignore($id),
+            ],
+            'college_display_name'  => 'required|string|max:255',
+            'college_short_name'  => 'required|string|max:255',
+            'state_id'              => 'required|exists:states,id',
+            'district_id'           => 'required|exists:districts,id',
+            'college_type'          => 'required',
+            'offer_training'          => 'required',
+            'training_in_year'          => 'nullable',
+            'is_important'   => 'nullable|boolean',
+            'departments'    => 'nullable|array',
+            'departments.*'  => 'string',
+            'ownership_type' => 'nullable|in:0,1',
+            'connection_type'=> 'nullable|in:0,1',
+            'seminar_count' => 'nullable|integer|min:0',
+            'placement_count' => 'nullable|integer|min:0',
+            'connected_to' => 'nullable|string|max:100',
+            'training_in'     => 'nullable|in:Degree,Diploma,Both',
+            'reference_by'    => 'nullable|string|max:255',
+            'contact_person'  => 'nullable|string|max:255',
+            'training_schedule'          => 'nullable|array',
+            'training_schedule.21_days'  => 'nullable|integer|min:0|max:8',
+            'training_schedule.45_days'  => 'nullable|integer|min:0|max:8',
+            'training_schedule.6_months' => 'nullable|integer|min:0|max:8',
+            'training_months' => 'nullable',
 
-    ], [
-        'college_name.unique' => 'This college already exists in the selected district.'
-    ]);
+        ], [
+            'college_name.unique' => 'This college already exists in the selected district.'
+        ]);
 
-    $college = College::findOrFail($id);
+        $college = College::findOrFail($id);
 
-    /** Resolve clean_name + slug from service */
-    $resolver  = app(\App\Services\CollegeResolver::class);
-    $cleanName = $resolver->makeCleanName($data['college_name']);
-    $slug      = $resolver->makeSlug($data['college_name']);
-    $shortname = $data['college_short_name'];
-    /** Duplicate check (exclude current college) */
-    // $exists = College::withTrashed()
-    //     ->where('clean_name', $cleanName)
-    //     ->where('state_id', $data['state_id'])
-    //     ->where('district_id', $data['district_id'])
-    //     ->where('id', '!=', $college->id)
-    //     ->exists();
+        /** Resolve clean_name + slug from service */
+        $resolver  = app(\App\Services\CollegeResolver::class);
+        $cleanName = $resolver->makeCleanName($data['college_name']);
+        $slug      = $resolver->makeSlug($data['college_name']);
+        $shortname = $data['college_short_name'];
+        /** Duplicate check (exclude current college) */
+        // $exists = College::withTrashed()
+        //     ->where('clean_name', $cleanName)
+        //     ->where('state_id', $data['state_id'])
+        //     ->where('district_id', $data['district_id'])
+        //     ->where('id', '!=', $college->id)
+        //     ->exists();
 
-    // if ($exists) {
-    //     return back()
-    //         ->withErrors([
-    //             'college_name' =>
-    //                 'This college already exists in the selected state and district.'
-    //         ])
-    //         ->withInput();
-    // }
+        // if ($exists) {
+        //     return back()
+        //         ->withErrors([
+        //             'college_name' =>
+        //                 'This college already exists in the selected state and district.'
+        //         ])
+        //         ->withInput();
+        // }
 
-    /** Update record */
-    $college->update([
-        'college_name'         => $data['college_name'],
-        'college_display_name' => $data['college_display_name'], // user-entered
-        'clean_name'           => $cleanName,
-        'college_short_name'           => $shortname,
-        'slug'                 => $slug,
-        'state_id'             => $data['state_id'],
-        'district_id'          => $data['district_id'],
-        'college_type'          => $data['college_type'],
-        'offer_training'          => $data['offer_training'],
-        'training_in_year'          => $data['training_in_year'],
-        'is_important'         => $data['is_important'] ?? 0,
-        'departments'          => $data['departments'] ?? [],
-        'ownership_type'       => $data['ownership_type'] ?? 0,
-        'connection_type'      => $data['connection_type'] ?? 0,
-        'seminar_count'        => $data['seminar_count'] ?? 0,
-        'placement_count'      => $data['placement_count'] ?? 0,
-        'connected_to'         => $data['connected_to'] ?? null,
-    ]);
-// dd($college);
-    return redirect()
-        ->route('colleges.index')
-        ->with('success', 'College updated successfully.');
-}
+        /** Update record */
 
-    public function update15jan(Request $request, $id)
-{
-     $data = $request->validate([
-        'college_name' => 'required|string|max:255',
-        'college_display_name' => 'required|string|max:255',
-        'state_id' => 'required|exists:states,id',
-        'district_id' => 'required|exists:districts,id',
-    ]);
+        $data['training_schedule'] = [
+            '21_days'  => (int) ($data['training_schedule']['21_days'] ?? 0),
+            '45_days'  => (int) ($data['training_schedule']['45_days'] ?? 0),
+            '6_months' => (int) ($data['training_schedule']['6_months'] ?? 0),
+        ];
 
-    $college = College::findOrFail($id);
-
-    $cleanName = College::clean($request->college_name);
-
-    // Check duplicates except current ID
-    // $exists = College::where('clean_name', $cleanName)
-    //                  ->where('id', '!=', $id)
-    //                  ->withTrashed()
-    //                  ->exists();
-
-    // if ($exists) {
-    //     return back()->withErrors(['college_name' => 'College already exists.'])->withInput();
-    // }
-
-     $exists = College::withTrashed()
-        ->where('clean_name', $cleanName)
-        ->where('state_id', $data['state_id'])
-        ->where('district_id', $data['district_id'])
-        ->where('id', '!=', $college->id)
-        ->exists();
-
-    if ($exists) {
-        return back()
-            ->withErrors([
-                'college_name' => 'This college already exists in the selected state and district.'
-            ])
-            ->withInput();
+        $college->update([
+            'college_name'         => $data['college_name'],
+            'college_display_name' => $data['college_display_name'], // user-entered
+            'clean_name'           => $cleanName,
+            'college_short_name'           => $shortname,
+            'slug'                 => $slug,
+            'state_id'             => $data['state_id'],
+            'district_id'          => $data['district_id'],
+            'college_type'         => $data['college_type'],
+            'offer_training'       => $data['offer_training'],
+            // 'training_in_year'     => $data['training_in_year'],
+            'is_important'         => $data['is_important'] ?? 0,
+            'departments'          => $data['departments'] ?? [],
+            'ownership_type'       => $data['ownership_type'] ?? 0,
+            'connection_type'      => $data['connection_type'] ?? 0,
+            'seminar_count'        => $data['seminar_count'] ?? 0,
+            'placement_count'      => $data['placement_count'] ?? 0,
+            'connected_to'         => $data['connected_to'] ?? null,
+            'training_in'          => $data['training_in'] ?? null,
+            'reference_by'         => $data['reference_by'] ?? null, 'contact_person' => $data['contact_person'] ?? null,
+            'training_schedule'    => $data['training_schedule'],
+            'training_months'   => $data['training_months'] ?? null,
+        ]);
+    // dd($college);
+        return redirect()
+            ->route('colleges.index')
+            ->with('success', 'College updated successfully.');
     }
 
+    public function shift(Request $request)
+    {
+        $colleges = College::query()
+            ->orderBy('college_name')
+            ->get([
+                'id',
+                'college_name',
+                'college_display_name',
+                'college_short_name',
+                'state_id',
+                'district_id',
+            ]);
 
-    // Reset slug to regenerate if college name changed
-    $college->update([
-        'college_name' => $request->college_name,
-        'college_display_name' => $request->college_display_name,
-        'clean_name'   => $cleanName,
-        'slug'         => null,
-        'state_id'  => $request->state_id,
-        'district_id'  => $request->district_id,
-    ]);
+        if ($request->ajax() && $request->filled('source_college_id')) {
 
-    return redirect()->route('colleges.index')->with('success', 'College updated successfully.');
-}
+            $sourceId = (int) $request->source_college_id;
 
-public function destroy(College $college)
-{
-    $collegeId = $college->id;
+            $source = College::findOrFail($sourceId);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Table => college columns + soft delete setting
-    |--------------------------------------------------------------------------
-    |
-    | All these columns contain the COLLEGE ID.
-    |
-    | soft_delete:
-    | true  = check only active records (deleted_at IS NULL)
-    | false = count all records
-    |
-    */
-
-    $checks = [
-
-        // -------------------------------------------------
-        // College Call / Email
-        // -------------------------------------------------
-
-        // 'college_call_logs' => [
-        //     'columns' => ['college_id'],
-        //     'soft_delete' => false,
-        //     'name' => 'College Call Logs',
-        // ],
-
-        // 'college_email_recipients' => [
-        //     'columns' => ['college_id'],
-        //     'soft_delete' => false,
-        //     'name' => 'College Email Recipients',
-        // ],
-
-        // -------------------------------------------------
-        // Events
-        // -------------------------------------------------
-
-        'events' => [
-            'columns' => ['college_id'],
-            'soft_delete' => false,
-            'name' => 'Events',
-        ],
-
-        // -------------------------------------------------
-        // External Attendance
-        // -------------------------------------------------
-
-        'external_attendance_links' => [
-            'columns' => ['college_id'],
-            'soft_delete' => true,
-            'name' => 'External Attendance Links',
-        ],
-
-        'external_attendance_submissions' => [
-            'columns' => ['college_id'],
-            'soft_delete' => false,
-            'name' => 'External Attendance Submissions',
-        ],
-
-        'external_attendance_tests' => [
-            'columns' => ['college_id'],
-            'soft_delete' => true,
-            'name' => 'External Attendance Tests',
-        ],
-
-        // -------------------------------------------------
-        // Student Data
-        // -------------------------------------------------
-
-        'hard_data' => [
-            'columns' => ['college_id', 'college_name'],
-            'soft_delete' => true,
-            'name' => 'Hard Data',
-        ],
-
-        'manual_data' => [
-            'columns' => ['college_id', 'college_name'],
-            'soft_delete' => true,
-            'name' => 'Manual Data',
-        ],
-
-        'student_pending_registration' => [
-            'columns' => [
-                'college_id',
-                'college_name_input'
-            ],
-            'soft_delete' => false,
-            'name' => 'Pending Student Registration',
-        ],
-
-        'student_tests' => [
-            'columns' => ['college_id'],
-            'soft_delete' => false,
-            'name' => 'Student Tests',
-        ],
-
-        'students_detail' => [
-            'columns' => ['college_name'],
-            'soft_delete' => true,
-            'name' => 'Students',
-        ],
-
-        // -------------------------------------------------
-        // College Management
-        // -------------------------------------------------
-
-        'hods' => [
-            'columns' => ['college_id'],
-            'soft_delete' => true,
-            'name' => 'HOD / TPO Records',
-        ],
-
-        'mous' => [
-            'columns' => ['college_id'],
-            'soft_delete' => true,
-            'name' => 'MOUs',
-        ],
-
-        'workshops' => [
-            'columns' => ['college_id'],
-            'soft_delete' => false,
-            'name' => 'Workshops',
-        ],
-
-        // -------------------------------------------------
-        // Tests
-        // -------------------------------------------------
-
-        'tests' => [
-            'columns' => ['college_id'],
-            'soft_delete' => true,
-            'name' => 'Tests',
-        ],
-
-        'test_links' => [
-            'columns' => ['college_id'],
-            'soft_delete' => true,
-            'name' => 'Test Links',
-        ],
-
-        // -------------------------------------------------
-        // Enquiries
-        // -------------------------------------------------
-
-        'enquiries' => [
-            'columns' => ['college'],
-            'soft_delete' => true,
-            'name' => 'Enquiries',
-        ],
-
-        // -------------------------------------------------
-        // Joining Students
-        // -------------------------------------------------
-
-        'joining_students' => [
-            'columns' => ['college'],
-            'soft_delete' => true,
-            'name' => 'Joining Students',
-        ],
-
-        // -------------------------------------------------
-        // Student Custom Letters
-        // -------------------------------------------------
-
-        // 'student_custom_letters' => [
-        //     'columns' => ['college'],
-        //     'soft_delete' => true,
-        //     'name' => 'Student Custom Letters',
-        // ],
-
-        // -------------------------------------------------
-        // Placements
-        // -------------------------------------------------
-
-        'placements' => [
-            'columns' => ['college_name'],
-            'soft_delete' => true,
-            'name' => 'Placements',
-        ],
-
-        // -------------------------------------------------
-        // Internship Registrations
-        // -------------------------------------------------
-
-        'internship_registrations' => [
-            'columns' => [
-                'college',
-                'college_name'
-            ],
-            'soft_delete' => true,
-            'name' => 'Internship Registrations',
-        ],
-    ];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Check all tables
-    |--------------------------------------------------------------------------
-    */
-
-    $usedIn = [];
-
-    foreach ($checks as $table => $config) {
-
-        foreach ($config['columns'] as $column) {
-
-            $query = DB::table($table)
-                ->where($column, $collegeId);
-
-            if ($config['soft_delete']) {
-                $query->whereNull('deleted_at');
-            }
-
-            $count = $query->count();
-
-            if ($count > 0) {
-
-                // Friendly name => count
-                $usedIn[$config['name']] = $count;
-
-                break;
-            }
+            return response()->json([
+                'success' => true,
+                'college' => [
+                    'id' => $source->id,
+                    'name' => $source->college_name,
+                ],
+                'counts' => $this->getCollegeShiftCounts($sourceId),
+            ]);
         }
+
+        return view('colleges.shift', compact('colleges'));
     }
 
+    private function collegeShiftMap()
+    {
+        return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Records found - DON'T DELETE
-    |--------------------------------------------------------------------------
-    */
+            // college_id
+            'college_call_logs' => [
+                'column' => 'college_id',
+                'name' => 'College Call Logs',
+            ],
 
-    if (!empty($usedIn)) {
+            'college_email_recipients' => [
+                'column' => 'college_id',
+                'name' => 'College Email Recipients',
+            ],
+
+            'college_call_statuses' => [
+                'column' => 'college_id',
+                'name' => 'College Call Statuses',
+            ],
+
+            'college_email_statuses' => [
+                'column' => 'college_id',
+                'name' => 'College Email Statuses',
+            ],
+
+            'events' => [
+                'column' => 'college_id',
+                'name' => 'Events',
+            ],
+
+            'external_attendance_links' => [
+                'column' => 'college_id',
+                'name' => 'External Attendance Links',
+            ],
+
+            'external_attendance_submissions' => [
+                'column' => 'college_id',
+                'name' => 'External Attendance Submissions',
+            ],
+
+            'external_attendance_tests' => [
+                'column' => 'college_id',
+                'name' => 'External Attendance Tests',
+            ],
+
+            'hard_data' => [
+                'column' => 'college_id',
+                'name' => 'Hard Data',
+            ],
+
+            'manual_data' => [
+                'column' => 'college_id',
+                'name' => 'Manual Data',
+            ],
+
+            'student_pending_registration' => [
+                'column' => 'college_id',
+                'name' => 'Pending Student Registration',
+            ],
+
+            'student_tests' => [
+                'column' => 'college_id',
+                'name' => 'Student Tests',
+            ],
+
+            'hods' => [
+                'column' => 'college_id',
+                'name' => 'HOD / TPO Records',
+            ],
+
+            'mous' => [
+                'column' => 'college_id',
+                'name' => 'MOUs',
+            ],
+
+            'workshops' => [
+                'column' => 'college_id',
+                'name' => 'Workshops',
+            ],
+
+            'tests' => [
+                'column' => 'college_id',
+                'name' => 'Tests',
+            ],
+
+            'test_links' => [
+                'column' => 'college_id',
+                'name' => 'Test Links',
+            ],
+
+            // college column stores College ID
+            'enquiries' => [
+                'column' => 'college',
+                'name' => 'Enquiries',
+            ],
+
+            'joining_students' => [
+                'column' => 'college',
+                'name' => 'Joining Students',
+            ],
+
+            // 'leads' => [
+            //     'column' => 'college',
+            //     'name' => 'Leads',
+            // ],
+
+            // 'student_custom_letters' => [
+            //     'column' => 'college',
+            //     'name' => 'Student Custom Letters',
+            // ],
+
+            // college_name stores College ID
+            'students_detail' => [
+                'column' => 'college_name',
+                'name' => 'Students',
+            ],
+
+            'placements' => [
+                'column' => 'college_name',
+                'name' => 'Placements',
+            ],
+
+            // college stores College ID.
+            // college_name is the actual name and MUST NOT be changed.
+            'internship_registrations' => [
+                'column' => 'college',
+                'name' => 'Internship Registrations',
+            ],
+        ];
+    }
+
+    private function getCollegeShiftCounts($collegeId)
+    {
+        $counts = [];
+
+        foreach ($this->collegeShiftMap() as $table => $config) {
+
+            $count = DB::table($table)
+                ->where($config['column'], $collegeId)
+                ->count();
+
+            $counts[] = [
+                'table' => $table,
+                'name' => $config['name'],
+                'count' => $count,
+            ];
+        }
+
+        return $counts;
+    }
+
+    public function processShift(Request $request)
+    {
+        $data = $request->validate([
+            'source_college_id' => [
+                'required',
+                'integer',
+                'exists:colleges,id',
+            ],
+
+            'target_college_id' => [
+                'required',
+                'integer',
+                'exists:colleges,id',
+                'different:source_college_id',
+            ],
+
+            'verified' => [
+                'required',
+                'accepted',
+            ],
+        ], [
+            'verified.accepted' =>
+                'Please verify the source college, target college and records before shifting.',
+        ]);
+
+        $sourceId = (int) $data['source_college_id'];
+        $targetId = (int) $data['target_college_id'];
+
+        $source = College::findOrFail($sourceId);
+        $target = College::findOrFail($targetId);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Keep target College record completely untouched.
+        |--------------------------------------------------------------------------
+        */
+
+        $countsBefore = $this->getCollegeShiftCounts($sourceId);
+
+        $totalRecords = collect($countsBefore)->sum('count');
+
+        try {
+
+            DB::transaction(function () use (
+                $sourceId,
+                $targetId
+            ) {
+
+                foreach ($this->collegeShiftMap() as $table => $config) {
+
+                    DB::table($table)
+                        ->where($config['column'], $sourceId)
+                        ->update([
+                            $config['column'] => $targetId,
+                        ]);
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Verify source is now completely empty.
+                |--------------------------------------------------------------------------
+                */
+
+                foreach ($this->collegeShiftMap() as $table => $config) {
+
+                    $remaining = DB::table($table)
+                        ->where($config['column'], $sourceId)
+                        ->count();
+
+                    if ($remaining > 0) {
+
+                        throw new \RuntimeException(
+                            'Shift verification failed in table: ' . $table
+                        );
+                    }
+                }
+            });
+
+        } catch (\Throwable $e) {
+
+            return redirect()
+                ->route('colleges.shift')
+                ->withInput()
+                ->with(
+                    'error',
+                    'College shift failed. No records were changed. ' . $e->getMessage()
+                );
+        }
 
         return redirect()
             ->route('colleges.index')
-            ->with('delete_error', [
-                'college' => $college->college_name,
-                'records' => $usedIn,
-            ]);
+            ->with(
+                'success',
+                'College "' . $source->college_name .
+                '" was successfully shifted to "' .
+                $target->college_name .
+                '". ' .
+                $totalRecords .
+                ' dependent records were shifted.'
+            );
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | No records found - DELETE COLLEGE
-    |--------------------------------------------------------------------------
-    */
+    public function destroy(College $college)
+    {
+        $collegeId = $college->id;
 
-    $college->delete();
+        /*
+        |--------------------------------------------------------------------------
+        | Table => college columns + soft delete setting
+        |--------------------------------------------------------------------------
+        |
+        | All these columns contain the COLLEGE ID.
+        |
+        | soft_delete:
+        | true  = check only active records (deleted_at IS NULL)
+        | false = count all records
+        |
+        */
 
-    return redirect()
-        ->route('colleges.index')
-        ->with('success', 'College deleted successfully.');
-}
+        $checks = [
+
+            // -------------------------------------------------
+            // College Call / Email
+            // -------------------------------------------------
+
+            // 'college_call_logs' => [
+            //     'columns' => ['college_id'],
+            //     'soft_delete' => false,
+            //     'name' => 'College Call Logs',
+            // ],
+
+            // 'college_email_recipients' => [
+            //     'columns' => ['college_id'],
+            //     'soft_delete' => false,
+            //     'name' => 'College Email Recipients',
+            // ],
+
+            // -------------------------------------------------
+            // Events
+            // -------------------------------------------------
+
+            'events' => [
+                'columns' => ['college_id'],
+                'soft_delete' => false,
+                'name' => 'Events',
+            ],
+
+            // -------------------------------------------------
+            // External Attendance
+            // -------------------------------------------------
+
+            'external_attendance_links' => [
+                'columns' => ['college_id'],
+                'soft_delete' => true,
+                'name' => 'External Attendance Links',
+            ],
+
+            'external_attendance_submissions' => [
+                'columns' => ['college_id'],
+                'soft_delete' => false,
+                'name' => 'External Attendance Submissions',
+            ],
+
+            'external_attendance_tests' => [
+                'columns' => ['college_id'],
+                'soft_delete' => true,
+                'name' => 'External Attendance Tests',
+            ],
+
+            // -------------------------------------------------
+            // Student Data
+            // -------------------------------------------------
+
+            'hard_data' => [
+                'columns' => ['college_id', 'college_name'],
+                'soft_delete' => true,
+                'name' => 'Hard Data',
+            ],
+
+            'manual_data' => [
+                'columns' => ['college_id', 'college_name'],
+                'soft_delete' => true,
+                'name' => 'Manual Data',
+            ],
+
+            'student_pending_registration' => [
+                'columns' => [
+                    'college_id',
+                    'college_name_input'
+                ],
+                'soft_delete' => false,
+                'name' => 'Pending Student Registration',
+            ],
+
+            'student_tests' => [
+                'columns' => ['college_id'],
+                'soft_delete' => false,
+                'name' => 'Student Tests',
+            ],
+
+            'students_detail' => [
+                'columns' => ['college_name'],
+                'soft_delete' => true,
+                'name' => 'Students',
+            ],
+
+            // -------------------------------------------------
+            // College Management
+            // -------------------------------------------------
+
+            'hods' => [
+                'columns' => ['college_id'],
+                'soft_delete' => true,
+                'name' => 'HOD / TPO Records',
+            ],
+
+            'mous' => [
+                'columns' => ['college_id'],
+                'soft_delete' => true,
+                'name' => 'MOUs',
+            ],
+
+            'workshops' => [
+                'columns' => ['college_id'],
+                'soft_delete' => false,
+                'name' => 'Workshops',
+            ],
+
+            // -------------------------------------------------
+            // Tests
+            // -------------------------------------------------
+
+            'tests' => [
+                'columns' => ['college_id'],
+                'soft_delete' => true,
+                'name' => 'Tests',
+            ],
+
+            'test_links' => [
+                'columns' => ['college_id'],
+                'soft_delete' => true,
+                'name' => 'Test Links',
+            ],
+
+            // -------------------------------------------------
+            // Enquiries
+            // -------------------------------------------------
+
+            'enquiries' => [
+                'columns' => ['college'],
+                'soft_delete' => true,
+                'name' => 'Enquiries',
+            ],
+
+            // -------------------------------------------------
+            // Joining Students
+            // -------------------------------------------------
+
+            'joining_students' => [
+                'columns' => ['college'],
+                'soft_delete' => true,
+                'name' => 'Joining Students',
+            ],
+
+            // -------------------------------------------------
+            // Student Custom Letters
+            // -------------------------------------------------
+
+            // 'student_custom_letters' => [
+            //     'columns' => ['college'],
+            //     'soft_delete' => true,
+            //     'name' => 'Student Custom Letters',
+            // ],
+
+            // -------------------------------------------------
+            // Placements
+            // -------------------------------------------------
+
+            'placements' => [
+                'columns' => ['college_name'],
+                'soft_delete' => true,
+                'name' => 'Placements',
+            ],
+
+            // -------------------------------------------------
+            // Internship Registrations
+            // -------------------------------------------------
+
+            'internship_registrations' => [
+                'columns' => [
+                    'college',
+                    'college_name'
+                ],
+                'soft_delete' => true,
+                'name' => 'Internship Registrations',
+            ],
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check all tables
+        |--------------------------------------------------------------------------
+        */
+
+        $usedIn = [];
+
+        foreach ($checks as $table => $config) {
+
+            foreach ($config['columns'] as $column) {
+
+                $query = DB::table($table)
+                    ->where($column, $collegeId);
+
+                if ($config['soft_delete']) {
+                    $query->whereNull('deleted_at');
+                }
+
+                $count = $query->count();
+
+                if ($count > 0) {
+
+                    // Friendly name => count
+                    $usedIn[$config['name']] = $count;
+
+                    break;
+                }
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Records found - DON'T DELETE
+        |--------------------------------------------------------------------------
+        */
+
+        if (!empty($usedIn)) {
+
+            return redirect()
+                ->route('colleges.index')
+                ->with('delete_error', [
+                    'college' => $college->college_name,
+                    'records' => $usedIn,
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | No records found - DELETE COLLEGE
+        |--------------------------------------------------------------------------
+        */
+
+        $college->delete();
+
+        return redirect()
+            ->route('colleges.index')
+            ->with('success', 'College deleted successfully.');
+    }
+
  public function destroy_27aug(College $college)
 {
     $collegeId = $college->id;
@@ -1262,8 +1458,128 @@ public function destroy_final(College $college)
     // }
 
     // use App\Models\College;
-
 public function exportExcel(Request $request)
+{
+    $fileNameParts = ['colleges'];
+
+    if (!empty($request->state_name)) {
+        $fileNameParts[] = $request->state_name;
+    }
+
+    if (!empty($request->district_name)) {
+        $fileNameParts[] = $request->district_name;
+    }
+
+    // College Type
+    if ($request->college_type !== null && $request->college_type !== '') {
+
+        $types = College::TYPES;
+
+        if (isset($types[$request->college_type])) {
+            $fileNameParts[] = strtolower($types[$request->college_type]);
+        }
+    }
+
+    // Student Filter
+    if (!empty($request->student_filter)) {
+        $fileNameParts[] = $request->student_filter;
+    }
+
+    // Training
+    if ($request->offer_training !== null && $request->offer_training !== '') {
+
+        $fileNameParts[] = $request->offer_training == 1
+            ? 'training_yes'
+            : 'training_no';
+    }
+
+    // Training In
+    if (!empty($request->training_in)) {
+        $fileNameParts[] = strtolower($request->training_in);
+    }
+
+    // Training Times
+    if ($request->training_in_year !== null && $request->training_in_year !== '') {
+        $fileNameParts[] = 'training_' . $request->training_in_year . '_times';
+    }
+
+    // Whom to Connect
+    if (!empty($request->connected_to)) {
+        $fileNameParts[] = strtolower($request->connected_to);
+    }
+
+    // Reference By
+    if (!empty($request->reference_by)) {
+        $fileNameParts[] = 'ref_' . $request->reference_by;
+    }
+
+    // Contact Person
+    if (!empty($request->contact_person)) {
+        $fileNameParts[] = 'contact_' . $request->contact_person;
+    }
+
+    // Departments
+    // Departments
+    if ($request->has('departments') && is_array($request->departments)) {
+
+        $departments = array_values(array_filter(
+            $request->departments,
+            fn ($department) => $department !== null && $department !== ''
+        ));
+
+        if (!empty($departments)) {
+            // Only show number of selected departments in filename
+            $fileNameParts[] = 'departments_' . count($departments);
+        }
+    }
+
+    // Clean unwanted values
+    $fileNameParts = array_filter($fileNameParts, function ($value) {
+        return $value !== null
+            && $value !== ''
+            && $value !== 'undefined';
+    });
+
+    $fileName = implode('_', $fileNameParts);
+
+    $fileName = preg_replace(
+        '/[^A-Za-z0-9_\-]/',
+        '_',
+        $fileName
+    );
+
+    $fileName .= '_' . now()->format('d_F') . '.xlsx';
+
+    return Excel::download(
+        new CollegesExport(
+            $request->only([
+                'state_name',
+                'district_name',
+                'student_filter',
+                'college_type',
+                'offer_training',
+                'call_status',
+                'is_important',
+                'ownership_type',
+                'connection_type',
+
+                // New filters
+                'departments',
+                'training_in',
+                'training_in_year',
+                'connected_to',
+                'reference_by',
+                'contact_person',
+                'status',
+                'training_21_days', 
+                'training_45_days', 
+                'training_6_months',
+            ])
+        ),
+        $fileName
+    );
+}
+public function exportExcel21sep(Request $request)
 {
     $fileNameParts = ['colleges'];
 
@@ -1403,6 +1719,10 @@ public function exportExcel(Request $request)
             'departments'       => 'nullable|array',
             'departments.*'     => 'string',
             'status' => 'nullable|in:active,closed,blocked',
+            'training_in'       => 'nullable|in:Degree,Diploma,Both',
+            'connected_to'      => 'nullable|in:HOD,TPO,Principal,other,Both',
+            'reference_by'      => 'nullable|string|max:255',
+            'training_months'   => 'nullable',
         ]);
 
         $ids = array_filter(explode(',', $request->ids));
@@ -1453,6 +1773,26 @@ public function exportExcel(Request $request)
         // Status
         if ($request->status !== null && $request->status !== '') {
             $updateData['status'] = $request->status;
+        }
+
+         // Training In
+        if ($request->training_in !== null && $request->training_in !== '') {
+            $updateData['training_in'] = $request->training_in;
+        }
+
+        // Training Months
+        if ($request->training_months !== null && $request->training_months !== '') {
+            $updateData['training_months'] = $request->training_months;
+        }
+        
+         // Whom to Connect
+        if ($request->connected_to !== null && $request->connected_to !== '') {
+            $updateData['connected_to'] = $request->connected_to;
+        }
+
+        // Reference By
+        if ($request->reference_by !== null && $request->reference_by !== '') {
+            $updateData['reference_by'] = $request->reference_by;
         }
 
         if (empty($updateData)) {

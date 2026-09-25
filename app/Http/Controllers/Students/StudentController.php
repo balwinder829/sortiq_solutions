@@ -123,11 +123,34 @@ class StudentController extends Controller
                 $query->where('is_online', $request->is_online);
             }
 
+            // if ($request->filled('referred_by')) {
+            //     if ($request->referred_by === 'direct') {
+            //         $query->whereNull('referred_by');
+            //     } else {
+            //         $query->where('referred_by', $request->referred_by);
+            //     }
+            // }
+
             if ($request->filled('referred_by')) {
+
+                // Direct
                 if ($request->referred_by === 'direct') {
+
                     $query->whereNull('referred_by');
+
                 } else {
-                    $query->where('referred_by', $request->referred_by);
+
+                    // Reference / Sales Staff
+                    if ($request->filled('referred_by_type')) {
+
+                        $query->where('referred_by', $request->referred_by)
+                              ->where('referred_by_type', $request->referred_by_type);
+
+                    } else {
+
+                        // Backward compatibility
+                        $query->where('referred_by', $request->referred_by);
+                    }
                 }
             }
 
@@ -275,7 +298,20 @@ class StudentController extends Controller
 
         $sessions = StudentSession::all();
         // $colleges = College::all();
-        $colleges = College::orderBy('college_name')->get();
+        // $colleges = College::orderBy('college_name')->get();
+
+        $collegeIds = Student::where('session', $activeSessionId)
+            ->whereNotNull('college_name')
+            ->where('college_name', '!=', '')
+            ->where('certificate_status', 0)
+            ->distinct()
+            ->pluck('college_name');
+
+        $colleges = College::whereIn('id', $collegeIds)
+            ->orderBy('college_name')
+            ->get();
+
+
         $courses = Course::orderBy('course_name')->get();
         // $courses = Course::all();
         $batches = Batch::all();
@@ -421,7 +457,7 @@ class StudentController extends Controller
             'join_date'      => 'nullable|date',
             'duration'       => 'nullable',
             'batch_assign'   => 'nullable|string',
-            'reference'      => 'string',
+            // 'reference'      => 'string',
             'start_date'     => 'required|date',
             'end_date'       => 'nullable|date',
             'part_time_offer'  => 'nullable|boolean',
@@ -429,7 +465,9 @@ class StudentController extends Controller
             'pg_offer'         => 'nullable|boolean',
             'is_married'         => 'nullable|boolean',
             'is_online'         => 'nullable|boolean',
-            'referred_by' => 'nullable|exists:sales_staff,id',
+            // 'referred_by' => 'nullable|exists:sales_staff,id',
+            'referred_by' => 'nullable|integer',
+            'referred_by_type' => 'nullable|in:staff,reference',
         ]);
 
         if (($validate['reg_fees'] + $validate['paid_fees']) > $validate['total_fees']) {
@@ -441,39 +479,10 @@ class StudentController extends Controller
         }
         $activeSessionId = session('admin_session_id');
 
-        /* =======================================================
-           🔴 ONLY NEW LOGIC ADDED — EVERYTHING ELSE SAME
-           ======================================================= */
-
-        /** ❌ SESSION-WISE EMAIL DUPLICATE CHECK */
-        // $emailExists = Student::withTrashed()
-        //     ->where('email_id', $validate['email_id'])
-        //     ->where('session', $activeSessionId)
-        //     ->exists();
-
-        // if ($emailExists) {
-        //     return back()
-        //         ->withErrors(['email_id' => 'This email already exists in this session'])
-        //         ->withInput();
-        // }
-
-         
-        // if (!empty($validate['contact'])) {
-        //     $contactExists = Student::withTrashed()
-        //         ->where('contact', $validate['contact'])
-        //         ->where('session', $activeSessionId)
-        //         ->exists();
-
-        //     if ($contactExists) {
-        //         return back()
-        //             ->withErrors(['contact' => 'This contact already exists in this session'])
-        //             ->withInput();
-        //     }
-        // }
-        // use Illuminate\Support\Str;
-
         $validate['student_name'] = Str::of($validate['student_name'])->trim()->lower();
         $validate['f_name']       = Str::of($validate['f_name'])->trim()->lower();
+
+
 
         if (!empty($validate['contact'])) {
             $contactExists = Student::query()
@@ -493,14 +502,29 @@ class StudentController extends Controller
             }
         }
 
+                // Validate referred_by according to its type
+        if (!empty($validate['referred_by'])) {
+
+            if ($validate['referred_by_type'] === 'staff') {
+
+                $request->validate([
+                    'referred_by' => 'exists:sales_staff,id',
+                ]);
+
+            } elseif ($validate['referred_by_type'] === 'reference') {
+
+                $request->validate([
+                    'referred_by' => 'exists:references,id',
+                ]);
+            }
+        }
 
 
-
-        /** 🔢 GLOBAL RECEIPT / STUDENT RECORD NUMBER */
-        // $lastSno = Student::whereRaw("sno REGEXP '^[0-9]+$'")
-        //     ->max(DB::raw('CAST(sno AS UNSIGNED)'));
-        // $validate['sno'] = $lastSno ? $lastSno + 1 : 1;
-
+         // Direct student — no referral
+        if (empty($validate['referred_by'])) {
+            $validate['referred_by'] = null;
+            $validate['referred_by_type'] = null;
+        }
         $lastSno = Student::orderBy('id', 'desc')->value('sno');
         // $newSno = is_numeric($lastSno) ? ((int)$lastSno + 1) : 1;
         if(!empty($lastSno) && !empty($lastSno)){
@@ -632,7 +656,7 @@ class StudentController extends Controller
             'technology.*' => 'string',
 
             'batch_assign'   => 'nullable|string',   // not batch_id
-            'reference'      => 'nullable|string',   // not reference_user
+            // 'reference'      => 'nullable|string',   // not reference_user
             'status'         => 'required|string',
             'duration'         => 'nullable|string',
             'total_fees'     => 'required|numeric',
@@ -651,7 +675,9 @@ class StudentController extends Controller
             'is_married'         => 'nullable|boolean',
             'is_online'         => 'nullable|boolean',
             'password' => 'nullable|min:6',
-            'referred_by' => 'nullable|exists:sales_staff,id',
+            // 'referred_by' => 'nullable|exists:sales_staff,id',
+            'referred_by'      => 'nullable|integer',
+            'referred_by_type' => 'nullable|in:staff,reference',
         ]);
         // dd('Passed validation', $validates);
 
@@ -667,6 +693,28 @@ class StudentController extends Controller
 
         $validates['student_name'] = Str::of($validates['student_name'])->trim()->lower();
         $validates['f_name']       = Str::of($validates['f_name'])->trim()->lower();
+        // Validate referred_by according to its type
+        if (!empty($validates['referred_by'])) {
+
+            if ($validates['referred_by_type'] === 'staff') {
+
+                $request->validate([
+                    'referred_by' => 'exists:sales_staff,id',
+                ]);
+
+            } elseif ($validates['referred_by_type'] === 'reference') {
+
+                $request->validate([
+                    'referred_by' => 'exists:references,id',
+                ]);
+            }
+        }
+
+        // Direct student — no referral
+        if (empty($validates['referred_by'])) {
+            $validates['referred_by'] = null;
+            $validates['referred_by_type'] = null;
+        }
 
         $activeSessionId = session('admin_session_id');
         if (!empty($validates['contact'])) {
@@ -2325,7 +2373,7 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
 
     public function exportExcel(Request $request)
     {
-         
+         // dd($request);
         // $date = strtolower(now()->format('d_F'));
 
         // default filename
