@@ -38,7 +38,6 @@ use App\Http\Controllers\Admin\TestController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\OfflineTestController;
 use App\Http\Controllers\Admin\OfficeOnlineQuestionController;
-use App\Http\Controllers\Admin\JoiningStudentAdminController;
 
 
 use App\Http\Controllers\LeadController;
@@ -893,102 +892,9 @@ Route::get(
 Route::prefix('admin')
     ->middleware('auth')
     ->group(function () {
-
-         Route::get(
-        '/joining-students',
-        [JoiningStudentAdminController::class, 'index']
-    )->name('admin.joining_students.index');
-
-    Route::get(
-        '/joining-students/export',
-        [JoiningStudentAdminController::class, 'export']
-    )->name('admin.joining_students.export');
-
-    Route::get(
-        '/joining-students/{id}',
-        [JoiningStudentAdminController::class, 'show']
-    )->name('admin.joining_students.show');
-
-    Route::get(
-        '/joining-students/{id}/payment-proof',
-        [JoiningStudentAdminController::class, 'paymentProof']
-    )->name('admin.joining_students.payment-proof');
-
-    Route::post(
-        '/joining-students/{id}/verify-payment',
-        [JoiningStudentAdminController::class, 'verifyPayment']
-    )->name('admin.joining_students.verify-payment');
-
-    Route::post(
-        '/joining-students/{id}/reject-payment',
-        [JoiningStudentAdminController::class, 'rejectPayment']
-    )->name('admin.joining_students.reject-payment');
-
-    Route::delete(
-        '/joining-students/{id}',
-        [JoiningStudentAdminController::class, 'destroy']
-    )->name('admin.joining_students.destroy');
-
-    Route::post(
-        '/joining-students/bulk-delete',
-        [JoiningStudentAdminController::class, 'bulkDestroy']
-    )->name('admin.joining_students.bulk-destroy');
-
-    Route::post(
-        '/joining-students/send-to-session',
-        [JoiningStudentAdminController::class, 'sendToSession']
-    )->name('admin.joining_students.sendToSession');
-
-    Route::get(
-    '/admin/joining-students/{id}/payment-proof',
-    [JoiningStudentAdminController::class, 'paymentProof']
-)->name('joined_students.payment-proof');
-
         Route::get('/pending-registration-students', [StudentPendingController::class, 'index'])->name('admin.pending_request.index');
         Route::post('/pending-send', [StudentPendingController::class, 'sendToSession'])
         ->name('admin.pending.send');
-
-        Route::get(
-            '/pending-registration-students',
-            [StudentPendingController::class, 'index']
-        )->name('admin.pending_request.index');
-
-        Route::post(
-            '/pending-send',
-            [StudentPendingController::class, 'sendToSession']
-        )->name('admin.pending.send');
-
-        /* Pending student detail */
-        Route::get(
-            '/pending-registration-students/{id}',
-            [StudentPendingController::class, 'show']
-        )->name('admin.pending_request.show');
-
-        /* Payment verification */
-        Route::post(
-            '/pending-registration-students/{id}/verify-payment',
-            [StudentPendingController::class, 'verifyPayment']
-        )->name('admin.pending_request.verify-payment');
-
-        Route::post(
-            '/pending-registration-students/{id}/reject-payment',
-            [StudentPendingController::class, 'rejectPayment']
-        )->name('admin.pending_request.reject-payment');
-
-        Route::get(
-            '/pending-registration-students/{id}/payment-proof',
-            [StudentPendingController::class, 'paymentProof']
-        )->name('admin.pending_request.payment-proof');
-
-        Route::delete(
-            '/pending-registration-students/{id}',
-            [StudentPendingController::class, 'destroy']
-        )->name('admin.pending_request.destroy');
-
-        Route::post(
-            '/pending-registration-students/bulk-delete',
-            [StudentPendingController::class, 'bulkDestroy']
-        )->name('admin.pending_request.bulk-destroy');
 
         Route::get('/enquiries/import', [EnquiryController::class, 'importForm'])
         ->name('enquiries.importForm');
@@ -1505,10 +1411,10 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     
-    // Route::get('joined-students/export', [JoiningStudentController::class, 'export'])
-    // ->name('joined_students.export');
+    Route::get('joined-students/export', [JoiningStudentController::class, 'export'])
+    ->name('joined_students.export');
 
-    Route::get('/admin/joining-studentssss',
+    Route::get('/admin/joining-students',
         [JoiningStudentController::class, 'index']
     )->name('joined_students.index');
 
@@ -1516,23 +1422,23 @@ Route::middleware(['auth'])->group(function () {
         [JoiningStudentController::class, 'adminUrl']
     )->name('joined_students.adminUrl');
 
-    //  Route::get('/admin/joining-students/{id}/edit',
-    //     [JoiningStudentController::class, 'edit']
-    // )->name('joined_students.edit');
+     Route::get('/admin/joining-students/{id}/edit',
+        [JoiningStudentController::class, 'edit']
+    )->name('joined_students.edit');
 
-    // // UPDATE
-    // Route::put('/joining-students/{id}',
-    //     [JoiningStudentController::class, 'update']
-    // )->name('joined_students.update');
+    // UPDATE
+    Route::put('/joining-students/{id}',
+        [JoiningStudentController::class, 'update']
+    )->name('joined_students.update');
 
-    // // DELETE (Soft Delete)
-    // Route::delete('/joining-students/{id}',
-    //     [JoiningStudentController::class, 'destroy']
-    // )->name('joined_students.destroy');
+    // DELETE (Soft Delete)
+    Route::delete('/joining-students/{id}',
+        [JoiningStudentController::class, 'destroy']
+    )->name('joined_students.destroy');
 
-    // Route::post('/admin/joining-students/send-to-session', 
-    //     [JoiningStudentController::class, 'sendToSession']
-    // )->name('joined_students.sendToSession');
+    Route::post('/admin/joining-students/send-to-session', 
+        [JoiningStudentController::class, 'sendToSession']
+    )->name('joined_students.sendToSession');
 
     Route::resource('letters', LetterController::class);
 

@@ -30,11 +30,24 @@ class PaymentUpiService
     }
 
     /**
-     * Assign a specific UPI to a form record.
+     * Get one form configuration.
+     */
+    public function getFormConfig(string $formType): array
+    {
+        $this->validateFormType($formType);
+
+        return config("payment_forms.{$formType}");
+    }
+
+    /**
+     * Assign a UPI to a form.
+     *
+     * Example:
+     *
+     * student_registration → UPI #2
      */
     public function assign(
         string $formType,
-        int $formId,
         int $upiAccountId
     ): PaymentUpiFormAssignment {
 
@@ -59,13 +72,12 @@ class PaymentUpiService
 
         return DB::transaction(function () use (
             $formType,
-            $formId,
             $upiAccountId
         ) {
+
             return PaymentUpiFormAssignment::updateOrCreate(
                 [
                     'form_type' => $formType,
-                    'form_id'   => $formId,
                 ],
                 [
                     'upi_account_id' => $upiAccountId,
@@ -75,52 +87,25 @@ class PaymentUpiService
     }
 
     /**
-     * Remove specific UPI assignment.
+     * Remove the specific UPI assignment.
      *
-     * The form will then use the global default UPI.
+     * After removal, the form will use
+     * the global default UPI.
      */
     public function removeAssignment(
-        string $formType,
-        int $formId
+        string $formType
     ): bool {
 
         $this->validateFormType($formType);
 
         return PaymentUpiFormAssignment::query()
             ->where('form_type', $formType)
-            ->where('form_id', $formId)
             ->delete() > 0;
     }
 
     /**
-     * Get the specifically assigned UPI.
+     * Get the UPI specifically assigned to a form.
      */
-    public function getAssignedUpiOld(
-        string $formType,
-        int $formId
-    ): ?PaymentUpiAccount {
-
-        $this->validateFormType($formType);
-
-        $assignment = PaymentUpiFormAssignment::query()
-            ->with('upiAccount')
-            ->where('form_type', $formType)
-            ->where('form_id', $formId)
-            ->first();
-
-        if (!$assignment) {
-            return null;
-        }
-
-        $upi = $assignment->upiAccount;
-
-        if (!$upi || !$upi->is_active || $upi->trashed()) {
-            return null;
-        }
-
-        return $upi;
-    }
-
     public function getAssignedUpi(
         string $formType
     ): ?PaymentUpiAccount {
@@ -138,7 +123,17 @@ class PaymentUpiService
 
         $upi = $assignment->upiAccount;
 
-        if (!$upi || !$upi->is_active || $upi->trashed()) {
+        /*
+        |--------------------------------------------------------------------------
+        | Safety check
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$upi ||
+            !$upi->is_active ||
+            $upi->trashed()
+        ) {
             return null;
         }
 
@@ -158,19 +153,19 @@ class PaymentUpiService
     }
 
     /**
-     * Get the effective UPI for a form.
+     * Get the actual UPI that a form should use.
      *
-     * Specific assignment has priority.
-     * Otherwise global default is used.
+     * Priority:
+     *
+     * 1. Form-specific UPI
+     * 2. Global default UPI
      */
     public function getEffectiveUpi(
-        string $formType,
-        int $formId
+        string $formType
     ): ?PaymentUpiAccount {
 
         $assignedUpi = $this->getAssignedUpi(
-            $formType,
-            $formId
+            $formType
         );
 
         if ($assignedUpi) {

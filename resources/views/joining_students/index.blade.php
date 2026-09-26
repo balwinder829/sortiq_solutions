@@ -3,302 +3,615 @@
 @section('content')
 
 <style>
-    table.dataTable td {
-        vertical-align: middle;
-        text-transform: capitalize;
+    .joining-action-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
 
-    thead th {
-        background-color: #f8f9fa !important;
-        font-weight: 600;
-        border-bottom: 1px solid #dee2e6 !important;
+    .joining-action-buttons .btn {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    table.table-bordered > :not(caption) > * > * {
-        border-color: #dee2e6;
-    }
-
-    .badge {
-        font-size: 12px;
-        padding: 5px 8px;
-    }
-
-    .no-wrap {
-        white-space: nowrap;
+    .joining-action-buttons form {
+        margin: 0;
     }
 </style>
 
 <div class="container">
 
-<div class="row mb-2 align-items-center">
-    <div class="col-md-6">
-        <h1 class="page_heading">Joined Students</h1>
+    {{-- PAGE HEADER --}}
+    <div class="row mb-2 align-items-center">
+
+        <div class="col-md-4">
+            <h1 class="page_heading">Joining Students</h1>
+        </div>
+
+        <div class="col-md-8">
+            <div class="d-flex justify-content-end gap-2 flex-wrap">
+
+                <a
+                    href="{{ route('admin.joining_students.export', ['status' => $status]) }}"
+                    class="btn mb-3"
+                    style="background-color:#6b51df; color:#fff;"
+                >
+                    <i class="fa fa-download"></i>
+                    Export Excel
+                </a>
+
+                <button
+                    type="button"
+                    id="sendSelected"
+                    class="btn mb-3"
+                    style="background-color:#6b51df; color:#fff;"
+                >
+                    Send to Session
+                </button>
+
+                <button
+                    type="button"
+                    class="btn mb-3 copy-link"
+                    style="background-color:#6b51df; color:#fff;"
+                    data-link="{{ route('joining_student.front') }}"
+                >
+                    <i class="fa fa-link"></i>
+                    Copy Joining Student Link
+                </button>
+
+                <button
+                    type="button"
+                    id="deleteSelectedBtn"
+                    class="btn btn-danger mb-3"
+                    disabled
+                >
+                    <i class="fas fa-trash"></i>
+                    Delete Selected
+                </button>
+
+            </div>
+        </div>
+
     </div>
 
-    <div class="col-md-6 text-end">
-        <button id="sendSelected" class="btn btn-primary" title="Add to Session Confirmation">
-            Send to Session
-        </button>
-        <a href="{{ route('joined_students.export', request()->query()) }}"
-   class="btn btn-success">
-    Export Excel
-</a>
-    </div>
+    {{-- PAYMENT STATUS TABS --}}
+    <ul class="nav nav-tabs mb-4">
 
-</div>
+        <li class="nav-item">
+            <a
+                class="nav-link {{ $status === 'all' ? 'active' : '' }}"
+                href="{{ route('admin.joining_students.index', ['status' => 'all']) }}"
+            >
+                All
+                <span class="badge bg-secondary ms-1">
+                    {{ $paymentCounts['all'] }}
+                </span>
+            </a>
+        </li>
 
-<form id="filterForm" class="row mb-3">
+        <li class="nav-item">
+            <a
+                class="nav-link {{ $status === 'awaiting' ? 'active' : '' }}"
+                href="{{ route('admin.joining_students.index', ['status' => 'awaiting']) }}"
+            >
+                Awaiting Verification
+                <span class="badge bg-warning text-dark ms-1">
+                    {{ $paymentCounts['awaiting'] }}
+                </span>
+            </a>
+        </li>
 
-    <div class="col-md-2">
-        <input type="text" name="student_name"
-               value="{{ request('student_name') }}"
-               class="form-control filter-input"
-               placeholder="Student Name">
-    </div>
+        <li class="nav-item">
+            <a
+                class="nav-link {{ $status === 'verified' ? 'active' : '' }}"
+                href="{{ route('admin.joining_students.index', ['status' => 'verified']) }}"
+            >
+                Verified
+                <span class="badge bg-success ms-1">
+                    {{ $paymentCounts['verified'] }}
+                </span>
+            </a>
+        </li>
 
-    <div class="col-md-2">
-        <select name="college" class="form-control filter-input select2">
-            <option value="">All College</option>
-            @foreach($colleges as $college)
-                <option value="{{ $college->id }}"
-                    {{ request('college') == $college->id ? 'selected' : '' }}>
-                    {{ $college->college_name }}
-                </option>
-            @endforeach
-        </select>
-    </div>
+        <li class="nav-item">
+            <a
+                class="nav-link {{ $status === 'rejected' ? 'active' : '' }}"
+                href="{{ route('admin.joining_students.index', ['status' => 'rejected']) }}"
+            >
+                Rejected
+                <span class="badge bg-danger ms-1">
+                    {{ $paymentCounts['rejected'] }}
+                </span>
+            </a>
+        </li>
 
-    <!-- <div class="col-md-2">
-        <select name="technology" class="form-control filter-input">
-            <option value="">All Technology</option>
-            @foreach($courses as $course)
-                <option value="{{ $course->course_name }}"
-                    {{ request('technology') == $course->course_name ? 'selected' : '' }}>
-                    {{ $course->course_name }}
-                </option>
-            @endforeach
-        </select>
-    </div> -->
+    </ul>
 
-    <div class="col-md-2">
-        <select name="is_sent" class="form-control filter-input">
-            <option value="">All Status</option>
-            <option value="1" {{ request('is_sent') === '1' ? 'selected' : '' }}>Sent</option>
-            <option value="0" {{ request('is_sent') === '0' ? 'selected' : '' }}>Not Sent</option>
-        </select>
-    </div>
+    {{-- TABLE --}}
+    <div class="table-responsive">
 
-    <div class="col-md-2">
-        <button type="button" id="resetFilters" class="btn btn-secondary w-100">
-            Reset
-        </button>
-    </div>
-
-</form>
-
-{{-- FLASH MESSAGE --}}
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-{{-- TABLE --}}
-<div class="table-responsive">
-    <table class="table table-bordered table-striped" id="studentsTable">
-        <thead>
-            <tr>
-                <th width="30">
-                    <input type="checkbox" id="checkAll">
-                </th>
-                <th>#</th>
-                <th>Student Name</th>
-                <th>Father Name</th>
-                <th>College</th>
-                <th>Contact</th>
-                <th>Email</th>
-                <th>Date of Joining</th>
-                <th class="no-wrap">Joined At</th>
-                <th class="no-wrap">Action</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach($students as $student)
+        <table
+            class="table table-bordered table-striped align-middle"
+            id="joiningStudentsTable"
+            width="100%"
+        >
+            <thead>
                 <tr>
-                    <td>
-                        @if(!$student->is_sent_to_detail)
-                            <input type="checkbox" class="record_checkbox" value="{{ $student->id }}">
-                        @else
-                            <span class="badge bg-success">Sent</span>
-                        @endif
-                    </td>
-
-                    <td></td>
-                    <td>{{ $student->student_name }}</td>
-                    <td>{{ $student->father_name }}</td>
-                    <td>{{ $student->collegeData->FullName ?? '-' }}</td>
-                     <td>{{ $student->contact ?? '-' }}</td>
-                     <td>{{ $student->email ?? '-' }}</td>
-                   <!--  <td>{{ $student->durationData->name ?? '-' }}</td>
-                    <td>{{ $student->courseData->course_name ?? '-' }}</td> -->
-
-                    <td class="no-wrap">
-                        {{ \Carbon\Carbon::parse($student->date_of_joining)->format('d M Y') }}
-                    </td>
-
-                    <td class="no-wrap text-muted">
-                        {{ $student->created_at->format('d M Y h:i A') }}
-                    </td>
-
-                    <td class="no-wrap text-center">
-                        <a href="{{ route('joined_students.edit', $student->id) }}"
-                           class="btn btn-sm"
-                           data-bs-toggle="tooltip"
-                           title="Edit">
-                            <i class="fa fa-edit"></i>
-                        </a>
-
-                        <form action="{{ route('joined_students.destroy', $student->id) }}"
-                              method="POST"
-                              class="d-inline"
-                              data-swal-confirm="Are you sure you want to delete this student?">
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                    class="btn btn-sm"
-                                    data-bs-toggle="tooltip"
-                                    title="Delete">
-                                <i class="fa fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
+                    <th>
+                        <input
+                            type="checkbox"
+                            id="checkAll"
+                            title="Select all on this page"
+                        >
+                    </th>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Father</th>
+                    <th>College</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Amount</th>
+                    <th>UPI / QR</th>
+                    <th>Transaction ID</th>
+                    <th>Payment Status</th>
+                    <th>Date of Joining</th>
+                    <th>Sent Status</th>
+                    <th>Actions</th>
                 </tr>
-           @endforeach
-        </tbody>
+            </thead>
 
-    </table>
-</div>
+            <tbody>
+                @foreach($students as $student)
 
+                    @php
+                        $paymentStatus = $student->payment_status ?? 'pending';
+
+                        $paymentStatusLabels = [
+                            'pending' => 'Pending',
+                            'submitted' => 'Submitted',
+                            'verified' => 'Verified',
+                            'rejected' => 'Rejected',
+                            'refunded' => 'Refunded',
+                        ];
+
+                        $paymentStatusClasses = [
+                            'pending' => 'bg-secondary',
+                            'submitted' => 'bg-warning text-dark',
+                            'verified' => 'bg-success',
+                            'rejected' => 'bg-danger',
+                            'refunded' => 'bg-info text-dark',
+                        ];
+
+                        $paymentStatusLabel =
+                            $paymentStatusLabels[$paymentStatus] ?? ucfirst($paymentStatus);
+
+                        $paymentStatusClass =
+                            $paymentStatusClasses[$paymentStatus] ?? 'bg-secondary';
+                    @endphp
+
+                    <tr>
+                        <td>
+                            @if(!$student->is_sent_to_detail)
+                                <input
+                                    type="checkbox"
+                                    class="record_checkbox"
+                                    value="{{ $student->id }}"
+                                    aria-label="Select {{ $student->student_name }}"
+                                >
+                            @else
+                                <span class="badge bg-success">Sent</span>
+                            @endif
+                        </td>
+
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $student->student_name }}</td>
+                        <td>{{ $student->father_name ?? '-' }}</td>
+                        <td>{{ $student->collegeData->FullName ?? '-' }}</td>
+                        <td>{{ $student->contact ?? '-' }}</td>
+                        <td>{{ $student->email ?? '-' }}</td>
+
+                        <td>
+                            @if($student->payment_amount !== null)
+                                ₹{{ number_format((float) $student->payment_amount, 2) }}
+                            @else
+                                -
+                            @endif
+                        </td>
+
+                        <td>{{ $student->paymentUpiAccount->name ?? '-' }}</td>
+                        <td>{{ $student->payment_transaction_id ?? '-' }}</td>
+
+                        <td>
+                            <span class="badge {{ $paymentStatusClass }}">
+                                {{ $paymentStatusLabel }}
+                            </span>
+                        </td>
+
+                        <td>
+                            @if($student->date_of_joining)
+                                {{ \Carbon\Carbon::parse($student->date_of_joining)->format('d M Y') }}
+                            @else
+                                -
+                            @endif
+                        </td>
+
+                        <td>
+                            @if($student->is_sent_to_detail)
+                                <span class="badge bg-success">Sent</span>
+                            @else
+                                <span class="badge bg-secondary">Not Sent</span>
+                            @endif
+                        </td>
+
+                        <td>
+                            <div class="joining-action-buttons">
+
+                                <a
+                                    href="{{ route('admin.joining_students.show', $student->id) }}"
+                                    class="btn btn-sm "
+                                    title="View Details"
+                                    aria-label="View Details"
+                                >
+                                    <i class="fa fa-eye"></i>
+                                </a>
+
+                                <form
+                                    action="{{ route('admin.joining_students.destroy', $student->id) }}"
+                                    method="POST"
+                                    class="delete-joining-form"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm delete-joining-btn"
+                                        title="Delete"
+                                        aria-label="Delete"
+                                    >
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </form>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                @endforeach
+            </tbody>
+        </table>
+
+    </div>
 </div>
 
 @endsection
 
 @push('scripts')
-
 <script>
-
-let selectedIds = new Set();
-
-// DataTable
 $(document).ready(function () {
-    var table  = $('#studentsTable').DataTable({
-        paging: true,
-        info: true,
-        ordering: false,
-        searching: true,
+
+    let selectedIds = new Set();
+
+    let table = $('#joiningStudentsTable').DataTable({
+        pageLength: 50,
+        order: [],
+        responsive: false,
+        autoWidth: false,
+        scrollX: true,
         columnDefs: [
             {
-                targets: 0, // first column
-                searchable: false,
-                orderable: false
+                targets: 0,
+                orderable: false,
+                searchable: false
             }
         ]
     });
 
-    table.on('draw.dt', function () {
-        var PageInfo = table.page.info();
+    $('#checkAll').on('click', function (e) {
+        e.stopPropagation();
+    });
 
-        table.column(0, { page: 'current' }).nodes().each(function (cell, i) {
-            cell.innerHTML = PageInfo.start + i + 1;
-        });
-    }).draw();
-});
+    function updateCheckAllState() {
+        let $checkboxes = table
+            .rows({ page: 'current' })
+            .nodes()
+            .to$()
+            .find('.record_checkbox');
 
-$('.filter-input').on('change keyup', function () {
+        let total = $checkboxes.length;
+        let checked = $checkboxes.filter(':checked').length;
+        let checkAll = document.getElementById('checkAll');
 
-    let query = $('#filterForm').serialize();
+        if (!checkAll) return;
 
-    window.location.href = "{{ route('joined_students.index') }}?" + query;
-});
-// Select single
-$(document).on('change', '.record_checkbox', function () {
-    let id = $(this).val();
-
-    if ($(this).is(':checked')) {
-        selectedIds.add(id);
-    } else {
-        selectedIds.delete(id);
+        checkAll.checked = total > 0 && checked === total;
+        checkAll.indeterminate = checked > 0 && checked < total;
     }
-});
 
-// Select all
-$('#checkAll').on('change', function () {
-    let checked = this.checked;
+    function updateDeleteSelectedButton() {
+        $('#deleteSelectedBtn').prop('disabled', selectedIds.size === 0);
+    }
 
-    $('.record_checkbox').each(function () {
-        let id = $(this).val();
+    function syncCheckboxes() {
+        table
+            .rows({ page: 'current' })
+            .nodes()
+            .to$()
+            .find('.record_checkbox')
+            .each(function () {
+                let id = String($(this).val());
+                $(this).prop('checked', selectedIds.has(id));
+            });
 
-        if (checked) {
+        updateCheckAllState();
+        updateDeleteSelectedButton();
+    }
+
+    $(document).on('change', '.record_checkbox', function () {
+        let id = String($(this).val());
+
+        if (this.checked) {
             selectedIds.add(id);
         } else {
             selectedIds.delete(id);
         }
 
-        $(this).prop('checked', checked);
-    });
-});
-
-// Send to session
-$('#sendSelected').click(function () {
-
-    if (selectedIds.size === 0) {
-        Swal.fire('No selection', 'Select at least one student', 'warning');
-        return;
-    }
-
-    let sessionOptions = @json($sessionsList);
-    let optionsHtml = '';
-
-    Object.keys(sessionOptions).forEach(function(key) {
-        optionsHtml += `<option value="${key}">${sessionOptions[key]}</option>`;
+        updateCheckAllState();
+        updateDeleteSelectedButton();
     });
 
-    Swal.fire({
-        title: 'Select Session for Confirmation',
-        html: `<select id="session_id" class="form-control">${optionsHtml}</select>`,
-        showCancelButton: true,
-        confirmButtonText: 'Send'
-    }).then((result) => {
+    $('#checkAll').on('change', function () {
+        let shouldCheck = this.checked;
 
-        if (!result.isConfirmed) return;
+        table
+            .rows({ page: 'current' })
+            .nodes()
+            .to$()
+            .find('.record_checkbox')
+            .each(function () {
+                let id = String($(this).val());
 
-        let session_id = $('#session_id').val();
+                $(this).prop('checked', shouldCheck);
 
-        $.ajax({
-            url: "{{ route('joined_students.sendToSession') }}",
-            type: "POST",
-            data: {
-                _token: "{{ csrf_token() }}",
-                ids: Array.from(selectedIds),
-                session_id: session_id
-            },
-            success: function (res) {
-                Swal.fire('Success', res.message, 'success');
-                location.reload();
-            },
-            error: function () {
-                Swal.fire('Error', 'Something went wrong', 'error');
-            }
+                if (shouldCheck) {
+                    selectedIds.add(id);
+                } else {
+                    selectedIds.delete(id);
+                }
+            });
+
+        updateCheckAllState();
+        updateDeleteSelectedButton();
+    });
+
+    table.on('draw', syncCheckboxes);
+    syncCheckboxes();
+
+    /*
+     * Send selected students to session
+     */
+    $('#sendSelected').on('click', function () {
+        if (selectedIds.size === 0) {
+            Swal.fire(
+                'Select students first',
+                'Please select at least one student.',
+                'warning'
+            );
+            return;
+        }
+
+        let sessionOptions = @json($sessionsList);
+        let optionsHtml = '';
+
+        Object.keys(sessionOptions).forEach(function (key) {
+            optionsHtml += `
+                <option value="${key}">
+                    ${sessionOptions[key]}
+                </option>
+            `;
         });
 
+        Swal.fire({
+            title: 'Select Session',
+            html: `
+                <select id="session_id" class="form-control">
+                    <option value="">Select Session</option>
+                    ${optionsHtml}
+                </select>
+            `,
+            confirmButtonText: 'Send',
+            showCancelButton: true,
+            preConfirm: function () {
+                let selectedSession = $('#session_id').val();
+
+                if (!selectedSession) {
+                    Swal.showValidationMessage('Please select a session');
+                    return false;
+                }
+
+                return selectedSession;
+            }
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: "{{ route('admin.joining_students.sendToSession') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    ids: Array.from(selectedIds),
+                    session_id: result.value
+                },
+                success: function (response) {
+                    Swal.fire(
+                        'Success',
+                        response.message,
+                        'success'
+                    ).then(function () {
+                        location.reload();
+                    });
+                },
+                error: function (xhr) {
+                    let message = 'Unable to send selected students.';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire('Error', message, 'error');
+                }
+            });
+        });
     });
-});
-$('#resetFilters').click(function () {
-    window.location.href = "{{ route('joined_students.index') }}";
+
+    /*
+     * Copy joining link
+     */
+    $(document).on('click', '.copy-link', function () {
+        let link = $(this).data('link');
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(link)
+                .then(function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Copied!',
+                        text: 'Joining form link copied to clipboard.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(function () {
+                    fallbackCopyLink(link);
+                });
+        } else {
+            fallbackCopyLink(link);
+        }
+    });
+
+    function fallbackCopyLink(link) {
+        let temporaryInput = $('<textarea>');
+        temporaryInput.val(link);
+        $('body').append(temporaryInput);
+        temporaryInput.select();
+
+        let copied = document.execCommand('copy');
+        temporaryInput.remove();
+
+        if (copied) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Copied!',
+                text: 'Joining form link copied to clipboard.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire('Copy Failed', 'Could not copy the joining link.', 'error');
+        }
+    }
+
+    /*
+     * Single soft delete
+     */
+    $(document).on('click', '.delete-joining-btn', function () {
+        let form = $(this).closest('form');
+
+        Swal.fire({
+            title: 'Delete this joining student?',
+            text: 'The record will be moved to trash.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#dc3545'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+
+    /*
+     * Bulk soft delete
+     */
+    $('#deleteSelectedBtn').on('click', function () {
+        let ids = Array.from(selectedIds);
+
+        if (ids.length === 0) {
+            Swal.fire(
+                'No records selected',
+                'Please select at least one joining student.',
+                'warning'
+            );
+            return;
+        }
+
+        Swal.fire({
+            title: 'Delete selected students?',
+            text: `${ids.length} joining student(s) will be moved to trash.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete selected',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#dc3545'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: "{{ route('admin.joining_students.bulk-destroy') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    ids: ids
+                },
+                success: function (response) {
+                    Swal.fire('Deleted', response.message, 'success')
+                        .then(function () {
+                            location.reload();
+                        });
+                },
+                error: function (xhr) {
+                    let message = 'Unable to delete selected records.';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire('Error', message, 'error');
+                }
+            });
+        });
+    });
+
+    /*
+     * SweetAlert flash messages
+     */
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: @json(session('success'))
+        });
+    @elseif(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: @json(session('error'))
+        });
+    @elseif(session('info'))
+        Swal.fire({
+            icon: 'info',
+            title: 'Information',
+            text: @json(session('info'))
+        });
+    @endif
+
 });
 </script>
-
 @endpush

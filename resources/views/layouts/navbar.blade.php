@@ -1010,12 +1010,7 @@ body.menu-toggle .sidebar-collapse-btn{
                         <span class="nav-text">Joined Students</span>
                     </a>
                     <ul class="{{ showSubmenu(['joined_students*']) }}">
-                        <li>
-                            <a class="{{ isChildActive('joined_students.adminUrl') }}"
-                                href="{{ route('joined_students.adminUrl') }}">
-                                Joined Students Link
-                            </a>
-                        </li>
+                        
                         <li>
                             <a class="{{ isChildActive('admin.joined_students.index') }}"
                                 href="{{ route('joined_students.index') }}">
@@ -1396,7 +1391,12 @@ body.menu-toggle .sidebar-collapse-btn{
                     </ul>
                 </li>
 
-                
+                <li class="{{ isParent(['payment-upi-accounts*']) }}">
+                    <a href="{{ route('payment-upi-accounts.index') }}">
+                        <i class="fas fa-qrcode"></i>
+                        <span class="nav-text">Payment UPI Setup</span>
+                    </a>
+                </li>
                  {{-- Users --}}
 
                  <li class="{{ isParent(['users*']) }}">
@@ -2285,14 +2285,7 @@ body.menu-toggle .sidebar-collapse-btn{
                     </a>
                     <ul class="{{ showSubmenu(['joined_students*']) }}">
                           
-                         @can('joined_students.view')
-                        <li>
-                            <a class="{{ isChildActive('joined_students.adminUrl') }}"
-                                href="{{ route('joined_students.adminUrl') }}">
-                                Joined Students Link
-                            </a>
-                        </li>
-                        @endcan   
+                            
                          @can('joined_students.view')
                         <li>
                             <a class="{{ isChildActive('admin.joined_students.index') }}"

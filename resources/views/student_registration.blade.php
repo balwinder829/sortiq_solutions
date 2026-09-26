@@ -51,6 +51,163 @@
         .select2-selection__arrow {
             height: 38px !important;
         }
+
+        /* PAYMENT QR */
+.payment-qr-image {
+    width: 220px;
+    height: 220px;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.payment-qr-image:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* FULLSCREEN QR */
+.payment-qr-fullscreen {
+    max-width: min(90vw, 700px);
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+/* =========================
+   MOBILE RESPONSIVE FORM
+   ========================= */
+
+.form-control,
+.form-select {
+    min-height: 44px;
+}
+
+/* QR image */
+.payment-qr-image {
+    width: 220px;
+    height: 220px;
+    max-width: 80vw;
+    object-fit: contain;
+    border: 1px solid #ddd;
+    padding: 8px;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.payment-qr-image:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* QR fullscreen */
+.payment-qr-fullscreen {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 90vw;
+    max-height: 75vh;
+    object-fit: contain;
+    background: #fff;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+/* Mobile */
+@media (max-width: 767.98px) {
+
+    .hero-section {
+        padding: 15px 0;
+    }
+
+    .hero-section .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+
+    .card-body {
+        padding: 15px;
+    }
+
+    .card-header {
+        padding: 12px 15px;
+    }
+
+    /* QR */
+    .payment-qr-image {
+        width: 200px;
+        height: 200px;
+    }
+
+    /* Payment card */
+    .payment-qr-fullscreen {
+        max-width: 88vw;
+        max-height: 70vh;
+        padding: 8px;
+    }
+
+    /* Payment details */
+    .payment .form-control,
+    .payment .form-select {
+        width: 100%;
+    }
+
+    /* Submit button */
+    .primary-btn {
+        width: 100%;
+        padding: 12px 20px;
+    }
+
+    /* Fullscreen modal */
+    #paymentQrModal .modal-header {
+        padding: 12px 15px;
+    }
+
+    #paymentQrModal .modal-title {
+        font-size: 18px;
+    }
+
+    #paymentQrModal .modal-body {
+        padding: 10px;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 375px) {
+
+    .hero-section .container {
+        padding-left: 7px;
+        padding-right: 7px;
+    }
+
+    .card-body {
+        padding: 12px;
+    }
+
+    .payment-qr-image {
+        width: 180px;
+        height: 180px;
+    }
+
+    .payment-qr-fullscreen {
+        max-width: 92vw;
+        max-height: 68vh;
+    }
+}
     </style>
 </head>
 
@@ -99,7 +256,7 @@
 @endif
 
 
-<form method="POST" action="{{ route('student.register') }}">
+<form method="POST" action="{{ route('student.register') }}"  enctype="multipart/form-data">
     @csrf
 
     <!-- Student Info -->
@@ -197,48 +354,29 @@
 
                 <div class="row">
 
+                   
                     {{-- QR CODE --}}
-                    <div class="col-md-5 text-center mb-3">
+<div class="col-md-5 text-center mb-3">
 
-                        <h6 class="mb-3">
-                            Scan & Pay
-                        </h6>
+    <h6 class="mb-3">
+        Scan & Pay
+    </h6>
 
-                        <div>
-                            <img
-                                src="{{ asset($paymentUpi->qr_image) }}"
-                                alt="Payment QR Code"
-                                style="
-                                    width:220px;
-                                    height:220px;
-                                    object-fit:contain;
-                                    border:1px solid #ddd;
-                                    padding:8px;
-                                    border-radius:8px;
-                                    background:#fff;
-                                "
-                            >
-                        </div>
+    <div>
+        <img
+            src="{{ asset($paymentUpi->qr_image) }}"
+            alt="Payment QR Code"
+            class="payment-qr-image"
+            data-bs-toggle="modal"
+            data-bs-target="#paymentQrModal"
+        >
+    </div>
 
-                        <div class="mt-2">
+    <small class="text-muted d-block mt-2">
+        Click QR to enlarge
+    </small>
 
-                            @if($paymentUpi->provider)
-
-                                <strong>
-                                    {{ $paymentUpi->provider }}
-                                </strong>
-
-                                <br>
-
-                            @endif
-
-                            <small class="text-muted">
-                                {{ $paymentUpi->name }}
-                            </small>
-
-                        </div>
-
-                    </div>
+</div>
 
 
                     {{-- PAYMENT DETAILS --}}
@@ -390,6 +528,51 @@
     </div>
 
 </form>
+
+<!-- PAYMENT QR FULLSCREEN MODAL -->
+{{-- PAYMENT QR FULLSCREEN MODAL --}}
+@if($paymentUpi && $paymentUpi->qr_image)
+    <div
+        class="modal fade"
+        id="paymentQrModal"
+        tabindex="-1"
+        aria-labelledby="paymentQrModalLabel"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content bg-dark">
+
+                <div class="modal-header border-0">
+                    <h5
+                        class="modal-title text-white"
+                        id="paymentQrModalLabel"
+                    >
+                        Scan & Pay
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"
+                    ></button>
+                </div>
+
+                <div class="modal-body d-flex justify-content-center align-items-center">
+                    <img
+                        src="{{ asset($paymentUpi->qr_image) }}"
+                        alt="Payment QR Code"
+                        class="payment-qr-fullscreen"
+                    >
+                </div>
+
+            </div>
+        </div>
+    </div>
+@endif
+
+
+
     </div>
 </div>
 
@@ -401,9 +584,21 @@
 
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- INIT -->
 <script>
+
+    function openPaymentQr() {
+    const modalElement = document.getElementById('paymentQrModal');
+
+    if (!modalElement) {
+        return;
+    }
+
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
 $(document).ready(function() {
     $('.select2').select2({
         placeholder: "Search College",
@@ -412,29 +607,46 @@ $(document).ready(function() {
     });
 });
 function copyPaymentUpi() {
-
-    const input =
-        document.getElementById('paymentUpiId');
+    const input = document.getElementById('paymentUpiId');
 
     if (!input) {
         return;
     }
 
-    navigator.clipboard.writeText(input.value)
-        .then(function () {
-
-            alert('UPI ID copied.');
-
-        })
-        .catch(function () {
-
-            input.select();
-
-            document.execCommand('copy');
-
-            alert('UPI ID copied.');
-
+    function showCopiedMessage() {
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied!',
+            text: 'UPI ID copied',
+            timer: 1500,
+            showConfirmButton: false
         });
+    }
+
+    function copyFallback() {
+        input.select();
+        input.setSelectionRange(0, input.value.length);
+
+        const copied = document.execCommand('copy');
+
+        if (copied) {
+            showCopiedMessage();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Copy failed',
+                text: 'Please copy the UPI ID manually.'
+            });
+        }
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(input.value)
+            .then(showCopiedMessage)
+            .catch(copyFallback);
+    } else {
+        copyFallback();
+    }
 }
 </script>
 

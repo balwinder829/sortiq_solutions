@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StudentPendingRegistration extends Model
 {
+    use SoftDeletes;
     protected $table = 'student_pending_registration';
 
     protected $fillable = [
@@ -32,6 +34,7 @@ class StudentPendingRegistration extends Model
         'payment_proof',
         'payment_verified_at',
         'payment_verified_by',
+        'payment_admin_note',
     ];
 
     public function collegeData()

@@ -15,6 +15,7 @@ use App\Models\Student;
 use App\Models\StudentSession;
 use App\Exports\JoiningStudentsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\PaymentUpiService;
 
 class JoiningStudentController extends Controller
 {
@@ -52,17 +53,18 @@ class JoiningStudentController extends Controller
     }
 
     // Frontend form
-    public function create()
+    public function create(PaymentUpiService $paymentUpiService)
     {
         return view('joining-form', [
             'colleges'  => College::orderBy('college_name')->get(),
             'courses'   => Course::orderBy('course_name')->get(),
             'durations' => Duration::orderBy('name')->get(),
+            'paymentUpi' => $paymentUpiService->getEffectiveUpi('joining_student'),
         ]);
     }
 
     // Save + Email
-    public function store(Request $request)
+    public function store_25sep(Request $request)
     {
         $request->validate([
             'student_name' => 'required',
@@ -79,6 +81,61 @@ class JoiningStudentController extends Controller
         $student->load(['collegeData', 'courseData', 'durationData']);
 
         $adminEmail = config('app.admin_email', 'admin@example.com');
+        // Send email to admin
+        // Mail::to($adminEmail)
+        //     ->send(new StudentJoinedMail($student));
+
+        return redirect()->back()
+            ->with('success', '🎉 Welcome to joining!');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'student_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
+            'college' => 'required',
+            'contact' => 'required|max:10',
+            'email' => 'required|email',
+            'date_of_joining' => 'required|date',
+
+            // Payment details
+            'payment_amount' => 'required|numeric|min:0.01',
+            'payment_upi_account_id' => 'nullable|exists:payment_upi_accounts,id',
+            'payment_transaction_id' => 'required|string|max:150',
+            'payment_date' => 'required|date',
+            'payment_proof' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
+        ]);
+
+        // Save payment screenshot permanently
+        if ($request->hasFile('payment_proof')) {
+            $validated['payment_proof'] = $request
+                ->file('payment_proof')
+                ->store('payment_proofs', 'public');
+        }
+
+        // Payment is submitted for admin verification
+        $validated['payment_status'] = 'submitted';
+
+        // Never accept admin verification fields from frontend
+        unset(
+            $validated['payment_admin_note'],
+            $validated['payment_verified_at'],
+            $validated['payment_verified_by'],
+            $validated['is_sent_to_detail'],
+            $validated['sent_to_detail_at']
+        );
+
+        $student = JoiningStudent::create($validated);
+
+        $student->load([
+            'collegeData',
+            'courseData',
+            'durationData'
+        ]);
+
+        $adminEmail = config('app.admin_email', 'admin@example.com');
+
         // Send email to admin
         // Mail::to($adminEmail)
         //     ->send(new StudentJoinedMail($student));

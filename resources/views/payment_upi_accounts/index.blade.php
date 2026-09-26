@@ -398,9 +398,10 @@
                         <div class="d-flex gap-1 flex-wrap">
 
                             <a href="{{ route('payment-upi-accounts.edit', $account->id) }}"
-                               class="btn btn-sm btn-primary">
+                               class="btn btn-sm"  title="Edit"
+            aria-label="Edit">
 
-                                Edit
+                                <i class="fa fa-eye"></i>
 
                             </a>
 
@@ -430,9 +431,10 @@
                                     @method('DELETE')
 
                                     <button type="submit"
-                                            class="btn btn-sm btn-danger">
+                                            class="btn btn-sm" title="Delete"
+                aria-label="Delete">
 
-                                        Delete
+                                        <i class="fa fa-trash"></i>
 
                                     </button>
 
