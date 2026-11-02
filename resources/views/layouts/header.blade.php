@@ -128,7 +128,7 @@
 
                     {{-- 🔥 SESSION SWITCHER (ROLE = 1 ONLY) --}}
                     {{-- 🔥 SESSION SWITCHER --}}
-@if(Auth::check() && (Auth::user()->role == 1 || Auth::user()->role == 4))
+@if(Auth::check() && !in_array(Auth::user()->role, [2, 3, 6]))
 
     @if(isset($headerSessions) && $headerSessions->count() > 0)
 

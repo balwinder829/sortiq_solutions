@@ -460,6 +460,18 @@ private function generateLetterPdf(Letter $letter): string
         return $mpdf->Output('', 'S');
     }
 
+    public function preview(Letter $letter)
+{
+    $pdfContent = $this->generateLetterPdf($letter);
+
+    return response($pdfContent)
+        ->header('Content-Type', 'application/pdf')
+        ->header(
+            'Content-Disposition',
+            'inline; filename="letter-preview.pdf"'
+        );
+}
+
     public function download(Letter $letter)
     {
         $pdfContent = $this->generateLetterPdf($letter);

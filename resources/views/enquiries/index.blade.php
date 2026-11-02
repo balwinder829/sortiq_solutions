@@ -325,9 +325,13 @@
         <div class="row mt-3">
             <div class="col-md-12 text-end">
                 @include('partials.whatsapp-popover')
-                <!-- <button type="submit" class="btn btn-primary">
-                    <i class="fa fa-search"></i> Search
-                </button> -->
+                  
+                    <button type="button"
+                            id="bulkDeleteEnquiries"
+                            class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Bulk Delete
+                    </button>
+                 
                 <a href="{{ route('enquiries.index') }}" class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
                 </a>
@@ -340,46 +344,6 @@
         </div>
     </form>
     {{-- ======================== END FILTERS ======================== --}}
-
-    
-{{-- ======================== UPLOAD EXCEL (UPDATED) ======================== --}}
-<!-- <div class="card shadow-sm mb-4">
-    <div class="card-header bg-primary text-white">
-        <strong>Import Data</strong>
-    </div>
-
-    <div class="card-body">
-        <form action="{{ route('enquiries.import') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-
-            <div class="row align-items-center">
-
-                {{-- File Input --}}
-                <div class="col-md-5 mb-2">
-                    <input type="file" name="file" class="form-control" required>
-                </div>
-
-                {{-- Upload Button --}}
-                <div class="col-md-3 mb-2">
-                    <button class="btn btn-secondary w-100">
-                        <i class="fa fa-upload"></i> Upload Excel/CSV
-                    </button>
-                </div>
-
-                {{-- Download Sample File --}}
-                <div class="col-md-4 mb-2 text-end">
-                    <a href="{{ asset('sample/sample_record_file.xlsx') }}" 
-                       class="btn btn-outline-primary"
-                       download>
-                        <i class="fa fa-file-excel"></i> Download Sample File
-                    </a>
-                </div>
-
-            </div>
-        </form>
-    </div>
-</div> -->
-{{-- ======================== END UPLOAD ======================== --}}
 
 
     <!-- Message Composer Panel -->
@@ -1468,4 +1432,72 @@ $(document).on('click', '#sendWhatsappNotification', function () {
     }
 
 </script>
+
+<script>
+$(document).on('click', '#bulkDeleteEnquiries', function () {
+
+    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+
+    // Required selection message
+    if (ids.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least 1 record.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'The selected enquiries will be moved to the recycle state using soft delete.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false
+    }).then((result) => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        $.ajax({
+            url: @json(route('enquiries.bulkDelete')),
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                ids: ids
+            },
+            success: function (response) {
+
+                // Clear selection only after successful deletion
+                localStorage.removeItem('selected_enquiries');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted Successfully',
+                    text: response.message,
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                }).then(() => {
+                    location.reload();
+                });
+            },
+            error: function (xhr) {
+
+                let message = xhr.responseJSON?.message
+                    || 'Unable to delete the selected enquiries.';
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Delete Failed',
+                    text: message
+                });
+            }
+        });
+    });
+});
+</script>
+
 @endpush

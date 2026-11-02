@@ -25,6 +25,7 @@ class TravelExpenseController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete' => 'delete',
 
         // 'bulkDelete'      => 'delete',
     ];
@@ -311,4 +312,46 @@ class TravelExpenseController extends Controller
             ->route('travel-expenses.index')
             ->with('success', 'Travel expense deleted successfully');
     }
+
+    
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', explode(',', $request->ids)),
+            fn ($id) => $id > 0
+        )));
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please select at least 1 record.',
+            ], 422);
+        }
+
+        $expenses = TravelExpense::whereIn('id', $ids)->get();
+
+        $count = 0;
+
+        foreach ($expenses as $expense) {
+            $expense->delete();
+            $count++;
+        }
+
+        if ($count === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No matching travel expenses were found.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' travel expense' . ($count === 1 ? '' : 's') . ' deleted successfully.',
+        ]);
+    }
+
 }

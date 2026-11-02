@@ -139,6 +139,18 @@ class ManagementsLetterController extends Controller
         return $mpdf->Output('', 'S');
     }
 
+    public function preview(ManagementsLetter $managements_letter)
+    {
+        $pdfContent = $this->generateLetterPdf($managements_letter);
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header(
+                'Content-Disposition',
+                'inline; filename="management-letter-preview.pdf"'
+            );
+    }
+
     /* =================================================
        DOWNLOAD
     ================================================= */

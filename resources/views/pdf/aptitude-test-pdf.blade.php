@@ -61,7 +61,7 @@
 					</td>
 				</tr>
 			</table>
-			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
 				<tr>
 					<td align="left" style="font-size: 16px; line-height: 26px; text-align:left; font-family: 'Inter', sans-serif;">
 						<strong>Email</strong> <span>_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _</span>
@@ -79,9 +79,9 @@
 				</tr>
 			</table> -->
 			 @foreach($questions as $qIndex => $question)
-			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;">
+			<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;">
 				<tr>
-					<td colspan="4" style="font-size: 14px; line-height: 15px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
+					<td colspan="4" style="font-size: 14px; line-height: 15px; padding-bottom:10px; font-family: 'Inter', sans-serif;">
 						<strong>{{ $qIndex + 1 }}. {{ $question->question }}
 
                 </strong> 
@@ -89,7 +89,7 @@
 				</tr>
 				<tr>
 					@foreach($question->options as $oIndex => $option)
-					<td style="font-size: 14px; line-height: 15px; padding-bottom:20px; font-family: 'Inter', sans-serif; width:25%;">
+					<td style="font-size: 14px; line-height: 15px; padding-bottom:10px; font-family: 'Inter', sans-serif; width:25%;">
 						{{ chr(97 + $oIndex) }}) {{ $option->option_text }}
 					</td>
 					 @endforeach

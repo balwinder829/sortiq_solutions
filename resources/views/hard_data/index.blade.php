@@ -21,6 +21,12 @@
             Move / Close Selected
         </button>
 
+        <button type="button"
+                id="bulkDeleteHardDataBtn"
+                class="btn btn-danger mb-3">
+            Bulk Delete
+        </button>
+
         <a href="{{ route('admin.hard_data.create') }}"
            class="btn btn-primary mb-3"
            style="background:#6b51df;">
@@ -36,42 +42,20 @@
     Export Excel
 </a>
     </div>
-<form id="filterForm" class="row mb-3">
+<form id="filterForm" class="row mb-3 gap-1">
    
 
-    {{-- ✅ NEW: COLLEGE --}}
+    {{-- College names stored in Hard Data --}}
     <div class="col-md-2">
-        <!-- <select name="college_id" class="form-control select2">
-            <option value="">All College</option>
-            @foreach($colleges as $college)
-                <option value="{{ $college->id }}">
-                    {{ $college->college_name }}
-                </option>
+        <select name="college_name" class="form-control select2">
+            <option value="">All Colleges</option>
+            @foreach($collegeNames as $collegeName)
+                <option value="{{ $collegeName }}">{{ $collegeName }}</option>
             @endforeach
-        </select> -->
-        <select name="college_id" class="form-control select2">
-            <option value="">All College</option>
-
-            {{-- Existing colleges --}}
-            @foreach($colleges as $college)
-                <option value="id_{{ $college->id }}">
-                    {{ $college->FullName }}
-                </option>
-            @endforeach
-
-            @if($unknownColleges->count())
-                <optgroup label="Unknown Colleges">
-                    @foreach($unknownColleges as $college)
-                        <option value="txt_{{ $college->college_name }}">
-                            {{ $college->college_name }}
-                        </option>
-                    @endforeach
-                </optgroup>
-            @endif
         </select>
     </div>
 
-    {{-- ✅ NEW: COURSE TYPE --}}
+    {{-- COURSE TYPE --}}
     <div class="col-md-2">
         <select name="course_type" class="form-control">
             <option value="">All Course</option>
@@ -79,6 +63,65 @@
             <option value="Diploma">Diploma</option>
         </select>
     </div>
+
+    {{-- SEMESTER FILTER --}}
+    <div class="col-md-2">
+        <select name="semester" class="form-control">
+            <option value="">All Semesters</option>
+            @for($i = 1; $i <= 8; $i++)
+                <option value="{{ $i }}">Semester {{ $i }}</option>
+            @endfor
+        </select>
+    </div>
+
+    {{-- CLASS FILTER --}}
+    <div class="col-md-2">
+        <select name="class" class="form-control">
+            <option value="">All Classes</option>
+            @foreach(($classNames ?? collect()) as $className)
+                <option value="{{ $className }}">{{ $className }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- SPECIFIC DATE FILTER --}}
+    <!-- <div class="col-md-2">
+        <input type="date"
+               name="date"
+               class="form-control"
+               title="Select Specific Date">
+    </div> -->
+
+    {{-- DATE RANGE FILTER --}}
+    <div class="col-md-2">
+        <select name="range" class="form-control">
+            <option value="">All Dates</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="this_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="last_7_days">Last 7 Days</option>
+            <option value="last_30_days">Last 30 Days</option>
+            <option value="this_month">This Month</option>
+            <option value="custom">Custom Date Range</option>
+        </select>
+    </div>
+
+    {{-- CUSTOM DATE FILTER --}}
+    <div class="col-md-2 custom-date-filter" style="display:none;">
+        <input type="date"
+               name="from_date"
+               class="form-control"
+               title="From Date">
+    </div>
+
+    <div class="col-md-2 custom-date-filter" style="display:none;">
+        <input type="date"
+               name="to_date"
+               class="form-control"
+               title="To Date">
+    </div>
+
      <div class="col-md-2">
         <select name="gender" class="form-control">
             <option value="">All Gender</option>
@@ -134,7 +177,7 @@
     <th>Course Type</th>
     <th>Gender</th>
     <th>Created</th>
-    <th>Actions</th>
+    <th width="150">Actions</th>
 </tr>
 </thead>
 
@@ -309,12 +352,23 @@ var table = $('#trainers-table').DataTable({
     ajax: {
     url: "{{ route('admin.hard_data.index') }}",
     data: function (d) {
+        // EXISTING FILTERS
         d.email = $('input[name=email]').val();
         d.mobile = $('input[name=mobile]').val();
         d.gender = $('select[name=gender]').val();
-        d.college_id = $('select[name=college_id]').val();
+        d.college_name = $('select[name=college_name]').val();
         d.course_type = $('select[name=course_type]').val();
-         d.is_moved = $('select[name=is_moved]').val();
+        d.is_moved = $('select[name=is_moved]').val();
+
+        // NEW FILTERS
+        d.semester = $('select[name=semester]').val();
+        d.class = $('select[name=class]').val();
+
+        // DATE FILTERS
+        d.date = $('input[name=date]').val();
+        d.range = $('select[name=range]').val();
+        d.from_date = $('input[name=from_date]').val();
+        d.to_date = $('input[name=to_date]').val();
     }
 },
     columns: [
@@ -391,9 +445,54 @@ table.on('draw.dt', function () {
     syncCheckAll();
 
 });
-$('#filterForm input, #filterForm select').on('keyup change', function () {
+// ======================================
+// FILTER CHANGE HANDLING
+// ======================================
+
+// Show custom date fields only when Custom Date Range is selected.
+function toggleCustomDateFields() {
+    let range = $('select[name=range]').val();
+
+    if (range === 'custom') {
+        $('.custom-date-filter').show();
+    } else {
+        $('.custom-date-filter').hide();
+        $('input[name=from_date]').val('');
+        $('input[name=to_date]').val('');
+    }
+}
+
+// Keep specific date, predefined range and custom range mutually exclusive.
+$('#filterForm').on('change', 'select[name=range]', function () {
+    $('input[name=date]').val('');
+    toggleCustomDateFields();
     table.ajax.reload();
 });
+
+$('#filterForm').on('change', 'input[name=date]', function () {
+    if ($(this).val()) {
+        $('select[name=range]').val('');
+        $('input[name=from_date]').val('');
+        $('input[name=to_date]').val('');
+        toggleCustomDateFields();
+    }
+    table.ajax.reload();
+});
+
+$('#filterForm').on('change', 'input[name=from_date], input[name=to_date]', function () {
+    $('input[name=date]').val('');
+    $('select[name=range]').val('custom');
+    toggleCustomDateFields();
+    table.ajax.reload();
+});
+
+// Existing text/select filters continue to reload automatically.
+$('#filterForm').on('keyup change', 'input:not([name=date]):not([name=from_date]):not([name=to_date]), select:not([name=range])', function () {
+    table.ajax.reload();
+});
+
+// Set correct custom-date visibility on page load.
+toggleCustomDateFields();
 
 // ✅ SELECT SINGLE
 // $(document).on('change', '.record_checkbox', function () {
@@ -561,13 +660,18 @@ $('#exportExcel').click(function () {
 
 $('#resetFilters').click(function () {
 
-    // Reset all inputs
+    // Reset all filters without changing existing form or DataTable variables.
     $('#filterForm')[0].reset();
 
-    // If using select2 (optional)
-    $('#filterForm select').val('').trigger('change');
+    // Refresh Select2 if it is used, without triggering multiple AJAX reloads.
+    $('#filterForm select').val('').trigger('change.select2');
 
-    // Reload table
+    // Clear and hide custom date fields.
+    $('input[name=from_date]').val('');
+    $('input[name=to_date]').val('');
+    $('.custom-date-filter').hide();
+
+    // Reload table once with all filters cleared.
     table.ajax.reload();
 });
 
@@ -786,7 +890,91 @@ function showPopup($msg) {
     });
 
 }
+// Individual delete confirmation
+$(document).on('submit', '.hard-data-delete-form', function (e) {
+    e.preventDefault();
 
+    const form = this;
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to delete this record?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+});
+
+
+// Bulk delete
+$('#bulkDeleteHardDataBtn').on('click', function () {
+
+    if (selectedIds.size === 0) {
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least 1 record.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'The selected records will be deleted.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false
+    }).then((result) => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        $.ajax({
+            url: "{{ route('admin.hard_data.bulkDelete') }}",
+            type: 'POST',
+            data: {
+                _token: "{{ csrf_token() }}",
+                ids: Array.from(selectedIds)
+            },
+
+            success: function (response) {
+
+                selectedIds.clear();
+                selectedRecordIds.clear();
+
+                $('#checkAll').prop('checked', false);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted Successfully',
+                    text: response.message,
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+
+                table.ajax.reload(null, false);
+            },
+
+            error: function (xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Unable to Delete',
+                    text: xhr.responseJSON?.message
+                        || 'Something went wrong.'
+                });
+            }
+        });
+    });
+});
 </script>
 
 @endpush

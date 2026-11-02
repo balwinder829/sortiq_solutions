@@ -47,7 +47,12 @@
                         name="student_email"
                         class="form-control"
                         value="{{ old('student_email') }}"
+                        required
                     >
+
+                    @error('student_email')
+                        <small class="text-danger d-block mt-1">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 {{-- Mobile --}}
@@ -70,7 +75,7 @@
                 {{-- Gender --}}
                 <div class="mb-3">
                     <label class="fw-bold">Gender</label>
-                    <select name="gender" class="form-control">
+                    <select name="gender" class="form-control" required>
                         <option value="">Select Gender</option>
                         <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>
                             Male
@@ -79,6 +84,9 @@
                             Female
                         </option>
                     </select>
+                    @error('gender')
+                        <small class="text-danger d-block mt-1">{{ $message }}</small>
+                    @enderror
                 </div>
 
                 {{-- Course Type --}}
@@ -140,7 +148,8 @@ const courseData = {
             "IT",
             "Mechanical",
             "Civil",
-            "Electrical"
+            "Electrical",
+            "Management"
         ],
         semesters: 8
     },
@@ -150,7 +159,8 @@ const courseData = {
             "IT",
             "Mechanical",
             "Civil",
-            "Electrical"
+            "Electrical",
+            "Management"
         ],
         semesters: 8
     }
@@ -202,6 +212,23 @@ courseType.addEventListener('change', updateCourseFields);
 
 document.addEventListener('DOMContentLoaded', function () {
     updateCourseFields();
+});
+</script>
+<script>
+document.querySelector('form').addEventListener('submit', function () {
+
+    Object.keys(localStorage).forEach(function (key) {
+
+        if (
+            key.startsWith('exam_submitted_test_') ||
+            key.startsWith('exam_answers_') ||
+            key.startsWith('exam_pending_')
+        ) {
+            localStorage.removeItem(key);
+        }
+
+    });
+
 });
 </script>
 

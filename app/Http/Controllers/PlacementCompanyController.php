@@ -27,6 +27,7 @@ class PlacementCompanyController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete'   => 'delete',
 
         'import'      => 'import',
         'importForm'      => 'import',
@@ -224,5 +225,32 @@ class PlacementCompanyController extends Controller
                 'Import failed: Something went wrong while importing the file.'
             ]);
         }
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_filter(
+            array_map('intval', explode(',', $request->ids))
+        );
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No placement companies selected.'
+            ], 422);
+        }
+
+        $count = PlacementCompany::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' placement compan' .
+                ($count == 1 ? 'y' : 'ies') .
+                ' deleted successfully.',
+        ]);
     }
 }

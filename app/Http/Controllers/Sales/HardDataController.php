@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Sales;
 use App\Http\Controllers\Controller;
 
 use App\Models\HardData;
-use App\Models\College;
 use App\Models\StudentSession;
 use Illuminate\Http\Request;
 use App\Http\DataTables\DataTablesServerSide;
@@ -29,7 +28,7 @@ class HardDataController extends Controller
         $this->middleware('permission:hard_data.view')->only(['index','show','importForm','import']);
         $this->middleware('permission:hard_data.create')->only(['create','store']);
         $this->middleware('permission:hard_data.edit')->only(['edit','update','moveManualToEnquiries']);
-        $this->middleware('permission:hard_data.delete')->only('destroy');
+        $this->middleware('permission:hard_data.delete')->only(['destroy', 'bulkDelete']);
 
         
         // $this->middleware('permission:colleges.import')->only('showImport');
@@ -50,25 +49,9 @@ public function index(Request $request)
                     ->where('session_id', $activeSessionNo)
                     ->where('enquiry_status', 'active');
 
-        // FILTERS
-
-        // if ($request->college_id) {
-        //     $query->where('college_id', $request->college_id);
-        // }
-
-        if ($request->filled('college_id')) {
-
-            $value = $request->college_id;
-
-            if (str_starts_with($value, 'id_')) {
-
-                $query->where('college_id', str_replace('id_', '', $value));
-
-            } elseif (str_starts_with($value, 'txt_')) {
-
-                $query->whereNull('college_id')
-                      ->where('college_name', str_replace('txt_', '', $value));
-            }
+        // FILTERS: College filtering is based on the saved college_name text.
+        if ($request->filled('college_name')) {
+            $query->where('college_name', trim($request->input('college_name')));
         }
 
         if ($request->state_id) {
@@ -137,6 +120,24 @@ public function index(Request $request)
                     $query->whereDate('created_at', today()->subDay());
                     break;
 
+                case 'this_week':
+
+                    $query->whereBetween('created_at', [
+                        now()->startOfWeek()->startOfDay(),
+                        now()->endOfWeek()->endOfDay()
+                    ]);
+
+                    break;
+
+                case 'last_week':
+
+                    $query->whereBetween('created_at', [
+                        now()->subWeek()->startOfWeek()->startOfDay(),
+                        now()->subWeek()->endOfWeek()->endOfDay()
+                    ]);
+
+                    break;
+
                 case 'last_7_days':
                     $query->whereBetween('created_at', [now()->subDays(7), now()]);
                     break;
@@ -151,6 +152,18 @@ public function index(Request $request)
             }
         }
 
+        // CUSTOM DATE FILTER
+            if ($request->filled('from_date') || $request->filled('to_date')) {
+
+                if ($request->filled('from_date')) {
+                    $query->whereDate('created_at', '>=', $request->from_date);
+                }
+
+                if ($request->filled('to_date')) {
+                    $query->whereDate('created_at', '<=', $request->to_date);
+                }
+            }
+
         // ✅ LATEST RECORDS FIRST
         $query->latest('updated_at');
 
@@ -159,22 +172,25 @@ public function index(Request $request)
             'searchable' => ['student_name','student_email','student_mobile'],
         ], function ($data, $index, $start) {
 
-            $actions  = '<a href="' . route('admin.hard_data.edit', $data->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ';
-            $actions .= '<form action="' . route('admin.hard_data.destroy', $data->id) . '" method="POST" style="display:inline-block;">'
+            $actions  = '<div class="d-inline-flex align-items-center gap-1">';
+
+            $actions  .= '<a href="' . route('admin.hard_data.edit', $data->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ';
+            $actions .= '<form action="' . route('admin.hard_data.destroy', $data->id) . '" method="POST" style="display:inline-block;" class="hard-data-delete-form">'
                         . csrf_field()
                         . method_field('DELETE') .
                         '<button type="submit" class="btn btn-sm" title="Delete" data-swal-confirm="Are you sure?">
                             <i class="fa fa-trash"></i>
                         </button>
                         </form>';
-
+            $actions .= '</div>';
+            
             $rowNum = $start + $index + 1;
             
             return [
                 $rowNum,
                 e($data->student_name),
                 // e(optional($data->college)->FullName),
-                e($data->college ? $data->college->FullName : $data->college_name),
+                e($data->college_name ?: ($data->college->FullName ?? '')),
                 e($data->student_email),
                 e($data->student_mobile),
                 e($data->class),
@@ -191,14 +207,20 @@ public function index(Request $request)
         });
     }
 
-    $colleges = College::orderBy('college_name')->get();
-    $unknownColleges = HardData::whereNull('college_id')
-    ->whereNotNull('college_name')
-    ->where('session_id', session('admin_session_id'))
-    ->select('college_name')
-    ->distinct()
-    ->orderBy('college_name')
-    ->get();
+    $activeSessionNo = session(
+        'admin_header_session_id',
+        session('admin_session_id')
+    );
+
+    // Unique college names actually stored in Hard Data (not from the colleges table).
+    $collegeNames = HardData::where('session_id', $activeSessionNo)
+        ->where('enquiry_status', 'active')
+        ->whereNotNull('college_name')
+        ->whereRaw("TRIM(college_name) <> ''")
+        ->select('college_name')
+        ->distinct()
+        ->orderBy('college_name')
+        ->pluck('college_name');
 
     $states = State::orderBy('name')->get();
 
@@ -218,7 +240,15 @@ public function index(Request $request)
     ->orderBy('start_date', 'desc')
     ->pluck('session_name', 'id');
 
-    return view('hard_data.index', compact('colleges','unknownColleges', 'states','districtsGrouped','sessionsList','saleSessions'));
+    $classNames = HardData::where('session_id', $activeSessionNo)
+    ->where('enquiry_status', 'active')
+    ->whereNotNull('class')
+    ->whereRaw("TRIM(class) <> ''")
+    ->distinct()
+    ->orderBy('class')
+    ->pluck('class');
+
+    return view('hard_data.index', compact('collegeNames', 'states', 'districtsGrouped', 'sessionsList', 'saleSessions' ,'classNames'));
 }
 
     
@@ -228,9 +258,8 @@ public function index(Request $request)
      * Show the form for creating a new resource.
      */
     public function create()
-    {   
-        $colleges = College::orderBy('college_name','asc')->get();
-        return view('hard_data.create', compact('colleges'));
+    {
+        return view('hard_data.create');
     }
 
     /**
@@ -240,23 +269,33 @@ public function index(Request $request)
 public function store(Request $request)
 {
     $validated = $request->validate([
-        'college_id'      => 'required|integer',
-        'student_name'    => 'required|string|max:255',
-        'student_email'   => 'required|email|max:255',
-        // 'student_mobile'  => 'required|digits:10',
-        'student_mobile' => ['required', 'required', 'digits:10', new NotBlockedNumber],
-        'gender'          => 'required|in:male,female',
-        'course_type'     => 'required|in:Degree,Diploma',
-        'class'           => 'required',
-        'semester'        => 'required|integer|min:1|max:8',
+        'student_name'   => 'required|string|max:255',
+        'student_mobile' => ['required', 'digits:10', new NotBlockedNumber],
+        'college_name'   => 'required|string|max:512',
+        'student_email'  => 'nullable|email|max:255',
+        'gender'         => 'nullable|in:male,female',
+        'course_type'    => 'nullable|in:Degree,Diploma',
+        'class'          => 'nullable|string|max:500',
+        'semester'       => 'nullable|integer|min:1|max:8',
     ]);
 
-    // $activeSessionId = session('admin_session_id');
     $activeSessionId = session(
         'admin_header_session_id',
         session('admin_session_id')
     );
-    // Optional: default source
+
+    if (!$activeSessionId) {
+        return back()
+            ->withInput()
+            ->withErrors(['session_id' => 'No active session is selected.']);
+    }
+
+    $collegeName = trim((string) ($validated['college_name'] ?? ''));
+    $validated['college_name'] = $collegeName !== '' ? $collegeName : null;
+
+    // College is stored as free text; do not look it up in the colleges table.
+    $validated['college_id'] = null;
+
     $validated['session_id'] = $activeSessionId;
     $validated['source'] = 'manual';
 
@@ -282,10 +321,9 @@ public function store(Request $request)
      */
     public function edit($id)
     {
-        $manualData = HardData::findOrFail($id);
-        $colleges = College::orderBy('college_name','asc')->get();
+        $manualData = HardData::with('college')->findOrFail($id);
 
-        return view('hard_data.edit', compact('manualData','colleges'));
+        return view('hard_data.edit', compact('manualData'));
     }
 
 
@@ -299,16 +337,21 @@ public function update(Request $request, $id)
     $data = HardData::findOrFail($id);
 
     $validated = $request->validate([
-        'college_id'      => 'required|integer',
-        'student_name'    => 'required|string|max:255',
-        'student_email'   => 'required|email|max:255',
-        // 'student_mobile'  => 'required|digits:10',
-        'student_mobile' => ['required', 'required', 'digits:10', new NotBlockedNumber],
-        'gender'          => 'required|in:male,female',
-        'course_type'     => 'required|in:Degree,Diploma',
-        'class'           => 'required',
-        'semester'        => 'required|integer|min:1|max:8',
+        'student_name'   => 'required|string|max:255',
+        'student_mobile' => ['required', 'digits:10', new NotBlockedNumber],
+        'college_name'   => 'required|string|max:512',
+        'student_email'  => 'nullable|email|max:255',
+        'gender'         => 'nullable|in:male,female',
+        'course_type'    => 'nullable|in:Degree,Diploma',
+        'class'          => 'nullable|string|max:500',
+        'semester'       => 'nullable|integer|min:1|max:8',
     ]);
+
+    $collegeName = trim((string) ($validated['college_name'] ?? ''));
+    $validated['college_name'] = $collegeName !== '' ? $collegeName : null;
+
+    // College is stored as free text; do not look it up in the colleges table.
+    $validated['college_id'] = null;
 
     $data->update($validated);
 
@@ -355,11 +398,8 @@ public function exportExcel(Request $request)
         $fileName .= '-' . strtolower($request->course_type);
     }
 
-    if ($request->college_id) {
-        $college = \App\Models\College::find($request->college_id);
-        if ($college) {
-            $fileName .= '-' . Str::slug($college->college_name);
-        }
+    if ($request->filled('college_name')) {
+        $fileName .= '-' . Str::slug($request->input('college_name'));
     }
 
     // ✅ Always add datetime
@@ -506,20 +546,6 @@ public function exportExcel(Request $request)
                 }
             }
 
-            // College Not Found
-            if (!empty($importer->collegeNotFound)) {
-
-                if (!empty($errors)) {
-                    $errors[] = "";
-                }
-
-                $errors[] = "===== College Not Found (Saved as Text) (" . count($importer->collegeNotFound) . ") =====";
-
-                foreach ($importer->collegeNotFound as $college) {
-                    $errors[] = $college;
-                }
-            }
-
             if (!empty($errors)) {
                 return back()
                     ->with('success', $message)
@@ -647,5 +673,32 @@ public function exportExcel(Request $request)
             'message' => $e->getMessage()
         ], 500);
     }
+}
+
+public function bulkDelete(Request $request)
+{
+    $validated = $request->validate([
+        'ids'   => 'required|array|min:1',
+        'ids.*' => 'required|integer|distinct',
+    ]);
+
+    $records = HardData::whereIn('id', $validated['ids'])->get();
+
+    if ($records->isEmpty()) {
+        return response()->json([
+            'message' => 'No records found to delete.',
+        ], 404);
+    }
+
+    $count = 0;
+
+    foreach ($records as $record) {
+        $record->delete();
+        $count++;
+    }
+
+    return response()->json([
+        'message' => $count . ' record(s) deleted successfully.',
+    ]);
 }
 }

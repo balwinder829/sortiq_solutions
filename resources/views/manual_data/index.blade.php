@@ -23,6 +23,12 @@
                 class="btn btn-warning mb-3">
             Move / Close Selected
         </button>
+        
+        <button type="button"
+                id="bulkDeleteManualData"
+                class="btn btn-danger mb-3">
+            <i class="fa fa-trash"></i> Bulk Delete
+        </button>
 
         <a href="{{ route('admin.manual_data.create') }}"
            class="btn btn-primary mb-3"
@@ -39,43 +45,20 @@
     Export Excel
 </a>
     </div>
-<form id="filterForm" class="row mb-3">
+<form id="filterForm" class="row mb-3 gap-2">
    
 
-    {{-- ✅ NEW: COLLEGE --}}
+    {{-- COLLEGE FILTER --}}
     <div class="col-md-2">
-        <!-- <select name="college_id" class="form-control select2">
+        <select name="college_name" class="form-control select2">
             <option value="">All College</option>
-            @foreach($colleges as $college)
-                <option value="{{ $college->id }}">
-                    {{ $college->college_name }}
-                </option>
+            @foreach($collegeNames as $collegeName)
+                <option value="{{ $collegeName }}">{{ $collegeName }}</option>
             @endforeach
-        </select> -->
-
-        <select name="college_id" class="form-control select2">
-            <option value="">All College</option>
-
-            {{-- Existing colleges --}}
-            @foreach($colleges as $college)
-                <option value="id_{{ $college->id }}">
-                    {{ $college->FullName }}
-                </option>
-            @endforeach
-
-            @if($unknownColleges->count())
-                <optgroup label="Unknown Colleges">
-                    @foreach($unknownColleges as $college)
-                        <option value="txt_{{ $college->college_name }}">
-                            {{ $college->college_name }}
-                        </option>
-                    @endforeach
-                </optgroup>
-            @endif
         </select>
     </div>
 
-    {{-- ✅ NEW: COURSE TYPE --}}
+    {{-- COURSE TYPE FILTER --}}
     <div class="col-md-2">
         <select name="course_type" class="form-control">
             <option value="">All Course</option>
@@ -83,6 +66,50 @@
             <option value="Diploma">Diploma</option>
         </select>
     </div>
+
+    {{-- CLASS FILTER --}}
+    <div class="col-md-2">
+        <select name="class" class="form-control">
+            <option value="">All Classes</option>
+            @foreach($classNames ?? collect() as $className)
+                <option value="{{ $className }}">{{ $className }}</option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- SEMESTER FILTER --}}
+    <div class="col-md-2">
+        <select name="semester" class="form-control">
+            <option value="">All Semesters</option>
+            @for($semester = 1; $semester <= 8; $semester++)
+                <option value="{{ $semester }}">Semester {{ $semester }}</option>
+            @endfor
+        </select>
+    </div>
+
+    {{-- DATE RANGE FILTER --}}
+    <div class="col-md-2">
+        <select name="range" id="manualDateRange" class="form-control">
+            <option value="">All Dates</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="this_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="last_7_days">Last 7 Days</option>
+            <option value="last_30_days">Last 30 Days</option>
+            <option value="this_month">This Month</option>
+            <option value="custom">Custom</option>
+        </select>
+    </div>
+
+    {{-- CUSTOM DATE FILTERS --}}
+    <div class="col-md-2 manual-custom-date" style="display:none;">
+        <input type="date" name="from_date" class="form-control" placeholder="From Date">
+    </div>
+    <div class="col-md-2 manual-custom-date" style="display:none;">
+        <input type="date" name="to_date" class="form-control" placeholder="To Date">
+    </div>
+
      <div class="col-md-2">
         <select name="gender" class="form-control">
             <option value="">All Gender</option>
@@ -104,7 +131,7 @@
     </div>
 
     <div class="col-md-3">
-        <input type="text" name="mobile" class="form-control mt-2" placeholder="Mobile">
+        <input type="text" name="mobile" class="form-control" placeholder="Mobile">
     </div>
 <div class="col-md-2">
     <button type="button" id="resetFilters" class="btn btn-secondary w-100 mt-2">
@@ -139,7 +166,7 @@
     <th>Course Type</th>
     <th>Gender</th>
     <th>Created</th>
-    <th>Actions</th>
+    <th width="150">Actions</th>
 </tr>
 </thead>
 
@@ -334,9 +361,14 @@ var table = $('#trainers-table').DataTable({
         d.email = $('input[name=email]').val();
         d.mobile = $('input[name=mobile]').val();
         d.gender = $('select[name=gender]').val();
-        d.college_id = $('select[name=college_id]').val();
+        d.college_name = $('select[name=college_name]').val();
         d.course_type = $('select[name=course_type]').val();
-         d.is_moved = $('select[name=is_moved]').val();
+        d.class = $('select[name=class]').val();
+        d.semester = $('select[name=semester]').val();
+        d.range = $('select[name=range]').val();
+        d.from_date = $('input[name=from_date]').val();
+        d.to_date = $('input[name=to_date]').val();
+        d.is_moved = $('select[name=is_moved]').val();
     }
 },
 
@@ -418,6 +450,19 @@ table.on('draw.dt', function () {
 $('#filterForm input, #filterForm select').on('keyup change', function () {
     table.ajax.reload();
 });
+
+// Show custom date inputs only when Custom is selected.
+function toggleManualCustomDates() {
+    const isCustom = $('#manualDateRange').val() === 'custom';
+    $('.manual-custom-date').toggle(isCustom);
+
+    if (!isCustom) {
+        $('input[name=from_date], input[name=to_date]').val('');
+    }
+}
+
+$('#manualDateRange').on('change', toggleManualCustomDates);
+toggleManualCustomDates();
 
 
 
@@ -942,6 +987,74 @@ $('#moveManualDataForm').on('submit', function (e) {
 
 });
 
+// ======================================
+ // BULK DELETE MANUAL DATA (SOFT DELETE)
+ // ======================================
+$('#bulkDeleteManualData').on('click', function () {
+
+    let ids = Array.from(selectedIds);
+
+    if (ids.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least 1 record.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'The selected records will be soft-deleted.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false
+    }).then((result) => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        $.ajax({
+            url: "{{ route('admin.manual_data.bulkDelete') }}",
+            type: 'POST',
+            data: {
+                _token: "{{ csrf_token() }}",
+                ids: ids
+            },
+            success: function (response) {
+
+                selectedIds.clear();
+                selectedRecordIds.clear();
+
+                $('#checkAll').prop('checked', false);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted Successfully',
+                    text: response.message,
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                }).then(() => {
+                    table.ajax.reload(null, false);
+                });
+            },
+            error: function (xhr) {
+                let message = xhr.responseJSON?.message
+                    || 'Unable to delete the selected records.';
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Delete Failed',
+                    text: message
+                });
+            }
+        });
+    });
+});
+
 function showPopup($msg){
     Swal.fire({
             icon: 'warning',
@@ -951,5 +1064,29 @@ function showPopup($msg){
         return;
 
 }
+
+// ======================================
+// INDIVIDUAL DELETE - SWEETALERT
+// ======================================
+$(document).on('submit', '.manual-data-delete-form', function (e) {
+    e.preventDefault();
+
+    const form = this;
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'This record will be deleted.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+});
 </script>
+
 @endpush

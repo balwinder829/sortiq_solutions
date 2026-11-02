@@ -27,7 +27,554 @@ class CollegeCallController extends Controller
     | 1. INDEX (DATATABLE)
     |--------------------------------------------------
     */
+
     public function index(Request $request)
+{
+    if ($request->ajax()) {
+
+        $activeSessionId = session('admin_session_id');
+
+        $query = College::with(['state', 'district']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | CALL STATUS TAB
+        |--------------------------------------------------------------------------
+        */
+
+        $callStatusTab = $request->get('call_status', 'not_called');
+
+        if (!in_array($callStatusTab, ['called', 'not_called'])) {
+            $callStatusTab = 'not_called';
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | OTHER FILTERS
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->college_id) {
+            $query->where('id', $request->college_id);
+        }
+
+        if ($request->state_id) {
+            $query->where('state_id', $request->state_id);
+        }
+
+        if ($request->district_id) {
+            $query->where('district_id', $request->district_id);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CALLED / NOT CALLED
+        |--------------------------------------------------------------------------
+        */
+
+        if ($callStatusTab === 'called') {
+
+            $query->whereHas('callStatus', function ($q) use ($activeSessionId) {
+
+                $q->where('session_id', $activeSessionId)
+                  ->where('call_done', 1);
+
+            });
+
+        } else {
+
+            $query->where(function ($q) use ($activeSessionId) {
+
+                /*
+                | No status record for current session
+                */
+
+                $q->whereDoesntHave('callStatus', function ($sub) use ($activeSessionId) {
+
+                    $sub->where('session_id', $activeSessionId);
+
+                })
+
+                /*
+                | OR status exists but call_done = 0
+                */
+
+                ->orWhereHas('callStatus', function ($sub) use ($activeSessionId) {
+
+                    $sub->where('session_id', $activeSessionId)
+                        ->where('call_done', 0);
+
+                });
+
+            });
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATE FILTER
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$request->range) {
+
+            if ($request->date_from) {
+
+                $query->whereHas('callLogs', function ($q) use ($request, $activeSessionId) {
+
+                    $q->where('session_id', $activeSessionId)
+                      ->whereDate('called_at', '>=', $request->date_from);
+
+                });
+
+            }
+
+            if ($request->date_to) {
+
+                $query->whereHas('callLogs', function ($q) use ($request, $activeSessionId) {
+
+                    $q->where('session_id', $activeSessionId)
+                      ->whereDate('called_at', '<=', $request->date_to);
+
+                });
+
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RANGE FILTER
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->range) {
+
+            $query->whereHas('callLogs', function ($q) use ($request, $activeSessionId) {
+
+                $q->where('session_id', $activeSessionId);
+
+                switch ($request->range) {
+
+                    case 'today':
+
+                        $q->whereDate('called_at', today());
+
+                        break;
+
+
+                    case 'yesterday':
+
+                        $q->whereDate('called_at', today()->subDay());
+
+                        break;
+
+
+                    case 'current_week_past':
+
+                        $q->whereBetween('called_at', [
+                            now()->startOfWeek(),
+                            now()
+                        ]);
+
+                        break;
+
+
+                    case 'last_week':
+
+                        $q->whereBetween('called_at', [
+                            now()->subWeek()->startOfWeek(),
+                            now()->subWeek()->endOfWeek()
+                        ]);
+
+                        break;
+
+
+                    case 'last_month':
+
+                        $q->whereBetween('called_at', [
+                            now()->subMonth()->startOfMonth(),
+                            now()->subMonth()->endOfMonth()
+                        ]);
+
+                        break;
+
+
+                    case 'last_30_days':
+
+                        $q->whereBetween('called_at', [
+                            now()->subDays(30),
+                            now()
+                        ]);
+
+                        break;
+                }
+
+            });
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STATUS SORTING
+        |--------------------------------------------------------------------------
+        | Status column = column 5
+        |--------------------------------------------------------------------------
+        */
+
+        if ((int) $request->input('order.0.column') === 5) {
+
+            $direction = strtolower(
+                $request->input('order.0.dir', 'asc')
+            ) === 'desc'
+                ? 'desc'
+                : 'asc';
+
+
+            $query->orderBy(
+                CollegeCallStatus::selectRaw(
+                    'COALESCE(MAX(call_done), 0)'
+                )
+                    ->whereColumn(
+                        'college_id',
+                        'colleges.id'
+                    )
+                    ->where(
+                        'session_id',
+                        $activeSessionId
+                    ),
+                $direction
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATATABLE RESPONSE
+        |--------------------------------------------------------------------------
+        */
+
+        return DataTablesServerSide::response(
+            $request,
+            $query,
+            [
+                'orderable'  => [],
+                'searchable' => ['college_name'],
+            ],
+            function ($college, $index, $start) use ($activeSessionId) {
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CALL COUNT
+                |--------------------------------------------------------------------------
+                */
+
+                $callCount = CallLog::where(
+                    'college_id',
+                    $college->id
+                )
+                    ->where(
+                        'session_id',
+                        $activeSessionId
+                    )
+                    ->count();
+
+
+                if ($callCount > 0) {
+
+                    $callCountHtml =
+                        '<a href="' .
+                        route(
+                            'admin.college-calls.logs',
+                            $college->id
+                        ) .
+                        '" target="_blank"
+                        class="text-primary fw-bold">' .
+                        $callCount .
+                        '</a>';
+
+                } else {
+
+                    $callCountHtml = 0;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CALLED TO
+                |--------------------------------------------------------------------------
+                */
+
+                $types = CallLog::where(
+                    'college_id',
+                    $college->id
+                )
+                    ->where(
+                        'session_id',
+                        $activeSessionId
+                    )
+                    ->select('type')
+                    ->distinct()
+                    ->pluck('type')
+                    ->toArray();
+
+
+                if (empty($types)) {
+
+                    $calledTo = '-';
+
+                } elseif (count($types) == 2) {
+
+                    $calledTo =
+                        '<span class="badge bg-info">
+                            Both
+                        </span>';
+
+                } else {
+
+                    $calledTo =
+                        '<span class="badge bg-primary">' .
+                        strtoupper($types[0]) .
+                        '</span>';
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | LATEST CALL STATUS
+                |--------------------------------------------------------------------------
+                */
+
+                $latest = CallLog::where(
+                    'college_id',
+                    $college->id
+                )
+                    ->where(
+                        'session_id',
+                        $activeSessionId
+                    )
+                    ->latest()
+                    ->first();
+
+
+                if (!$latest) {
+
+                    $status =
+                        '<span class="badge bg-secondary">
+                            Not Called
+                        </span>';
+
+                } else {
+
+                    $color =
+                        $latest->status == 'connected'
+                            ? 'success'
+                            : 'danger';
+
+                    $status =
+                        '<span class="badge bg-' .
+                        $color .
+                        '">' .
+                        ucfirst($latest->status) .
+                        '</span>';
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CHECKBOX
+                |--------------------------------------------------------------------------
+                */
+
+                $checkbox =
+                    '<input
+                        type="checkbox"
+                        class="record_checkbox"
+                        value="' . $college->id . '">';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | ACTIONS
+                |--------------------------------------------------------------------------
+                */
+
+                $failedCount = CallLog::where(
+                    'college_id',
+                    $college->id
+                )
+                    ->where(
+                        'session_id',
+                        $activeSessionId
+                    )
+                    ->where(
+                        'status',
+                        '!=',
+                        'connected'
+                    )
+                    ->count();
+
+
+                $totalCount = CallLog::where(
+                    'college_id',
+                    $college->id
+                )
+                    ->where(
+                        'session_id',
+                        $activeSessionId
+                    )
+                    ->count();
+
+
+                if ($failedCount > 0) {
+
+                    $actions = '
+                        <button
+                            class="btn btn-sm btn-warning retry-single"
+                            data-id="' . $college->id . '">
+
+                            Retry
+
+                        </button>
+                    ';
+
+                } elseif ($totalCount == 0) {
+
+                    $actions = '
+                        <button
+                            class="btn btn-sm btn-primary call-single"
+                            data-id="' . $college->id . '">
+
+                            Call
+
+                        </button>
+                    ';
+
+                } else {
+
+                    $actions = '
+                        <button
+                            class="btn btn-sm btn-primary call-single"
+                            data-id="' . $college->id . '">
+
+                            Call
+
+                        </button>
+                    ';
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | ROW NUMBER
+                |--------------------------------------------------------------------------
+                */
+
+                $rowNum = $start + $index + 1;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CALL DONE STATUS
+                |--------------------------------------------------------------------------
+                */
+
+                $callStatus = CollegeCallStatus::where(
+                    'college_id',
+                    $college->id
+                )
+                    ->where(
+                        'session_id',
+                        $activeSessionId
+                    )
+                    ->first();
+
+
+                if (
+                    $callStatus &&
+                    $callStatus->call_done
+                ) {
+
+                    $callDone =
+                        '<span class="badge bg-success">
+                            Called
+                        </span>';
+
+                } else {
+
+                    $callDone =
+                        '<span class="badge bg-secondary">
+                            Not Called
+                        </span>';
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | RETURN ROW
+                |--------------------------------------------------------------------------
+                */
+
+                return [
+
+                    $checkbox,
+
+                    $rowNum,
+
+                    e($college->full_name),
+
+                    $callCountHtml,
+
+                    $calledTo,
+
+                    $callDone,
+
+                    $actions
+
+                ];
+            }
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PAGE DATA
+    |--------------------------------------------------------------------------
+    */
+
+    $colleges = College::orderBy(
+        'college_name',
+        'asc'
+    )->get();
+
+
+    $states = State::orderBy(
+        'name'
+    )->get();
+
+
+    $districtsGrouped = District::with('state')
+        ->orderBy('name')
+        ->get()
+        ->groupBy('state_id');
+
+
+    return view(
+        'college_calls.index',
+        compact(
+            'colleges',
+            'states',
+            'districtsGrouped'
+        )
+    );
+}
+
+    public function index10oct(Request $request)
     {
         if ($request->ajax()) {
 

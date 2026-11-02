@@ -77,6 +77,32 @@
                         $issue_date = $letter->issue_date
                             ? \Carbon\Carbon::parse($letter->issue_date)->format('d M Y')
                             : '';
+
+                        $trainingStartDate = $letter->offer_training_start_date
+                            ? \Carbon\Carbon::parse($letter->offer_training_start_date)->format('d M Y')
+                            : '_________';
+
+                        $trainingDuration = filled($letter->offer_training_duration_months)
+                            ? $letter->offer_training_duration_months
+                            : '_________';
+
+                        $probationDuration = filled($letter->offer_probation_duration_months)
+                            ? $letter->offer_probation_duration_months
+                            : '_________';
+
+                        $workingHours = filled($letter->offer_working_hours)
+                            ? $letter->offer_working_hours
+                            : '_________';
+
+                         
+                        $annualSalary = filled($letter->offer_annual_salary)
+                            ? '₹' . (new \NumberFormatter('en_IN', \NumberFormatter::DECIMAL))
+                                ->format((float) $letter->offer_annual_salary)
+                            : '_________';
+
+                        $serviceAgreementDuration = filled($letter->offer_service_agreement_duration)
+                            ? $letter->offer_service_agreement_duration
+                            : '_________';
                 @endphp
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:35px;">
                 <tr>
@@ -131,10 +157,10 @@
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                 Your training period will commence from _______________.<br>
+                                 Your training period will commence from <b>{{ $trainingStartDate }}</b>.<br>
 
-                                Initial training duration will be ______ months.<br>
-                                After successful completion of training, a probation period of ______ months may be applicable.<br>
+                                Initial training duration will be <b>{{ $trainingDuration }} months</b>.<br>
+                                After successful completion of training, a probation period of <b>{{ $probationDuration }} months</b> may be applicable.<br>
                                 The company reserves the right to extend training or probation depending upon performance, discipline, attendance, project delivery, learning ability, and professional conduct.
                                 The training period is intended to evaluate technical skills, communication, teamwork, adaptability, discipline, and overall suitability for company projects.
                                 </td>
@@ -246,7 +272,7 @@
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
                                    Working Days: Monday to Saturday <br>
-                                    Working Hours: ______________________<br>
+                                    Working Hours: {{ $workingHours }}<br>
                                     Additional practical sessions, mock interviews, project discussions, or client meetings may be scheduled whenever required.<br>
                                     During training/probation, leave restrictions may apply depending upon project requirements and evaluation schedules.<br>
                                 </td>
@@ -320,7 +346,7 @@
                             </tr>
                         </table>
                         No stipend/salary shall be considered final until approved by HR and management after evaluation.<br>
-                         <b>Annual Package: ₹3,00,000 (Three Lakhs per Annum)</b>
+                         <b>Annual Package: {{ $annualSalary }}</b>
                     </td>
                 </tr>
                 <tr>
@@ -409,7 +435,7 @@
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
                                            
-                                You may be required to sign a Training and Service Agreement/Bond with the company for a minimum duration of ______ months/years after confirmation.<br>
+                                You may be required to sign a Training and Service Agreement/Bond with the company for a minimum duration of {{ ucwords($serviceAgreementDuration) }} after confirmation.<br>
 
                                 Terms related to service agreement, notice period, training cost recovery, or project commitments shall be governed by separate documentation wherever applicable.<br>
                                 </td>
@@ -486,66 +512,10 @@
                         </table>
                     </td>
                 </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>Declaration</b>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-                                <td style="font-size: 14px; line-height: 24px;">
-                                  Please sign and submit a copy of this letter as acceptance of the above terms and conditions.<br>
-
-                                We look forward to your contribution and professional association with Sortiq Solutions Pvt. Ltd.
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
+    
                 </table>
                 <pagebreak />
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;">
-                 
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        <b>Candidate Acceptance</b>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        
-                        <table width="100%" cellpadding="0" cellspacing="0">
-                            <tr>
-                                <td width="30"></td>
-                                <td style="font-size: 14px; line-height: 24px;">
-                                  I, <b>{{ ucwords($letter->student->student_name ?? '') }}</b>, have read and understood all the terms and conditions mentioned above and agree to comply with company policies.
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
             
-                <tr>
-                    <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                        Signature<br>
-                      <b> 
-                         Name: {{ ucwords($letter->student->student_name ?? '') }} <br>
-                        Signature: ___________________________<br>
-                        Date: {{ $letter->issue_date 
-                                    ? \Carbon\Carbon::parse($letter->issue_date)->format('d M Y') 
-                                    : \Carbon\Carbon::now()->format('d M Y') 
-                                }}<br>
-                        Place: Mohali<br>
-                    </td>
-                </tr>
-            </table>
               
             
            @include('student_letters_footer_logos.footer_content')

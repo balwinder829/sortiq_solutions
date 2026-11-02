@@ -15,7 +15,7 @@ class CollegeMistakeController extends Controller
         $this->middleware('permission:college_mistake.view')->only('index');
         $this->middleware('permission:college_mistake.create')->only(['create','store']);
         $this->middleware('permission:college_mistake.edit')->only(['edit','update']);
-        $this->middleware('permission:college_mistake.delete')->only('destroy');
+        $this->middleware('permission:college_mistake.delete')->only(['destroy', 'bulkDelete']);
     }
 
     public function index(Request $request)
@@ -64,12 +64,17 @@ class CollegeMistakeController extends Controller
 
             $actions  = '<a href="' . route('college-mistakes.edit', $mistake->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ';
 
-            $actions .= '<form action="' . route('college-mistakes.destroy', $mistake->id) . '" method="POST" style="display:inline-block;">'
-                . csrf_field()
-                . method_field('DELETE') .
-                '<button type="submit" class="btn btn-sm" title="Delete" data-swal-confirm="Are you sure?">
-                    <i class="fa fa-trash"></i>
-                </button>
+            $actions .= '<form action="' . route('college-mistakes.destroy', $mistake->id) . '"
+                    method="POST"
+                    style="display:inline-block;"
+                    class="mistake-delete-form">'
+                    . csrf_field()
+                    . method_field('DELETE') .
+                    '<button type="submit"
+                             class="btn btn-sm"
+                             title="Delete">
+                        <i class="fa fa-trash"></i>
+                    </button>
                 </form>';
 
             $website = '-';
@@ -81,6 +86,7 @@ class CollegeMistakeController extends Controller
             }
 
             return [
+                '<input type="checkbox" class="mistake-checkbox" value="' . $mistake->id . '">',
                 $start + $index + 1,
                 e($mistake->college_name),
                 e($mistake->contact_person),
@@ -148,5 +154,30 @@ class CollegeMistakeController extends Controller
         return redirect()
             ->route('college-mistakes.index')
             ->with('success', 'College mistake deleted successfully');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_filter(
+            array_map('intval', explode(',', $request->ids))
+        );
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No college mistakes selected.'
+            ], 422);
+        }
+
+        $count = CollegeMistake::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' college mistake' . ($count == 1 ? '' : 's') . ' deleted successfully.'
+        ]);
     }
 }

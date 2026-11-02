@@ -123,6 +123,11 @@ class EnquiryController extends Controller
         'types'  => ['registrations', 'enquiries'],
         'action' => 'view',
     ],
+
+    'bulkDelete' => [
+        'types'  => ['enquiries'],
+        'action' => 'delete',
+    ],
 ];
 
 public function __construct()
@@ -1605,4 +1610,28 @@ public function bulkMove(Request $request)
 
         return back()->with('success', 'Students marked as intern successfully.');
     }
+
+    public function bulkDelete(Request $request)
+{
+    $request->validate([
+        'ids'   => 'required|array|min:1',
+        'ids.*' => 'required|integer|distinct|exists:enquiries,id',
+    ]);
+
+    $enquiries = Enquiry::whereIn('id', $request->ids)->get();
+
+    if ($enquiries->isEmpty()) {
+        return response()->json([
+            'message' => 'No enquiries found to delete.',
+        ], 404);
+    }
+
+    foreach ($enquiries as $enquiry) {
+        $enquiry->delete(); // Soft delete
+    }
+
+    return response()->json([
+        'message' => $enquiries->count() . ' enquiry record(s) deleted successfully.',
+    ]);
+}
 }

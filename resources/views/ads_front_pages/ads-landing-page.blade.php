@@ -1310,11 +1310,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     </div>
 
-    @include('ads_front_pages.footer_address')
+    @include('ads_front_pages.footer_services_address')
     </div>
   </div>
 </section>
-<a href="https://wa.me/919855755683?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
+<a href="https://wa.me/9988092020?text=Hello%20SortIQ%20Solutions%2C%20I%20want%20more%20details."
    class="whatsapp-float"
    id="whatsappBtn"
    target="_blank">

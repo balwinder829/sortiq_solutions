@@ -34,6 +34,10 @@ use App\Exports\StudentsFeeTemplateExport;
 use App\Models\Placement;
 use App\Rules\NotBlockedNumber;
 use App\Models\BlockedNumber;
+use App\Models\InternStudent;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 
 class StudentController extends Controller
@@ -86,7 +90,7 @@ class StudentController extends Controller
     public function index(Request $request)
     {   
         $notificationMode = $request->notification ?? null;
-
+        $activeSessionId = session('admin_session_id');
         $query = Student::query();
         if ($notificationMode === 'registered_today') {
             $query->whereDate('created_at', today());
@@ -277,6 +281,8 @@ class StudentController extends Controller
                 $activeSessionId = session('admin_session_id');
                 $query->where('session', $activeSessionId);
             }
+
+            $query->where('session', $activeSessionId);
             
         }
         
@@ -2916,4 +2922,189 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
 
         return back()->with('success', $message);
     }
+
+    public function clearDues(Request $request)
+    {
+        $ids = json_decode($request->ids, true);
+
+        if (!is_array($ids) || empty($ids)) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $students = Student::whereIn('id', $ids)
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($students as $student) {
+                $pendingFee = (float) ($student->pending_fees ?? 0);
+
+                if ($pendingFee > 0) {
+                    $student->paid_fees =
+                        (float) ($student->paid_fees ?? 0) + $pendingFee;
+
+                    $student->pending_fees = 0;
+
+                    $student->save();
+                }
+            }
+
+            DB::commit();
+
+            return back()->with(
+                'success',
+                'Dues cleared successfully for selected students.'
+            );
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return back()->with(
+                'error',
+                'Unable to clear dues. Please try again.'
+            );
+        }
+    }
+
+
+    public function moveToIntern(Request $request)
+    {
+        $validated = $request->validate([
+            'student_id' => ['nullable', 'integer', 'min:1'],
+            'ids'        => ['nullable'],
+        ]);
+
+        // Support a single student or multiple selected students.
+        $ids = [];
+
+        if (!empty($validated['student_id'])) {
+            $ids[] = (int) $validated['student_id'];
+        }
+
+        if ($request->filled('ids')) {
+            $submittedIds = $request->input('ids');
+
+            if (is_string($submittedIds)) {
+                $submittedIds = json_decode($submittedIds, true);
+            }
+
+            if (!is_array($submittedIds)) {
+                return back()->with('error', 'Invalid student selection.');
+            }
+
+            $ids = array_merge($ids, array_map('intval', $submittedIds));
+        }
+
+        $ids = array_values(array_unique(array_filter($ids)));
+
+        if (empty($ids) || count($ids) > 200) {
+            return back()->with('error', 'Select between 1 and 200 students.');
+        }
+
+        try {
+            $count = DB::transaction(function () use ($ids) {
+                $students = Student::whereIn('id', $ids)
+                    ->lockForUpdate()
+                    ->get();
+
+                if ($students->count() !== count($ids)) {
+                    throw new \RuntimeException(
+                        'One or more students were not found.'
+                    );
+                }
+
+                $destinationColumns = Schema::getColumnListing(
+                    'intern_students'
+                );
+
+                if (!in_array('source_student_id', $destinationColumns, true)) {
+                    throw new \RuntimeException(
+                        'The source_student_id column is missing from intern_students.'
+                    );
+                }
+
+                foreach ($students as $student) {
+                    if ((bool) $student->moved_to_intern) {
+                        throw new \RuntimeException(
+                            "Student ID {$student->id} is already marked as moved."
+                        );
+                    }
+
+                    $alreadyTransferred = InternStudent::withTrashed()
+                        ->where('source_student_id', $student->id)
+                        ->exists();
+
+                    if ($alreadyTransferred) {
+                        throw new \RuntimeException(
+                            "Student ID {$student->id} already exists in Intern Students."
+                        );
+                    }
+
+                    // Use raw stored values rather than accessor-modified values.
+                    $data = collect($student->getAttributes())
+                        ->except([
+                            'id',
+                            'deleted_at',
+                            'password',
+                            'plain_password',
+                            'remember_token',
+                            'last_login',
+                            'total_fees',
+                            'reg_fees',
+                            'paid_fees',
+                            'pending_fees',
+                            'next_due_date',
+                            'reg_due_amount',
+                            'due_date',
+                            'moved_to_intern',
+                        ])
+                        ->all();
+
+                    $data = array_intersect_key(
+                        $data,
+                        array_flip($destinationColumns)
+                    );
+
+                    $data['source_student_id'] = $student->id;
+
+                    if (in_array('created_at', $destinationColumns, true)) {
+                        $data['created_at'] = now();
+                    }
+
+                    if (in_array('updated_at', $destinationColumns, true)) {
+                        $data['updated_at'] = now();
+                    }
+
+                    // Create the intern record first.
+                    InternStudent::create($data);
+
+                    // Mark the original record and soft-delete it.
+                    $student->moved_to_intern = true;
+                    $student->save();
+                    $student->delete();
+                }
+
+                return $students->count();
+            });
+
+            return back()->with(
+                'success',
+                "{$count} student(s) moved to Intern Students successfully."
+            );
+
+        } catch (Throwable $e) {
+            Log::error('Move student to intern failed.', [
+                'ids' => $ids,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with(
+                'error',
+                'Transfer failed. No partial transfer was committed. Check the application log.'
+            );
+        }
+    }
+
 }

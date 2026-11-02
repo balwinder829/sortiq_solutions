@@ -713,7 +713,18 @@ class StudentCustomLetterController extends Controller
             );
     }
     
-    
+    public function preview(StudentCustomLetter $studentCustomLetter)
+    {
+        $pdfContent = $this->pdf($studentCustomLetter);
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header(
+                'Content-Disposition',
+                'inline; filename="student-letter-preview.pdf"'
+            );
+    }
+
     public function destroy(StudentCustomLetter $student_custom_letter)
     {
         $student_custom_letter->delete();

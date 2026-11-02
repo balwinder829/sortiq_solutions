@@ -118,6 +118,14 @@
                         <i class="fas fa-edit"></i>
                     </a>
 
+                     {{-- Preview --}}
+                    <a href="{{ route('student-custom-letters.preview', $letter) }}"
+                       target="_blank"
+                       class="btn btn-sm"
+                       title="Preview">
+                        <i class="fas fa-eye"></i>
+                    </a>
+
                     <a href="{{ route('student-custom-letters.download', $letter) }}" class="btn btn-sm">
                         <i class="fas fa-download"></i>
                     </a>

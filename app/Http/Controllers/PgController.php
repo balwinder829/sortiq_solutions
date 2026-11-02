@@ -28,6 +28,7 @@ class PgController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete'   => 'delete',
         
         'import'      => 'import',
         'importForm'      => 'import',
@@ -259,5 +260,32 @@ class PgController extends Controller
             new PgExport($request),
             'pgs.xlsx'
         );
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_filter(
+            array_map('intval', explode(',', $request->ids))
+        );
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No PGs selected.'
+            ], 422);
+        }
+
+        $count = Pg::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' PG' .
+                ($count == 1 ? '' : 's') .
+                ' deleted successfully.',
+        ]);
     }
 }

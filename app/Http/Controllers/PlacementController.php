@@ -34,6 +34,7 @@ class PlacementController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete'   => 'delete',
 
         // 'bulkDelete'      => 'delete',
     ];
@@ -171,6 +172,8 @@ class PlacementController extends Controller
                     : '<span class="text-muted">No Image</span>';
 
                 return [
+                    'checkbox' => '<input type="checkbox" class="placement-checkbox" value="' . $row->id . '">',
+
                     'id' => $start + $index + 1,
 
                     'student' => e($row->student_name),
@@ -194,9 +197,9 @@ class PlacementController extends Controller
                         <a href="'.route('placements.edit', $row->id).'" class="btn btn-sm">
                             <i class="fa fa-edit"></i>
                         </a>
-                        <form action="'.route('placements.destroy', $row->id).'" method="POST" style="display:inline-block;">
+                        <form action="'.route('placements.destroy', $row->id).'" method="POST" style="display:inline-block;" class="placement-delete-form">
                             '.csrf_field().method_field('DELETE').'
-                            <button type="submit" class="btn btn-sm" onclick="return confirm(\'Delete this?\')">
+                            <button type="submit" class="btn btn-sm ">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </form>
@@ -221,41 +224,7 @@ class PlacementController extends Controller
         'companies'
     ));
 }
-    public function index1(Request $request)
-{
-    $placements = Placement::query()
-        ->when($request->college_id, fn ($q) =>
-            $q->where('college_name', $request->college_id)
-        )
-        ->when($request->state_id, fn ($q) =>
-            $q->where('state_id', $request->state_id)
-        )
-        ->when($request->location, fn ($q) =>
-            $q->where('location', 'LIKE', '%' . $request->location . '%')
-        )
-        ->when($request->tech, fn ($q) =>
-            $q->where('tech', 'LIKE', '%' . $request->tech . '%')
-        )
-        ->when($request->session_id, fn ($q) =>
-            $q->where('session_id', $request->session_id)
-        )
-        ->latest()
-        ->get();
-
-    $sessions = StudentSession::orderBy('session_name')->get();
-    $colleges = College::with(['state','district'])->orderBy('college_name')->get();
-    $states   = State::orderBy('name')->get();
-    $courses   = StudentCourse::orderBy('course_name')->get();
-
-    return view('placements.index', compact(
-        'placements',
-        'sessions',
-        'colleges',
-        'courses',
-        'states'
-    ));
-}
-
+     
 
     /* ============================================================
        CREATE
@@ -582,5 +551,32 @@ class PlacementController extends Controller
         ]);
 
         return response()->json(['success' => true]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_filter(
+            array_map('intval', explode(',', $request->ids))
+        );
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No placements selected.'
+            ], 422);
+        }
+
+        $count = Placement::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' placement' .
+                ($count == 1 ? '' : 's') .
+                ' deleted successfully.',
+        ]);
     }
 }

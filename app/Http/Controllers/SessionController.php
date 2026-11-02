@@ -244,13 +244,18 @@ public function update(Request $request, StudentSession $session)
     );
 }
 
-public function exportColleges($sessionId)
+public function exportColleges(Request $request, $sessionId)
 {
     $session = StudentSession::withoutGlobalScope('normalSession')
         ->findOrFail($sessionId);
 
+    $search = trim($request->get('search', ''));
+
     return Excel::download(
-        new SessionCollegesExport($session->id),
+        new SessionCollegesExport(
+            $session->id,
+            $search
+        ),
         'colleges_' . $session->session_name . '.xlsx'
     );
 }
@@ -355,6 +360,75 @@ public function csvexportColleges(StudentSession $session)
 
     return response()->stream($callback, 200, $headers);
 }
+public function colleges(Request $request, $sessionId)
+{
+    $session = StudentSession::withoutGlobalScope('normalSession')
+        ->findOrFail($sessionId);
 
+    $search = trim($request->get('search', ''));
+
+    $colleges = Student::query()
+    ->where('session', $session->id)
+    ->whereNull('deleted_at')
+    ->whereNotNull('college_name')
+    ->with([
+        'collegeData' => function ($query) {
+            $query->withTrashed()
+                ->with(['state', 'district']);
+        }
+    ])
+    ->when($search !== '', function ($query) use ($search) {
+        $query->whereHas('collegeData', function ($q) use ($search) {
+            $q->withTrashed()
+              ->where('college_name', 'like', '%' . $search . '%');
+        });
+    })
+    ->select('college_name')
+    ->selectRaw('COUNT(*) AS students_count')
+    ->groupBy('college_name')
+    ->orderByDesc('students_count')
+    ->get();
+
+    return view('sessions.colleges', compact(
+        'session',
+        'colleges',
+        'search'
+    ));
+}
+public function ascolleges(Request $request, $sessionId)
+{
+    $session = StudentSession::withoutGlobalScope('normalSession')
+        ->findOrFail($sessionId);
+
+    $search = trim($request->get('search', ''));
+
+    $colleges = Student::query()
+        ->where('session', $session->id)
+        ->whereNotNull('college_name')
+        ->where('college_name', '!=', '')
+        ->with([
+            'collegeData' => function ($query) {
+                $query->withTrashed();
+            },
+            'collegeData.state',
+            'collegeData.district',
+        ])
+        ->when($search !== '', function ($query) use ($search) {
+            $query->whereHas('collegeData', function ($q) use ($search) {
+                $q->where('college_name', 'like', '%' . $search . '%');
+            });
+        })
+        ->select('college_name')
+        ->selectRaw('COUNT(*) as students_count')
+        ->groupBy('college_name')
+        ->orderByDesc('students_count')
+        ->get();
+
+    return view('sessions.colleges', compact(
+        'session',
+        'colleges',
+        'search'
+    ));
+}
 
 }

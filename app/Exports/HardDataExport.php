@@ -18,7 +18,7 @@ class HardDataExport implements FromCollection, WithHeadings, WithMapping, Shoul
     public function __construct(Request $request)
     {
         $this->request = $request;
-        $this->sessionId = session('admin_session_id');
+        $this->sessionId = session('admin_header_session_id', session('admin_session_id'));
     }
 
     public function collection()
@@ -35,8 +35,8 @@ class HardDataExport implements FromCollection, WithHeadings, WithMapping, Shoul
         // EXISTING FILTERS
         // -------------------------------------------------
 
-        if ($this->request->college_id) {
-            $query->where('college_id', $this->request->college_id);
+        if ($this->request->filled('college_name')) {
+            $query->where('hard_data.college_name', trim($this->request->input('college_name')));
         }
 
         if ($this->request->state_id) {
@@ -192,10 +192,53 @@ class HardDataExport implements FromCollection, WithHeadings, WithMapping, Shoul
                     );
 
                     break;
+
+                case 'this_week':
+
+                    $query->whereBetween('created_at', [
+                        now()->startOfWeek()->startOfDay(),
+                        now()->endOfWeek()->endOfDay()
+                    ]);
+
+                    break;
+
+                case 'last_week':
+
+                    $query->whereBetween('created_at', [
+                        now()->subWeek()->startOfWeek()->startOfDay(),
+                        now()->subWeek()->endOfWeek()->endOfDay()
+                    ]);
+
+                    break;
             }
         }
 
+        // CUSTOM DATE FILTER
+if (
+    $this->request->filled('from_date') ||
+    $this->request->filled('to_date')
+) {
 
+    if ($this->request->filled('from_date')) {
+
+        $query->whereDate(
+            'created_at',
+            '>=',
+            $this->request->from_date
+        );
+
+    }
+
+    if ($this->request->filled('to_date')) {
+
+        $query->whereDate(
+            'created_at',
+            '<=',
+            $this->request->to_date
+        );
+
+    }
+}
         // =================================================
         // EXPORT EXCLUSION RULES
         // =================================================
@@ -348,6 +391,20 @@ class HardDataExport implements FromCollection, WithHeadings, WithMapping, Shoul
         return $query
             ->orderBy('id', 'desc')
             ->get();
+
+        // $beforeExclusions = (clone $query)->get([
+        //     'id',
+        //     'student_name',
+        //     'student_mobile',
+        //     'created_at',
+        //     'session_id'
+        // ]);
+
+        //    dd([
+        //     'request' => $this->request->all(),
+        //     'records_before_exclusions' => $beforeExclusions,
+        //     'records_after_exclusions' => $as,
+        // ]);
     }
 
     public function collection_old()
@@ -357,8 +414,8 @@ class HardDataExport implements FromCollection, WithHeadings, WithMapping, Shoul
 
         // SAME FILTERS AS CONTROLLER
 
-        if ($this->request->college_id) {
-            $query->where('college_id', $this->request->college_id);
+        if ($this->request->filled('college_name')) {
+            $query->where('hard_data.college_name', trim($this->request->input('college_name')));
         }
 
         if ($this->request->state_id) {
@@ -468,7 +525,7 @@ class HardDataExport implements FromCollection, WithHeadings, WithMapping, Shoul
         return [
             $data->id,
             $data->student_name,
-            $data->college->FullName ?? '',
+            $data->college_name ?: ($data->college->FullName ?? ''),
             $data->student_email,
             $data->student_mobile,
             $data->class,

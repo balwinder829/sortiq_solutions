@@ -4,6 +4,25 @@
 
 <div class="container my-5">
     <h2 class="mb-4 text-center">Enter Your Details to Access Test</h2>
+    @php
+    $displayAvailabilityMessage = session('availability_message')
+        ?? ($availabilityMessage ?? null);
+        @endphp
+
+        @if ($displayAvailabilityMessage)
+            <div class="alert alert-warning text-center" role="alert">
+                <strong>{{ $displayAvailabilityMessage }}</strong>
+
+                @if (
+                    $displayAvailabilityMessage ===
+                    'Test has not been started by the admin yet.'
+                )
+                    <p class="mb-0 mt-2">
+                        This page will refresh automatically every 60 seconds.
+                    </p>
+                @endif
+            </div>
+        @endif
 
 <div class="row justify-content-center">
     <div class="col-md-6">
@@ -77,7 +96,11 @@
                 <select name="semester" id="semesterField" class="form-control"></select>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">
+            <button
+                type="submit"
+                id="startTestButton"
+                class="btn btn-primary w-100"
+                {{ !($canStart ?? false) ? 'disabled' : '' }}>
                 Start Test
             </button>
         </form>
@@ -109,19 +132,19 @@ const courseData = {
     Degree: {
         courses: {
             "BCA": {
-                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical"],
+                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical","Management"],
                 semesters: 8
             },
             "MCA": {
-                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical"],
+                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical","Management"],
                 semesters: 8
             },
             "BSc IT": {
-                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical"],
+                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical","Management"],
                 semesters: 8
             },
             "B.Tech": {
-                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical"],
+                branches: ["Computer Science", "IT", "Mechanical", "Civil", "Electrical","Management"],
                 semesters: 8
             }
         }
@@ -129,7 +152,7 @@ const courseData = {
     Diploma: {
         courses: {
             "Polytechnic": {
-                branches: ["Computer Engineering", "IT", "Mechanical", "Civil", "Electrical"],
+                branches: ["Computer Engineering", "IT", "Mechanical", "Civil", "Electrical","Management"],
                 semesters: 8
             }
         }
@@ -219,4 +242,15 @@ document.querySelector('form').addEventListener('submit', function () {
 
 });
 </script>
+
+@if (
+    ($displayAvailabilityMessage ?? null) ===
+    'Test has not been started by the admin yet.'
+)
+    <script>
+        setTimeout(function () {
+            window.location.reload();
+        }, 60000);
+    </script>
+@endif
 @endsection

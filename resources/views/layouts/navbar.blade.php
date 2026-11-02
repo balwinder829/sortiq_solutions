@@ -402,7 +402,7 @@ body.menu-toggle .sidebar-collapse-btn{
                 </li>
 
                 {{-- Colleges --}}
-                <li class="{{ isParent(['colleges*','mous*', 'hods*']) }}">
+                <li class="{{ isParent(['colleges*','mous*', 'hods*','admin.final-students.*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                          <i class="fas fa-university"></i>
                         <span class="nav-text">Colleges</span>
@@ -442,18 +442,24 @@ body.menu-toggle .sidebar-collapse-btn{
 
                         {{-- College Exams --}}
                             <li class="{{ 
-                                (isParent(['tests.*','test-categories.*'])|| request()->is('admin/questions*')  || request()->is('admin/tests*')) 
+                                (isParent(['tests.*','test-categories.*','attendance-test-options*','admin.final-students.*'])|| request()->is('admin/questions*')  || request()->is('admin/tests*')) 
                                 ? 'mm-active' : '' 
                             }}">
                                 <a class="has-arrow" href="javascript:void(0)">
                                     <i class="fas fa-pen-to-square"></i>
                                     <span class="nav-text">College Exams</span>
                                 </a>
-                                <ul class="{{ showSubmenu(['tests*','test-categories.*']) ||  request()->is('admin/tests*')  }}">
+                                <ul class="{{ showSubmenu(['tests*','test-categories.*','attendance-test-options*']) ||  request()->is('admin/tests*')  }}">
                                     <li>
                                         <a class="{{ isChildActive('test-categories.*') }}"
                                             href="{{ route('test-categories.index') }}">
                                             Exam Category
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="{{ isChildActive('attendance-test-options.*') }}"
+                                            href="{{ route('admin.attendance-test-options.index') }}">
+                                            Non Coding
                                         </a>
                                     </li>
                                     <li>
@@ -462,10 +468,36 @@ body.menu-toggle .sidebar-collapse-btn{
                                             Online Exams
                                         </a>
                                     </li>
+                                    <li>
+                                        <a class="{{ request()->is('admin/technical-round*') ? 'mm-active' : '' }}"
+                                           href="{{ route('admin.technical-round.index') }}">
+                                            Technical Round
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="{{ request()->is('admin/machine-round*') ? 'mm-active' : '' }}"
+                                           href="{{ route('admin.machine-round.index') }}">
+                                            Machine Round
+                                        </a>
+                                    </li>
+
+                                    @php
+                                        $isFinalStudentsActive =
+                                            request()->routeIs('admin.final-students.*') ||
+                                            request()->is('admin/final-students*');
+                                    @endphp
+
+                                    <li class="{{ $isFinalStudentsActive ? 'mm-active' : '' }}">
+                                        <a class="{{ $isFinalStudentsActive ? 'mm-active' : '' }}"
+                                           href="{{ route('admin.final-students.index') }}">
+                                            Final Students
+                                        </a>
+                                    </li>
                                    
                                      <li class="{{ request()->routeIs('admin.external-attendance.*') ? 'mm-active' : '' }}">
                                         <a href="{{ route('admin.external-attendance.index') }}">
-                                            Attendance Form
+                                            Attendance
                                         </a>
                                     </li>
 
@@ -715,6 +747,13 @@ body.menu-toggle .sidebar-collapse-btn{
                                 <span class="nav-text">Students Certifications</span>
                             </a>
                              
+                        </li>
+
+                        <li class="{{ request()->routeIs('intern-students.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('intern-students.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Intern Students
+                            </a>
                         </li>
 
                         {{-- Close Student --}}
@@ -1413,12 +1452,12 @@ body.menu-toggle .sidebar-collapse-btn{
                 </li>
 
                  {{-- Finance --}}
-                <li class="{{ isParent(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*','office-paper-expenses*','tea-pantry-expenses*','office-cleaning-expenses*','office-accessories-expenses*','office-cleaning-expenses*','office-accessories-expenses*']) }}">
+                <li class="{{ isParent(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*','office-paper-expenses*','tea-pantry-expenses*','office-cleaning-expenses*','office-accessories-expenses*','office-cleaning-expenses*','office-accessories-expenses*','sims*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
                         <i class="fas fa-coins"></i>
                         <span class="nav-text">Finance Management</span>
                     </a>
-                    <ul class="{{ showSubmenu(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*','office-paper-expenses*','tea-pantry-expenses*','office-cleaning-expenses*','office-accessories-expenses*','office-cleaning-expenses*','office-accessories-expenses*']) }}">
+                    <ul class="{{ showSubmenu(['office-expenses*','pantry-expenses*','event-expenses*','travel-expenses*','office-assets*','recharges*','visiting-cards*','office-paper-expenses*','tea-pantry-expenses*','office-cleaning-expenses*','office-accessories-expenses*','office-cleaning-expenses*','office-accessories-expenses*','sims*']) }}">
                         <li>
                             <a class="{{ isChildActive('office-expenses*') }}"
                                href="{{ route('office-expenses.index') }}">
@@ -1503,6 +1542,13 @@ body.menu-toggle .sidebar-collapse-btn{
                             <a href="{{ route('visiting-cards.index') }}">
                                 <!-- <i class="fa-regular fa-file-lines"></i> -->
                                 <span class="nav-text">Visiting Cards</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ isChildActive('sims*') }}"
+                               href="{{ route('sims.index') }}">
+                                <!-- <i class="fas fa-file-invoice-dollar me-2"></i> -->
+                                Sims
                             </a>
                         </li>
 
@@ -1709,7 +1755,7 @@ body.menu-toggle .sidebar-collapse-btn{
 
                         @endcanany 
 
-                    @canany(['colleges.view','mous.view','hods.view','tests.view','offline_tests.view','test_categories.view','external_attendance.view','test_analytics.view'])
+                    @canany(['colleges.view','mous.view','hods.view','tests.view','offline_tests.view','test_categories.view','external_attendance.view','test_analytics.view','student_test_technical.view','student_test_machine_round.view','student_final_students.view'])
                         {{-- Colleges --}}
 
                         <li class="{{ isParent(['colleges*','mous*', 'hods*','tests*']) }}">
@@ -1745,7 +1791,7 @@ body.menu-toggle .sidebar-collapse-btn{
                                     </a>
                                 </li>
                                 @endcan  
-                                 @canany(['tests.view','offline_tests.view','test_categories.view','external_attendance.view','test_analytics.view'])
+                                 @canany(['tests.view','offline_tests.view','test_categories.view','external_attendance.view','test_analytics.view','student_test_technical.view','student_test_machine_round.view','student_final_students.view'])
                                 <li class="{{ isParent(['tests.*','admin.offline-tests*','test-categories.*']) }}">
                                     <a class="has-arrow" href="javascript:void(0)">
                                         <i class="fas fa-pen-to-square"></i>
@@ -1760,7 +1806,14 @@ body.menu-toggle .sidebar-collapse-btn{
                                                 Exam Category
                                             </a>
                                         </li>
-                                        @endcan   
+                                        @endcan  
+
+                                        <li>
+                                            <a class="{{ isChildActive('attendance-test-options.*') }}"
+                                                href="{{ route('admin.attendance-test-options.index') }}">
+                                                Non Coding
+                                            </a>
+                                        </li> 
                                         
                                         @can('tests.view')
                                         <li>
@@ -1770,10 +1823,43 @@ body.menu-toggle .sidebar-collapse-btn{
                                             </a>
                                         </li>
                                         @endcan
+
+                                        @can('student_test_technical.view')
+                                        <li>
+                                        <a class="{{ request()->is('admin/technical-round*') ? 'mm-active' : '' }}"
+                                           href="{{ route('admin.technical-round.index') }}">
+                                            Technical Round
+                                        </a>
+                                    </li>
+                                    @endcan
+                                    @can('student_test_machine_round.view')
+                                    <li>
+                                        <a class="{{ request()->is('admin/machine-round*') ? 'mm-active' : '' }}"
+                                           href="{{ route('admin.machine-round.index') }}">
+                                            Machine Round
+                                        </a>
+                                    </li>
+                                    @endcan
+
+                                    @php
+                                        $isFinalStudentsActive =
+                                            request()->routeIs('admin.final-students.*') ||
+                                            request()->is('admin/final-students*');
+                                    @endphp
+                                    @can('student_final_students.view')
+                                    
+                                    <li class="{{ $isFinalStudentsActive ? 'mm-active' : '' }}">
+                                        <a class="{{ $isFinalStudentsActive ? 'mm-active' : '' }}"
+                                           href="{{ route('admin.final-students.index') }}">
+                                            Final Students
+                                        </a>
+                                    </li>
+                                    @endcan
+
                                         @can('external_attendance.view')
                                         <li class="{{ request()->routeIs('admin.external-attendance.*') ? 'mm-active' : '' }}">
                                             <a href="{{ route('admin.external-attendance.index') }}">
-                                                Attendance Form
+                                                Attendance
                                             </a>
                                         </li>
                                         @endcan

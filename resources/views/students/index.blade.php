@@ -796,7 +796,8 @@ Copy to Session
 
 <tr class="{{ $rowClass }}">
 <td><input type="checkbox" class="record_checked" value="{{ $student->id }}" data-email="{{ $student->email_count_confirmation }}"
-       data-receipt="{{ $student->count_receipt_download }}" data-pending_fees="{{ $student->pending_fees }}"></td>
+       data-receipt="{{ $student->count_receipt_download }}" data-pending_fees="{{ $student->pending_fees }}" data-name="{{ $student->student_name }}"
+data-contact="{{ $student->contact }}"></td>
                 <td></td>
                 <td>{{ $student->sno }}</td>
                 <td>{{ $student->student_name }}</td>
@@ -1212,11 +1213,35 @@ Copy to Session
     <button id="markCertificateNotSent" class="btn btn-secondary">Mark Confirmaton Not Sent</button>
     <button id="editBulkStudents" class="btn btn-secondary">Edit Students</button>
     <button id="blockSelected" class="btn btn-danger">Block Numbers</button>
-
+    <button id="clearStudentDues" class="btn btn-warning">Clear Pending Fee</button>
+    <button id="moveToInternStudents" class="btn btn-success">Move to Intern Students</button>
+    <button type="button"
+        id="sendWhatsAppNotification"
+        class="btn btn-success">
+    <i class="fab fa-whatsapp"></i> Send WhatsApp Notification
+</button>
 
 </div>
 
 </div>
+
+
+{{-- Move selected students to Intern Students --}}
+<form id="bulkMoveToInternForm"
+      method="POST"
+      action="{{ route('students.moveToIntern') }}"
+      style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkMoveToInternIds">
+</form>
+
+<form id="clearDuesForm"
+      method="POST"
+      action="{{ route('students.clearDues') }}"
+      style="display: none;">
+    @csrf
+    <input type="hidden" name="ids" id="clearDuesIds">
+</form>
 
 {{-- Block selected student numbers --}}
 <form id="bulkBlockForm"
@@ -1572,93 +1597,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
-
-<!-- <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    const slider = document.getElementById('amountSlider');
-    const feeFilter = document.querySelector('select[name="fee_filter"]');
-
-    const minInput = document.getElementById('amountMin');
-    const maxInput = document.getElementById('amountMax');
-    const minText  = document.getElementById('amountMinText');
-    const maxText  = document.getElementById('amountMaxText');
-
-    const startMin = Number(minInput.value || 0);
-    const startMax = Number(maxInput.value || 200000);
-
-    // noUiSlider.create(slider, {
-    //     start: [startMin, startMax],
-    //     connect: true,
-    //     step: 1,
-    //     range: {
-    //         min: 0,
-    //         max: 200000
-    //     }
-    // });
-
-    noUiSlider.create(slider, {
-        start: [startMin, startMax],
-        connect: true,
-        step: 1,          // move 1 by 1
-        // snap: true,       // lock to integers
-         behaviour: 'tap',
-        range: {
-            min: 0,
-            max: 200000
-        },
-        format: {
-            to: value => Math.round(value),
-            from: value => Number(value)
-        }
-    });
-
-
-    slider.noUiSlider.on('update', function (values) {
-        minInput.value = Math.round(values[0]);
-        maxInput.value = Math.round(values[1]);
-
-        minText.textContent = values[0];
-        maxText.textContent = values[1];
-    });
-
-    /**
-     * ✅ Enable slider ONLY for these fee_filter values
-     */
-    const amountEnabledFilters = [
-        'pending_high',
-        'pending_low',
-        'fees_high',
-        'fees_low'
-    ];
-
-    function toggleSlider() {
-        const value = feeFilter.value;
-
-        slider.noUiSlider.enable(); // always draggable
-
-        slider.style.opacity = amountEnabledFilters.includes(value)
-            ? 1
-            : 0.6;
-    }
-
-    // function toggleSlider() {
-    //     const value = feeFilter.value;
-
-    //     if (amountEnabledFilters.includes(value)) {
-    //         slider.noUiSlider.enable();
-    //         slider.style.opacity = 1;
-    //     } else {
-    //         slider.noUiSlider.disable();
-    //         slider.style.opacity = 0.4;
-    //     }
-    // }
-
-    feeFilter.addEventListener('change', toggleSlider);
-    toggleSlider(); // run on page load
-});
-</script>
- -->
+ 
 
 <script>
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -1719,35 +1658,11 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
                 orderable: false
             }
         ]
-//         "rowCallback": function(row, data) {
-
-//     let nextDueDate = data[14];
-//     let today = new Date().toISOString().slice(0,10);
-
-//     if (nextDueDate && nextDueDate !== "-") {
-
-//         let parts = nextDueDate.split("-");
-//         let mysqlFormat = parts[2] + '-' + parts[1] + '-' + parts[0];
-
-//         if (mysqlFormat < today) {
-//             $('td', row).css('background-color', '#ffe5e5');  // RED
-//         } 
-//         else if (mysqlFormat === today) {
-//             $('td', row).css('background-color', '#fff3cd');  // YELLOW
-//         }
-//     }
-// }
+ 
 
     });
 
-    // ✅ Dynamic serial number
-// table.on('draw.dt', function () {
-//     var PageInfo = table.page.info();
-
-//     table.column(1, { page: 'current' }).nodes().each(function (cell, i) {
-//         cell.innerHTML = PageInfo.start + i + 1;
-//     });
-// }).draw();
+    
 
 
      // ✅ Save page whenever page changes
@@ -1757,30 +1672,7 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
             table.page()
         );
     });
-
-// =====================================
-// Restore checked records after redraw
-// =====================================
-// table.on('draw.dt', function () {
-
-//     $('.record_checked').each(function () {
-
-//         let id = $(this).val();
-
-//         if (selectedStudents.includes(id)) {
-//             $(this).prop('checked', true);
-//         }
-
-//     });
-
-//     // Update Check All status
-//     let total = $('.record_checked:not(:disabled)').length;
-//     let checked = $('.record_checked:checked').length;
-
-//     $('#checkAll').prop('checked', total > 0 && total === checked);
-
-// });
-
+ 
 // 27 july start
 
     function syncCheckAll() {
@@ -1828,87 +1720,8 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
     });
 
     $('#studentsTable').on('change', '.record_checked', syncCheckAll);
-// 27 july end
-
-
-
-    // $('#checkAll').on('change', function () {
-    //     const checked = this.checked;
-
-    //     $('.record_checked').each(function () {
-    //         if (this.disabled) {
-    //             this.checked = false; // FORCE UNCHECK
-    //         } else {
-    //             this.checked = checked;
-    //         }
-    //     });
-    // });
-
-    // $('#checkAll').on('change', function () {
-
-    //     const checked = this.checked;
-
-    //     $('.record_checked').each(function () {
-
-    //         if (this.disabled) {
-    //             this.checked = false;
-    //             return;
-    //         }
-
-    //         let id = $(this).val();
-
-    //         $(this).prop('checked', checked);
-
-    //         if (checked) {
-
-    //             if (!selectedStudents.includes(id)) {
-    //                 selectedStudents.push(id);
-    //             }
-
-    //         } else {
-
-    //             selectedStudents = selectedStudents.filter(x => x != id);
-
-    //         }
-
-    //     });
-
-    // });
-
-    // ==================================
-    // Individual checkbox
-    // ==================================
-    // $(document).on('change', '.record_checked', function () {
-
-    //     let id = $(this).val();
-
-    //     if ($(this).is(':checked')) {
-
-    //         if (!selectedStudents.includes(id)) {
-    //             selectedStudents.push(id);
-    //         }
-
-    //     } else {
-
-    //         selectedStudents = selectedStudents.filter(x => x != id);
-
-    //     }
-
-    // });
-
-    // Get selected IDs
-    // function getSelectedIds() {
-
-    //     var ids = [];
-    //     $('.record_checked:checked').each(function() {
-    //         selectedStudents.push($(this).val());
-    //         // selectedStudents.push(id);
-    //     });
-    //     // return [...new Set(selectedStudents)];
-    //     return selectedStudents;
-    //     return ids;
-    // }
-
+ 
+ 
     function getSelectedIds() {
 
         $('.record_checked:checked').each(function() {
@@ -1928,6 +1741,338 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
     //     return selectedStudents;
     // }
 
+
+    // =========================
+    // WhatsApp Notifications
+    // =========================
+
+    // $('#sendWhatsAppNotification').on('click', function () {
+
+    //     // Get selected students from all DataTable pages
+    //     const selectedForWhatsApp = [];
+
+    //     table.$('.record_checked:checked').each(function () {
+    //         selectedForWhatsApp.push({
+    //             id: $(this).val(),
+    //             name: $(this).attr('data-name') || '',
+    //             contact: $(this).attr('data-contact') || ''
+    //         });
+    //     });
+
+    //     // No students selected
+    //     if (selectedForWhatsApp.length === 0) {
+    //         Swal.fire({
+    //             icon: 'warning',
+    //             title: 'No Students Selected',
+    //             text: 'Please select at least one student.'
+    //         });
+    //         return;
+    //     }
+
+    //     // Open message editor
+    //     Swal.fire({
+    //         title: 'Send WhatsApp Notification',
+    //         html: `
+    //             <div style="text-align:left;">
+    //                 <label for="whatsappMessage"
+    //                        style="font-weight:600; margin-bottom:8px;">
+    //                     Message
+    //                 </label>
+
+    //                 <textarea id="whatsappMessage"
+    //                           class="swal2-textarea"
+    //                           placeholder="Type your message here..."
+    //                           style="width:100%; margin:0; box-sizing:border-box;"
+    //                 ></textarea>
+
+    //                 <div style="margin-top:12px;">
+    //                     <label style="cursor:pointer;">
+    //                         <input type="checkbox" id="whatsappAddName">
+    //                         Add name (Hi Student Name,)
+    //                     </label>
+    //                 </div>
+
+    //                 <small style="display:block; margin-top:10px; color:#666;">
+    //                     Selected students: ${selectedForWhatsApp.length}
+    //                 </small>
+    //             </div>
+    //         `,
+    //         showCancelButton: true,
+    //         confirmButtonText: 'Open WhatsApp',
+    //         cancelButtonText: 'Cancel',
+    //         confirmButtonColor: '#198754',
+
+    //         didOpen: () => {
+    //             const messageBox = document.getElementById('whatsappMessage');
+    //             const sendButton = Swal.getConfirmButton();
+
+    //             // Disable button until message is entered
+    //             sendButton.disabled = !messageBox.value.trim();
+
+    //             messageBox.addEventListener('input', function () {
+    //                 sendButton.disabled = !this.value.trim();
+    //             });
+
+    //             messageBox.focus();
+    //         },
+
+    //         preConfirm: () => {
+    //             const message = document
+    //                 .getElementById('whatsappMessage')
+    //                 .value.trim();
+
+    //             const addName = document
+    //                 .getElementById('whatsappAddName')
+    //                 .checked;
+
+    //             if (!message) {
+    //                 Swal.showValidationMessage('Please enter a message.');
+    //                 return false;
+    //             }
+
+    //             return {
+    //                 message: message,
+    //                 addName: addName
+    //             };
+    //         }
+
+    //     }).then((result) => {
+
+    //         if (!result.isConfirmed) {
+    //             return;
+    //         }
+
+    //         const message = result.value.message;
+    //         const addName = result.value.addName;
+
+    //         let openedCount = 0;
+    //         let invalidCount = 0;
+
+    //         selectedForWhatsApp.forEach(function (student) {
+
+    //             // Normalize Indian mobile numbers
+    //             let phone = String(student.contact).replace(/\D/g, '');
+
+    //             if (phone.length === 10) {
+    //                 phone = '91' + phone;
+    //             } else if (phone.length === 11 && phone.startsWith('0')) {
+    //                 phone = '91' + phone.substring(1);
+    //             }
+
+    //             // Accept only a 12-digit Indian number starting with 91
+    //             if (!/^91\d{10}$/.test(phone)) {
+    //                 invalidCount++;
+    //                 return;
+    //             }
+
+    //             let personalizedMessage = message;
+
+    //             if (addName) {
+    //                 const studentName = student.name.trim() || 'Student';
+    //                 personalizedMessage =
+    //                     'Hi ' + studentName + ',\n\n' + message;
+    //             }
+
+    //             const whatsappUrl =
+    //                 'https://web.whatsapp.com/send?phone=' +
+    //                 phone +
+    //                 '&text=' +
+    //                 encodeURIComponent(personalizedMessage);
+
+    //             const whatsappTab = window.open(whatsappUrl, '_blank');
+
+    //             if (whatsappTab) {
+    //                 openedCount++;
+    //             } else {
+    //                 invalidCount++;
+    //             }
+    //         });
+
+    //         if (openedCount > 0) {
+    //             Swal.fire({
+    //                 icon: 'success',
+    //                 title: 'WhatsApp Opened',
+    //                 text: openedCount +
+    //                     ' chat(s) opened. Please review and send each message in WhatsApp.'
+    //             });
+    //         } else {
+    //             Swal.fire({
+    //                 icon: 'warning',
+    //                 title: 'Unable to Open WhatsApp',
+    //                 text: 'No chats were opened. Check the selected students’ mobile numbers and allow pop-ups in your browser.'
+    //             });
+    //         }
+
+    //         if (invalidCount > 0 && openedCount > 0) {
+    //             console.warn(
+    //                 invalidCount +
+    //                 ' selected student(s) had invalid numbers or their tabs were blocked.'
+    //             );
+    //         }
+
+    //     });
+
+    // });
+
+    
+$('#sendWhatsAppNotification').on('click', function () {
+    const selectedForWhatsApp = [];
+
+    table.$('.record_checked:checked').each(function () {
+        selectedForWhatsApp.push({
+            id: $(this).val(),
+            name: $(this).attr('data-name') || '',
+            contact: $(this).attr('data-contact') || ''
+        });
+    });
+
+    if (selectedForWhatsApp.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Students Selected',
+            text: 'Please select at least one student.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Send WhatsApp Notification',
+        html: `
+            <textarea id="whatsappMessage"
+    class="swal2-textarea"
+    placeholder="Type your message here..."
+    style="width:100%; max-width:100%; height:180px; margin:10px 0; box-sizing:border-box; resize:vertical;"></textarea>
+
+            <div style="text-align:left;margin-top:10px">
+                <label>
+                    <input type="checkbox" id="whatsappAddName">
+                    Add student name
+                </label>
+            </div>
+
+            <p>Selected students: ${selectedForWhatsApp.length}</p>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Open First Student',
+        confirmButtonColor: '#198754',
+        preConfirm: () => {
+            const message = document
+                .getElementById('whatsappMessage').value.trim();
+
+            if (!message) {
+                Swal.showValidationMessage('Please enter a message.');
+                return false;
+            }
+
+            return {
+                message: message,
+                addName: document.getElementById('whatsappAddName').checked
+            };
+        }
+    }).then(result => {
+        if (!result.isConfirmed) return;
+
+        const message = result.value.message;
+        const addName = result.value.addName;
+
+        let currentIndex = 0;
+        let openedCount = 0;
+        let invalidCount = 0;
+
+        function openNextWhatsAppStudent() {
+            // Skip students with invalid mobile numbers
+            let student;
+            let phone;
+
+            while (currentIndex < selectedForWhatsApp.length) {
+                student = selectedForWhatsApp[currentIndex++];
+
+                phone = String(student.contact || '')
+                    .replace(/\D/g, '');
+
+                if (phone.length === 10) {
+                    phone = '91' + phone;
+                } else if (
+                    phone.length === 11 &&
+                    phone.startsWith('0')
+                ) {
+                    phone = '91' + phone.substring(1);
+                }
+
+                if (/^91\d{10}$/.test(phone)) {
+                    break;
+                }
+
+                invalidCount++;
+                student = null;
+            }
+
+            if (!student) {
+                Swal.fire({
+                    icon: openedCount ? 'success' : 'warning',
+                    title: 'All Students Processed',
+                    text: openedCount + ' chat(s) opened; ' +
+                        invalidCount + ' invalid number(s) skipped.'
+                });
+                return;
+            }
+
+            let finalMessage = message;
+
+            if (addName) {
+                finalMessage =
+                    'Hi ' + (student.name.trim() || 'Student') +
+                    ',\n\n' + message;
+            }
+
+            const url =
+                'https://web.whatsapp.com/send?phone=' +
+                phone + '&text=' +
+                encodeURIComponent(finalMessage);
+
+            const tab = window.open(url, '_blank');
+
+            if (tab) {
+                openedCount++;
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Popup Blocked',
+                    text: 'Allow pop-ups in your browser, then try again.'
+                });
+                return;
+            }
+
+            if (currentIndex >= selectedForWhatsApp.length) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'All Students Processed',
+                    text: openedCount + ' chat(s) opened; ' +
+                        invalidCount + ' invalid number(s) skipped.'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Student ' + currentIndex +
+                    ' of ' + selectedForWhatsApp.length,
+                text: 'Send the current message in WhatsApp, then continue.',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Open Next Student',
+                cancelButtonText: 'Finish'
+            }).then(nextResult => {
+                if (nextResult.isConfirmed) {
+                    openNextWhatsAppStudent();
+                }
+            });
+        }
+
+        openNextWhatsAppStudent();
+    });
+});
+
+
     // Multi-action buttons
     $('#issueSelected2').click(function() {
         var ids = getSelectedIds();
@@ -1936,6 +2081,19 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
             console.log('Issue certificates for:', ids);
             // Add AJAX call or form submission here
         }
+    });
+
+    $('#moveToInternStudents').click(function () {
+        const ids = getSelectedIds();
+
+        pageBulkConfirm(
+            ids,
+            'Move selected students to Intern Students?',
+            function () {
+                $('#bulkMoveToInternIds').val(JSON.stringify(ids));
+                $('#bulkMoveToInternForm').submit();
+            }
+        );
     });
 
     $('#issueSelected').click(function () {
@@ -1966,6 +2124,34 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
         });
     });
 
+    $('#clearStudentDues').click(function () {
+
+        let ids = getSelectedIds();
+
+        if (ids.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                text: 'Select at least one student'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Clear Dues?',
+            text: 'Pending fees will be added to Paid Fees and Pending Fees will become 0 for the selected students.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Clear Dues',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                $('#clearDuesIds').val(JSON.stringify(ids));
+                $('#clearDuesForm').submit();
+            }
+
+        });
+    });
    
     // $('#moveSelected').click(function () {
     $('#moveSelected').off('click').on('click', function () {

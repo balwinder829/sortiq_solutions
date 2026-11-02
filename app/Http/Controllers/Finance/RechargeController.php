@@ -31,6 +31,7 @@ class RechargeController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete' => 'delete',
 
         // 'bulkDelete'      => 'delete',
     ];
@@ -341,4 +342,46 @@ class RechargeController extends Controller
 
         return back()->with('success', 'Status updated.');
     }
+
+    
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', explode(',', $request->ids)),
+            fn ($id) => $id > 0
+        )));
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please select at least 1 record.',
+            ], 422);
+        }
+
+        $recharges = Recharge::whereIn('id', $ids)->get();
+
+        $count = 0;
+
+        foreach ($recharges as $recharge) {
+            $recharge->delete();
+            $count++;
+        }
+
+        if ($count === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No matching recharges were found.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' recharge' . ($count === 1 ? '' : 's') . ' deleted successfully.',
+        ]);
+    }
+
 }

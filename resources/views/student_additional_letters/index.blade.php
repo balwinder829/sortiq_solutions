@@ -74,6 +74,14 @@
             {{ session('success') }}
         </div>
     @endif
+
+    @if (session('warning'))
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{ session('warning') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+        </div>
+    @endif
     @if(session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}
@@ -91,7 +99,7 @@
                 
                 <th>Created Date</th>
                 <th>Updated Date</th>
-                <th>Actions</th>
+                <th width="210">Actions</th>
             </tr>
         </thead>
 
@@ -128,6 +136,14 @@
                     <a href="{{ route('student-additional-letters.edit', $letter) }}"
                        class="btn btn-sm" title="Edit">
                         <i class="fas fa-edit"></i>
+                    </a>
+
+                    {{-- Preview --}}
+                    <a href="{{ route('student-additional-letters.preview', $letter) }}"
+                       target="_blank"
+                       class="btn btn-sm"
+                       title="Preview">
+                        <i class="fas fa-eye"></i>
                     </a>
 
                     {{-- Download --}}

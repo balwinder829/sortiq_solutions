@@ -726,10 +726,31 @@ value="{{ request('registration_fee') }}">
         <button id="movedropout" class="btn btn-success">Move to Dropout</button>
         <button id="editBulkStudents" class="btn btn-primary">Edit Students</button>
         <button id="blockSelected" class="btn btn-danger">Block Numbers</button>
+        <button id="clearStudentDues" class="btn btn-warning">Clear Pending Fee</button>
+        <button id="moveToInternStudents" class="btn btn-success">Move to Intern Students</button>
     </div>
 
      
 </div>
+
+
+{{-- Move selected students to Intern Students --}}
+<form id="bulkMoveToInternForm"
+      method="POST"
+      action="{{ route('students.moveToIntern') }}"
+      style="display:none;">
+    @csrf
+    <input type="hidden" name="ids" id="bulkMoveToInternIds">
+</form>
+
+
+<form id="clearDuesForm"
+      method="POST"
+      action="{{ route('students.clearDues') }}"
+      style="display: none;">
+    @csrf
+    <input type="hidden" name="ids" id="clearDuesIds">
+</form>
 
 {{-- Block selected student numbers --}}
 <form id="bulkBlockForm"
@@ -1131,65 +1152,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
-<!-- <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    const slider = document.getElementById('amountSlider');
-    const feeFilter = document.querySelector('select[name="fee_filter"]');
-
-    const minInput = document.getElementById('amountMin');
-    const maxInput = document.getElementById('amountMax');
-    const minText  = document.getElementById('amountMinText');
-    const maxText  = document.getElementById('amountMaxText');
-
-    const startMin = Number(minInput.value || 0);
-    const startMax = Number(maxInput.value || 200000);
-
-    noUiSlider.create(slider, {
-        start: [startMin, startMax],
-        connect: true,
-        step: 1,
-        range: {
-            min: 0,
-            max: 200000
-        }
-    });
-
-    slider.noUiSlider.on('update', function (values) {
-        minInput.value = Math.round(values[0]);
-        maxInput.value = Math.round(values[1]);
-
-        minText.textContent = values[0];
-        maxText.textContent = values[1];
-    });
-
-    /**
-     * ✅ Enable slider ONLY for these fee_filter values
-     */
-    const amountEnabledFilters = [
-        'pending_high',
-        'pending_low',
-        'fees_high',
-        'fees_low'
-    ];
-
-    function toggleSlider() {
-        const value = feeFilter.value;
-
-        if (amountEnabledFilters.includes(value)) {
-            slider.noUiSlider.enable();
-            slider.style.opacity = 1;
-        } else {
-            slider.noUiSlider.disable();
-            slider.style.opacity = 0.4;
-        }
-    }
-
-    feeFilter.addEventListener('change', toggleSlider);
-    toggleSlider(); // run on page load
-});
-</script> -->
-
+ 
 
 <script>
 $(document).ready(function () {
@@ -1275,10 +1238,7 @@ $(document).ready(function () {
         );
     });
 
-    // Check/uncheck all
-    // $('#checkAll').click(function(){
-    //     $('.record_checked').prop('checked', this.checked);
-    // });
+     
 
     $('#checkAll').on('click', function (e) {
         e.stopPropagation();
@@ -1300,14 +1260,7 @@ $(document).ready(function () {
 
     $('#certificatesTable').on('change', '.record_checked', syncCheckAll);
 
-    // Get selected IDs
-    // function getSelectedIds() {
-    //     var ids = [];
-    //     $('.record_checked:checked').each(function() {
-    //         ids.push($(this).val());
-    //     });
-    //     return ids;
-    // }
+    
 
     function getSelectedIds() {
 
@@ -1340,15 +1293,7 @@ $(document).ready(function () {
         });
 
 
-    // Multi-action buttons
-    // $('#issueSelected').click(function() {
-    //     var ids = getSelectedIds();
-    //     if(ids.length === 0) { alert('Select at least one student'); return; }
-    //     if(confirm('Send certificates to selected students?')) {
-    //         console.log('Issue certificates for:', ids);
-    //         // Add AJAX call or form submission here
-    //     }
-    // });
+     
 
     $('#issueSelected').click(function () {
 
@@ -1389,6 +1334,35 @@ $(document).ready(function () {
             $('#bulkIds').val(JSON.stringify(eligibleIds));
             $('#bulkIssueForm').submit();
         });
+
+    $('#clearStudentDues').click(function () {
+
+        let ids = getSelectedIds();
+
+        if (ids.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                text: 'Select at least one student'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Clear Dues?',
+            text: 'Pending fees will be added to Paid Fees and Pending Fees will become 0 for the selected students.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Clear Dues',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                $('#clearDuesIds').val(JSON.stringify(ids));
+                $('#clearDuesForm').submit();
+            }
+
+        });
+    });
 
 $('#markCertificateSent').click(function () {
 
@@ -1517,6 +1491,19 @@ $('#markCertificateNotSent').click(function () {
             $('#bulkIssueDateForm').submit();
         });
     });
+
+    $('#moveToInternStudents').click(function () {
+        const ids = getSelectedIds();
+
+        pageBulkConfirm(
+            ids,
+            'Move selected students to Intern Students?',
+            function () {
+                $('#bulkMoveToInternIds').val(JSON.stringify(ids));
+                $('#bulkMoveToInternForm').submit();
+            }
+        );
+    });
      // Download Confirm Letter(s)
     $('#downloadissueSelected').click(function () {
         var ids = getSelectedIds();
@@ -1548,14 +1535,7 @@ $('#markCertificateNotSent').click(function () {
         $('input[name="is_pursuing"]').val(isPursuing);
         $('input[name="is_month_name"]').val("yes");
         $('input[name="is_internship"]').val(isInternship);
-        // if (ids.length === 0) {
-        //     alert('Select at least one student');
-        //     return;
-        // }
-
-        // if (!confirm('Download confirm letter(s) for selected student(s)?')) {
-        //     return;
-        // }
+        
         pageBulkConfirm(ids, 'Download confirm letter(s) for selected student(s)?', function () {
         // Put JSON string of IDs into hidden input and submit form
             $('#bulkDownloadIds').val(JSON.stringify(ids));

@@ -35,24 +35,15 @@
         {{-- COLLEGE --}}
         <div class="form-group col-md-6">
             <label>College</label>
-            <select name="college_id"
-                    class="form-select @error('college_id') is-invalid @enderror select2">
+            <input type="text" name="college_name"
+                class="form-control @error('college_name') is-invalid @enderror"
+                value="{{ old('college_name') }}"
+                placeholder="Enter College Name" maxlength="512" required>
 
-                <option value="">Select College</option>
-
-                @foreach($colleges as $college)
-                    <option value="{{ $college->id }}"
-                        {{ old('college_id') == $college->id ? 'selected' : '' }}>
-                        {{ $college->FullName }}
-                    </option>
-                @endforeach
-            </select>
-
-            @error('college_id')
+            @error('college_name')
                 <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
- 
 
         {{-- EMAIL --}}
         <div class="form-group col-md-6">
@@ -60,7 +51,7 @@
             <input type="email" name="student_email"
                 class="form-control"
                 value="{{ old('student_email') }}"
-                placeholder="Email Address" required>
+                placeholder="Email Address">
 
             @error('student_email')
                 <small class="text-danger">{{ $message }}</small>
@@ -88,7 +79,7 @@
         {{-- GENDER --}}
         <div class="form-group col-md-6">
             <label class="fw-bold">Gender</label>
-            <select name="gender" class="form-control" required>
+            <select name="gender" class="form-control">
                 <option value="">Select Gender</option>
                 <option value="male" {{ old('gender')=='male' ? 'selected' : '' }}>Male</option>
                 <option value="female" {{ old('gender')=='female' ? 'selected' : '' }}>Female</option>
@@ -99,7 +90,7 @@
         <div class="form-group col-md-6">
             <label class="fw-bold">Course Type</label>
 
-            <select name="course_type" id="course_type" class="form-control" required>
+            <select name="course_type" id="course_type" class="form-control">
                 <option value="">Select Course Type</option>
 
                 <option value="Degree"
@@ -119,7 +110,7 @@
         <div class="form-group col-md-6">
             <label class="fw-bold">Class</label>
 
-            <select name="class" id="class" class="form-control" required>
+            <select name="class" id="class" class="form-control">
                 <option value="">Select Class</option>
             </select>
         </div>
@@ -128,7 +119,7 @@
         {{-- SEMESTER --}}
         <div class="form-group col-md-6">
             <label class="fw-bold">Semester</label>
-            <select name="semester" class="form-control" required>
+            <select name="semester" class="form-control">
                 <option value="">Select Semester</option>
                 @for ($i = 1; $i <= 8; $i++)
                     <option value="{{ $i }}" {{ old('semester') == $i ? 'selected' : '' }}>

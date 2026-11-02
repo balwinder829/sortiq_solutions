@@ -34,7 +34,7 @@ class DashboardController extends Controller
 {
     $this->middleware('auth')->only('index');
     $this->middleware('permission:dashboard.view')->only('index');
-    $this->middleware('permission:dashboard.view')->only('changeSession');
+    // $this->middleware('permission:dashboard.view')->only('changeSession');
 }
 
 

@@ -39,6 +39,13 @@
 </div>
 @endif
 
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show">
+    {{ session('error') }}
+    <button class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 @if($errors->any())
 <div class="alert alert-danger alert-dismissible fade show">
     <ul class="mb-0">
@@ -228,10 +235,10 @@
         {{-- Delete --}}
         <form action="{{ route('admin.external-attendance.destroy', $test->id) }}"
               method="POST"
-              class="d-inline"
-              data-swal-confirm="Are you sure you want to delete this test?">
+              class="d-inline delete-test-form">
             @csrf
             @method('DELETE')
+
             <button type="submit"
                     class="btn btn-sm btn-outline-danger"
                     title="Delete">
@@ -279,7 +286,35 @@ $(document).ready(function () {
 });
 </script>
 
- 
+ <script>
+$(document).ready(function () {
+
+    $('.delete-test-form').on('submit', function (e) {
+
+        e.preventDefault();
+
+        const form = this;
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This test will be permanently deleted.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Delete',
+            cancelButtonText: 'Cancel',
+            reverseButtons: false
+        }).then(function (result) {
+
+            if (result.isConfirmed) {
+                form.submit();
+            }
+
+        });
+
+    });
+
+});
+</script>
    
 <script>
 $(document).ready(function(){

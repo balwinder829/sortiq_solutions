@@ -101,6 +101,14 @@
                         <i class="fas fa-edit"></i>
                     </a>
 
+                    {{-- PREVIEW --}}
+                    <a href="{{ route('managements_letters.preview', $letter) }}"
+                       target="_blank"
+                       class="btn btn-sm"
+                       title="Preview">
+                        <i class="fas fa-eye"></i>
+                    </a>
+
                     {{-- DOWNLOAD --}}
                     <a href="{{ route('managements_letters.download', $letter) }}"
                        class="btn btn-sm">

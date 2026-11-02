@@ -128,6 +128,18 @@ public function store(Request $request)
         'semester'        => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
         'letter_content'  => 'required_if:internship_type,custom,stipend',
         'issue_date'      => 'nullable|date',
+        // Strict Offer Letter fields
+        'offer_training_start_date' => 'required_if:internship_type,strict_offer_letter|nullable|date',
+
+        'offer_training_duration_months' => 'required_if:internship_type,strict_offer_letter|nullable|integer|min:1',
+
+        'offer_probation_duration_months' => 'required_if:internship_type,strict_offer_letter|nullable|integer|min:1',
+
+        'offer_working_hours' => 'required_if:internship_type,strict_offer_letter|nullable|string|max:100',
+
+        'offer_service_agreement_duration' => 'required_if:internship_type,strict_offer_letter|nullable|string|max:100',
+
+        'offer_annual_salary' => 'required_if:internship_type,strict_offer_letter|nullable|numeric|min:0',
     ], [
         // custom message kept
         // (unique removed because now handled manually)
@@ -158,6 +170,25 @@ public function store(Request $request)
             'issue_date'      => $request->issue_date 
                                 ? $request->issue_date 
                                 : Carbon::today()->toDateString(),
+
+            'offer_training_start_date' => $request->internship_type === 'strict_offer_letter'
+                ? $request->offer_training_start_date : null,
+
+            'offer_training_duration_months' => $request->internship_type === 'strict_offer_letter'
+                ? $request->offer_training_duration_months : null,
+
+            'offer_probation_duration_months' => $request->internship_type === 'strict_offer_letter'
+                ? $request->offer_probation_duration_months : null,
+
+            'offer_working_hours' => $request->internship_type === 'strict_offer_letter'
+                ? $request->offer_working_hours : null,
+
+            'offer_service_agreement_duration' => $request->internship_type === 'strict_offer_letter'
+                ? $request->offer_service_agreement_duration : null,
+
+            'offer_annual_salary' => $request->internship_type === 'strict_offer_letter'
+                ? $request->offer_annual_salary : null,
+            
         ]);
 
         $created++;
@@ -167,35 +198,6 @@ public function store(Request $request)
         ->route('student-additional-letters.index')
         ->with('success', "$created letter(s) created successfully. $skipped skipped (already existed).");
 }
-    public function store13ap(Request $request)
-    {
-        $data = $request->validate([
-            // 'internship_type' => 'required|in:free,stipend,offer,custom,mutual_consent,noc,training_consent,placement',
-             'internship_type' => [
-                'required',
-                Rule::in(['free','stipend','offer','custom','mutual_consent','noc','training_consent','placement','internship','internship_with_package','strict_offer_letter', 'strict_consent_letter', 'stipend_policy', 'internship_consent','part_time_job_opportunity']),
-                Rule::unique('student_additional_letters')
-                    ->where('student_id', $request->student_id),
-            ],
-            'subject'         => 'required_if:internship_type,custom|max:255',
-            'student_id'      => 'required|exists:students_detail,id',
-            'letter_content'  => 'required_if:internship_type,custom,stipend',
-            'issue_date'      => 'nullable|date',
-        ], [
-            'internship_type.unique' => 'This letter type already exists for this student.',
-        ]);
-
-         // 👉 Set default date if not provided
-    $data['issue_date'] = $request->issue_date 
-        ? $request->issue_date 
-        : Carbon::today()->toDateString();
-
-        StudentAdditionalLetter::create($data);
-
-        return redirect()
-            ->route('student-additional-letters.index')
-            ->with('success', 'Letter created successfully.');
-    }
 
     public function edit(StudentAdditionalLetter $studentAdditionalLetter)
     {
@@ -256,6 +258,18 @@ public function store(Request $request)
             'issue_date'      => 'nullable|date',
             'roll_number'     => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
             'semester'        => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
+            // Strict Offer Letter fields
+            'offer_training_start_date' => 'required_if:internship_type,strict_offer_letter|nullable|date',
+
+            'offer_training_duration_months' => 'required_if:internship_type,strict_offer_letter|nullable|integer|min:1',
+
+            'offer_probation_duration_months' => 'required_if:internship_type,strict_offer_letter|nullable|integer|min:1',
+
+            'offer_working_hours' => 'required_if:internship_type,strict_offer_letter|nullable|string|max:100',
+
+            'offer_service_agreement_duration' => 'required_if:internship_type,strict_offer_letter|nullable|string|max:100',
+
+            'offer_annual_salary' => 'required_if:internship_type,strict_offer_letter|nullable|numeric|min:0',
         ], [
             'internship_type.unique' => 'This letter type already exists for this student.',
         ]);
@@ -277,24 +291,10 @@ public function store(Request $request)
         return back()->with('success', 'Letter deleted successfully.');
     }
 
-    /**
-     * Download PDF
-     */
-    // public function pdf1($id)
-    // {
-    //     $letter = StudentAdditionalLetter::findOrFail($id);
+    
 
-    //     $content = $this->prepareContent($letter);
-
-    //     $mpdf = new Mpdf();
-    //     $mpdf->WriteHTML(
-    //         view('student_additional_letters.pdf', compact('content'))->render()
-    //     );
-
-    //     return $mpdf->Output('student-letter.pdf', 'I');
-    // }
-
-    private function pdf12(StudentAdditionalLetter $letter): string
+    
+    private function pdf($letter): string
     {
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
@@ -307,283 +307,232 @@ public function store(Request $request)
             'tempDir' => storage_path('app/mpdf'),
         ]);
 
- 		$letter = StudentAdditionalLetter::findOrFail($letter);
- 		$content = $this->prepareContent($letter);
-        
-        $html = View::make('student_additional_letters.pdf', compact('content'))->render();
+        // $letter->load('student.collegeData');
+        $letter->load('student.collegeData','student.collegeData.district', 'student.collegeData.state');
+        $activeSessionNo = session('admin_session_id');
+        // dd($activeSessionNo);
 
-        $mpdf->SetHTMLHeader('');
-            // $mpdf->SetHTMLFooter('');
-            $mpdf->DefHTMLFooterByName('emptyFooter', '');
+        if($letter->internship_type == 'free' && $activeSessionNo == '3'){
+            $free_letter_temp = 'student_additional_letters.free_letter_fixed_pdf';
+        }else{
+            $free_letter_temp = 'student_additional_letters.other_45_days_free_letter_fixed_pdf';
+        }
+         $view = match ($letter->internship_type) {
+                'free' => $free_letter_temp,
+                'stipend' => 'student_additional_letters.pdf',
+                'noc' => 'student_additional_letters.no_consent_pdf',
+                'mutual_consent' => 'student_additional_letters.mutual_consent_pdf',
+                'training_consent' => 'student_additional_letters.training_consent_pdf',
+                'placement' => 'student_additional_letters.placement_consent_pdf',
+                'offer' => 'student_additional_letters.offer_letter_fixed_pdf',
+                'custom' => 'student_additional_letters.custom_type_pdf',
+                'internship' => 'student_additional_letters.pdf-offer_letter_fixed_internship',
+                'internship_with_package' => 'student_additional_letters.pdf-offer_letter_fixed_internship_with_package',
+                'strict_offer_letter' => 'student_additional_letters.strict_offer_letter_pdf',
+                'strict_consent_letter' => 'student_additional_letters.strict_consent_letter_pdf',
+                'stipend_policy' => 'student_additional_letters.stipend_policy_pdf',
+                'internship_consent' => 'student_additional_letters.internship_consent_pdf',
+                'part_time_job_opportunity' => 'student_additional_letters.part_time_job_opportunity_letter_pdf',
+                'with_roll_number' => 'student_additional_letters.with_roll_number_letter_pdf',
+                'with_roll_number_internship' => 'student_additional_letters.with_roll_number_internship_letter_pdf',
+                'confirmation_letter' => 'student_additional_letters.confirmation_letter',
+                'student_responsibility' => 'student_additional_letters.student_responsibility_pdf',
+                'placed_student_responsibility' => 'student_additional_letters.placed_student_responsibility_pdf',
+                default => 'letters.pdf',
+            };
 
-            // 2️⃣ Define last page footer
-            $mpdf->DefHTMLFooterByName('bondFooter', $this->getPDFFooter());
+         // $html = View::make($view, compact('letter'))->render();
 
-            // 3️⃣ Apply empty footer initially
-            // 
+            if (in_array($letter->internship_type, [
+            'student_responsibility',
+            'placed_student_responsibility'
+        ])) {
 
+            $student = $letter->student;
+
+            $gender = strtolower($student->gender ?? '');
+            $relation = 'son';
+
+            if ($gender === 'female') {
+                $relation = $student->is_married ? 'wife' : 'daughter';
+            }
+
+            $content = $letter->letter_content;
+
+            $content = str_replace(
+                [
+                    '{{student_name}}',
+                    '{{relation}}',
+                    '{{father_name}}',
+                    '{{technology}}',
+                    '{{joining_date}}',
+                ],
+                [
+                    ucwords($student->student_name ?? ''),
+                    $relation,
+                    $student->father_name_with_title ?? '-',
+                    ucwords($student->course_name ?? 'N/A'),
+                    $student->start_date
+                        ? \Carbon\Carbon::parse($student->start_date)->format('d M Y')
+                        : '',
+                ],
+                $content
+            );
+
+            $html = View::make($view, [
+                'letter' => $letter,
+                'content' => $content,
+            ])->render();
+
+        } else {
+
+            $html = View::make($view, compact('letter'))->render();
+
+        }
+        // $html = View::make(
+        //     'student_additional_letters.pdf',
+        //     compact('letter')
+        // )->render();
          
-            $mpdf->SetHTMLFooterByName('bondFooter');
+        $mpdf->SetHTMLHeader('');
+        $mpdf->DefHTMLFooterByName('lastPageFooter', $this->getPDFFooter());
+              
         $mpdf->WriteHTML($html);
-        $mpdf->SetHTMLFooterByName('emptyFooter');
-       	return $mpdf->Output('student-letter.pdf', 'I');
+        $mpdf->SetHTMLFooterByName('lastPageFooter');
+        // RETURN STRING ONLY
         return $mpdf->Output('', 'S');
     }
 
-    private function pdf($letter): string
-{
-    $mpdf = new Mpdf([
-        'mode' => 'utf-8',
-        'format' => 'A4',
-        'orientation' => 'P',
-        'margin_left' => 0,
-        'margin_right' => 0,
-        'margin_top' => 0,
-        'margin_bottom' => 0,
-        'tempDir' => storage_path('app/mpdf'),
-    ]);
+    private function getMissingStrictOfferFields($letter): array
+    {
+        // dd($letter);
+        if ($letter->internship_type !== 'strict_offer_letter') {
+            return [];
+        }
 
-    // $letter->load('student.collegeData');
-    $letter->load('student.collegeData','student.collegeData.district', 'student.collegeData.state');
-    $activeSessionNo = session('admin_session_id');
-    // dd($activeSessionNo);
+        $requiredFields = [
+            'offer_training_start_date' => 'Training Start Date',
+            'offer_training_duration_months' => 'Initial Training Duration',
+            'offer_probation_duration_months' => 'Probation Duration',
+            'offer_working_hours' => 'Working Hours',
+            'offer_service_agreement_duration' => 'Service Agreement Duration',
+            'offer_annual_salary' => 'Annual Salary / Package',
+        ];
 
-    if($letter->internship_type == 'free' && $activeSessionNo == '3'){
-        $free_letter_temp = 'student_additional_letters.free_letter_fixed_pdf';
-    }else{
-        $free_letter_temp = 'student_additional_letters.other_45_days_free_letter_fixed_pdf';
+        $missing = [];
+
+        foreach ($requiredFields as $column => $label) {
+            if ($letter->{$column} === null || trim((string) $letter->{$column}) === '') {
+                $missing[] = $label;
+            }
+        }
+
+        return $missing;
     }
-     $view = match ($letter->internship_type) {
-            'free' => $free_letter_temp,
-            'stipend' => 'student_additional_letters.pdf',
-            'noc' => 'student_additional_letters.no_consent_pdf',
-            'mutual_consent' => 'student_additional_letters.mutual_consent_pdf',
-            'training_consent' => 'student_additional_letters.training_consent_pdf',
-            'placement' => 'student_additional_letters.placement_consent_pdf',
-            'offer' => 'student_additional_letters.offer_letter_fixed_pdf',
-            'custom' => 'student_additional_letters.custom_type_pdf',
-            'internship' => 'student_additional_letters.pdf-offer_letter_fixed_internship',
-            'internship_with_package' => 'student_additional_letters.pdf-offer_letter_fixed_internship_with_package',
-            'strict_offer_letter' => 'student_additional_letters.strict_offer_letter_pdf',
-            'strict_consent_letter' => 'student_additional_letters.strict_consent_letter_pdf',
-            'stipend_policy' => 'student_additional_letters.stipend_policy_pdf',
-            'internship_consent' => 'student_additional_letters.internship_consent_pdf',
-            'part_time_job_opportunity' => 'student_additional_letters.part_time_job_opportunity_letter_pdf',
-            'with_roll_number' => 'student_additional_letters.with_roll_number_letter_pdf',
-            'with_roll_number_internship' => 'student_additional_letters.with_roll_number_internship_letter_pdf',
-            'confirmation_letter' => 'student_additional_letters.confirmation_letter',
-            'student_responsibility' => 'student_additional_letters.student_responsibility_pdf',
-            'placed_student_responsibility' => 'student_additional_letters.placed_student_responsibility_pdf',
-            default => 'letters.pdf',
+    public function download(StudentAdditionalLetter $StudentAdditionalLetter)
+    {
+        // dd($StudentAdditionalLetter);
+        $missingFields = $this->getMissingStrictOfferFields($StudentAdditionalLetter);
+
+        if (!empty($missingFields)) {
+            $studentName = $StudentAdditionalLetter->student->student_name ?? 'Unknown Student';
+
+            return redirect()->back()->with(
+                'warning',
+                "Cannot preview Strict Offer Letter for {$studentName}. Please add: "
+                . implode(', ', $missingFields) . '.'
+            );
+        }
+
+        $pdfContent = $this->pdf($StudentAdditionalLetter);
+        // $pdfContent = $this->pdf($StudentAdditionalLetter);
+
+        // Clean filename (VALID FIELDS ONLY)
+
+        $internshipTypeMap = [
+            'free' => 'FREE INTERNSHIP LETTER',
+            'stipend' => 'STIPEND INTERNSHIP LETTER',
+            'offer' => 'OFFER LETTER',
+            'custom' => 'CUSTOM LETTER',
+            'mutual_consent' => 'MUTUAL CONSENT LETTER',
+            'noc' => 'INTERNSHIP NO OBJECTION CERTIFICATE',
+            'training_consent' => 'TRAINING CONSENT LETTER',
+            'placement' => 'PLACEMENT CONSENT LETTER',
+            'internship' => 'INTERNSHIP LETTER',
+            'internship_with_package' => 'INTERNSHIP WITH PACKAGE LETTER',
+            'part_time_job_opportunity' => 'PART TIME JOB OPPORTUNITY LETTER',
+            'with_roll_number' => 'WITH ROLL NUMBER LETTER',
+            'confirmation_letter' => 'Confirmation Letter',
+            'student_responsibility' => 'Student Responsibility Letter',
+            'placed_student_responsibility' => 'Placed Student Responsibility Letter',
+        ];
+
+        $sanitize = function ($value) {
+            return strtoupper(
+                trim(
+                    preg_replace('/_+/', '_',
+                        preg_replace('/[^A-Za-z0-9]+/', '_', $value)
+                    ),
+                    '_'
+                )
+            );
         };
+        // dd($StudentAdditionalLetter);
+        $studentName =  $sanitize(($StudentAdditionalLetter->student->student_name));
+        $fatherName =  $sanitize(($StudentAdditionalLetter->student->f_name));
 
-     // $html = View::make($view, compact('letter'))->render();
+        //  $studentName = strtoupper(
+        //     preg_replace('/[^A-Za-z0-9]+/', '_', trim($StudentAdditionalLetter->F_name))
+        // );
 
-        if (in_array($letter->internship_type, [
-    'student_responsibility',
-    'placed_student_responsibility'
-])) {
+        // $internshipType = strtoupper(
+        //     preg_replace('/[^A-Za-z0-9]+/', '_', trim($StudentAdditionalLetter->internship_type))
+        // );
 
-    $student = $letter->student;
+         $internshipKey = $StudentAdditionalLetter->internship_type;
+        $internshipFullName = $sanitize(
+            $internshipTypeMap[$internshipKey] ?? 'INTERNSHIP LETTER'
+        );
 
-    $gender = strtolower($student->gender ?? '');
-    $relation = 'son';
+        $fileName = "{$studentName}_{$fatherName}_{$internshipFullName}.pdf";
 
-    if ($gender === 'female') {
-        $relation = $student->is_married ? 'wife' : 'daughter';
+        // $fileName = trim(
+        //     preg_replace('/_+/', '_', "{$studentName}_{$internshipType}_LETTER"),
+        //     '_'
+        // ) . '.pdf';
+
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header(
+                'Content-Disposition',
+                'attachment; filename="'.$fileName.'"'
+            );
     }
 
-    $content = $letter->letter_content;
-
-    $content = str_replace(
-        [
-            '{{student_name}}',
-            '{{relation}}',
-            '{{father_name}}',
-            '{{technology}}',
-            '{{joining_date}}',
-        ],
-        [
-            ucwords($student->student_name ?? ''),
-            $relation,
-            $student->father_name_with_title ?? '-',
-            ucwords($student->course_name ?? 'N/A'),
-            $student->start_date
-                ? \Carbon\Carbon::parse($student->start_date)->format('d M Y')
-                : '',
-        ],
-        $content
-    );
-
-    $html = View::make($view, [
-        'letter' => $letter,
-        'content' => $content,
-    ])->render();
-
-} else {
-
-    $html = View::make($view, compact('letter'))->render();
-
-}
-    // $html = View::make(
-    //     'student_additional_letters.pdf',
-    //     compact('letter')
-    // )->render();
-     
-    $mpdf->SetHTMLHeader('');
-    $mpdf->DefHTMLFooterByName('lastPageFooter', $this->getPDFFooter());
-          
-    $mpdf->WriteHTML($html);
-    $mpdf->SetHTMLFooterByName('lastPageFooter');
-    // RETURN STRING ONLY
-    return $mpdf->Output('', 'S');
-}
-
-public function download(StudentAdditionalLetter $StudentAdditionalLetter)
-{
-    $pdfContent = $this->pdf($StudentAdditionalLetter);
-
-    // Clean filename (VALID FIELDS ONLY)
-
-    $internshipTypeMap = [
-        'free' => 'FREE INTERNSHIP LETTER',
-        'stipend' => 'STIPEND INTERNSHIP LETTER',
-        'offer' => 'OFFER LETTER',
-        'custom' => 'CUSTOM LETTER',
-        'mutual_consent' => 'MUTUAL CONSENT LETTER',
-        'noc' => 'INTERNSHIP NO OBJECTION CERTIFICATE',
-        'training_consent' => 'TRAINING CONSENT LETTER',
-        'placement' => 'PLACEMENT CONSENT LETTER',
-        'internship' => 'INTERNSHIP LETTER',
-        'internship_with_package' => 'INTERNSHIP WITH PACKAGE LETTER',
-        'part_time_job_opportunity' => 'PART TIME JOB OPPORTUNITY LETTER',
-        'with_roll_number' => 'WITH ROLL NUMBER LETTER',
-        'confirmation_letter' => 'Confirmation Letter',
-        'student_responsibility' => 'Student Responsibility Letter',
-        'placed_student_responsibility' => 'Placed Student Responsibility Letter',
-    ];
-
-    $sanitize = function ($value) {
-        return strtoupper(
-            trim(
-                preg_replace('/_+/', '_',
-                    preg_replace('/[^A-Za-z0-9]+/', '_', $value)
-                ),
-                '_'
-            )
-        );
-    };
-    // dd($StudentAdditionalLetter);
-    $studentName =  $sanitize(($StudentAdditionalLetter->student->student_name));
-    $fatherName =  $sanitize(($StudentAdditionalLetter->student->f_name));
-
-    //  $studentName = strtoupper(
-    //     preg_replace('/[^A-Za-z0-9]+/', '_', trim($StudentAdditionalLetter->F_name))
-    // );
-
-    // $internshipType = strtoupper(
-    //     preg_replace('/[^A-Za-z0-9]+/', '_', trim($StudentAdditionalLetter->internship_type))
-    // );
-
-     $internshipKey = $StudentAdditionalLetter->internship_type;
-    $internshipFullName = $sanitize(
-        $internshipTypeMap[$internshipKey] ?? 'INTERNSHIP LETTER'
-    );
-
-    $fileName = "{$studentName}_{$fatherName}_{$internshipFullName}.pdf";
-
-    // $fileName = trim(
-    //     preg_replace('/_+/', '_', "{$studentName}_{$internshipType}_LETTER"),
-    //     '_'
-    // ) . '.pdf';
-
-    return response($pdfContent)
-        ->header('Content-Type', 'application/pdf')
-        ->header(
-            'Content-Disposition',
-            'attachment; filename="'.$fileName.'"'
-        );
-}
-public function sendEmail($id)
-{
-    // $letter = StudentAdditionalLetter::findOrFail($id);
-     $letter = StudentAdditionalLetter::with('student')->findOrFail($id);
-    
-     if (!$letter->student || empty($letter->student->email_id)) {
-        return back()->with('error', 'No email found for this user.');
-    }
-
-    // dd($letter);
-    $pdf = $this->pdf($letter);
-
-    Mail::send([], [], function ($message) use ($letter, $pdf) {
-        $message->to($letter->student->email_id)
-            ->subject('Student Letter')
-            ->html('Please find your letter attached.')
-            ->attachData($pdf, 'student-letter.pdf', [
-                'mime' => 'application/pdf',
-            ]);
-    });
-
-    return back()->with('success', 'Letter emailed successfully.');
-}
-
-    public function download12(StudentAdditionalLetter $letter)
+    public function preview(StudentAdditionalLetter $studentAdditionalLetter)
     {
-        $pdfContent = $this->pdf($letter);
-       
+        $pdfContent = $this->pdf($studentAdditionalLetter);
 
-          // Clean & format values
-       $letterType = strtoupper(
-            preg_replace('/[^A-Za-z0-9]+/', '_', trim($letter->letter_type))
-        );
-
-        $employeeName = strtoupper(
-            preg_replace('/[^A-Za-z0-9]+/', '_', trim($letter->emp_name))
-        );
-
-        $profileName = strtoupper(
-            preg_replace('/[^A-Za-z0-9]+/', '_', trim($letter->position))
-        );
-
-        // Remove double underscores just in case
-        $fileName = trim(
-            preg_replace('/_+/', '_', "{$employeeName}_{$profileName}_{$letterType}"),
-            '_'
-        ) . '.pdf';
-        // return response($pdfContent)
-        //     ->header('Content-Type', 'application/pdf')
-        //     ->header(
-        //         'Content-Disposition',
-        //         'attachment; filename="'.strtoupper($letter->letter_type).'_LETTER.pdf"'
-        //     );
-         return response($pdfContent)
-        ->header('Content-Type', 'application/pdf')
-        ->header(
-            'Content-Disposition',
-            'attachment; filename="'.$fileName.'"'
-        );
+        return response($pdfContent)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="student-letter-preview.pdf"');
     }
 
-    /**
-     * Send Email with PDF Attachment
-     */
-    public function sendEmai12l($id)
+    public function sendEmail($id)
     {
-        $letter = StudentAdditionalLetter::findOrFail($id);
+        // $letter = StudentAdditionalLetter::findOrFail($id);
+         $letter = StudentAdditionalLetter::with('student')->findOrFail($id);
+        
+         if (!$letter->student || empty($letter->student->email_id)) {
+            return back()->with('error', 'No email found for this user.');
+        }
 
-        $content = $this->prepareContent($letter);
-
-        // Generate PDF as string
-        $mpdf = new Mpdf();
-        $mpdf->WriteHTML(
-            view('student_additional_letters.pdf', compact('content'))->render()
-        );
-        $pdf = $mpdf->Output('', 'S');
+        // dd($letter);
+        $pdf = $this->pdf($letter);
 
         Mail::send([], [], function ($message) use ($letter, $pdf) {
-            $message->to($letter->email)
-                ->subject('Internship Letter')
+            $message->to($letter->student->email_id)
+                ->subject('Student Letter')
                 ->html('Please find your letter attached.')
                 ->attachData($pdf, 'student-letter.pdf', [
                     'mime' => 'application/pdf',

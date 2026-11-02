@@ -3,13 +3,7 @@
 namespace App\Imports;
 
 use App\Models\HardData;
-use App\Models\StudentSession;
-use App\Services\CollegeResolver;
-// use App\Rules\NotBlockedNumber;
 use App\Models\BlockedNumber;
-
-use Illuminate\Support\Facades\Session;
-
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
@@ -17,7 +11,6 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
-
 use Throwable;
 
 class HardDataImport implements
@@ -30,215 +23,130 @@ class HardDataImport implements
 {
     use SkipsFailures;
 
-    // Counters
-    public $totalRows    = 0;
+    public $totalRows = 0;
     public $insertedRows = 0;
-    public $skippedRows  = 0;
+    public $skippedRows = 0;
 
-    // Warnings
-    // public $duplicateContacts = [];
-    // Warnings
     public $duplicateContacts = [];
     public $blockedNumbers = [];
-    public $collegeNotFound = [];
 
-    /* ================= SKIP EMPTY ================= */
     public function isEmptyRow(array $row): bool
     {
-        $filtered = collect($row)->filter(function ($value) {
-            return !is_null($value) && trim($value) !== '';
-        });
-
-        return $filtered->isEmpty();
+        return collect($row)->filter(function ($value) {
+            return !is_null($value) && trim((string) $value) !== '';
+        })->isEmpty();
     }
 
-    /* ================= VALIDATION ================= */
     public function rules(): array
     {
         return [
-            // '*.college_name' => function ($attribute, $value, $fail) {
-            //     if (!$value) {
-            //         $fail('College name is required.');
-            //         return;
-            //     }
-
-            //     if (count(explode(',', $value)) < 3) {
-            //         $fail('Use format: College Name, District, State');
-            //     }
-            // },
-
             '*.student_name'   => 'required|string|max:255',
+            '*.student_mobile' => ['required', 'digits:10'],
             '*.student_email'  => 'nullable|email|max:255',
-
-            // '*.student_mobile' => [
-            //     'required',
-            //     'digits:10',
-            //     new NotBlockedNumber
-            // ],
-
-            '*.student_mobile' => [
-                'required',
-                'digits:10'
-            ],
-
-           // REMOVE strict validation
-            '*.gender'       => 'nullable|string',
-            '*.course_type'  => 'nullable|string',
-            '*.class'        => 'nullable|string',
-            '*.semester'     => 'nullable',
+            '*.college_name'   => 'required|string|max:512',
+            '*.gender'         => 'nullable|string',
+            '*.course_type'    => 'nullable|string',
+            '*.class'          => 'nullable|string|max:500',
+            '*.semester'       => 'nullable',
         ];
     }
 
-    public function customValidationMessages()
+    public function customValidationMessages(): array
     {
         return [
-            '*.student_name.required' => 'Student name is required.',
-            '*.student_email.required' => 'Email is required.',
+            '*.student_name.required'   => 'Student name is required.',
             '*.student_mobile.required' => 'Mobile is required.',
+            '*.student_mobile.digits'   => 'Mobile must contain exactly 10 digits.',
         ];
     }
 
-    /* ================= MAIN LOGIC ================= */
     public function model(array $row)
-    {   
+    {
         $this->totalRows++;
 
-        // Clean values
-        $row = array_map(fn($v) => is_string($v) ? trim($v) : $v, $row);
+        $row = array_map(
+            fn ($value) => is_string($value) ? trim($value) : $value,
+            $row
+        );
 
-        // $sessionId = session('admin_session_id');
         $sessionId = session(
             'admin_header_session_id',
             session('admin_session_id')
         );
 
-        /* -------- COLLEGE RESOLVE -------- */
-        // try {
-        //     $college = app(CollegeResolver::class)->resolve($row['college_name']);
-        //     $collegeId = $college->id;
-        // } catch (\Exception $e) {
-        //     $this->skippedRows++;
-        //     $this->duplicateContacts[] =
-        //         "Invalid college: {$row['college_name']}";
-        //     return null;
-        // }
-
-        $collegeId = null;
-        $collegeName = $row['college_name'] ?? null;
-
-        if (!empty($row['college_name'])) {
-
-            try {
-
-                $college = app(CollegeResolver::class)
-                    ->resolve($row['college_name']);
-
-                $collegeId = $college->id;
-
-                // Save standardized college name
-                $collegeName = $college->name;
-
-            } catch (\Exception $e) {
-
-                // College not found
-                $collegeId = null;
-
-                // Save original excel text
-                $collegeName = $row['college_name'];
-
-                // Save only once
-                if (!in_array($collegeName, $this->collegeNotFound)) {
-                    $this->collegeNotFound[] = $collegeName;
-                }
-
-            }
-
+        if (!$sessionId) {
+            $this->skippedRows++;
+            return null;
         }
 
-        /* -------- BLOCKED NUMBER CHECK -------- */
+        // College name is stored as free text; do not look it up in the colleges table.
+        $collegeName = trim((string) ($row['college_name'] ?? ''));
+        $collegeName = $collegeName !== '' ? $collegeName : null;
 
-        if (
-            !empty($row['student_mobile']) &&
-            BlockedNumber::where('number', $row['student_mobile'])->exists()
-        ) {
+        $mobile = trim((string) ($row['student_mobile'] ?? ''));
 
+        if ($mobile !== '' && BlockedNumber::where('number', $mobile)->exists()) {
             $this->skippedRows++;
 
-            // $this->duplicateContacts[] =
-            //     "Blocked number skipped: {$row['student_mobile']}";
-
-
-            if (!in_array($row['student_mobile'], $this->blockedNumbers)) {
-                $this->blockedNumbers[] = $row['student_mobile'];
+            if (!in_array($mobile, $this->blockedNumbers, true)) {
+                $this->blockedNumbers[] = $mobile;
             }
 
             return null;
         }
-        /* -------- DUPLICATE CHECK -------- */
+
         if (
-            !empty($row['student_mobile']) &&
-            HardData::where('student_mobile', $row['student_mobile'])
+            $mobile !== '' &&
+            HardData::where('student_mobile', $mobile)
                 ->where('session_id', $sessionId)
                 ->exists()
         ) {
             $this->skippedRows++;
-            // $this->duplicateContacts[] =
-            //     "Duplicate skipped: {$row['student_mobile']}";
 
-            if (!in_array($row['student_mobile'], $this->duplicateContacts)) {
-                $this->duplicateContacts[] = $row['student_mobile'];
+            if (!in_array($mobile, $this->duplicateContacts, true)) {
+                $this->duplicateContacts[] = $mobile;
             }
+
             return null;
         }
 
-         /* -------- CLEAN OPTIONAL VALUES -------- */
-
-        $gender = strtolower(trim($row['gender'] ?? ''));
-
-        if (!in_array($gender, ['male', 'female'])) {
+        $gender = strtolower(trim((string) ($row['gender'] ?? '')));
+        if (!in_array($gender, ['male', 'female'], true)) {
             $gender = null;
         }
 
-        $courseType = trim($row['course_type'] ?? '');
-
-        if (!in_array($courseType, ['Degree', 'Diploma'])) {
+        $courseType = trim((string) ($row['course_type'] ?? ''));
+        if (!in_array($courseType, ['Degree', 'Diploma'], true)) {
             $courseType = null;
         }
 
-        $class = trim($row['class'] ?? '');
-
+        $class = trim((string) ($row['class'] ?? ''));
         if (!in_array($class, [
-            'BCA',
-            'MCA',
-            'BTech',
-            'BSc',
-            'BSc IT',
-            'BSc CS',
-            'Polytechnic'
-        ])) {
+            'BCA', 'MCA', 'BTech', 'BSc', 'BSc IT', 'BSc CS',
+            'Polytechnic', 'CSE', 'IT', 'Civil',
+        ], true)) {
             $class = null;
         }
 
         $semester = $row['semester'] ?? null;
-
-        if (!is_numeric($semester) || $semester < 1 || $semester > 8) {
+        if (!is_numeric($semester) || (int) $semester < 1 || (int) $semester > 8) {
             $semester = null;
+        } else {
+            $semester = (int) $semester;
         }
 
-
-        /* -------- INSERT -------- */
         $this->insertedRows++;
-        // $collegeId = null;
+
         return new HardData([
             'session_id'     => $sessionId,
-            'college_id'     => $collegeId,
+            'college_id'     => null,
             'college_name'   => $collegeName,
-            'student_name'   => $row['student_name'],
-            'student_email'  => $row['student_email'],
-            'student_mobile' => $row['student_mobile'],
+            'student_name'   => trim((string) $row['student_name']),
+            'student_email'  => !empty($row['student_email']) ? trim((string) $row['student_email']) : null,
+            'student_mobile' => $mobile,
             'gender'         => $gender,
             'course_type'    => $courseType,
-            'class'          => $class,
+            'class'          => $class !== '' ? $class : null,
             'semester'       => $semester,
             'source'         => 'manual',
         ]);
@@ -246,7 +154,7 @@ class HardDataImport implements
 
     public function onError(Throwable $e)
     {
-        dd($e->getMessage());
-        // Hide system errors
+        // Let the import continue; the controller reports the final import summary.
+        $this->skippedRows++;
     }
 }

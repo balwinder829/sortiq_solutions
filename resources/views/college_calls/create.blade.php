@@ -3,8 +3,21 @@
 @section('content')
 
 <div class="container">
+    <div class="row mb-3 align-items-center">
 
-    <h3 class="mb-3">Log Calls</h3>
+     <div class="col-md-6">
+        <h3 class="mb-0">Log Calls</h3>
+    </div>
+
+    <div class="col-md-6 text-end">
+        <a href="{{ route('admin.college-calls.index') }}"
+           class="btn btn-primary">
+            Back to Calling Panel
+        </a>
+    </div>
+    </div>
+
+    <!-- <h3 class="mb-3">Log Calls</h3> -->
 
     <form method="POST" action="{{ route('admin.college-calls.store') }}" id="callForm">
         @csrf

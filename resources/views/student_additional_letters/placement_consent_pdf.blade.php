@@ -94,10 +94,12 @@
 
                     @endphp
 
-                    I, <b>{{ ucwords($student->student_name) }}</b>, 
-                    {{ $relation }} of 
-                    <b>{{ $student->father_name_with_title }}</b>, 
-                    enrolled in 
+                    I, <b>{{ ucwords($student->student_name) }}</b>,
+                    @if(!empty($student->father_name_with_title))
+                        {{ $relation }} of
+                        <b>{{ $student->father_name_with_title }}</b>,
+                    @endif
+                    enrolled in
                     <b>
                     {{ ucwords($collegeOrPlace) }}
 
@@ -112,7 +114,7 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size: 14px; line-height: 24px; padding-bottom:15px; font-family: 'Inter', sans-serif;">
-                       I understand that I have been placed for a training period of <b> {{ ucwords($letter->student?->sessionData?->session_display_name ?? 'N/A') }}</b> with Sortiq Solutions Pvt. Ltd. starting from <b>{{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}</b>.
+                       I understand that I have been placed for a training period of <b> {{ ucwords($letter->student?->sessionData?->session_display_name ?? '________') }}</b> with Sortiq Solutions Pvt. Ltd. starting from <b>{{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}</b>.
                     </td>
                 </tr>
                  

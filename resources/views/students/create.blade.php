@@ -100,9 +100,18 @@
                 <select name="college_name" id="college_name"  required class="form-control select2">
                     <option value="" disabled {{ old('college_name') ? '' : 'selected' }}>Choose one</option>
                     @foreach($colleges as $college)
+                    @php
+                        $originalName = trim($college->college_name ?? '');
+                        $displayName = trim($college->FullName ?? '');
+
+                        $normalizedOriginal = trim(preg_replace('/\s*\([^)]*\)/', '', $originalName));
+                        $normalizedDisplay = trim(preg_replace('/\s*\([^)]*\)/', '', $displayName));
+                    @endphp
                         <option value="{{ $college->id }}" 
                             {{ old('college_name') == $college->id ? 'selected' : '' }}>
-                            {{ $college->FullName }}
+                            {{ $normalizedOriginal === $normalizedDisplay
+                                ? ($displayName ?: '--')
+                                : ($originalName ?: '--') . ' -- ' . ($displayName ?: '--') }}
                         </option>
                     @endforeach
                 </select>

@@ -27,7 +27,15 @@ class SingleTestStudentsExport implements FromCollection, WithHeadings, WithMapp
     if ($this->test->test_mode === 'online') {
 
         $q = StudentTest::with('college')
-            ->where('test_id', $this->test->id);
+            ->where('test_id', $this->test->id)
+            ->whereIn('id', function ($query) {
+                $query->selectRaw('MAX(id)')
+                    ->from('student_tests')
+                    ->where('test_id', $this->test->id)
+                    ->whereNotNull('student_mobile')
+                    ->where('student_mobile', '!=', '')
+                    ->groupBy('student_mobile', 'college_id');
+            });
 
         /* ===== COLLEGE FILTER ===== */
 
@@ -59,8 +67,8 @@ class SingleTestStudentsExport implements FromCollection, WithHeadings, WithMapp
             $q->where('course_type', $this->filters['course_type']);
         }
 
-        if (!empty($this->filters['class'])) {
-            $q->where('class', $this->filters['class']);
+        if (!empty($this->filters['branch'])) {
+            $q->where('branch', $this->filters['branch']);
         }
 
         if (!empty($this->filters['semester'])) {

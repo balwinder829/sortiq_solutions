@@ -23,6 +23,7 @@ class HodController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete' => 'delete',
     ];
 
     public function __construct()
@@ -253,6 +254,31 @@ class HodController extends Controller
     {
         $hod->delete();
         return back()->with('success', 'Record deleted');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_filter(
+            array_map('intval', explode(',', $request->ids))
+        );
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No authorities selected.'
+            ], 422);
+        }
+
+        $count = Hod::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' record' . ($count == 1 ? '' : 's') . ' deleted successfully.'
+        ]);
     }
 }
 

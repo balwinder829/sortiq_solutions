@@ -188,6 +188,13 @@ use App\Http\Controllers\StudentFeedbackController;
 use App\Http\Controllers\StudentFeedbackAdminController;
 
 use App\Http\Controllers\StudentGeneratedCvController;
+use App\Http\Controllers\Admin\AttendanceTestOptionController;
+use App\Http\Controllers\Admin\StudentTestTechnicalController;
+use App\Http\Controllers\Admin\StudentTestMachineRoundController;
+use App\Http\Controllers\Admin\StudentTestFinalController;
+use App\Http\Controllers\Finance\SimController;
+use App\Http\Controllers\Students\InternStudentController;
+
 
 Route::get('/student-feedback', [StudentFeedbackController::class, 'create'])
     ->name('student-feedback.create');
@@ -204,6 +211,8 @@ Route::get('/placed-students', [PlacementFrontendController::class, 'index'])
             abort_unless(file_exists($path), 404);
             return response()->download($path);
         })->name('download.file');
+
+
 Route::post('/upload-pdf', [StudentAdditionalLetterController::class, 'uploadPdf'])->name('upload.pdf');
 // EMployee Leave Form show
 Route::get('/leave/apply', [EmployeeLeaveController::class, 'create'])
@@ -256,6 +265,40 @@ Route::get('/fix-permissions', function () {
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
     return "Permission cache cleared!";
 });
+
+Route::prefix('admin/attendance-test-options')
+    ->name('admin.attendance-test-options.')
+    ->middleware('auth')
+    ->controller(AttendanceTestOptionController::class)
+    ->group(function () {
+
+        Route::get('/', 'index')->name('index');
+
+        // Categories
+        Route::post('/categories', 'storeCategory')
+            ->name('categories.store');
+
+        Route::get('/categories/{category}/edit', 'editCategory')
+            ->name('categories.edit');
+
+        Route::put('/categories/{category}', 'updateCategory')
+            ->name('categories.update');
+
+        Route::delete('/categories/{category}', 'destroyCategory')
+            ->name('categories.destroy');
+
+        // Test options
+        Route::get('/create', 'create')->name('create');
+
+        Route::post('/', 'store')->name('store');
+
+        Route::get('/{option}/edit', 'edit')->name('edit');
+
+        Route::put('/{option}', 'update')->name('update');
+
+        Route::delete('/{option}', 'destroy')->name('destroy');
+    });
+
 /*
 |--------------------------------------------------------------------------
 | Authentication Routes
@@ -348,32 +391,69 @@ Route::get('/scanners/view/{token}', [ScannerShareController::class, 'show'])
     ->name('scanners.share');
 
 
+Route::prefix('form')->name('form.')->group(function () {
 
+    Route::view('/already-submitted', 'student.attendance.form_already')
+        ->name('already');
 
-Route::prefix('form')
-    ->name('form.')
-    ->group(function () {
+    // Route::view('/thank-you', 'student.attendance.form_thank_you')
+    //     ->name('thankyou');
 
-        // ⚠️ Duplicate (PUT FIRST)
-        Route::view('/already-submitted', 'student.attendance.form_already')
-            ->name('already');
+    Route::get('/thank-you', [AttendanceFormController::class, 'thankYou'])
+    ->name('thankyou');
 
-        // 🎉 Success
-        Route::view('/thank-you', 'student.attendance.form_thank_you')
-            ->name('thankyou');
+    Route::get('/fill/{slug}', [AttendanceFormController::class, 'showForm'])
+        ->name('fill');
 
-        // 📝 Fill form
-        Route::get('/fill/{slug}', [AttendanceFormController::class, 'showForm'])
-            ->name('fill');
+    Route::post('/submit', [AttendanceFormController::class, 'submit'])
+        ->name('submit');
 
-        // ✅ Submit
-        Route::post('/submit', [AttendanceFormController::class, 'submit'])
-            ->name('submit');
+    // Keep these BEFORE the /{slug} route
+    Route::get('/choose-test', [AttendanceFormController::class, 'chooseTest'])
+        ->name('choose');
 
-        // 🔗 Entry (KEEP LAST ALWAYS)
-        Route::get('/{slug}', [AttendanceFormController::class, 'view'])
-            ->name('view');
-    });
+    Route::post('/choose-test', [AttendanceFormController::class, 'startSelectedTest'])
+        ->name('choose.submit');
+
+    // Catch-all slug route must be LAST
+    Route::get('/{slug}', [AttendanceFormController::class, 'view'])
+        ->name('view');
+});
+
+// Route::prefix('form')
+//     ->name('form.')
+//     ->group(function () {
+
+//         // ⚠️ Duplicate (PUT FIRST)
+//         Route::view('/already-submitted', 'student.attendance.form_already')
+//             ->name('already');
+
+//         // 🎉 Success
+//         Route::view('/thank-you', 'student.attendance.form_thank_you')
+//             ->name('thankyou');
+
+//         // 📝 Fill form
+//         Route::get('/fill/{slug}', [AttendanceFormController::class, 'showForm'])
+//             ->name('fill');
+
+//         // ✅ Submit
+//         Route::post('/submit', [AttendanceFormController::class, 'submit'])
+//             ->name('submit');
+
+//         // 🔗 Entry (KEEP LAST ALWAYS)
+//         Route::get('/{slug}', [AttendanceFormController::class, 'view'])
+//             ->name('view');
+
+//         Route::get('/choose-test', [
+//             AttendanceFormController::class,
+//             'chooseTest'
+//         ])->name('choose');
+
+//         Route::post('/choose-test', [
+//             AttendanceFormController::class,
+//             'startSelectedTest'
+//         ])->name('choose.submit');
+//     });
 
 Route::prefix('admin')->middleware(['auth'])->group(function () {
 
@@ -566,6 +646,49 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
 
         Route::get('external-attendance/{external_attendance}/selected-students', [ExternalAttendanceController::class, 'selectedStudents'])->name('external-attendance.selected.students');
 
+        // Bulk availability actions for attendance form links
+        Route::post(
+            'external-attendance/{external_attendance}/links/bulk-actions',
+            [ExternalAttendanceController::class, 'bulkLinkActions']
+        )->name('external-attendance.links.bulk');
+
+        // Regenerate one college attendance link, optionally with its linked exam links
+        Route::post(
+            'external-attendance-link/{link}/regenerate',
+            [ExternalAttendanceController::class, 'regenerateCollegeLink']
+        )->name('external-attendance.link.regenerate');
+
+
+        Route::post(
+            'external-attendance/{external_attendance}/sync-missing-links',
+            [ExternalAttendanceController::class, 'syncMissingLinks']
+        )->name('external-attendance.links.sync');
+
+        Route::post(
+            'external-attendance/{external_attendance}/update-exam-timing',
+            [ExternalAttendanceController::class, 'updateExamTiming']
+        )->name('external-attendance.links.timing');
+
+
+        Route::post(
+            'external-attendance/{external_attendance}/college-timing',
+            [ExternalAttendanceController::class, 'updateCollegeTiming']
+        )->name('external-attendance.links.college-timing');
+
+        Route::post(
+            'external-attendance/{external_attendance}/college-status',
+            [ExternalAttendanceController::class, 'toggleCollegeLinks']
+        )->name('external-attendance.links.college-status');
+
+        Route::post(
+            'external-attendance/{external_attendance}/sync-college/{collegeId}',
+            [ExternalAttendanceController::class, 'syncCollegeLinks']
+        )->name('external-attendance.links.sync-college');
+
+
+        Route::post('manual-data/bulk-delete', [ManualDataController::class, 'bulkDelete'])
+            ->name('manual_data.bulkDelete');
+
         Route::get('manual-data/export', [ManualDataController::class, 'exportExcel'])->name('manual_data.export');
         Route::get('manual-data/import', [ManualDataController::class, 'importForm'])->name('manual_data.import.form');
         Route::post('manual-data/import', [ManualDataController::class, 'import'])->name('manual_data.import');
@@ -584,6 +707,11 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
             '/hard-data/bulk-action',
             [HardDataController::class, 'bulkAction']
         )->name('hard_data.bulk.action');
+
+        Route::post(
+            'hard-data/bulk-delete',
+            [HardDataController::class, 'bulkDelete']
+        )->name('hard_data.bulkDelete');
 
         Route::get(
             '/closed-data',
@@ -605,7 +733,7 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
         Route::get('hard-data/export', [HardDataController::class, 'exportExcel'])->name('hard_data.export');
         Route::get('hard-data/import', [HardDataController::class, 'importForm'])->name('hard_data.import.form');
         Route::post('hard-data/import', [HardDataController::class, 'import'])->name('hard_data.import');
-        Route::resource('hard-data', HardDataController::class)->names('hard_data')->parameters(['manuhardal-data' => 'hard_data']);
+        Route::resource('hard-data', HardDataController::class)->names('hard_data')->parameters(['hard-data' => 'hard_data']);
         Route::post('/hard-data/move-enquiries',
             [HardDataController::class, 'moveManualToEnquiries']
         )->name('hard_data.move.enquiries');
@@ -1156,12 +1284,48 @@ Route::resource(
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
 
+
+        Route::resource('intern-students', InternStudentController::class)
+            ->except(['show']);
+
+        Route::post('intern-students/move/{student}', [InternStudentController::class, 'moveOne'])
+            ->name('intern-students.move-one');
+
+        Route::post('intern-students/move-selected', [InternStudentController::class, 'moveSelected'])
+            ->name('intern-students.move-selected');
+
+        Route::post('intern-students/bulk-delete', [InternStudentController::class, 'bulkDelete'])
+            ->name('intern-students.bulk-delete');
+
+
+            Route::get('intern-students/import', [
+                InternStudentController::class,
+                'importForm',
+            ])->name('intern-students.importForm');
+
+            Route::post('intern-students/import', [
+                InternStudentController::class,
+                'import',
+            ])->name('intern-students.import');
+
+            Route::get('intern-students/export', [
+                InternStudentController::class,
+                'exportExcel',
+            ])->name('intern-students.export');
+
+
+
     Route::resource('dropout-students', DropoutController::class)
     ->except(['create', 'store', 'show','destroy']);
 
-        Route::resource(
-            'student-custom-letters',
-            StudentCustomLetterController::class
+    Route::get(
+        'student-custom-letters/{studentCustomLetter}/preview',
+        [StudentCustomLetterController::class, 'preview']
+    )->name('student-custom-letters.preview');
+
+    Route::resource(
+        'student-custom-letters',
+        StudentCustomLetterController::class
     );
 
         Route::get(
@@ -1346,6 +1510,11 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('single-product-registrations', SingleProductRegistrationController::class)
             ->only(['index', 'show', 'destroy']);
 
+        Route::post(
+            'hods/bulk-delete',
+            [HodController::class, 'bulkDelete']
+        )->name('hods.bulkDelete');
+
         Route::resource('hods', HodController::class);
 
         Route::get('interview-questions/listing', 
@@ -1353,6 +1522,7 @@ Route::middleware(['auth'])->group(function () {
         )->name('interview-questions.practice');
 
         Route::resource('interview-questions', InterviewQuestionController::class);
+
         Route::get('technologies/data', [TechnologyController::class, 'data'])->name('technologies.data');
         Route::resource('technologies', TechnologyController::class);
         Route::resource('scanners', ScannerController::class);
@@ -1385,6 +1555,10 @@ Route::middleware(['auth'])->group(function () {
 
         Route::post('/students/copy', [StudentController::class, 'copyStudents'])->name('students.copy');
         Route::post('/students/make_interns', [StudentController::class, 'makeInterns'])->name('students.make_interns');
+        Route::post(
+            '/students/move-to-intern',
+            [StudentController::class, 'moveToIntern']
+        )->name('students.moveToIntern');
         Route::post(
             '/students/bulk-block-numbers',
             [StudentController::class, 'bulkBlockNumbers']
@@ -1424,6 +1598,11 @@ Route::middleware(['auth'])->group(function () {
             'workshop-expenses-data',
             [WorkshopExpenseController::class, 'data']
         )->name('workshop-expenses.data');
+
+        Route::post(
+            'college-mistakes/bulk-delete',
+            [CollegeMistakeController::class, 'bulkDelete']
+        )->name('college-mistakes.bulkDelete');
 
         Route::resource('college-mistakes', CollegeMistakeController::class);
 
@@ -1534,6 +1713,11 @@ Route::middleware(['auth'])->group(function () {
     //     [JoiningStudentController::class, 'sendToSession']
     // )->name('joined_students.sendToSession');
 
+    Route::get(
+        'letters/{letter}/preview',
+        [LetterController::class, 'preview']
+    )->name('letters.preview');
+
     Route::resource('letters', LetterController::class);
 
     Route::get(
@@ -1545,6 +1729,11 @@ Route::middleware(['auth'])->group(function () {
         'letters/{letter}/email',
         [LetterController::class,'sendEmail']
     )->name('letters.email');
+
+    Route::get(
+        'managements-letters/{managements_letter}/preview',
+        [ManagementsLetterController::class, 'preview']
+    )->name('managements_letters.preview');
 
     Route::get(
         'managements_letters/download_empty',
@@ -1672,6 +1861,11 @@ Route::middleware(['auth'])->group(function () {
         [SalarySlipController::class, 'sendEmail']
     )->name('salary-slips.email.single');
     
+    Route::get(
+        'student-additional-letters/{studentAdditionalLetter}/preview',
+        [StudentAdditionalLetterController::class, 'preview']
+    )->name('student-additional-letters.preview');
+
     Route::resource(
             'student-additional-letters',
             StudentAdditionalLetterController::class
@@ -1785,6 +1979,9 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
         Route::resource('project-categories', ProjectCategoryController::class)
             ->except(['show']);
 
+        Route::post('enquiries/bulk-delete', [EnquiryController::class, 'bulkDelete'])
+    ->name('enquiries.bulkDelete');
+
         Route::resource('enquiries', EnquiryController::class);
         Route::post('enquiries/import', [EnquiryController::class, 'import'])
         ->name('enquiries.import');
@@ -1797,6 +1994,36 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
         '/enquiries/bulk-move',
         [EnquiryController::class,'bulkMove']
     )->name('enquiries.bulkMove');
+
+    //Office expenses bulk deletes
+    Route::post('office-expenses/bulk-delete', [OfficeExpenseController::class, 'bulkDelete'])->name('office-expenses.bulkDelete');
+
+    Route::post('pantry-expenses/bulk-delete', [PantryExpenseController::class, 'bulkDelete'])->name('pantry-expenses.bulkDelete');
+
+
+    Route::post('office-paper-expenses/bulk-delete', [OfficePaperExpenseController::class, 'bulkDelete'])->name('office-paper-expenses.bulkDelete');
+
+
+    Route::post('tea-pantry-expenses/bulk-delete', [TeaPantryExpenseController::class, 'bulkDelete'])->name('tea-pantry-expenses.bulkDelete');
+
+
+    Route::post('office-cleaning-expenses/bulk-delete', [OfficeCleaningExpenseController::class, 'bulkDelete'])->name('office-cleaning-expenses.bulkDelete');
+
+
+    Route::post('office-accessories-expenses/bulk-delete', [OfficeAccessoryExpenseController::class, 'bulkDelete'])->name('office-accessories-expenses.bulkDelete');
+
+
+    Route::post('event-expenses/bulk-delete', [EventExpenseController::class, 'bulkDelete']
+    )->name('event-expenses.bulkDelete');
+
+    Route::post('travel-expenses/bulk-delete', [TravelExpenseController::class, 'bulkDelete'])->name('travel-expenses.bulkDelete');
+
+    Route::post('office-assets/bulk-delete', [OfficeAssetController::class, 'bulkDelete'])->name('office-assets.bulkDelete');
+
+    Route::post('recharges/bulk-delete', [RechargeController::class, 'bulkDelete'])->name('recharges.bulkDelete');
+
+    Route::post('visiting-cards/bulk-delete', [VisitingCardController::class, 'bulkDelete']    )->name('visiting-cards.bulkDelete');
+
 
 
     //Office expenses
@@ -1821,6 +2048,10 @@ Route::post('/enquiry-otp-verify', [EnquiryOtpController::class, 'verifyOtp'])
 
         Route::resource('accepted-letters', AcceptedLetterController::class);
 
+        Route::delete('sims/bulk-delete', [SimController::class, 'bulkDelete'])
+            ->name('sims.bulkDelete');
+
+        Route::resource('sims', SimController::class);
 // Route::middleware(['auth', 'enquiry.otp','role:1'])->group(function () {
     Route::resource('recharges', RechargeController::class);
     // quick status update
@@ -1904,6 +2135,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/students/moveMultipletoConfirmation', [StudentController::class, 'moveMultipleToConfirmation'])
     ->name('students.moveMultipleToConfirmation');
 
+    Route::post('/students/clear-dues', [StudentController::class, 'clearDues'])
+    ->name('students.clearDues');
+
     // new routes for download certificate
 
     Route::post('/students/download-certificate-multiple', [StudentController::class, 'downloadCertificateMultiple'])
@@ -1921,6 +2155,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/verify-students', [StudentController::class, 'verifyStudents'])->name('verify-students.index');
     Route::get('/verify-students-index', [StudentController::class, 'verifyStudentsLink'])->name('verify-students-index.index');
 
+    Route::post(
+        'placement-companies/bulk-delete',
+        [PlacementCompanyController::class, 'bulkDelete']
+    )->name('placement-companies.bulkDelete');
 
     // Route::resource('office-expenses', OfficeExpenseController::class);
     Route::get('/placement-companies/import', [PlacementCompanyController::class, 'importForm'])
@@ -1930,6 +2168,10 @@ Route::middleware(['auth'])->group(function () {
             ->name('placement-companies.import');
     Route::resource('placement-companies', PlacementCompanyController::class);
 
+    Route::post(
+        'part-time-jobs/bulk-delete',
+        [PartTimeJobController::class, 'bulkDelete']
+    )->name('part-time-jobs.bulkDelete');
     Route::get('/part-time-jobs/import', [PartTimeJobController::class, 'importForm'])
             ->name('part-time-jobs.import.view');
 
@@ -1937,6 +2179,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('part-time-jobs.import');
 
     Route::resource('part-time-jobs', PartTimeJobController::class);
+
+    Route::post('pgs/bulk-delete', [PgController::class, 'bulkDelete'])->name('pgs.bulkDelete');
 
     Route::get('/pgs/import', [PgController::class, 'importForm'])
             ->name('pgs.import.view');
@@ -2088,6 +2332,9 @@ Route::middleware(['auth'])->group(function () {
     // Route::post('/payroll/store', [PayrollController::class, 'store'])
     //     ->name('payroll.store');
 
+    Route::get('/sessions/{session}/colleges', [SessionController::class, 'colleges'])
+    ->name('sessions.college');
+
     Route::get('/sessions/{session}/export-students', [SessionController::class, 'exportStudents'])
     ->name('sessions.exportStudents');
 
@@ -2098,6 +2345,11 @@ Route::middleware(['auth'])->group(function () {
     // routes/web.php
     Route::get('/courses/{course}/students', [CourseController::class, 'students'])
         ->name('courses.students');
+
+        Route::post(
+            'courses/bulk-delete',
+            [CourseController::class, 'bulkDelete']
+        )->name('courses.bulkDelete');
 
     Route::get(
         '/courses/{course}/students/export-excel',
@@ -2176,6 +2428,79 @@ Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissi
 
     // Tests module
     Route::prefix('admin')->name('admin.')->group(function () {
+
+        Route::prefix('final-students')->name('final-students.')->group(function () {
+            Route::get('/', [StudentTestFinalController::class, 'index'])->name('index');
+            Route::get('/export', [StudentTestFinalController::class, 'export'])->name('export');
+            Route::post('/certificates', [StudentTestFinalController::class, 'downloadCertificates'])->name('certificates');
+            Route::post('/bulk-category', [StudentTestFinalController::class, 'bulkUpdateCategory'])->name('bulk-category');
+            Route::put('/{finalStudent}', [StudentTestFinalController::class, 'update'])->name('update');
+            Route::post(
+                '/letters',
+                [StudentTestFinalController::class, 'downloadFinalStudentLetters']
+            )->name('letters');
+        });
+
+        Route::prefix('machine-round')->name('machine-round.')->group(function () {
+            Route::get('/', [StudentTestMachineRoundController::class, 'index'])->name('index');
+            Route::get('/export', [StudentTestMachineRoundController::class, 'export'])->name('export');
+            Route::put('/{machineRound}', [StudentTestMachineRoundController::class, 'update'])->name('update');
+            Route::post('/move-final', [StudentTestMachineRoundController::class, 'moveSelectedToFinal'])->name('move-final');
+        });
+
+Route::get(
+    'technical-round/export',
+    [StudentTestTechnicalController::class, 'export']
+)->name('technical-round.export');
+        // Technical Round
+Route::get('technical-round', [
+    StudentTestTechnicalController::class, 'index'
+])->name('technical-round.index');
+
+// Route::get('technical-round/create', [
+//     StudentTestTechnicalController::class, 'create'
+// ])->name('technical-round.create');
+
+// Route::post('technical-round', [
+//     StudentTestTechnicalController::class, 'store'
+// ])->name('technical-round.store');
+
+// Route::get('technical-round/{technicalRound}', [
+//     StudentTestTechnicalController::class, 'show'
+// ])->name('technical-round.show');
+
+// Route::get('technical-round/{technicalRound}/edit', [
+//     StudentTestTechnicalController::class, 'edit'
+// ])->name('technical-round.edit');
+
+// Route::put('technical-round/{technicalRound}', [
+//     StudentTestTechnicalController::class, 'update'
+// ])->name('technical-round.update');
+
+Route::delete('technical-round/{technicalRound}', [
+    StudentTestTechnicalController::class, 'destroy'
+])->name('technical-round.destroy');
+
+Route::post(
+    'technical-round/move-selected',
+    [StudentTestTechnicalController::class, 'moveSelectedToRound']
+)->name('technical-round.move-selected');
+// Move selected students from Results into Technical Round
+// Route::post('tests/{test}/move-round', [
+//     StudentTestTechnicalController::class, 'moveSelected'
+// ])->name('tests.move.round');
+
+
+
+        Route::post(
+            '/tests/{test_id}/move-round',
+            [TestController::class, 'moveSelectedToRound']
+        )->name('tests.move.round');
+        Route::post(
+            'tests/bulk-delete',
+            [TestController::class, 'bulkDelete']
+        )->name('tests.bulkDelete');
+
         Route::resource('tests', TestController::class);
         // Regenerate test link
         Route::post('tests/{test}/regenerate-link',
@@ -2184,6 +2509,11 @@ Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissi
 
         Route::delete('/tests/links/{id}', [TestController::class, 'destroyLink'])
         ->name('tests.links.destroy');
+
+        Route::get(
+            '/tests/{test}/links/export',
+            [TestController::class, 'exportCollegeLinks']
+        )->name('tests.links.export');
 
         Route::post(
             'tests/links/{link}/regenerate',
@@ -2194,9 +2524,44 @@ Route::post('/admin/manager-permissions', [\App\Http\Controllers\ManagerPermissi
             [TestController::class,'links']
         )->name('tests.links');
 
+        
+        Route::put(
+            'tests/links/{link}/settings',
+            [TestController::class, 'updateLinkAvailability']
+        )->name('tests.links.settings');
+
+        Route::post(
+            'tests/links/{link}/toggle',
+            [TestController::class, 'toggleLinkAvailability']
+        )->name('tests.links.toggle');
+
+
         Route::post('/admin/tests/{test}/download-certificates',
             [TestController::class, 'downloadCertificates'])
             ->name('tests.certificate.download');
+
+
+        Route::post(
+            'tests/{test_id}/students/{student_test_id}/update-score',
+            [TestController::class, 'updateStudentScore']
+        )->name('tests.update-score');
+
+
+        Route::post(
+            'tests/{test_id}/update-scores',
+            [TestController::class, 'updateSelectedScores']
+        )->name('tests.update-scores');
+
+        Route::post(
+            'tests/{test}/links/bulk-status',
+            [TestController::class, 'bulkUpdateLinkStatus']
+        )->name('tests.links.bulk-status');
+
+        Route::post(
+            'tests/{test}/links/bulk-settings',
+            [TestController::class, 'bulkUpdateLinkSettings']
+        )->name('tests.links.bulk-settings');
+
          // OFFLINE (new)
         // Route::get('offline-tests', [OfflineTestController::class,'index'])
         //     ->name('offline.tests.index');
@@ -2276,6 +2641,9 @@ Route::get(
 
         Route::get('tests/{test}/export-all', [TestController::class, 'exportAllStudents'])->name('tests.export.all');
         Route::get('tests/{test}/export-selected', [TestController::class, 'exportSelectedStudents'])->name('tests.export.selected');
+
+        Route::post('tests/{test}/export-checked-students', [TestController::class, 'exportCheckedStudents'])->name('tests.export.checked');
+
         Route::get('tests/{test}/export-finalized', [TestController::class, 'exportFinalized'])->name('tests.export.finalized');
         Route::post('tests/{test}/move-to-enquiries', [TestController::class, 'moveFinalizedToEnquiries'])->name('tests.move.enquiries');
 
@@ -2629,10 +2997,15 @@ Route::prefix('student')->group(function () {
     })->name('student.exam.closed');
 
     // Already submitted page
-    Route::get('already-submitted/{slug}', function ($slug) {
-        $test = Test::where('slug', $slug)->firstOrFail();
-        return view('student.already_submitted', compact('test'));
-    })->name('student.already.submitted');
+    // Route::get('already-submitted/{slug}', function ($slug) {
+    //     $test = Test::where('slug', $slug)->firstOrFail();
+    //     return view('student.already_submitted', compact('test'));
+    // })->name('student.already.submitted');
+
+    Route::view(
+        '/already-submitted',
+        'student.already_submitted'
+    )->name('student.already.submitted');
 
     // Result page (still by studentTest ID – INTERNAL ONLY)
     // Route::get('result/{studentTest}', function (StudentTest $studentTest) {
@@ -2780,6 +3153,10 @@ Route::middleware(['auth'])->group(function () {
 
          //***** PLACEMENT*****//
 
+        Route::post(
+            'placements/bulk-delete',
+            [PlacementController::class, 'bulkDelete']
+        )->name('placements.bulkDelete');
         Route::resource('placements', PlacementController::class);
         
 

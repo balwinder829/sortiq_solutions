@@ -15,11 +15,13 @@ use App\Models\StudentTest;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TestAllStudentsExport;
+use App\Exports\TestCollegeLinksExport;
 use App\Exports\TestSelectedStudentsExport;
 use App\Exports\FinalizedStudentsExport;
 use App\Models\Enquiry;
 use App\Exports\SingleTestStudentsExport;
 use App\Exports\OverallStudentsExport;
+use App\Exports\SelectedTestStudentsExport;
 use Mpdf\Mpdf;
 use Illuminate\Support\Facades\View;
 use App\Traits\PdfLayoutTrait;
@@ -27,6 +29,7 @@ use App\Models\TestLink;
 use App\Models\StudentSession;
 use Carbon\Carbon;
 use ZipArchive;
+use Illuminate\Support\Facades\DB;
 
 class TestController extends Controller
 {
@@ -49,6 +52,9 @@ class TestController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete' => 'delete',
+        'updateLinkAvailability' => 'edit',
+        'toggleLinkAvailability' => 'edit',
 
         // 'bulkDelete'      => 'delete',
     ];
@@ -206,8 +212,8 @@ class TestController extends Controller
             'test_category_id'  => 'required',
             'status'            => 'required|in:draft,published,unpublished',
             'is_active'         => 'nullable|boolean',
-            'exam_start_at' => 'required|date',
-            'exam_end_at'   => 'required|date|after_or_equal:exam_start_at',
+            'exam_start_at' => 'nullable|date',
+            'exam_end_at'   => 'nullable|date|after_or_equal:exam_start_at',
             // 'timer_type'    => 'required|in:fixed,individual',
         ]);
         // dd(Str::random(30));
@@ -222,8 +228,10 @@ class TestController extends Controller
             'test_category_id'  => $request->test_category_id,
             'status'            => $request->status,
             'is_active'            => $request->is_active,
-            'exam_start_at' => Carbon::parse($request->exam_start_at)->startOfDay(),
-            'exam_end_at'   => Carbon::parse($request->exam_end_at)->endOfDay(),
+            // 'exam_start_at' => Carbon::parse($request->exam_start_at)->startOfDay(),
+            // 'exam_end_at'   => Carbon::parse($request->exam_end_at)->endOfDay(),
+            'exam_start_at' => NULL,
+            'exam_end_at'   => NULL,
             'timer_type' => 'fixed',
         ]);
 
@@ -255,6 +263,62 @@ class TestController extends Controller
             'Link regenerated for ' . ($link->college->full_name ?? 'college')
         );
     }
+
+        
+    /**
+     * Save college-specific test availability settings.
+     * A NULL valid_until means the test has not been started.
+     */
+    public function updateLinkAvailability(Request $request, TestLink $link)
+    {
+        $validated = $request->validate([
+            'valid_from'  => ['nullable', 'date'],
+            'valid_until' => ['nullable', 'date'],
+        ]);
+
+        if (!empty($validated['valid_from']) && !empty($validated['valid_until'])) {
+            if (
+                Carbon::parse($validated['valid_until'])
+                    ->lt(Carbon::parse($validated['valid_from']))
+            ) {
+                return back()
+                    ->withErrors([
+                        'valid_until' => 'Valid Until must be after or equal to Valid From.'
+                    ])
+                    ->withInput();
+            }
+        }
+
+        $link->valid_from = !empty($validated['valid_from'])
+            ? Carbon::parse($validated['valid_from'])
+            : null;
+
+        $link->valid_until = !empty($validated['valid_until'])
+            ? Carbon::parse($validated['valid_until'])
+            : null;
+
+        $link->save();
+
+        return back()->with(
+            'success',
+            'Availability settings saved successfully.'
+        );
+    }
+
+    /**
+     * Manually enable or disable a college-specific test link.
+     */
+    public function toggleLinkAvailability(TestLink $link)
+    {
+        $link->is_enabled = !$link->is_enabled;
+        $link->save();
+
+        return back()->with(
+            'success',
+            'Test link ' . ($link->is_enabled ? 'enabled' : 'disabled') . ' successfully.'
+        );
+    }
+
 
     public function regenerateLink(Test $test)
     {
@@ -319,8 +383,8 @@ class TestController extends Controller
             // 'slug'              => 'required|unique:tests,slug,' . $test->id,
             // 'access_key'        => 'required|unique:tests,access_key,' . $test->id,
             'status'            => 'required|in:draft,published,unpublished',
-            'exam_start_at' => 'required|date',
-            'exam_end_at'   => 'required|date|after_or_equal:exam_start_at',
+            'exam_start_at' => 'nullable|date',
+            'exam_end_at'   => 'nullable|date|after_or_equal:exam_start_at',
             // 'timer_type'    => 'required|in:fixed,individual',
             'is_active'         => 'nullable|boolean',
             'college_ids' => 'required|array',
@@ -335,8 +399,10 @@ class TestController extends Controller
             'test_category_id'  => $request->test_category_id,
             'status'            => $request->status,
             'is_active'         => $request->is_active,
-            'exam_start_at' => Carbon::parse($request->exam_start_at)->startOfDay(),
-            'exam_end_at'   => Carbon::parse($request->exam_end_at)->endOfDay(),
+            // 'exam_start_at' => Carbon::parse($request->exam_start_at)->startOfDay(),
+            // 'exam_end_at'   => Carbon::parse($request->exam_end_at)->endOfDay(),
+            'exam_start_at' => NULL,
+            'exam_end_at'   => NULL,
             'timer_type' => 'fixed',
         ]);
 
@@ -384,9 +450,101 @@ class TestController extends Controller
 
     public function destroy(Test $test)
     {
+         if (StudentTest::where('test_id', $test->id)->exists()) {
+            return redirect()->route('admin.tests.index')
+                ->with('success', 'This test cannot be deleted because student test records already exist.');
+        }
+
         $test->delete();
         return redirect()->route('admin.tests.index')
-                         ->with('success', 'Test deleted successfully.');
+                         ->with('error', 'Test deleted successfully.');
+    }
+
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_filter(
+            array_map('intval', explode(',', $request->ids))
+        );
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No tests selected.'
+            ], 422);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tests having even 1 student record CANNOT be deleted
+        |--------------------------------------------------------------------------
+        */
+
+        $blockedIds = StudentTest::whereIn('test_id', $ids)
+            ->pluck('test_id')
+            ->unique()
+            ->toArray();
+
+        $deletableIds = array_values(
+            array_diff($ids, $blockedIds)
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete only tests having NO students
+        |--------------------------------------------------------------------------
+        */
+
+        $deletedCount = 0;
+
+        if (!empty($deletableIds)) {
+            $deletedCount = Test::whereIn('id', $deletableIds)->delete();
+        }
+
+        $blockedCount = count($blockedIds);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+
+        if ($deletedCount > 0 && $blockedCount > 0) {
+
+            return response()->json([
+                'success' => true,
+                'message' =>
+                    $deletedCount . ' test' .
+                    ($deletedCount == 1 ? '' : 's') .
+                    ' deleted successfully. ' .
+                    $blockedCount . ' test' .
+                    ($blockedCount == 1 ? '' : 's') .
+                    ' could not be deleted because student records exist.'
+            ]);
+        }
+
+        if ($deletedCount > 0) {
+
+            return response()->json([
+                'success' => true,
+                'message' =>
+                    $deletedCount . ' test' .
+                    ($deletedCount == 1 ? '' : 's') .
+                    ' deleted successfully.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' =>
+                'Selected test' .
+                ($blockedCount == 1 ? '' : 's') .
+                ' cannot be deleted because student records exist.'
+        ], 422);
     }
 
     // public function store(Request $request)
@@ -434,193 +592,264 @@ class TestController extends Controller
     }
 
     public function results(Request $request, $test_id)
-{
-    $movedStudentTestIds = Enquiry::where('test_id', $test_id)
-        ->pluck('student_test_id')
-        ->toArray();
+    {
+        $movedStudentTestIds = Enquiry::where('test_id', $test_id)
+            ->pluck('student_test_id')
+            ->toArray();
 
-    $test = Test::withCount('questions')->findOrFail($test_id);
+        $test = Test::withCount('questions')->findOrFail($test_id);
 
-    // Fetch students for S.No
-    $students = Student::select('email_id','sno')->get()->keyBy('email_id');
+        // Fetch students for S.No
+        $students = Student::select('email_id','sno')->get()->keyBy('email_id');
 
-    $studentTestsQuery = $test->studentTests();
+        // $studentTestsQuery = $test->studentTests();
 
-    /* ===== COLLEGE DROPDOWN DATA ===== */
+        $studentTestsQuery = $test->studentTests()
+        ->whereIn('id', function ($query) use ($test_id) {
+            $query->selectRaw('MAX(id)')
+                ->from('student_tests')
+                ->where('test_id', $test_id)
+                ->whereNotNull('student_mobile')
+                ->where('student_mobile', '!=', '')
+                ->groupBy('student_mobile', 'college_id');
+        });
 
-    $collegeIds = StudentTest::where('test_id', $test_id)
-        ->whereNotNull('college_id') // prevent NULL values
-        ->orderByDesc('created_at')
-        ->pluck('college_id')
-        ->unique()
-        ->values();
+        /* ===== COLLEGE DROPDOWN DATA ===== */
 
-    $colleges = College::whereIn('id', $collegeIds)
-        ->get()
-        ->sortBy(function ($college) use ($collegeIds) {
-            return $collegeIds->search($college->id);
-        })
-        ->values();
+        $collegeIds = StudentTest::where('test_id', $test_id)
+            ->whereNotNull('college_id') // prevent NULL values
+            ->orderByDesc('created_at')
+            ->pluck('college_id')
+            ->unique()
+            ->values();
 
-    /* ===== LATEST COLLEGE ===== */
+        $colleges = College::whereIn('id', $collegeIds)
+            ->get()
+            ->sortBy(function ($college) use ($collegeIds) {
+                return $collegeIds->search($college->id);
+            })
+            ->values();
 
-    $latestCollegeId = StudentTest::where('test_id', $test_id)
-        ->whereNotNull('college_id')
-        ->latest('created_at')
-        ->value('college_id');
+        /* ===== LATEST COLLEGE ===== */
 
-    /* ===== COLLEGE FILTER ===== */
+        $latestCollegeId = StudentTest::where('test_id', $test_id)
+            ->whereNotNull('college_id')
+            ->latest('created_at')
+            ->value('college_id');
 
-    if ($request->has('college_id')) {
+        /* ===== COLLEGE FILTER ===== */
 
-        if ($request->college_id != '') {
-            $studentTestsQuery->where('college_id', $request->college_id);
-        }
+        if ($request->has('college_id')) {
 
-    } else {
-
-        if ($latestCollegeId) {
-            $studentTestsQuery->where('college_id', $latestCollegeId);
-        } elseif ($test->college_id) {
-            // legacy fallback
-            $studentTestsQuery->where('college_id', $test->college_id);
-        }
-    }
-
-    /* ===== EXISTING FILTERS ===== */
-
-    if ($request->filled('sno')) {
-
-        $studentEmails = $students->filter(function ($student) use ($request) {
-            return str_contains($student->sno, $request->sno);
-        })->keys();
-
-        $studentTestsQuery->whereIn('student_email', $studentEmails);
-    }
-
-    if ($request->filled('name')) {
-        $studentTestsQuery->where('student_name', 'like', '%' . $request->name . '%');
-    }
-
-    if ($request->filled('email')) {
-        $studentTestsQuery->where('student_email', 'like', '%' . $request->email . '%');
-    }
-
-    if ($request->filled('student_mobile')) {
-        $studentTestsQuery->where('student_mobile', 'like', '%' . $request->student_mobile . '%');
-    }
-
-    /* ===== SORTING ===== */
-
-    if ($request->has('college_id') && $request->college_id != '') {
-
-        // Specific college → highest score first
-        $studentTestsQuery->orderByDesc('score');
-
-    } else {
-
-        // All colleges → latest college first
-        if ($collegeIds->isNotEmpty()) {
-
-            $ids = $collegeIds->implode(',');
-
-            $studentTestsQuery
-                ->orderByRaw("FIELD(college_id,$ids)")
-                ->orderByDesc('score');
+            if ($request->college_id != '') {
+                $studentTestsQuery->where('college_id', $request->college_id);
+            }
 
         } else {
 
+            if ($latestCollegeId) {
+                $studentTestsQuery->where('college_id', $latestCollegeId);
+            } elseif ($test->college_id) {
+                // legacy fallback
+                $studentTestsQuery->where('college_id', $test->college_id);
+            }
+        }
+
+        /* ===== EXISTING FILTERS ===== */
+
+        if ($request->filled('sno')) {
+
+            $studentEmails = $students->filter(function ($student) use ($request) {
+                return str_contains($student->sno, $request->sno);
+            })->keys();
+
+            $studentTestsQuery->whereIn('student_email', $studentEmails);
+        }
+
+        if ($request->filled('name')) {
+            $studentTestsQuery->where('student_name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('email')) {
+            $studentTestsQuery->where('student_email', 'like', '%' . $request->email . '%');
+        }
+
+        if ($request->filled('student_mobile')) {
+            $studentTestsQuery->where('student_mobile', 'like', '%' . $request->student_mobile . '%');
+        }
+
+        /* ===== SORTING ===== */
+
+        if ($request->has('college_id') && $request->college_id != '') {
+
+            // Specific college → highest score first
             $studentTestsQuery->orderByDesc('score');
 
-        }
-    }
+        } else {
 
-    /* ===== TOP N ===== */
+            // All colleges → latest college first
+            if ($collegeIds->isNotEmpty()) {
 
-    if ($request->filled('top_n') && is_numeric($request->top_n)) {
-        $studentTestsQuery->limit((int)$request->top_n);
-    }
+                $ids = $collegeIds->implode(',');
 
-    /* ===== STATUS FILTER ===== */
+                $studentTestsQuery
+                    ->orderByRaw("FIELD(college_id,$ids)")
+                    ->orderByDesc('score');
 
-    if ($request->filled('finalized')) {
-        $studentTestsQuery->where('is_finalized', $request->finalized);
-    }
+            } else {
 
-    if ($request->filled('gender')) {
-        $studentTestsQuery->where('gender', $request->gender);
-    }
+                $studentTestsQuery->orderByDesc('score');
 
-    if ($request->filled('moved')) {
-
-        if ($request->moved === '1') {
-            $studentTestsQuery->whereIn('id', $movedStudentTestIds);
+            }
         }
 
-        elseif ($request->moved === '0' && !empty($movedStudentTestIds)) {
-            $studentTestsQuery->whereNotIn('id', $movedStudentTestIds);
+        /* ===== TOP N ===== */
+
+        if ($request->filled('top_n') && is_numeric($request->top_n)) {
+            $studentTestsQuery->limit((int)$request->top_n);
         }
+
+        /* ===== STATUS FILTER ===== */
+
+        if ($request->filled('finalized')) {
+            $studentTestsQuery->where('is_finalized', $request->finalized);
+        }
+
+        if ($request->filled('gender')) {
+            $studentTestsQuery->where('gender', $request->gender);
+        }
+
+        if ($request->filled('moved')) {
+
+            if ($request->moved === '1') {
+                $studentTestsQuery->whereIn('id', $movedStudentTestIds);
+            }
+
+            elseif ($request->moved === '0' && !empty($movedStudentTestIds)) {
+                $studentTestsQuery->whereNotIn('id', $movedStudentTestIds);
+            }
+        }
+
+        if ($request->filled('course_type')) {
+            $studentTestsQuery->where('course_type', $request->course_type);
+        }
+
+        // if ($request->filled('branch')) {
+        //     $studentTestsQuery->where('branch', $request->branch);
+        // }
+
+        if ($request->filled('semester')) {
+            $studentTestsQuery->where('semester', $request->semester);
+        }
+
+        if ($request->filled('branch')) {
+            $studentTestsQuery->where('branch', 'like', '' . $request->branch . '%');
+        }
+        /* ===== CLONE FILTERED QUERY ===== */
+        $filteredQuery = clone $studentTestsQuery;
+
+        /* ===== TOTAL STUDENTS (FILTERED) ===== */
+        $totalFilteredStudents = (clone $filteredQuery)->count();
+
+        /* ===== COLLEGE-WISE COUNT (FILTERED) ===== */
+         
+        $collegeStudentCounts = (clone $studentTestsQuery)
+        ->reorder() // ✅ removes ORDER BY
+        ->selectRaw('college_id, COUNT(*) as total')
+        ->groupBy('college_id')
+        ->pluck('total', 'college_id');
+
+        $studentTests = $studentTestsQuery->get();
+
+        /* ===== ATTACH S.NO ===== */
+
+        $studentTests->each(function ($st) use ($students) {
+            $st->sno = $students[$st->student_email]->sno ?? '-';
+        });
+
+        $defaultCollegeId = $request->has('college_id')
+            ? $request->college_id
+            : ($latestCollegeId ?? $test->college_id);
+
+
+            $sessionsList = StudentSession::where('status', 'active') // ✅ string status
+                ->orderBy('start_date', 'desc')
+                ->get()
+                ->pluck('display_name', 'id');
+
+
+        return view('admin.tests.results', compact(
+            'test',
+            'studentTests',
+            'movedStudentTestIds',
+            'colleges',
+            'totalFilteredStudents',
+            'collegeStudentCounts',
+            'sessionsList',
+            'defaultCollegeId'
+        ));
     }
 
-    if ($request->filled('course_type')) {
-        $studentTestsQuery->where('course_type', $request->course_type);
-    }
-
-    if ($request->filled('class')) {
-        $studentTestsQuery->where('class', $request->class);
-    }
-
-    if ($request->filled('semester')) {
-        $studentTestsQuery->where('semester', $request->semester);
-    }
-
-
-    /* ===== CLONE FILTERED QUERY ===== */
-    $filteredQuery = clone $studentTestsQuery;
-
-    /* ===== TOTAL STUDENTS (FILTERED) ===== */
-    $totalFilteredStudents = (clone $filteredQuery)->count();
-
-    /* ===== COLLEGE-WISE COUNT (FILTERED) ===== */
      
-    $collegeStudentCounts = (clone $studentTestsQuery)
-    ->reorder() // ✅ removes ORDER BY
-    ->selectRaw('college_id, COUNT(*) as total')
-    ->groupBy('college_id')
-    ->pluck('total', 'college_id');
+public function updateStudentScore(Request $request, $test_id, $student_test_id)
+{
+    $test = Test::withCount('questions')->findOrFail($test_id);
 
-    $studentTests = $studentTestsQuery->get();
+    $studentTest = StudentTest::where('test_id', $test->id)
+        ->where('id', $student_test_id)
+        ->firstOrFail();
 
-    /* ===== ATTACH S.NO ===== */
+    $request->validate([
+        'score' => ['required', 'integer', 'min:0'],
+    ]);
 
-    $studentTests->each(function ($st) use ($students) {
-        $st->sno = $students[$st->student_email]->sno ?? '-';
-    });
+    $maxScore = (int) $test->questions_count;
 
-    $defaultCollegeId = $request->has('college_id')
-        ? $request->college_id
-        : ($latestCollegeId ?? $test->college_id);
+    // Cap scores at the maximum question count.
+    $score = min((int) $request->input('score'), $maxScore);
 
+    $studentTest->score = $score;
+    $studentTest->save();
 
-        $sessionsList = StudentSession::where('status', 'active') // ✅ string status
-            ->orderBy('start_date', 'desc')
-            ->get()
-            ->pluck('display_name', 'id');
-
-
-    return view('admin.tests.results', compact(
-        'test',
-        'studentTests',
-        'movedStudentTestIds',
-        'colleges',
-        'totalFilteredStudents',
-        'collegeStudentCounts',
-        'sessionsList',
-        'defaultCollegeId'
-    ));
+    return redirect()->back()->with(
+        'success',
+        "Score updated successfully: {$score}/{$maxScore} for {$studentTest->student_name}."
+    );
 }
 
-     
+
+public function updateSelectedScores(Request $request, $test_id)
+{
+    $test = Test::withCount('questions')->findOrFail($test_id);
+
+    $validated = $request->validate([
+        'student_test_ids'   => ['required', 'array', 'min:1'],
+        'student_test_ids.*' => ['required', 'integer', 'distinct'],
+        'score'              => ['required', 'integer', 'min:0'],
+    ]);
+
+    $maxScore = (int) $test->questions_count;
+
+    // Cap the submitted score at the test's maximum.
+    $score = min((int) $validated['score'], $maxScore);
+
+    // Only update selected students belonging to this test.
+    $updatedCount = StudentTest::where('test_id', $test->id)
+        ->whereIn('id', $validated['student_test_ids'])
+        ->update(['score' => $score]);
+
+    if ($updatedCount === 0) {
+        return redirect()->back()->withErrors([
+            'student_test_ids' => 'No matching students were found for this test.',
+        ]);
+    }
+
+    return redirect()->back()->with(
+        'success',
+        "Score updated to {$score}/{$maxScore} for {$updatedCount} student(s)."
+    );
+}
+
 
     public function bulkFinalize(Request $request)
     {
@@ -688,43 +917,39 @@ class TestController extends Controller
 
     $count = 0;
 
-    foreach ($students as $st) {
+foreach ($students as $st) {
 
-        $enquiry = Enquiry::firstOrCreate(
-            [
-                // ✅ UNIQUE KEY (perfect)
-                'source_id'   => $st->id,
-                'source_type' => 'online',
-            ],
-            [
-                'name'       => $st->student_name,
-                'email'      => $st->student_email,
-                'mobile'     => $st->student_mobile ?? null,
+    // Same mobile + session ki Enquiry pehle se hai ya nahi
+    $enquiry = Enquiry::where('mobile', $st->student_mobile)
+        ->where('session_id', $sessionId)
+        ->first();
 
-                'college'    => $st->college_id ?? null,
-                'study'      => $st->class ?? '',
-                'semester'   => $st->semester ?? null,
-
-                'session_id' => $sessionId,
-
-                'source'     => 'online',
-                'source_type'     => 'online',
-                'source_id'     => $st->id,
-                'status'     => 'new',
-                'created_by' => auth()->id(),
-            ]
-        );
-
-        // ✅ count only new
-        if ($enquiry->wasRecentlyCreated) {
-            $count++;
-        }
-
-        // ✅ ALWAYS update flag (safe)
-        $st->update([
-            'is_moved_to_enquiry' => 1
+    // Enquiry nahi mili to create karein
+    if (!$enquiry) {
+        $enquiry = Enquiry::create([
+            'name'        => $st->student_name,
+            'email'       => $st->student_email,
+            'mobile'      => $st->student_mobile ?? null,
+            'college'     => $st->college_id ?? null,
+            'study'       => $st->class ?? '',
+            'semester'    => $st->semester ?? null,
+            'session_id'  => $sessionId,
+            'source'      => 'online',
+            'source_type' => 'online',
+            'source_id'   => $st->id,
+            'status'      => 'new',
+            'created_by'  => auth()->id(),
         ]);
+
+        // Sirf new Enquiry count hogi
+        $count++;
     }
+
+    // Enquiry pehle se ho ya abhi create hui ho — flag update karein
+    $st->update([
+        'is_moved_to_enquiry' => 1,
+    ]);
+}
 
 return back()->with('success', "$count student(s) moved successfully");
      
@@ -932,10 +1157,30 @@ return back()->with('success', "$count student(s) moved successfully");
     
     }
 
+    /**
+     * Export all college links for a test.
+     */
+    
+public function exportCollegeLinks(Test $test)
+{
+    $fileName = preg_replace('/[^A-Za-z0-9_-]/', '_', $test->title);
 
+    $fileName = $fileName . '_College_Links_' . now()->format('d_M_Y') . '.xlsx';
+
+    return Excel::download(
+        new \App\Exports\TestCollegeLinksExport($test),
+        $fileName
+    );
+}
+
+    
     public function links(Test $test)
     {
-        $links = $test->links()->with('college')->get();
+        // $links = $test->links()->with('college')->get();
+        $links = $test->links()
+        ->with('college')
+        ->orderByDesc('updated_at')
+        ->get();
 
          // Get last attempt date per college
         // $lastAttempts = StudentTest::where('test_id', $test->id)
@@ -1152,4 +1397,467 @@ return back()->with('success', "$count student(s) moved successfully");
 
         return back()->with('success', 'Link deleted successfully.');
     }
+
+
+public function moveSelectedToRound(Request $request, $test_id)
+{
+    $validated = $request->validate([
+        'student_test_ids' => ['required', 'array', 'min:1'],
+        'student_test_ids.*' => ['required', 'integer', 'distinct'],
+
+        'destination_round' => [
+            'required',
+            'in:technical,machine_round,final',
+        ],
+
+        // Required only when moving to Final Students.
+        'benefit_type' => [
+            'required_if:destination_round,final',
+            'nullable',
+            'in:free,discount,stipend,3_month_ppo',
+        ],
+    ], [
+        'student_test_ids.required' =>
+            'Please select at least one student.',
+        'destination_round.required' =>
+            'Please select a destination.',
+        'benefit_type.required_if' =>
+            'Please select a category for Final Students.',
+        'benefit_type.in' =>
+            'Please select a valid Final Student category.',
+    ]);
+
+    $test = Test::findOrFail($test_id);
+
+    $destination = $validated['destination_round'];
+    $benefitType = $destination === 'final'
+        ? $validated['benefit_type']
+        : null;
+
+    $tables = [
+        'technical' => 'student_test_technical',
+        'machine_round' => 'student_test_machine_round',
+        'final' => 'student_test_final',
+    ];
+
+    $destinationTable = $tables[$destination];
+    $userId = auth()->id();
+
+    $movedCount = 0;
+    $skippedCount = 0;
+
+    DB::transaction(function () use (
+        $validated,
+        $test,
+        $destination,
+        $destinationTable,
+        $benefitType,
+        $userId,
+        &$movedCount,
+        &$skippedCount
+    ) {
+        $selectedIds = array_values(array_unique(array_map(
+            'intval',
+            $validated['student_test_ids']
+        )));
+
+        $students = StudentTest::with('college')
+            ->where('test_id', $test->id)
+            ->whereIn('id', $selectedIds)
+            ->lockForUpdate()
+            ->get();
+
+        if ($students->count() !== count($selectedIds)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'student_test_ids' =>
+                    'Some selected students do not belong to this test.',
+            ]);
+        }
+
+        foreach ($students as $student) {
+
+            // Do not move the same main result twice.
+            if ($student->is_moved_to_round) {
+                $skippedCount++;
+                continue;
+            }
+
+            // Prevent duplicate active destination records.
+            $alreadyExists = DB::table($destinationTable)
+                ->where('source_student_test_id', $student->id)
+                ->whereNull('deleted_at')
+                ->exists();
+
+            if ($alreadyExists) {
+                $skippedCount++;
+                continue;
+            }
+
+            $now = now();
+
+            $common = [
+                'source_student_test_id' => $student->id,
+                'previous_round_type' => 'main',
+                'previous_round_record_id' => null,
+                'student_name' => $student->student_name,
+                'student_email' => $student->student_email,
+                'student_mobile' => $student->student_mobile,
+                'college_id' => $student->college_id,
+                'college_name' => $student->college->full_name ?? null,
+                'created_by' => $userId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            if ($destination === 'final') {
+
+                $destinationId = DB::table($destinationTable)
+                    ->insertGetId($common + [
+                        'final_status' => 'selected',
+                        'benefit_type' => $benefitType,
+                        'benefit_amount' => null,
+                        'benefit_details' => null,
+                        'offer_date' => null,
+                        'notes' => null,
+                    ]);
+
+            } else {
+
+                $destinationId = DB::table($destinationTable)
+                    ->insertGetId($common + [
+                        'score' => 0,
+                        'status' => 'pending',
+                        'notes' => null,
+                    ]);
+            }
+
+            // Preserve the original result and record its destination.
+            $student->is_moved_to_round = 1;
+            $student->moved_to_round_type = $destination;
+            $student->moved_to_round_at = $now;
+            $student->moved_to_round_record_id = $destinationId;
+
+            if ($destination === 'final') {
+                $student->is_finalized = 1;
+            }
+
+            $student->save();
+
+            // Record the student's progression.
+            DB::table('student_test_progression_logs')->insert([
+                'source_student_test_id' => $student->id,
+                'record_type' => $destination,
+                'record_id' => $destinationId,
+                'event_type' => 'moved',
+                'from_round' => 'main',
+                'to_round' => $destination,
+                'old_values' => json_encode([
+                    'is_moved_to_round' => 0,
+                    'is_finalized' => (bool) $student->getOriginal(
+                        'is_finalized'
+                    ),
+                ]),
+                'new_values' => json_encode([
+                    'is_moved_to_round' => 1,
+                    'destination_round' => $destination,
+                    'destination_record_id' => $destinationId,
+                    'benefit_type' => $benefitType,
+                ]),
+                'remarks' => 'Moved from main test results',
+                'performed_by' => $userId,
+                'created_at' => $now,
+            ]);
+
+            $movedCount++;
+        }
+    });
+
+    $destinationLabel = [
+        'technical' => 'Technical Round',
+        'machine_round' => 'Machine Round',
+        'final' => 'Final Students',
+    ][$destination];
+
+    $message = "{$movedCount} student(s) moved to {$destinationLabel}.";
+
+    if ($skippedCount > 0) {
+        $message .= " {$skippedCount} student(s) skipped because they were already moved or already existed in the destination.";
+    }
+
+    return back()->with(
+        $movedCount > 0 ? 'success' : 'error',
+        $message
+    );
+}
+    public function moveSelectedToRound_12oct(Request $request, $test_id)
+{
+    $request->validate([
+        'student_test_ids'   => ['required', 'array', 'min:1'],
+        'student_test_ids.*' => ['required', 'integer', 'distinct'],
+        'destination_round'  => [
+            'required',
+            'in:technical,machine_round,final',
+        ],
+    ]);
+
+    $test = Test::findOrFail($test_id);
+
+    $destination = $request->destination_round;
+
+    // Only allow these known table names.
+    $tables = [
+        'technical'    => 'student_test_technical',
+        'machine_round' => 'student_test_machine_round',
+        'final'        => 'student_test_final',
+    ];
+
+    $destinationTable = $tables[$destination];
+    $userId = auth()->id();
+
+    $movedCount = 0;
+    $skippedCount = 0;
+
+    DB::transaction(function () use (
+        $request,
+        $test,
+        $destination,
+        $destinationTable,
+        $userId,
+        &$movedCount,
+        &$skippedCount
+    ) {
+        $students = StudentTest::with('college')
+            ->where('test_id', $test->id)
+            ->whereIn('id', $request->student_test_ids)
+            ->lockForUpdate()
+            ->get();
+
+        if ($students->count() !== count(
+            array_unique(array_map(
+                'intval',
+                $request->student_test_ids
+            ))
+        )) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'student_test_ids' =>
+                    'Some selected students do not belong to this test.',
+            ]);
+        }
+
+        foreach ($students as $student) {
+
+            // Do not move the same main result twice.
+            if ($student->is_moved_to_round) {
+                $skippedCount++;
+                continue;
+            }
+
+            // Prevent a duplicate active entry in the destination.
+            $alreadyExists = DB::table($destinationTable)
+                ->where('source_student_test_id', $student->id)
+                ->whereNull('deleted_at')
+                ->exists();
+
+            if ($alreadyExists) {
+                $skippedCount++;
+                continue;
+            }
+
+            $now = now();
+
+            $common = [
+                'source_student_test_id' => $student->id,
+                'previous_round_type'    => 'main',
+                'previous_round_record_id' => null,
+                'student_name'           => $student->student_name,
+                'student_email'          => $student->student_email,
+                'student_mobile'         => $student->student_mobile,
+                'college_id'             => $student->college_id,
+                'college_name'           => $student->college->full_name ?? null,
+                'created_by'             => $userId,
+                'created_at'             => $now,
+                'updated_at'             => $now,
+            ];
+
+            if ($destination === 'final') {
+
+                $destinationId = DB::table($destinationTable)
+                    ->insertGetId($common + [
+                        'final_status' => 'selected',
+                        'benefit_type' => null,
+                        'benefit_amount' => null,
+                        'benefit_details' => null,
+                        'offer_date' => null,
+                        'notes' => null,
+                    ]);
+
+            } else {
+
+                $destinationId = DB::table($destinationTable)
+                    ->insertGetId($common + [
+                        'score' => 0,
+                        'status' => 'pending',
+                        'notes' => null,
+                    ]);
+            }
+
+            // Preserve the original result and record its destination.
+            $student->is_moved_to_round = 1;
+            $student->moved_to_round_type = $destination;
+            $student->moved_to_round_at = $now;
+            $student->moved_to_round_record_id = $destinationId;
+
+            if ($destination === 'final') {
+                $student->is_finalized = 1;
+            }
+
+            $student->save();
+
+            // Add an audit event for the student's journey.
+            DB::table('student_test_progression_logs')->insert([
+                'source_student_test_id' => $student->id,
+                'record_type' => $destination,
+                'record_id' => $destinationId,
+                'event_type' => 'moved',
+                'from_round' => 'main',
+                'to_round' => $destination,
+                'old_values' => json_encode([
+                    'is_moved_to_round' => 0,
+                    'is_finalized' => (bool) $student->getOriginal('is_finalized'),
+                ]),
+                'new_values' => json_encode([
+                    'is_moved_to_round' => 1,
+                    'destination_round' => $destination,
+                    'destination_record_id' => $destinationId,
+                ]),
+                'remarks' => 'Moved from main test results',
+                'performed_by' => $userId,
+                'created_at' => $now,
+            ]);
+
+            $movedCount++;
+        }
+    });
+
+    $message = "{$movedCount} student(s) moved to "
+        . str_replace('_', ' ', ucfirst($destination)) . '.';
+
+    if ($skippedCount > 0) {
+        $message .= " {$skippedCount} student(s) skipped because they were already moved or already existed in the destination.";
+    }
+
+    return back()->with(
+        $movedCount > 0 ? 'success' : 'error',
+        $message
+    );
+}
+
+public function bulkUpdateLinkStatus(Request $request, Test $test)
+{
+    $validated = $request->validate([
+        'status' => ['required', 'in:enable,disable'],
+        'scope'  => ['required', 'in:selected,all'],
+        'link_ids'   => ['required_if:scope,selected', 'array', 'min:1'],
+        'link_ids.*' => ['integer', 'distinct'],
+    ]);
+
+    // Always restrict links to the currently opened test.
+    $query = TestLink::where('test_id', $test->id);
+
+    if ($validated['scope'] === 'selected') {
+        $ids = array_map('intval', $validated['link_ids']);
+
+        $query->whereIn('id', $ids);
+
+        if ($query->count() !== count(array_unique($ids))) {
+            return back()->with(
+                'error',
+                'Some selected links do not belong to this test.'
+            );
+        }
+    }
+
+    $updated = $query->update([
+        'is_enabled' => $validated['status'] === 'enable' ? 1 : 0,
+    ]);
+
+    return back()->with(
+        'success',
+        "{$updated} college link(s) " .
+        ($validated['status'] === 'enable' ? 'enabled' : 'disabled') .
+        " successfully."
+    );
+}
+
+
+public function bulkUpdateLinkSettings(Request $request, Test $test)
+{
+    $validated = $request->validate([
+        'link_ids'   => ['required', 'array', 'min:1'],
+        'link_ids.*' => ['required', 'integer', 'distinct'],
+        'valid_from' => ['nullable', 'date'],
+        'valid_until' => [
+            'nullable',
+            'date',
+            'after_or_equal:valid_from',
+        ],
+    ]);
+
+    $ids = array_map('intval', $validated['link_ids']);
+
+    // Only selected college links belonging to this test.
+    $query = TestLink::where('test_id', $test->id)
+        ->whereIn('id', $ids);
+
+    if ((clone $query)->count() !== count(array_unique($ids))) {
+        return back()->with(
+            'error',
+            'Some selected links do not belong to this test.'
+        );
+    }
+
+    $updated = $query->update([
+        'valid_from' => !empty($validated['valid_from'])
+            ? Carbon::parse($validated['valid_from'])
+            : null,
+
+        'valid_until' => !empty($validated['valid_until'])
+            ? Carbon::parse($validated['valid_until'])
+            : null,
+    ]);
+
+    return back()->with(
+        'success',
+        "Timing settings updated for {$updated} selected college link(s)."
+    );
+}
+
+
+public function exportCheckedStudents(Request $request, $test_id)
+{
+    $request->validate([
+        'student_test_ids' => ['required', 'array', 'min:1'],
+        'student_test_ids.*' => ['required', 'integer', 'distinct'],
+    ]);
+
+    $test = Test::findOrFail($test_id);
+
+    // Only allow student records belonging to this test.
+    $ids = StudentTest::where('test_id', $test->id)
+        ->whereIn('id', $request->input('student_test_ids', []))
+        ->pluck('id')
+        ->all();
+
+    if (empty($ids)) {
+        return back()->withErrors([
+            'student_test_ids' => 'No valid students selected.',
+        ]);
+    }
+
+    return Excel::download(
+        new SelectedTestStudentsExport($test->id, $ids),
+         'checked_students_' . now()->format('d_F_Y') . '.xlsx'
+    );
+}
+
 }

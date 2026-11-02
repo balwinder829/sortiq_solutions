@@ -6,6 +6,25 @@
 <!-- <div id="timer" class="exam-timer bg-success text-white fw-bold">
     Time Remaining: --
 </div> -->
+
+
+<!-- ================= FIXED EXAM TIMER (TOP RIGHT) ================= -->
+
+<!-- ================= FIXED EXAM COUNTDOWN ================= -->
+<!-- <div id="timer" class="exam-timer">
+    <div class="timer-label">TIME REMAINING</div>
+
+    <div id="examCountdown" class="timer-countdown">
+        --:--
+    </div>
+
+    <div class="timer-closes">
+        Closes at {{ $deadlineDisplay ? \Carbon\Carbon::parse($deadlineIso)->format('h:i A') : '' }}
+    </div>
+</div> -->
+
+
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <div id="exam-security-overlay">
     <div class="security-message">
@@ -34,7 +53,7 @@
             </div>
         </div>
     </div>
-    <form id="examForm" method="POST" action="{{ route('student.test.submit', $test->id) }}">
+    <form id="examForm" method="POST" action="{{ route('student.test.submit', ['slug' => $link->slug]) }}">
     @csrf
      <div class="certi-body" style="padding-top: 60px;">
             <div class="apt-body-content">
@@ -84,7 +103,7 @@
 
 <!-- ================= STYLES ================= -->
 <style>
-.exam-timer {
+/*.exam-timer {
     position: fixed;
     top: 15px;
     right: 20px;
@@ -94,9 +113,8 @@
     border-radius: 30px;
     box-shadow: 0 4px 10px rgba(0,0,0,.2);
     transition: background-color 0.4s ease;
-     background: #ffffff !important; /* FORCE white background */
-    color: #000 !important;  
-}
+     background: #ffffff !important; /* FORCE white background 
+}*/
 
 .exam-content {
     margin-top: 20px;
@@ -118,6 +136,58 @@
     font-size: 18px;
     font-weight: 600;
 }
+
+
+.exam-timer {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 9999;
+    width: 125px;
+    padding: 7px 9px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    color: #172033;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.timer-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #64748b;
+}
+
+.timer-countdown {
+    margin: 0;
+    font-size: 23px;
+    line-height: 1.25;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: #15803d;
+}
+
+.timer-closes {
+    font-size: 9px;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+    .exam-timer {
+        top: 8px;
+        right: 8px;
+        width: 115px;
+        padding: 6px 7px;
+    }
+
+    .timer-countdown {
+        font-size: 21px;
+    }
+}
+
 </style>
 
 <!-- ================= SCRIPTS ================= -->
@@ -213,7 +283,7 @@ function sendPendingOnce() {
     };
 
     savePromise = fetch(
-        "{{ route('student.test.autosave', $test->id) }}",
+        "{{ route('student.test.autosave', ['slug' => $link->slug]) }}",
         {
             method: "POST",
             headers: {
@@ -554,7 +624,7 @@ if (!examSubmitted) {
                 });
 
                 navigator.sendBeacon(
-                    '{{ route("student.test.autosave", $test->id) }}',
+                    '{{ route("student.test.autosave", ['slug' => $link->slug]) }}',
                     formData
                 );
             }
@@ -593,94 +663,7 @@ if (!examSubmitted) {
     });
 
 }
-// if (!examSubmitted) {
-
-//     // Browser refresh / close / direct navigation
-//     window.addEventListener('beforeunload', function(e) {
-
-//         if (!examSubmitted) {
-
-//             // Try normal form submission
-//             examForm.submit();
-
-//             // Show browser's native warning
-//             e.preventDefault();
-//             e.returnValue = '';
-//             return '';
-//         }
-
-//     });
-
-
-//     // Browser Back button
-//     history.pushState(null, '', location.href);
-
-//     window.addEventListener('popstate', function() {
-
-//         if (!examSubmitted) {
-
-//             const leaveExam = confirm(
-//                 'Your exam is still in progress.\n\n' +
-//                 'Please submit your exam before leaving this page.\n\n' +
-//                 'Click OK to submit the exam, or Cancel to continue the exam.'
-//             );
-
-//             if (leaveExam) {
-
-//                 examSubmitted = true;
-
-//                 // Normal form submit — same as clicking Submit Answer
-//                 examForm.submit();
-
-//             } else {
-
-//                 history.pushState(null, '', location.href);
-
-//             }
-//         }
-
-//     });
-
-// }
-// if (!examSubmitted) {
-
-//     // Browser refresh / close / direct navigation
-//     window.addEventListener('beforeunload', function(e) {
-
-//         if (!examSubmitted) {
-//             e.preventDefault();
-//             e.returnValue = '';
-//             return '';
-//         }
-
-//     });
-
-//     // Browser Back button
-//     history.pushState(null, '', location.href);
-
-//     window.addEventListener('popstate', function() {
-
-//         if (!examSubmitted) {
-
-//             const leaveExam = confirm(
-//                 'Your exam is still in progress. Are you sure you want to leave this page?'
-//             );
-
-//             if (leaveExam) {
-
-//                 examSubmitted = true;
-//                 history.back();
-
-//             } else {
-
-//                 history.pushState(null, '', location.href);
-
-//             }
-//         }
-
-//     });
-
-// }
+ 
 
 
 
@@ -1348,6 +1331,69 @@ function hideSecurityOverlay() {
         examSecurityOverlay.style.display = 'none';
     }
 }
+
+/* ================= DEADLINE AUTO-SUBMIT ================= */
+
+
+/* ================= DEADLINE AUTO-SUBMIT ================= */
+
+const examDeadlineMs = new Date(@json($deadlineIso)).getTime();
+const autoSubmitBufferMs = 30 * 1000; // 30 seconds before deadline
+
+let deadlineAutoSubmitStarted = false;
+let deadlineCheckInterval = null;
+
+function checkExamDeadline() {
+    if (examSubmitted || deadlineAutoSubmitStarted) {
+        return;
+    }
+
+    const remainingMs = examDeadlineMs - Date.now();
+
+    // Update the countdown only if its HTML is enabled.
+    const countdown = document.getElementById('examCountdown');
+    const timerBox = document.getElementById('timer');
+
+    if (countdown && timerBox && remainingMs > autoSubmitBufferMs) {
+        const totalSeconds = Math.floor(remainingMs / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        countdown.textContent =
+            `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        if (remainingMs <= 60 * 1000) {
+            timerBox.classList.add('timer-warning');
+        } else {
+            timerBox.classList.remove('timer-warning');
+        }
+    }
+
+    // Auto-submit works whether the timer is visible or hidden.
+    if (remainingMs <= autoSubmitBufferMs) {
+        deadlineAutoSubmitStarted = true;
+        clearInterval(deadlineCheckInterval);
+
+        if (countdown) {
+            countdown.textContent = '00:00';
+        }
+
+        if (timerBox) {
+            timerBox.classList.add('timer-warning');
+        }
+
+        if (examForm && !examSubmitted) {
+            examForm.requestSubmit();
+        }
+    }
+}
+
+// Start checking independently of the timer HTML.
+checkExamDeadline();
+
+deadlineCheckInterval = setInterval(checkExamDeadline, 1000);
+
+
 </script>
 
 @endsection

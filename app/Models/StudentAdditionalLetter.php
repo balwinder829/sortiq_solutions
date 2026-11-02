@@ -15,6 +15,12 @@ class StudentAdditionalLetter extends Model
         'roll_number',
         'semester',
         // 'email',
+        'offer_training_start_date',
+        'offer_training_duration_months',
+        'offer_probation_duration_months',
+        'offer_working_hours',
+        'offer_service_agreement_duration',
+        'offer_annual_salary',
         'letter_content'
     ];
 

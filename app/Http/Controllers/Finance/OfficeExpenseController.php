@@ -28,6 +28,7 @@ class OfficeExpenseController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete' => 'delete',
 
         // 'bulkDelete'      => 'delete',
     ];
@@ -403,5 +404,48 @@ public function index(Request $request)
         return redirect()
             ->route('office-expenses.index')
             ->with('success', 'Expense deleted successfully');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', explode(',', $request->ids)),
+            fn ($id) => $id > 0
+        )));
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No electricity bills selected.',
+            ], 422);
+        }
+
+        // Preserve the existing model-level soft-delete behavior.
+        $expenses = OfficeExpense::whereIn('id', $ids)->get();
+
+        $count = 0;
+
+        foreach ($expenses as $expense) {
+            $expense->delete();
+            $count++;
+        }
+
+        if ($count === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No matching electricity bills were found.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' electricity bill'
+                . ($count === 1 ? '' : 's')
+                . ' deleted successfully.',
+        ]);
     }
 }

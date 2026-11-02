@@ -14,10 +14,7 @@
                 You cannot attempt the exam again.
             </p>
 
-            <a href="{{ route('student.enter.key') }}"
-               class="btn btn-secondary mt-3">
-                Close
-            </a>
+             
         </div>
     </div>
 </div>

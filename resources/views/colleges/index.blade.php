@@ -267,7 +267,7 @@
     {{-- Important --}}
     <div class="col-md-2 offset-md-1">
         <select id="filter_important" class="form-control">
-            <option value="">Important</option>
+            <option value="">--Select Important--</option>
             <option value="1">Important</option>
             <option value="0">Normal</option>
         </select>
@@ -276,7 +276,7 @@
     {{-- Ownership --}}
     <div class="col-md-2">
         <select id="filter_ownership" class="form-control">
-            <option value="">Ownership</option>
+            <option value="">--Select Ownership--</option>
             <option value="1">Government</option>
             <option value="0">Private</option>
         </select>
@@ -285,7 +285,7 @@
     {{-- Connection --}}
     <div class="col-md-2">
         <select id="filter_connection" class="form-control">
-            <option value="">Connection</option>
+            <option value="">--Select Connection--</option>
             <option value="1">Old Connection</option>
             <option value="0">New Connection</option>
         </select>

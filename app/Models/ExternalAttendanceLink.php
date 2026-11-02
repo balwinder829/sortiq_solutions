@@ -9,7 +9,10 @@ class ExternalAttendanceLink extends Model
     protected $fillable = [
         'external_attendance_test_id',
         'college_id',
-        'slug'
+        'slug',
+        'valid_from',
+        'valid_until',
+        'is_enabled',
     ];
 
     /* ================= RELATIONS ================= */

@@ -122,7 +122,7 @@
                name="exam_start_at"
                class="form-control"
                value="{{ optional($test->exam_start_at)->format('Y-m-d') }}"
-               required>
+               >
     </div>
 
     {{-- Exam End Time --}}
@@ -132,7 +132,7 @@
                name="exam_end_at"
                class="form-control"
                value="{{ optional($test->exam_end_at)->format('Y-m-d') }}"
-               required>
+               >
     </div>
 
      

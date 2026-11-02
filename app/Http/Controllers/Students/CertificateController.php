@@ -258,7 +258,7 @@ public function index(Request $request)
     // $query->where('certificate_status', 1);
     $query->where('send_to_close', 0);
     
-
+$query->where('session', $activeSessionId);
     // $query->where(function ($q) {
     //     // Always show certificate_status = 1
     //     $q->where('certificate_status', 1)

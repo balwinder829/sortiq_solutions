@@ -31,6 +31,7 @@ class StudentTest extends Model
         'class',
         'semester',
         'branch',
+        'external_attendance_submission_id',
         'score'
     ];
 

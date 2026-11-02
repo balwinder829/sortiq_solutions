@@ -4,7 +4,6 @@ namespace App\Imports;
 
 use App\Models\ManualData;
 use App\Models\StudentSession;
-use App\Services\CollegeResolver;
 // use App\Rules\NotBlockedNumber;
 use App\Models\BlockedNumber;
 
@@ -67,6 +66,7 @@ class ManualDataImport implements
             // },
 
             '*.student_name'   => 'required|string|max:255',
+            '*.college_name'   => 'required|string|max:512',
             '*.student_email'  => 'nullable|email|max:255',
 
             // '*.student_mobile' => [
@@ -93,7 +93,8 @@ class ManualDataImport implements
     {
         return [
             '*.student_name.required' => 'Student name is required.',
-            '*.student_email.required' => 'Email is required.',
+            '*.college_name.required' => 'College name is required.',
+            '*.college_name.required' => 'College name is required.',
             '*.student_mobile.required' => 'Mobile is required.',
         ];
     }
@@ -112,48 +113,9 @@ class ManualDataImport implements
             session('admin_session_id')
         );
 
-        /* -------- COLLEGE RESOLVE -------- */
-        // try {
-        //     $college = app(CollegeResolver::class)->resolve($row['college_name']);
-        //     $collegeId = $college->id;
-        // } catch (\Exception $e) {
-        //     $this->skippedRows++;
-        //     $this->duplicateContacts[] =
-        //         "Invalid college: {$row['college_name']}";
-        //     return null;
-        // }
-
+        /* -------- COLLEGE NAME (FREE TEXT) -------- */
         $collegeId = null;
-        $collegeName = $row['college_name'] ?? null;
-
-        if (!empty($row['college_name'])) {
-
-            try {
-
-                $college = app(CollegeResolver::class)
-                    ->resolve($row['college_name']);
-
-                $collegeId = $college->id;
-
-                // Save standardized college name
-                $collegeName = $college->name;
-
-            } catch (\Exception $e) {
-
-                // College not found
-                $collegeId = null;
-
-                // Save original excel text
-                $collegeName = $row['college_name'];
-
-                // Save only once
-                if (!in_array($collegeName, $this->collegeNotFound)) {
-                    $this->collegeNotFound[] = $collegeName;
-                }
-
-            }
-
-        }
+        $collegeName = trim((string) ($row['college_name'] ?? ''));
 
         /* -------- BLOCKED NUMBER CHECK -------- */
 
@@ -235,7 +197,7 @@ class ManualDataImport implements
             'college_id'     => $collegeId,
             'college_name'   => $collegeName,
             'student_name'   => $row['student_name'],
-            'student_email'  => $row['student_email'],
+            'student_email'  => $row['student_email'] ?? null,
             'student_mobile' => $row['student_mobile'],
               'gender'         => $gender,
             'course_type'    => $courseType,

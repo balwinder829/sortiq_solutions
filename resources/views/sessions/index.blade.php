@@ -101,9 +101,13 @@
     </span>
 </td>
 <td>
-    <span class="badge bg-info">
-        {{ $session->colleges_count ?? 0 }}
-    </span>
+    <a href="{{ route('sessions.college', $session->id) }}"
+       class="text-decoration-none">
+        <span class="badge bg-info"
+              style="cursor: pointer;">
+            {{ $session->colleges_count ?? 0 }}
+        </span>
+    </a>
 </td>
 <!-- <td>
     <span class="badge bg-success">

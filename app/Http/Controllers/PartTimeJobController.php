@@ -29,6 +29,7 @@ class PartTimeJobController extends Controller
         'update'       => 'edit',
 
         'destroy'      => 'delete',
+        'bulkDelete'   => 'delete',
 
         'import'      => 'import',
         'importForm'      => 'import',
@@ -266,5 +267,30 @@ class PartTimeJobController extends Controller
             new PartTimeJobExport($request),
             'part_time_jobs.xlsx'
         );
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => ['required', 'string'],
+        ]);
+
+        $ids = array_filter(
+            array_map('intval', explode(',', $request->ids))
+        );
+
+        if (empty($ids)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No part-time jobs selected.'
+            ], 422);
+        }
+
+        $count = PartTimeJob::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => $count . ' part-time job' . ($count == 1 ? '' : 's') . ' deleted successfully.',
+        ]);
     }
 }

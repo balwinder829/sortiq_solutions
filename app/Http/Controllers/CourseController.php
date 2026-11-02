@@ -18,7 +18,7 @@ class CourseController extends Controller
         $this->middleware('permission:technologies.view')->only(['index']);
         $this->middleware('permission:technologies.create')->only(['create','store']);
         $this->middleware('permission:technologies.edit')->only(['edit','update']);
-        $this->middleware('permission:technologies.delete')->only('destroy');
+       $this->middleware('permission:technologies.delete')->only(['destroy', 'bulkDelete']);
     }
 
     // public function index()
@@ -79,8 +79,13 @@ class CourseController extends Controller
             $countNo = $start + $index + 1;
             $studentLink = '<a href="' . route('common_filtered_student', ['technology' => $course->id]) . '" class="text-decoration-none"><span class="badge bg-success">' . (int) $course->students_count . '</span></a>';
             $actions = '<a href="' . route('courses.edit', $course->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ';
-            $actions .= '<form action="' . route('courses.destroy', $course->id) . '" method="POST" style="display:inline-block;">' . csrf_field() . method_field('DELETE') . '<button type="submit" class="btn btn-sm" title="Delete" data-swal-confirm="Are you sure?"><i class="fa fa-trash"></i></button></form>';
+            $actions .= '<form action="' . route('courses.destroy', $course->id) . '" method="POST" style="display:inline-block;" class="technology-delete-form">'
+                    . csrf_field()
+                    . method_field('DELETE')
+                    . '<button type="submit" class="btn btn-sm" title="Delete"><i class="fa fa-trash"></i></button>
+                </form>';
             return [
+                '<input type="checkbox" class="technology-checkbox" value="' . $course->id . '">',
                 $countNo,
                 e($course->course_name),
                 $studentLink,
@@ -160,7 +165,12 @@ class CourseController extends Controller
     }
 
     public function destroy(Course $course)
-    {
+    {   
+        if ($course->students()->exists()) {
+            return redirect()
+                ->route('courses.index')
+                ->with('error', 'This technology cannot be deleted because students are assigned to it.');
+        }
         $course->delete();
         return redirect()->route('courses.index')->with('success', 'Course deleted successfully.');
     }
@@ -198,4 +208,54 @@ class CourseController extends Controller
             $fileName
         );
     }
+
+   public function bulkDelete(Request $request)
+{
+    $request->validate([
+        'ids' => ['required', 'string'],
+    ]);
+
+    $ids = array_filter(
+        array_map('intval', explode(',', $request->ids))
+    );
+
+    if (empty($ids)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No technologies selected.'
+        ], 422);
+    }
+
+    // Only delete technologies that have NO students
+    $deletableIds = Course::whereIn('id', $ids)
+        ->whereDoesntHave('students')
+        ->pluck('id')
+        ->toArray();
+
+    $blockedCount = count($ids) - count($deletableIds);
+
+    if (empty($deletableIds)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Selected technology cannot be deleted because students are assigned to it.'
+        ], 422);
+    }
+
+    $deletedCount = Course::whereIn('id', $deletableIds)->delete();
+
+    $message = $deletedCount . ' technolog' .
+        ($deletedCount == 1 ? 'y' : 'ies') .
+        ' deleted successfully.';
+
+    if ($blockedCount > 0) {
+        $message .= ' ' . $blockedCount .
+            ' technolog' . ($blockedCount == 1 ? 'y' : 'ies') .
+            ' could not be deleted because students are assigned.';
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => $message
+    ]);
+}
 }

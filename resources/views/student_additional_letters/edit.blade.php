@@ -150,6 +150,88 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+
+            {{-- Strict Offer Letter Fields --}}
+            <div class="col-md-12 d-none" id="strict_offer_fields">
+                <div class="row">
+
+                    <div class="form-group col-md-6">
+                        <label>Training Start Date</label>
+                        <input type="date"
+                               name="offer_training_start_date"
+                               value="{{ old('offer_training_start_date', $letter->offer_training_start_date) }}"
+                               class="form-control @error('offer_training_start_date') is-invalid @enderror">
+                        @error('offer_training_start_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Initial Training Duration (Months)</label>
+                        <input type="number"
+                               name="offer_training_duration_months"
+                               min="1"
+                               step="1"
+                               value="{{ old('offer_training_duration_months', $letter->offer_training_duration_months) }}"
+                               class="form-control @error('offer_training_duration_months') is-invalid @enderror">
+                        @error('offer_training_duration_months')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Probation Duration (Months)</label>
+                        <input type="number"
+                               name="offer_probation_duration_months"
+                               min="1"
+                               step="1"
+                               value="{{ old('offer_probation_duration_months', $letter->offer_probation_duration_months) }}"
+                               class="form-control @error('offer_probation_duration_months') is-invalid @enderror">
+                        @error('offer_probation_duration_months')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Working Hours</label>
+                        <input type="text"
+                               name="offer_working_hours"
+                               value="{{ old('offer_working_hours', $letter->offer_working_hours) }}"
+                               placeholder="e.g. 9:30 AM to 6:30 PM"
+                               class="form-control @error('offer_working_hours') is-invalid @enderror">
+                        @error('offer_working_hours')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Service Agreement Duration</label>
+                        <input type="text"
+                               name="offer_service_agreement_duration"
+                               value="{{ old('offer_service_agreement_duration', $letter->offer_service_agreement_duration) }}"
+                               placeholder="e.g. 12 months or 2 years"
+                               class="form-control @error('offer_service_agreement_duration') is-invalid @enderror">
+                        @error('offer_service_agreement_duration')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group col-md-6">
+                        <label>Annual Salary / Package (₹)</label>
+                        <input type="number"
+                               name="offer_annual_salary"
+                               min="0"
+                               step="1"
+                               value="{{ old('offer_annual_salary', $letter->offer_annual_salary) }}"
+                               placeholder="e.g. 310000"
+                               class="form-control @error('offer_annual_salary') is-invalid @enderror">
+                        @error('offer_annual_salary')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                </div>
+            </div>
             {{-- Subject --}}
             <div class="form-group col-md-6 d-none" id="subject_field">
                 <label>Subject</label>
@@ -220,6 +302,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const rollNumberField = document.getElementById('roll_number_field');
     const semesterField = document.getElementById('semester_field');
     const semesterFieldLabel = document.getElementById('semester_field_label');
+    const strictOfferFields = document.getElementById('strict_offer_fields');
+    const strictOfferInputs = strictOfferFields.querySelectorAll('input');
+
     function toggleFields() {
         const isContent = letterType.value === 'stipend' || letterType.value === 'custom' || letterType.value === 'student_responsibility' || letterType.value === 'placed_student_responsibility';
         const isCustom  = letterType.value === 'custom';
@@ -229,6 +314,15 @@ document.addEventListener('DOMContentLoaded', function () {
         subjectField.classList.toggle('d-none', !isCustom);
         rollNumberField.classList.toggle('d-none', !isWithRollNumber);
         semesterField.classList.toggle('d-none', !isWithRollNumber);
+
+        const isStrictOffer = letterType.value === 'strict_offer_letter';
+
+        strictOfferFields.classList.toggle('d-none', !isStrictOffer);
+
+        strictOfferInputs.forEach(function (input) {
+            input.required = isStrictOffer;
+        });
+
         if(letterType.value === 'confirmation_letter'){
             semesterFieldLabel.innerText = "Batch";
         } else {

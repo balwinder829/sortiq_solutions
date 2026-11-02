@@ -92,22 +92,22 @@
 
      
     {{-- Exam Start Time --}}
-    <div class="col-md-6 mb-3">
+    <!-- <div class="col-md-6 mb-3">
         <label class="fw-bold">Exam Start Time</label>
         <input type="date"
                name="exam_start_at"
                class="form-control"
-               required>
-    </div>
+               >
+    </div> -->
 
     {{-- Exam End Time --}}
-    <div class="col-md-6 mb-3">
+    <!-- <div class="col-md-6 mb-3">
         <label class="fw-bold">Exam End Time</label>
         <input type="date"
                name="exam_end_at"
                class="form-control"
-               required>
-    </div>
+               >
+    </div> -->
 
 </div>
 
