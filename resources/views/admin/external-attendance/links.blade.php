@@ -9,10 +9,19 @@
         <div class="col-md-6">
             <h1 class="page_heading">Form Links : {{ $test->title }}</h1>
         </div>
-        <div class="col-md-6 text-end">
-            <a href="{{ route('admin.external-attendance.index') }}"
-               class="btn btn-secondary">Back</a>
-        </div>
+        
+            <div class="col-md-6 text-end">
+                <a href="{{ route('admin.external-attendance.links.export', $test->id) }}"
+                   class="btn btn-success me-2">
+                    <i class="fa fa-file-excel"></i> Export Excel
+                </a>
+
+                <a href="{{ route('admin.external-attendance.index') }}"
+                   class="btn btn-secondary">
+                    Back
+                </a>
+            </div>
+
     </div>
 
     {{-- Messages --}}

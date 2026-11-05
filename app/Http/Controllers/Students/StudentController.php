@@ -38,7 +38,7 @@ use App\Models\InternStudent;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
-
+use Illuminate\Support\Facades\Auth;
 
 class StudentController extends Controller
 {   
@@ -65,6 +65,7 @@ class StudentController extends Controller
         'generateIdCard'      => 'downloads',
         'downloadIdStudentCard'      => 'downloads',
         'copyStudents'      => 'copy_to_other_session',
+        'copyStudents'      => 'moveToOldStudents',
         'moveMultipleToCertificate'      => 'move_to_certificates',
     ];
 
@@ -1201,7 +1202,284 @@ public function import(Request $request)
         // return back()->with('success', 'Confimation send to selected students.');
     }
 
+
     public function downloadconfirmMultiple(Request $request)
+    {
+        $ids = json_decode($request->ids, true);
+
+        $isInternship = $request->boolean('is_internship');
+        $ismonthly = $request->boolean('is_monthly');
+        $is_logo_show = $request->boolean('is_logo_show');
+
+        $collegeName = null;
+
+        if ($request->filled('college_name')) {
+            $college = \App\Models\College::find($request->college_name);
+
+            if ($college) {
+                $collegeName = strtolower(str_replace(' ', '_', $college->FullName));
+            }
+        }
+
+        if (!is_array($ids) || count($ids) === 0) {
+            return back()->with('error', 'No students selected.');
+        }
+
+        // Ensure IDs are integers
+        $ids = array_map('intval', $ids);
+
+        $students = Student::with(['sessionData', 'collegeData'])
+            ->whereIn('id', $ids)
+            ->get();
+
+        if ($students->isEmpty()) {
+            return back()->with('error', 'Selected students not found.');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate all selected students before generating PDFs
+        |--------------------------------------------------------------------------
+        */
+
+        $validationErrors = [];
+
+        foreach ($students as $student) {
+
+            $missingFields = $this->getMissingConfirmationLetterFields($student);
+
+            if (!empty($missingFields)) {
+
+                $studentName = filled($student->student_name)
+                    ? $student->student_name
+                    : 'Student ID: ' . $student->id;
+
+                $validationErrors[] = $studentName . ': ' . implode(', ', $missingFields);
+            }
+        }
+
+        // Stop the entire download if even one student has missing information
+        if (!empty($validationErrors)) {
+
+            $message = "Confirmation letters cannot be generated. Please update the following information:\n\n"
+                . implode("\n", $validationErrors);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $message,
+                    'errors' => $validationErrors
+                ], 422);
+            }
+
+            return back()->with('error', $message);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Existing PDF generation logic
+        |--------------------------------------------------------------------------
+        */
+
+        $pdfPaths = [];
+
+        foreach ($students as $student) {
+
+            $pdfPath = $this->generateConfirmationPdf(
+                $student,
+                $isInternship,
+                $ismonthly,
+                $is_logo_show
+            );
+
+            $student->increment('download_count_confirmation');
+
+            if (file_exists($pdfPath)) {
+                $pdfPaths[] = $pdfPath;
+            }
+        }
+
+        // If only one PDF, return it directly
+        if (count($pdfPaths) === 1) {
+
+            $singlePath = $pdfPaths[0];
+            $downloadName = basename($singlePath);
+
+            return response()->download($singlePath, $downloadName, [
+                'Content-Type' => 'application/pdf'
+            ]);
+        }
+
+        // Otherwise create ZIP
+        $date = strtolower(date('d_F'));
+
+        $baseName = $isInternship ? 'internship_letters' : 'confirmation_letters';
+
+        if ($collegeName) {
+            $zipFileName = "{$baseName}_{$collegeName}_{$date}.zip";
+        } else {
+            $zipFileName = "{$baseName}_{$date}.zip";
+        }
+
+        $zipFullPath = storage_path('app/' . $zipFileName);
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipFullPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+
+            foreach ($pdfPaths as $path) {
+                $zip->addFile($path, basename($path));
+            }
+
+            $zip->close();
+
+            return response()->download($zipFullPath, $zipFileName)
+                ->deleteFileAfterSend(true);
+        }
+
+        return back()->with('error', 'Could not create ZIP file.');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate fields actually used in Confirmation Letter Blade templates
+    |--------------------------------------------------------------------------
+    */
+
+    private function getMissingConfirmationLetterFields($student)
+    {
+        $missing = [];
+
+        // Student Name
+        if ($this->isConfirmationValueMissing($student->student_name)) {
+            $missing[] = 'Student Name';
+        }
+
+        // Father Name
+        if ($this->isConfirmationValueMissing($student->father_name_with_title)) {
+            $missing[] = 'Father Name';
+        }
+
+        // Gender determines Mr/Miss/Mrs and S/O/D/O/W/O
+        if ($this->isConfirmationValueMissing($student->gender)) {
+            $missing[] = 'Gender';
+        }
+
+        // Student Start Date
+        if (
+            $this->isConfirmationValueMissing($student->start_date) ||
+            !$this->isValidConfirmationDate($student->start_date)
+        ) {
+            $missing[] = 'Student Start Date';
+        }
+
+        // Student End Date
+        if (
+            $this->isConfirmationValueMissing($student->end_date) ||
+            !$this->isValidConfirmationDate($student->end_date)
+        ) {
+            $missing[] = 'Student End Date';
+        }
+
+        // Session Name
+        if (
+            !$student->sessionData ||
+            $this->isConfirmationValueMissing($student->sessionData->session_display_name)
+        ) {
+            $missing[] = 'Session Name';
+        }
+
+        /*
+         * The Blade checks these session dates before displaying
+         * the student's start_date and end_date.
+         */
+        if (
+            !$student->sessionData ||
+            !$this->isValidConfirmationDate($student->sessionData->start_date)
+        ) {
+            $missing[] = 'Session Start Date (required to display student start date)';
+        }
+
+        if (
+            !$student->sessionData ||
+            !$this->isValidConfirmationDate($student->sessionData->end_date)
+        ) {
+            $missing[] = 'Session End Date (required to display student end date)';
+        }
+
+        // College Name or Place
+        if ($student->is_place) {
+
+            if ($this->isConfirmationValueMissing($student->place)) {
+                $missing[] = 'Place';
+            }
+
+        } else {
+
+            $collegeName = $student->collegeData->college_display_name
+                ?? $student->collegeData->college_name
+                ?? null;
+
+            if ($this->isConfirmationValueMissing($collegeName)) {
+                $missing[] = 'College Name';
+            }
+        }
+
+        return $missing;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Check empty values and placeholder values
+    |--------------------------------------------------------------------------
+    */
+
+    private function isConfirmationValueMissing($value)
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        $value = strtolower(trim((string) $value));
+
+        $invalidValues = [
+            '',
+            '-',
+            'na',
+            'n/a',
+            'nd',
+            'n/d',
+            'not decided',
+            'not selected',
+        ];
+
+        return in_array($value, $invalidValues, true);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate date values safely
+    |--------------------------------------------------------------------------
+    */
+
+    private function isValidConfirmationDate($date)
+    {
+        if ($this->isConfirmationValueMissing($date)) {
+            return false;
+        }
+
+        try {
+            Carbon::parse($date);
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    public function nov_3_downloadconfirmMultiple(Request $request)
     {
         $ids = json_decode($request->ids, true);
          $isInternship = $request->boolean('is_internship');
@@ -1344,6 +1622,211 @@ public function import(Request $request)
     }
 
     public function downloadCertificateMultiple(Request $request)
+{
+    $ids = json_decode($request->ids, true);
+
+    $isPursuing = $request->boolean('is_pursuing');
+    $isInternship = $request->boolean('is_internship');
+
+    $isMonthName = !empty($request->is_month_name)
+        ? $request->is_month_name
+        : "no";
+
+    if (empty($ids) || !is_array($ids)) {
+        return back()->with('error', 'Please select at least one student.');
+    }
+
+    $students = Student::with(['sessionData', 'collegeData'])
+        ->whereIn('id', $ids)
+        ->get();
+
+    if ($students->isEmpty()) {
+        return back()->with('error', 'No students found.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate all students before generating any PDF
+    |--------------------------------------------------------------------------
+    */
+
+    $validationErrors = [];
+
+    foreach ($students as $student) {
+
+        $missingFields = $this->getMissingCertificateFields($student);
+
+        if (!empty($missingFields)) {
+            $studentName = $student->student_name ?: 'Student ID: ' . $student->id;
+
+            $validationErrors[] = $studentName . ': ' . implode(', ', $missingFields);
+        }
+    }
+
+    if (!empty($validationErrors)) {
+
+        $message = "Certificate cannot be generated. Please update the following missing information:\n\n"
+            . implode("\n", $validationErrors);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => false,
+                'message' => $message,
+                'errors' => $validationErrors
+            ], 422);
+        }
+
+        return back()->with('error', $message);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Existing PDF generation logic
+    |--------------------------------------------------------------------------
+    */
+
+    $paths = [];
+
+    foreach ($students as $student) {
+        $paths[] = $this->generatePdf(
+            $student,
+            $isPursuing,
+            $isInternship,
+            $isMonthName
+        );
+    }
+
+    if (count($paths) === 1) {
+        return response()->download($paths[0])->deleteFileAfterSend(true);
+    }
+
+    $collegeName = '';
+
+    if ($students->count() > 0 && $students->first()->collegeData) {
+        $collegeName = $students->first()->collegeData->college_name;
+    }
+
+    if ($isPursuing && $isInternship) {
+        $zipFileName = 'pursuing_internship_certificate_letters_';
+    } elseif ($isPursuing) {
+        $zipFileName = 'pursuing_certificate_letters_';
+    } elseif ($isInternship) {
+        $zipFileName = 'internship_certificate_letters_';
+    } else {
+        $zipFileName = 'certificate_letters_';
+    }
+
+    $zipFileName .= $collegeName . '_' . date('Y-m-d_H-i-s') . '.zip';
+
+    $zipPath = storage_path('app/public/' . $zipFileName);
+
+    $zip = new \ZipArchive();
+
+    if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === TRUE) {
+
+        foreach ($paths as $path) {
+            $zip->addFile($path, basename($path));
+        }
+
+        $zip->close();
+
+        return response()->download($zipPath)->deleteFileAfterSend(true);
+    }
+
+    return back()->with('error', 'Unable to create certificate ZIP file.');
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Check required fields used in Certificate Blade templates
+|--------------------------------------------------------------------------
+*/
+
+private function getMissingCertificateFields($student)
+{
+    $missing = [];
+
+    // Student details
+    if (!filled($student->student_name)) {
+        $missing[] = 'Student Name';
+    }
+
+    if (!filled($student->father_name_with_title)) {
+        $missing[] = 'Father Name';
+    }
+
+    if (!filled($student->gender)) {
+        $missing[] = 'Gender';
+    }
+
+    // Required course information
+    $courseName = strtolower(trim($student->course_name ?? ''));
+
+    $invalidCourseValues = [
+        '',
+        'na',
+        'n/a',
+        'nd',
+        'n/d',
+        'not decided',
+        'not selected',
+    ];
+
+    if (in_array($courseName, $invalidCourseValues, true)) {
+        $missing[] = 'Course / Technology';
+    }
+
+    if (!filled($student->sno)) {
+        $missing[] = 'S.No.';
+    }
+
+    // Student dates (NOT session dates)
+    if (!filled($student->start_date)) {
+        $missing[] = 'Student Start Date';
+    }
+
+    if (!filled($student->end_date)) {
+        $missing[] = 'Student End Date';
+    }
+
+    // Session display name is printed in the certificate
+    if (
+        !$student->sessionData ||
+        !filled($student->sessionData->session_display_name)
+    ) {
+        $missing[] = 'Session Name';
+    }
+
+    // College / place information
+    if ($student->is_place) {
+
+        if (!filled($student->place)) {
+            $missing[] = 'Place';
+        }
+
+    } else {
+
+        $collegeName = $student->collegeData->college_display_name
+            ?? $student->collegeData->college_name
+            ?? null;
+
+        if (!filled($collegeName)) {
+            $missing[] = 'College Name';
+        }
+    }
+
+    // Female students: marital status affects the printed title
+    if (
+        strtolower(trim($student->gender ?? '')) === 'female' &&
+        is_null($student->is_married)
+    ) {
+        $missing[] = 'Marital Status';
+    }
+
+    return $missing;
+}
+    public function nov_3_downloadCertificateMultiple_3nov(Request $request)
     {
         // dd($request);
         // dd($request->all());
@@ -3106,5 +3589,196 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
             );
         }
     }
+
+
+/*
+|--------------------------------------------------------------------------
+| Move Selected Students to Old Students
+|--------------------------------------------------------------------------
+|
+| This operation COPIES records from students_detail to old_students.
+| Original student records are never deleted or modified.
+|
+*/
+
+public function moveToOldStudents(Request $request)
+{
+    $validated = $request->validate([
+        'student_ids' => 'required|array|min:1|max:500',
+        'student_ids.*' => 'required|integer|distinct',
+        'destination_session' => 'required|string|max:255',
+    ]);
+
+    $studentIds = $validated['student_ids'];
+    $destinationSession = trim($validated['destination_session']);
+
+    $result = DB::transaction(function () use (
+        $studentIds,
+        $destinationSession
+    ) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get selected original students
+        |--------------------------------------------------------------------------
+        */
+
+        $students = DB::table('students_detail')
+            ->whereIn('id', $studentIds)
+            ->whereNull('deleted_at')
+            ->lockForUpdate()
+            ->get();
+
+        if ($students->count() !== count($studentIds)) {
+            throw ValidationException::withMessages([
+                'student_ids' => 'Some selected student records are unavailable.'
+            ]);
+        }
+
+        $copied = 0;
+        $skipped = 0;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fields to copy (Fee and login fields excluded)
+        |--------------------------------------------------------------------------
+        */
+
+        $studentFields = [
+            'source_type',
+            'source_id',
+            'enquiry_id',
+            'start_date',
+            'end_date',
+            'student_name',
+            'f_name',
+            'sno',
+            'gender',
+            'contact',
+            'email_id',
+            'alternative_phone',
+            'address',
+            'college_name',
+            'place',
+            'duration',
+            'technology',
+            'department',
+            'join_date',
+            'status',
+            'certificate_status',
+            'certificate_sent',
+            'confirmation_sent',
+            'student_consent',
+            'email_count_confirmation',
+            'email_count_certificate',
+            'count_receipt_download',
+            'download_count_confirmation',
+            'download_count_certificate',
+            'download_count_receipt',
+            'batch_assign',
+            'reference',
+            'referred_by',
+            'referred_by_type',
+            'certificate_send_date',
+            'certificate_issue_date',
+            'confirmation_issue_date',
+            'internship_issue_date',
+            'pursuing_issue_date',
+            'close_date',
+            'part_time_offer',
+            'placement_offer',
+            'pg_offer',
+            'is_placed',
+            'is_intern',
+            'is_married',
+            'is_online',
+            'is_place',
+            'send_to_close',
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Copy each selected student
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($students as $student) {
+
+            // Do not copy into the same session.
+            if (
+                trim((string) $student->session) ===
+                $destinationSession
+            ) {
+                $skipped++;
+                continue;
+            }
+
+            /*
+            | Check existing records including soft-deleted records.
+            */
+
+            $alreadyExists = DB::table('old_students')
+                ->where('source_student_id', $student->id)
+                ->where('session', $destinationSession)
+                ->exists();
+
+            if ($alreadyExists) {
+                $skipped++;
+                continue;
+            }
+
+            /*
+            | Prepare copied student data.
+            */
+
+            $data = [];
+
+            foreach ($studentFields as $field) {
+                $data[$field] = $student->$field;
+            }
+
+            // Original student reference
+            $data['source_student_id'] = $student->id;
+
+            // Session tracking
+            $data['from_session'] = $student->session;
+            $data['session'] = $destinationSession;
+
+            // Transfer tracking
+            $data['transferred_at'] = now();
+            $data['transferred_by'] = Auth::id();
+
+            // New destination record timestamps
+            $data['created_at'] = now();
+            $data['updated_at'] = now();
+
+            /*
+            | Insert while respecting the unique source/session key.
+            */
+
+            $inserted = DB::table('old_students')
+                ->insertOrIgnore($data);
+
+            if ($inserted) {
+                $copied++;
+            } else {
+                $skipped++;
+            }
+        }
+
+        return [
+            'copied' => $copied,
+            'skipped' => $skipped,
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Student transfer process completed.',
+        'copied' => $result['copied'],
+        'skipped' => $result['skipped'],
+    ]);
+}
+
 
 }

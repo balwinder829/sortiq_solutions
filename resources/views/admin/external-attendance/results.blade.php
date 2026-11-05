@@ -87,7 +87,7 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $option->category_name ?? '-' }}</td>
                                             <td>{{ $option->test_title ?? '-' }}</td>
-                                            <td>{{ ucfirst($option->test_type ?? '-') }}</td>
+                                            <td>{{ strtolower($option->test_type ?? '') === 'technical' ? 'Coding' : 'Non Coding' }}</td>
                                             <td>{{ $option->display_name ?? '-' }}</td>
                                             <td>{{ $option->student_count }}</td>
                                             <td>
@@ -140,6 +140,34 @@
                 @endforeach
             </select>
         </div>
+
+        {{-- Category Filter --}}
+        <!-- <div class="col-md-2">
+            <select name="category_id" class="form-select filterchange">
+                <option value="">All Categories</option>
+
+                @foreach($categories as $category)
+                    <option value="{{ $category->category_id }}"
+                        {{ request('category_id') == $category->category_id ? 'selected' : '' }}>
+                        {{ $category->category_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div> -->
+
+        {{-- Test Filter --}}
+        <!-- <div class="col-md-2">
+            <select name="linked_test_id" class="form-select filterchange">
+                <option value="">All Tests</option>
+
+                @foreach($linkedOptions->unique('test_id') as $option)
+                    <option value="{{ $option->test_id }}"
+                        {{ request('linked_test_id') == $option->test_id ? 'selected' : '' }}>
+                        {{ $option->test_title }}
+                    </option>
+                @endforeach
+            </select>
+        </div> -->
 
         <div class="col-md-2">
             <input
@@ -270,8 +298,10 @@
 
         {{-- Selected IDs are inserted here by JavaScript --}}
         <div id="selectedAttendanceInputs"></div>
+        <input type="hidden" name="action" id="attendanceAction">
+        <input type="hidden" name="return_url" value="{{ request()->fullUrl() }}">
 
-        <div class="d-flex gap-2 mb-3">
+        <div class="d-flex gap-2 mb-3 flex-wrap">
             <button
                 type="submit"
                 class="btn btn-warning"
@@ -285,8 +315,16 @@
                 href="{{ route('admin.external-attendance.export.results', [$test->id] + request()->query()) }}"
                 class="btn btn-success"
             >
-                Export Excel
+                Export All Excel
             </a>
+
+            <button type="button" class="btn btn-primary" id="updateSelectedScoresButton">
+                Update Selected Scores
+            </button>
+
+            <button type="button" class="btn btn-info text-white" id="downloadSelectedButton">
+                Download Selected
+            </button>
         </div>
 
         {{-- ORIGINAL TABLE STYLE PRESERVED --}}
@@ -306,6 +344,11 @@
                         <th>Class</th>
                         <th>Semester</th>
                         <th>Course</th>
+                        <th>Test Name</th>
+                        <th>Test Type</th>
+                        <th>Test Status</th>
+                        <th>Marks</th>
+                        <th>Update Score</th>
                         <th>Submitted At</th>
                     </tr>
                 </thead>
@@ -314,15 +357,13 @@
                     @foreach($students as $i => $st)
                         <tr>
                             <td>
-                                @if($st->is_moved_to_enquiry)
-                                    <span class="badge bg-info">Moved</span>
-                                @else
+                                
                                     <input
                                         type="checkbox"
                                         class="student-checkbox"
                                         value="{{ $st->id }}"
                                     >
-                                @endif
+                                
                             </td>
 
                             <td>{{ $i + 1 }}</td>
@@ -334,6 +375,43 @@
                             <td>{{ $st->class ?? '-' }}</td>
                             <td>{{ $st->semester ?? '-' }}</td>
                             <td>{{ $st->course->course_name ?? '-' }}</td>
+                            <td>{{ $st->latest_category_name ?? '-' }}</td>
+                            <td>
+                                {{ $st->latest_test_type
+                                    ? (strtolower($st->latest_test_type) === 'technical' ? 'Coding' : 'Non Coding')
+                                    : '-' }}
+                            </td>
+                            
+                            <td>
+                                @if($st->latest_student_test_id)
+                                    <span class="badge bg-success">Given</span>
+                                @else
+                                    <span class="badge bg-secondary">Not Given</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($st->latest_student_test_id)
+                                    {{ (int) ($st->latest_score ?? 0) }} / {{ (int) ($st->latest_max_score ?? 0) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>
+                                @if($st->latest_student_test_id)
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-primary edit-score-button"
+                                        data-attendance-id="{{ $st->id }}"
+                                        data-student-name="{{ $st->student_name }}"
+                                        data-score="{{ (int) ($st->latest_score ?? 0) }}"
+                                        data-max-score="{{ (int) ($st->latest_max_score ?? 0) }}"
+                                    >
+                                        Edit
+                                    </button>
+                                @else
+                                    -
+                                @endif
+                            </td>
 
                             <td>
                                 {{ $st->exam_submitted_at
@@ -347,6 +425,35 @@
             </table>
         </div>
     </form>
+
+    {{-- UPDATE INDIVIDUAL SCORE MODAL --}}
+    <div class="modal fade" id="updateScoreModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ route('admin.external-attendance.results.action', $test->id) }}" id="updateSingleScoreForm">
+                @csrf
+                <input type="hidden" name="action" value="update_one_score">
+                <input type="hidden" name="attendance_id" id="scoreAttendanceId">
+                <input type="hidden" name="return_url" value="{{ request()->fullUrl() }}">
+
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update Student Score</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-2">Student: <strong id="scoreStudentName"></strong></p>
+                        <p class="text-muted mb-2">Maximum Marks: <strong id="scoreMaxMarks"></strong></p>
+                        <label for="singleScoreInput" class="form-label">Marks Obtained</label>
+                        <input type="number" name="score" id="singleScoreInput" class="form-control" min="0" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Score</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
 </div>
 
@@ -736,6 +843,97 @@ $(document).ready(function () {
     // =====================================================
     restoreCurrentPage();
 
+});
+</script>
+
+
+<script>
+$(document).ready(function () {
+    const actionUrl = @json(route('admin.external-attendance.results.action', $test->id));
+
+    function selectedCount() {
+        return $('#selectedAttendanceInputs input[name="attendance_ids[]"]').length;
+    }
+
+    function submitSelectedAction(action, score = null) {
+        const count = selectedCount();
+
+        if (!count) {
+            Swal.fire('No Students Selected', 'Please select at least one student.', 'warning');
+            return;
+        }
+
+        $('#attendanceAction').val(action);
+
+        if (score !== null) {
+            let scoreInput = $('#bulkForm input[name="score"]');
+            if (!scoreInput.length) {
+                scoreInput = $('<input>', { type: 'hidden', name: 'score' }).appendTo('#bulkForm');
+            }
+            scoreInput.val(score);
+        }
+
+        $('#bulkForm').attr('action', actionUrl).trigger('submit');
+    }
+
+    $('#downloadSelectedButton').on('click', function () {
+        submitSelectedAction('download_selected');
+    });
+
+    $('#updateSelectedScoresButton').on('click', function () {
+        if (!selectedCount()) {
+            Swal.fire('No Students Selected', 'Please select at least one student.', 'warning');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Update Selected Scores',
+            text: 'Enter the marks to apply to the latest test attempt of each selected student.',
+            input: 'number',
+            inputAttributes: { min: 0, step: 1 },
+            inputValidator: value => {
+                if (value === '' || !Number.isInteger(Number(value)) || Number(value) < 0) {
+                    return 'Please enter a valid non-negative whole number.';
+                }
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            reverseButtons: false
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                submitSelectedAction('update_selected_scores', result.value);
+            }
+        });
+    });
+
+    $(document).on('click', '.edit-score-button', function () {
+        const button = $(this);
+        $('#scoreAttendanceId').val(button.data('attendance-id'));
+        $('#scoreStudentName').text(button.data('student-name'));
+        $('#scoreMaxMarks').text(button.data('max-score'));
+        $('#singleScoreInput').attr('max', button.data('max-score')).val(button.data('score'));
+
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('updateScoreModal'));
+        modal.show();
+    });
+
+    $('#updateSingleScoreForm').on('submit', function (event) {
+        const score = Number($('#singleScoreInput').val());
+        const max = Number($('#singleScoreInput').attr('max'));
+
+        if (!Number.isInteger(score) || score < 0 || score > max) {
+            event.preventDefault();
+            Swal.fire('Invalid Score', 'Score must be between 0 and ' + max + '.', 'warning');
+        }
+    });
+
+    // Keep the current page's selected attendance IDs in the common action form.
+    $('#bulkForm').on('submit', function () {
+        if ($('#attendanceAction').val() === 'download_selected' ||
+            $('#attendanceAction').val() === 'update_selected_scores') {
+            // Hidden inputs are already synchronized by the existing selection script.
+        }
+    });
 });
 </script>
 

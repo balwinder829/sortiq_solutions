@@ -728,6 +728,8 @@ value="{{ request('registration_fee') }}">
         <button id="blockSelected" class="btn btn-danger">Block Numbers</button>
         <button id="clearStudentDues" class="btn btn-warning">Clear Pending Fee</button>
         <button id="moveToInternStudents" class="btn btn-success">Move to Intern Students</button>
+        <button type="button" id="copyOldStudentsBtn" class="btn btn-success"><i class="fas fa-copy"></i> Copy to Old Students
+        </button>
     </div>
 
      
@@ -1009,6 +1011,76 @@ value="{{ request('registration_fee') }}">
         </div>
     </form>
   </div>
+</div>
+
+
+{{-- Copy Selected Students to Old Students --}}
+<div class="modal fade" id="copyToOldStudentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="copyOldStudentsForm"
+              method="POST"
+              action="{{ route('students.moveToOldStudents') }}">
+
+            @csrf
+
+            {{-- Selected student IDs will be added here by JavaScript --}}
+            <div id="copyOldStudentIdsContainer"></div>
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Copy Students to Old Students</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Destination Session <span class="text-danger">*</span>
+                        </label>
+
+                        <select name="destination_session"
+                                class="form-control"
+                                required>
+
+                            <option value="">-- Select Session --</option>
+
+                            @foreach($sessions as $session)
+                                <option value="{{ $session->id }}">
+                                    {{ $session->session_name }}
+                                </option>
+                            @endforeach
+
+                        </select>
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+                        Selected students will be copied to the Old Students module.
+                        Original student records will remain unchanged.
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit" class="btn btn-success">
+                        Copy to Old Students
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                </div>
+
+            </div>
+        </form>
+    </div>
 </div>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
@@ -1587,6 +1659,140 @@ $('#bulkEditModal').on('shown.bs.modal', function () {
 
 });
 
+// ========================================
+// COPY SELECTED STUDENTS TO OLD STUDENTS
+// ========================================
+
+$('#copyOldStudentsBtn').on('click', function () {
+
+    let ids = getSelectedIds();
+
+    if (!ids || ids.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least 1 record.'
+        });
+
+        return;
+    }
+
+    // Add selected IDs as an array for Laravel validation
+    let container = $('#copyOldStudentIdsContainer');
+
+    container.empty();
+
+    ids.forEach(function (id) {
+
+        $('<input>', {
+            type: 'hidden',
+            name: 'student_ids[]',
+            value: id
+        }).appendTo(container);
+
+    });
+
+    // Open destination session modal
+    $('#copyToOldStudentsModal').modal('show');
+
+});
+
+
+// ========================================
+// SUBMIT COPY FORM USING AJAX
+// ========================================
+
+$('#copyOldStudentsForm').on('submit', function (e) {
+
+    e.preventDefault();
+
+    let form = this;
+
+    Swal.fire({
+        title: 'Copy Selected Students?',
+        text: 'Selected students will be copied to Old Students. Original records will remain unchanged.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Copy',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false
+    }).then(function (result) {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        let submitButton = $(form).find('button[type="submit"]');
+
+        submitButton.prop('disabled', true);
+
+        $.ajax({
+
+            url: form.action,
+            type: 'POST',
+            data: $(form).serialize(),
+            dataType: 'json',
+
+            success: function (response) {
+
+                $('#copyToOldStudentsModal').modal('hide');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copy Completed',
+                    html:
+                        '<b>Copied:</b> ' + response.copied +
+                        '<br><b>Skipped:</b> ' + response.skipped
+                }).then(function () {
+
+                    window.location.reload();
+
+                });
+
+            },
+
+            error: function (xhr) {
+
+                let message = 'Unable to copy students. Please try again.';
+
+                if (xhr.responseJSON) {
+
+                    if (xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+
+                    if (xhr.responseJSON.errors) {
+
+                        message = Object.values(xhr.responseJSON.errors)
+                            .flat()
+                            .join('<br>');
+
+                    }
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copy Completed',
+                    html:
+                        '<b>Copied:</b> ' + response.copied +
+                        '<br><b>Skipped:</b> ' + response.skipped
+                }).then(function () {
+                    window.location.reload();
+                });
+
+            },
+
+            complete: function () {
+
+                submitButton.prop('disabled', false);
+
+            }
+
+        });
+
+    });
+
+});
     $('#copySelected').on('click', function () {
 
         let ids = getSelectedIds();

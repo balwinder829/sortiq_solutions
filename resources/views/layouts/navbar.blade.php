@@ -643,6 +643,12 @@ body.menu-toggle .sidebar-collapse-btn{
                             </a>
                         </li>
 
+                        <li class="{{ request()->routeIs('old-students.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('old-students.index') }}">
+                                Old Students
+                            </a>
+                        </li>
+
                         <li class="{{ request()->routeIs('admin.closed-data.*') ? 'mm-active' : '' }}">
                             <a href="{{ route('admin.closed_data.index') }}">
                                 Closed Data
@@ -747,6 +753,13 @@ body.menu-toggle .sidebar-collapse-btn{
                                 <span class="nav-text">Students Certifications</span>
                             </a>
                              
+                        </li>
+
+                        <li class="{{ request()->routeIs('admin.cr-students.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('admin.cr-students.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                CR Students
+                            </a>
                         </li>
 
                         <li class="{{ request()->routeIs('intern-students.*') ? 'mm-active' : '' }}">
@@ -1991,6 +2004,14 @@ body.menu-toggle .sidebar-collapse-btn{
                             </a>
                         </li>
                         @endcan
+
+                        @can('old_students.view')
+                        <li class="{{ request()->routeIs('old-students.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('old-students.index') }}">
+                                Old Students
+                            </a>
+                        </li>
+                        @endcan
  
                     </ul>
                 </li>
@@ -2091,7 +2112,10 @@ body.menu-toggle .sidebar-collapse-btn{
                             </a>
                              
                         </li>
-                        @endcan      
+                        @endcan  
+
+                         
+
                         {{-- Certificates --}}
                          @can('dropout_students.view')
                         <li class="{{ isParent(['dropout-students*']) }}">

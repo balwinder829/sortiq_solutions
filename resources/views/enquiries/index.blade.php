@@ -324,13 +324,19 @@
 
         <div class="row mt-3">
             <div class="col-md-12 text-end">
-                @include('partials.whatsapp-popover')
-                  
+                <!-- @include('partials.whatsapp-popover') -->
+                  <button type="button"
+                            id="bulkWhatsAppEnquiries"
+                            class="btn btn-success">
+                        <i class="fa-brands fa-whatsapp"></i> Send WhatsApp
+                    </button>
                     <button type="button"
                             id="bulkDeleteEnquiries"
                             class="btn btn-danger">
                         <i class="fas fa-trash"></i> Bulk Delete
                     </button>
+
+                    
                  
                 <a href="{{ route('enquiries.index') }}" class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
@@ -347,7 +353,7 @@
 
 
     <!-- Message Composer Panel -->
-    <section class="glass rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+    <!-- <section class="glass rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div class="absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
@@ -365,7 +371,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> -->
 
     <!-- Browser Popup Warning Alert -->
     <!-- <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex gap-3 text-amber-400 text-sm glass">
@@ -378,7 +384,7 @@
     </div> -->
 
     <!-- Sticky Bulk Action Bar -->
-    <div id="bulk-bar" class="hidden glass border-emerald-500/30 bg-emerald-950/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-300">
+    <!-- <div id="bulk-bar" class="hidden glass border-emerald-500/30 bg-emerald-950/20 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-300">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold" id="selected-count-badge">
                 0
@@ -395,7 +401,7 @@
                 Send with Name (<span id="btn-count-name">0</span>)
             </button>
         </div>
-    </div>
+    </div> -->
 
     {{-- ======================== TABLE ======================== --}}
     <div class="table-responsive">
@@ -428,7 +434,8 @@
 
         <input type="checkbox"
                class="rowCheck"
-               value="{{ $enquiry->id }}">
+               value="{{ $enquiry->id }}" data-name="{{ $enquiry->name }}"
+       data-mobile="{{ $enquiry->mobile }}">
 
         @if($enquiry->assignedTo)
             <i class="fas fa-user-check text-warning  ml-1"
@@ -746,6 +753,430 @@
 
 
 <script>
+
+/* =====================================================
+   BULK WHATSAPP - ENQUIRIES MODULE
+===================================================== */
+
+const ENQUIRY_WHATSAPP_STORAGE = 'selected_enquiry_whatsapp';
+
+/*
+|--------------------------------------------------------------------------
+| Get saved enquiry details
+|--------------------------------------------------------------------------
+*/
+
+function getEnquiryWhatsAppSelections() {
+    try {
+        return JSON.parse(
+            localStorage.getItem(ENQUIRY_WHATSAPP_STORAGE)
+        ) || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveEnquiryWhatsAppSelections(records) {
+    localStorage.setItem(
+        ENQUIRY_WHATSAPP_STORAGE,
+        JSON.stringify(records)
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Update selected enquiry details
+|--------------------------------------------------------------------------
+*/
+
+function updateEnquiryWhatsAppSelection(checkbox) {
+
+    let records = getEnquiryWhatsAppSelections();
+
+    const id = String(checkbox.value);
+
+    records = records.filter(
+        item => String(item.id) !== id
+    );
+
+    if (checkbox.checked) {
+        records.push({
+            id: id,
+            name: checkbox.dataset.name || '',
+            mobile: checkbox.dataset.mobile || ''
+        });
+    }
+
+    saveEnquiryWhatsAppSelections(records);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Checkbox selection
+|--------------------------------------------------------------------------
+*/
+
+$(document).on('change', '.rowCheck', function () {
+    updateEnquiryWhatsAppSelection(this);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Select all current page
+|--------------------------------------------------------------------------
+*/
+
+$(document).on('change', '#selectAll', function () {
+
+    $('.rowCheck:enabled').each(function () {
+        updateEnquiryWhatsAppSelection(this);
+    });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Restore current page selection
+|--------------------------------------------------------------------------
+*/
+
+$(document).ready(function () {
+
+    let records = getEnquiryWhatsAppSelections();
+
+    $('.rowCheck').each(function () {
+
+        const id = String(this.value);
+
+        const existing = records.find(
+            item => String(item.id) === id
+        );
+
+        if (existing) {
+            $(this).prop('checked', true);
+        } else if (this.checked) {
+            records.push({
+                id: id,
+                name: this.dataset.name || '',
+                mobile: this.dataset.mobile || ''
+            });
+        }
+
+    });
+
+    saveEnquiryWhatsAppSelections(records);
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Format Indian mobile number
+|--------------------------------------------------------------------------
+*/
+
+function formatEnquiryWhatsAppMobile(mobile) {
+
+    mobile = String(mobile || '').replace(/\D/g, '');
+
+    if (mobile.length === 10) {
+        mobile = '91' + mobile;
+    } else if (mobile.length === 11 && mobile.startsWith('0')) {
+        mobile = '91' + mobile.substring(1);
+    }
+
+    if (!/^91[6-9]\d{9}$/.test(mobile)) {
+        return null;
+    }
+
+    return mobile;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Open WhatsApp chat
+|--------------------------------------------------------------------------
+*/
+
+function openEnquiryWhatsApp(record, message, appendName) {
+
+    const mobile = formatEnquiryWhatsAppMobile(record.mobile);
+
+    if (!mobile) {
+        return false;
+    }
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url =
+        'https://web.whatsapp.com/send?phone=' +
+        mobile +
+        '&text=' +
+        encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+
+    return true;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Start bulk WhatsApp sending
+|--------------------------------------------------------------------------
+*/
+
+function startEnquiryWhatsApp(records) {
+
+    if (!records || records.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one enquiry.',
+            'warning'
+        );
+        return;
+    }
+
+    const validRecords = records.filter(record =>
+        formatEnquiryWhatsAppMobile(record.mobile)
+    );
+
+    const invalidCount = records.length - validRecords.length;
+
+    if (validRecords.length === 0) {
+        Swal.fire(
+            'Invalid Mobile Numbers',
+            'No selected enquiry has a valid Indian mobile number.',
+            'warning'
+        );
+        return;
+    }
+
+    Swal.fire({
+        title: 'Send WhatsApp Message',
+
+        html: `
+            <div class="text-start">
+
+                <label class="form-label">
+                    Message
+                </label>
+
+                <textarea
+                    id="enquiryWhatsappMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message..."
+                ></textarea>
+
+                <div class="form-check mt-3">
+
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="enquiryWhatsappAppendName"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="enquiryWhatsappAppendName"
+                    >
+                        Add enquiry name
+                    </label>
+
+                </div>
+
+                <p class="text-muted mt-3 mb-0">
+                    Selected: ${records.length}<br>
+                    Valid: ${validRecords.length}<br>
+                    Invalid: ${invalidCount}
+                </p>
+
+            </div>
+        `,
+
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+
+        preConfirm: () => {
+
+            const message = document
+                .getElementById('enquiryWhatsappMessage')
+                .value.trim();
+
+            const appendName = document
+                .getElementById('enquiryWhatsappAppendName')
+                .checked;
+
+            if (!message) {
+                Swal.showValidationMessage(
+                    'Please enter a message.'
+                );
+                return false;
+            }
+
+            // Open first WhatsApp chat from this user action.
+            const opened = openEnquiryWhatsApp(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            if (!opened) {
+                Swal.showValidationMessage(
+                    'Unable to open WhatsApp chat.'
+                );
+                return false;
+            }
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+        }
+
+    }).then(result => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        let currentIndex = 1;
+
+        function openNextEnquiry() {
+
+            if (currentIndex >= validRecords.length) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'All Chats Opened',
+                    text:
+                        `Opened ${validRecords.length} valid WhatsApp chats. ` +
+                        `Invalid numbers skipped: ${invalidCount}.`
+                });
+
+                return;
+            }
+
+            const currentRecord = validRecords[currentIndex];
+
+            Swal.fire({
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>
+                        Chat ${currentIndex + 1}
+                        of ${validRecords.length}
+                    </p>
+
+                    <p>
+                        <strong>
+                            ${$('<div>').text(currentRecord.name || 'Enquiry').html()}
+                        </strong>
+                    </p>
+
+                    <p class="text-muted">
+                        ${$('<div>').text(currentRecord.mobile || '').html()}
+                    </p>
+
+                    <p>
+                        Send the message in WhatsApp, then click
+                        <strong>Open Next Enquiry</strong>.
+                    </p>
+                `,
+
+                showCancelButton: true,
+                confirmButtonText: 'Open Next Enquiry',
+                cancelButtonText: 'Finish',
+                reverseButtons: false,
+
+                preConfirm: () => {
+
+                    const opened = openEnquiryWhatsApp(
+                        currentRecord,
+                        result.value.message,
+                        result.value.appendName
+                    );
+
+                    if (!opened) {
+                        Swal.showValidationMessage(
+                            'Unable to open this WhatsApp chat.'
+                        );
+                        return false;
+                    }
+
+                    currentIndex++;
+                }
+
+            }).then(nextResult => {
+
+                if (nextResult.isConfirmed) {
+                    openNextEnquiry();
+                }
+
+            });
+        }
+
+        if (validRecords.length > 1) {
+            openNextEnquiry();
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Chat Opened',
+                text: 'The WhatsApp chat has been opened.'
+            });
+        }
+
+    });
+}
+
+/*
+|--------------------------------------------------------------------------
+| Bulk WhatsApp button
+|--------------------------------------------------------------------------
+*/
+
+$(document).on('click', '#bulkWhatsAppEnquiries', function () {
+
+    const selectedIds = (
+        JSON.parse(
+            localStorage.getItem('selected_enquiries') || '[]'
+        ) || []
+    ).map(String);
+
+    const allRecords = getEnquiryWhatsAppSelections();
+
+    const selectedRecords = allRecords.filter(record =>
+        selectedIds.includes(String(record.id))
+    );
+
+    if (selectedIds.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one enquiry.',
+            'warning'
+        );
+        return;
+    }
+
+    if (selectedRecords.length !== selectedIds.length) {
+        Swal.fire(
+            'Selection Details Missing',
+            'Please revisit the pages containing your selected enquiries and select them again.',
+            'warning'
+        );
+        return;
+    }
+
+    startEnquiryWhatsApp(selectedRecords);
+
+});
 
 $('#bulkMoveEnquiry').click(function () {
 

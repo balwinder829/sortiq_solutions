@@ -194,7 +194,8 @@ use App\Http\Controllers\Admin\StudentTestMachineRoundController;
 use App\Http\Controllers\Admin\StudentTestFinalController;
 use App\Http\Controllers\Finance\SimController;
 use App\Http\Controllers\Students\InternStudentController;
-
+use App\Http\Controllers\Students\OldStudentController;
+use App\Http\Controllers\Students\CrStudentController;
 
 Route::get('/student-feedback', [StudentFeedbackController::class, 'create'])
     ->name('student-feedback.create');
@@ -617,10 +618,22 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
 
         });
 
+        
+        Route::get(
+            'external-attendance/{test}/links/export',
+            [ExternalAttendanceController::class, 'exportCollegeLinks']
+        )->name('external-attendance.links.export');
+
+
     Route::get(
         'external-attendance/{test}/export-results',
         [ExternalAttendanceController::class, 'exportResults']
     )->name('external-attendance.export.results');
+
+    Route::post(
+        'external-attendance/{test}/results/action',
+        [ExternalAttendanceController::class, 'attendanceResultAction']
+    )->name('external-attendance.results.action');
 
         Route::resource(
             'external-attendance',
@@ -1151,7 +1164,29 @@ Route::prefix('admin')
     ->name('admin.')
     ->middleware('auth')
     ->group(function () {
+          /*
+        |--------------------------------------------------------------------------
+        | CR Students Routes
+        |--------------------------------------------------------------------------
+        */
 
+        Route::prefix('cr-students')
+            ->name('cr-students.')
+            ->controller(CrStudentController::class)
+            ->group(function () {
+
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/import', 'importForm')->name('importForm');
+                Route::post('/import', 'import')->name('import');
+                Route::get('/export', 'exportExcel')->name('exportExcel');
+                Route::post('/bulk-delete', 'bulkDestroy')->name('bulkDestroy');
+                Route::post('/mark-from-students', 'markFromStudents')->name('mark-from-students');
+                Route::get('/{cr_student}/edit', 'edit')->name('edit');
+                Route::put('/{cr_student}', 'update')->name('update');
+                Route::delete('/{cr_student}', 'destroy')->name('destroy');
+            });
 
     // Route::prefix('jd')->group(function(){
 
@@ -1284,6 +1319,22 @@ Route::resource(
 Route::middleware(['auth'])->group(function () {
     Route::prefix('admin')->group(function () {
 
+        Route::resource('old-students', OldStudentController::class);
+
+        Route::post(
+            'old-students/bulk-delete',
+            [OldStudentController::class, 'bulkDelete']
+        )->name('old-students.bulkDelete');
+
+        Route::get(
+            'old-students-export',
+            [OldStudentController::class, 'exportExcel']
+        )->name('old-students.export');
+
+        Route::post(
+            'old-students/copy',
+            [StudentController::class, 'moveToOldStudents']
+        )->name('students.moveToOldStudents');
 
         Route::resource('intern-students', InternStudentController::class)
             ->except(['show']);

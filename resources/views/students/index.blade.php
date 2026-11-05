@@ -1218,14 +1218,34 @@ data-contact="{{ $student->contact }}"></td>
     <button type="button"
         id="sendWhatsAppNotification"
         class="btn btn-success">
-    <i class="fab fa-whatsapp"></i> Send WhatsApp Notification
-</button>
+        <i class="fab fa-whatsapp"></i> Send WhatsApp Notification
+    </button>
+
+    <button type="button"
+            id="copyOldStudentsBtn"
+            class="btn btn-success">
+        <i class="fas fa-copy"></i> Copy to Old Students
+    </button>
+    <button id="markSelectedAsCR" class="btn btn-info">
+        Mark as CR
+    </button>
 
 </div>
 
 </div>
 
+{{-- Copy selected students to CR Module --}}
+<form id="markStudentsAsCRForm"
+      method="POST"
+      action="{{ route('admin.cr-students.mark-from-students') }}"
+      style="display:none;">
 
+    @csrf
+
+    <input type="hidden"
+           name="student_ids"
+           id="markStudentsAsCRIds">
+</form>
 {{-- Move selected students to Intern Students --}}
 <form id="bulkMoveToInternForm"
       method="POST"
@@ -1455,6 +1475,75 @@ data-contact="{{ $student->contact }}"></td>
     </div>
 </div>
 <!--- Edit Bulk Students end------->
+
+{{-- Copy Selected Students to Old Students --}}
+<div class="modal fade" id="copyToOldStudentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="copyOldStudentsForm"
+              method="POST"
+              action="{{ route('students.moveToOldStudents') }}">
+
+            @csrf
+
+            {{-- Selected student IDs will be added here by JavaScript --}}
+            <div id="copyOldStudentIdsContainer"></div>
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Copy Students to Old Students</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Destination Session <span class="text-danger">*</span>
+                        </label>
+
+                        <select name="destination_session"
+                                class="form-control"
+                                required>
+
+                            <option value="">-- Select Session --</option>
+
+                            @foreach($sessions as $session)
+                                <option value="{{ $session->id }}">
+                                    {{ $session->session_name }}
+                                </option>
+                            @endforeach
+
+                        </select>
+                    </div>
+
+                    <div class="alert alert-info mb-0">
+                        Selected students will be copied to the Old Students module.
+                        Original student records will remain unchanged.
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="submit" class="btn btn-success">
+                        Copy to Old Students
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css">
 
 
@@ -1737,183 +1826,7 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
         return selectedStudents;
     }
 
-    // function getSelectedIds() {
-    //     return selectedStudents;
-    // }
-
-
-    // =========================
-    // WhatsApp Notifications
-    // =========================
-
-    // $('#sendWhatsAppNotification').on('click', function () {
-
-    //     // Get selected students from all DataTable pages
-    //     const selectedForWhatsApp = [];
-
-    //     table.$('.record_checked:checked').each(function () {
-    //         selectedForWhatsApp.push({
-    //             id: $(this).val(),
-    //             name: $(this).attr('data-name') || '',
-    //             contact: $(this).attr('data-contact') || ''
-    //         });
-    //     });
-
-    //     // No students selected
-    //     if (selectedForWhatsApp.length === 0) {
-    //         Swal.fire({
-    //             icon: 'warning',
-    //             title: 'No Students Selected',
-    //             text: 'Please select at least one student.'
-    //         });
-    //         return;
-    //     }
-
-    //     // Open message editor
-    //     Swal.fire({
-    //         title: 'Send WhatsApp Notification',
-    //         html: `
-    //             <div style="text-align:left;">
-    //                 <label for="whatsappMessage"
-    //                        style="font-weight:600; margin-bottom:8px;">
-    //                     Message
-    //                 </label>
-
-    //                 <textarea id="whatsappMessage"
-    //                           class="swal2-textarea"
-    //                           placeholder="Type your message here..."
-    //                           style="width:100%; margin:0; box-sizing:border-box;"
-    //                 ></textarea>
-
-    //                 <div style="margin-top:12px;">
-    //                     <label style="cursor:pointer;">
-    //                         <input type="checkbox" id="whatsappAddName">
-    //                         Add name (Hi Student Name,)
-    //                     </label>
-    //                 </div>
-
-    //                 <small style="display:block; margin-top:10px; color:#666;">
-    //                     Selected students: ${selectedForWhatsApp.length}
-    //                 </small>
-    //             </div>
-    //         `,
-    //         showCancelButton: true,
-    //         confirmButtonText: 'Open WhatsApp',
-    //         cancelButtonText: 'Cancel',
-    //         confirmButtonColor: '#198754',
-
-    //         didOpen: () => {
-    //             const messageBox = document.getElementById('whatsappMessage');
-    //             const sendButton = Swal.getConfirmButton();
-
-    //             // Disable button until message is entered
-    //             sendButton.disabled = !messageBox.value.trim();
-
-    //             messageBox.addEventListener('input', function () {
-    //                 sendButton.disabled = !this.value.trim();
-    //             });
-
-    //             messageBox.focus();
-    //         },
-
-    //         preConfirm: () => {
-    //             const message = document
-    //                 .getElementById('whatsappMessage')
-    //                 .value.trim();
-
-    //             const addName = document
-    //                 .getElementById('whatsappAddName')
-    //                 .checked;
-
-    //             if (!message) {
-    //                 Swal.showValidationMessage('Please enter a message.');
-    //                 return false;
-    //             }
-
-    //             return {
-    //                 message: message,
-    //                 addName: addName
-    //             };
-    //         }
-
-    //     }).then((result) => {
-
-    //         if (!result.isConfirmed) {
-    //             return;
-    //         }
-
-    //         const message = result.value.message;
-    //         const addName = result.value.addName;
-
-    //         let openedCount = 0;
-    //         let invalidCount = 0;
-
-    //         selectedForWhatsApp.forEach(function (student) {
-
-    //             // Normalize Indian mobile numbers
-    //             let phone = String(student.contact).replace(/\D/g, '');
-
-    //             if (phone.length === 10) {
-    //                 phone = '91' + phone;
-    //             } else if (phone.length === 11 && phone.startsWith('0')) {
-    //                 phone = '91' + phone.substring(1);
-    //             }
-
-    //             // Accept only a 12-digit Indian number starting with 91
-    //             if (!/^91\d{10}$/.test(phone)) {
-    //                 invalidCount++;
-    //                 return;
-    //             }
-
-    //             let personalizedMessage = message;
-
-    //             if (addName) {
-    //                 const studentName = student.name.trim() || 'Student';
-    //                 personalizedMessage =
-    //                     'Hi ' + studentName + ',\n\n' + message;
-    //             }
-
-    //             const whatsappUrl =
-    //                 'https://web.whatsapp.com/send?phone=' +
-    //                 phone +
-    //                 '&text=' +
-    //                 encodeURIComponent(personalizedMessage);
-
-    //             const whatsappTab = window.open(whatsappUrl, '_blank');
-
-    //             if (whatsappTab) {
-    //                 openedCount++;
-    //             } else {
-    //                 invalidCount++;
-    //             }
-    //         });
-
-    //         if (openedCount > 0) {
-    //             Swal.fire({
-    //                 icon: 'success',
-    //                 title: 'WhatsApp Opened',
-    //                 text: openedCount +
-    //                     ' chat(s) opened. Please review and send each message in WhatsApp.'
-    //             });
-    //         } else {
-    //             Swal.fire({
-    //                 icon: 'warning',
-    //                 title: 'Unable to Open WhatsApp',
-    //                 text: 'No chats were opened. Check the selected students’ mobile numbers and allow pop-ups in your browser.'
-    //             });
-    //         }
-
-    //         if (invalidCount > 0 && openedCount > 0) {
-    //             console.warn(
-    //                 invalidCount +
-    //                 ' selected student(s) had invalid numbers or their tabs were blocked.'
-    //             );
-    //         }
-
-    //     });
-
-    // });
-
+    
     
 $('#sendWhatsAppNotification').on('click', function () {
     const selectedForWhatsApp = [];
@@ -2071,7 +1984,141 @@ $('#sendWhatsAppNotification').on('click', function () {
         openNextWhatsAppStudent();
     });
 });
+    
+    // ========================================
+// COPY SELECTED STUDENTS TO OLD STUDENTS
+// ========================================
 
+$('#copyOldStudentsBtn').on('click', function () {
+
+    let ids = getSelectedIds();
+
+    if (!ids || ids.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least 1 record.'
+        });
+
+        return;
+    }
+
+    // Add selected IDs as an array for Laravel validation
+    let container = $('#copyOldStudentIdsContainer');
+
+    container.empty();
+
+    ids.forEach(function (id) {
+
+        $('<input>', {
+            type: 'hidden',
+            name: 'student_ids[]',
+            value: id
+        }).appendTo(container);
+
+    });
+
+    // Open destination session modal
+    $('#copyToOldStudentsModal').modal('show');
+
+});
+
+
+// ========================================
+// SUBMIT COPY FORM USING AJAX
+// ========================================
+
+$('#copyOldStudentsForm').on('submit', function (e) {
+
+    e.preventDefault();
+
+    let form = this;
+
+    Swal.fire({
+        title: 'Copy Selected Students?',
+        text: 'Selected students will be copied to Old Students. Original records will remain unchanged.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Copy',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false
+    }).then(function (result) {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        let submitButton = $(form).find('button[type="submit"]');
+
+        submitButton.prop('disabled', true);
+
+        $.ajax({
+
+            url: form.action,
+            type: 'POST',
+            data: $(form).serialize(),
+            dataType: 'json',
+
+            success: function (response) {
+
+                $('#copyToOldStudentsModal').modal('hide');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copy Completed',
+                    html:
+                        '<b>Copied:</b> ' + response.copied +
+                        '<br><b>Skipped:</b> ' + response.skipped
+                }).then(function () {
+
+                    window.location.reload();
+
+                });
+
+            },
+
+            error: function (xhr) {
+
+                let message = 'Unable to copy students. Please try again.';
+
+                if (xhr.responseJSON) {
+
+                    if (xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+
+                    if (xhr.responseJSON.errors) {
+
+                        message = Object.values(xhr.responseJSON.errors)
+                            .flat()
+                            .join('<br>');
+
+                    }
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Copy Completed',
+                    html:
+                        '<b>Copied:</b> ' + response.copied +
+                        '<br><b>Skipped:</b> ' + response.skipped
+                }).then(function () {
+                    window.location.reload();
+                });
+
+            },
+
+            complete: function () {
+
+                submitButton.prop('disabled', false);
+
+            }
+
+        });
+
+    });
+
+});
 
     // Multi-action buttons
     $('#issueSelected2').click(function() {
@@ -2430,6 +2477,41 @@ $('#sendWhatsAppNotification').on('click', function () {
             $('#bulkEditModal').modal('show');
 
         });
+
+        // Mark Selected Students as CR
+$('#markSelectedAsCR').click(function () {
+
+    const ids = getSelectedIds();
+
+    if (!ids || ids.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least 1 record.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Mark selected students as CR?',
+        text: 'A separate copy will be added to the CR module. Original Student records will remain unchanged.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, mark as CR',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false
+    }).then((result) => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        $('#markStudentsAsCRIds').val(JSON.stringify(ids));
+
+        $('#markStudentsAsCRForm').submit();
+
+    });
+
+});
 
 $('#markCertificateSent').click(function () {
 

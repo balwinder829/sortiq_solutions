@@ -938,7 +938,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div>
       <h3 style="color:#fff;">Start Your IT Career Today</h3>
       <p style="color:#ccc; margin-bottom:0;">
-        45 Days Industrial Training with Live Projects
+        6 Months Industrial Training with Live Projects
       </p>
     </div>
 
