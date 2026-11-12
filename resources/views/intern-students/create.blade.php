@@ -234,6 +234,73 @@
                 </div>
             @endforeach
 
+
+            {{-- Normal Offer Letter Details --}}
+            <div class="col-12 mt-3 mb-2">
+                <h5 class="mb-1">Offer Letter Details</h5>
+                <small class="text-muted">Required fields for generating the Normal Offer Letter.</small>
+                <hr>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Internship Start Date <span class="text-danger">*</span></label>
+                <input type="date" name="offer_training_start_date" class="form-control" required
+                       value="{{ old('offer_training_start_date') }}">
+                @error('offer_training_start_date') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Internship Duration (Months) <span class="text-danger">*</span></label>
+                <input type="number" min="1" step="1" name="offer_training_duration_months" class="form-control" required
+                       value="{{ old('offer_training_duration_months') }}">
+                @error('offer_training_duration_months') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Internship Type <span class="text-danger">*</span></label>
+                <input type="text" maxlength="100" name="internship_type" class="form-control" required
+                       value="{{ old('internship_type') }}" placeholder="e.g. Free Internship">
+                @error('internship_type') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>PPO Evaluation Period (Months) <span class="text-danger">*</span></label>
+                <input type="number" min="1" max="24" step="1" name="offer_ppo_evaluation_months" class="form-control" required
+                       value="{{ old('offer_ppo_evaluation_months', 3) }}" placeholder="e.g. 3">
+                @error('offer_ppo_evaluation_months') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Probation Duration (Months)</label>
+                <input type="number" min="1" step="1" name="offer_probation_duration_months" class="form-control"
+                       value="{{ old('offer_probation_duration_months') }}">
+                @error('offer_probation_duration_months') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Working Hours</label>
+                <input type="text" maxlength="100" name="offer_working_hours" class="form-control"
+                       value="{{ old('offer_working_hours') }}"
+                       placeholder="e.g. 9:30 AM to 6:30 PM">
+                @error('offer_working_hours') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Service Agreement Duration</label>
+                <input type="text" maxlength="100" name="offer_service_agreement_duration" class="form-control"
+                       value="{{ old('offer_service_agreement_duration') }}"
+                       placeholder="e.g. 12 months">
+                @error('offer_service_agreement_duration') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="form-group col-md-6">
+                <label>Annual Salary (₹)</label>
+                <input type="number" min="0" step="0.01" name="offer_annual_salary" class="form-control"
+                       value="{{ old('offer_annual_salary') }}"
+                       placeholder="e.g. 405000">
+                @error('offer_annual_salary') <small class="text-danger">{{ $message }}</small> @enderror
+            </div>
+
             <div class="form-group col-md-6">
                 <label>Address</label>
                 <textarea name="address" class="form-control" rows="3">{{ old('address') }}</textarea>

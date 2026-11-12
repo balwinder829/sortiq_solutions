@@ -7,14 +7,27 @@
 <div class="container-fluid mt-4">
 
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <h1 class="page_heading mb-0">Old Students</h1>
+    <h1 class="page_heading mb-0">Old Students</h1>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <button type="button"
+                id="sendOldStudentWhatsApp"
+                class="btn btn-success">
+            <i class="fab fa-whatsapp"></i> Send WhatsApp
+        </button>
+        
+        <button type="button"
+                id="bulkDeleteButton"
+                class="btn btn-danger">
+            <i class="fa fa-trash"></i> Delete Selected
+        </button>
 
         <a href="{{ route('old-students.export', request()->query()) }}"
            class="btn btn-primary">
             <i class="fa fa-download"></i> Export Excel
         </a>
     </div>
-
+</div>
     {{-- Messages --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
@@ -141,11 +154,7 @@
 
     {{-- Bulk Actions --}}
     <div class="mb-3 d-flex gap-2 flex-wrap">
-        <button type="button"
-                id="bulkDeleteButton"
-                class="btn btn-danger">
-            <i class="fa fa-trash"></i> Delete Selected
-        </button>
+        
     </div>
 
     {{-- Bulk Delete Form --}}
@@ -228,6 +237,8 @@
                                 <td>
                                     <input type="checkbox"
                                            class="old-student-checkbox"
+                                           data-name="{{ $student->student_name }}"
+                                            data-contact="{{ $student->contact }}"
                                            value="{{ $student->id }}">
                                 </td>
 
@@ -321,6 +332,305 @@ $(document).ready(function () {
     // Persist selected IDs across DataTables pages/search/redraw
     let selectedIds = new Set();
 
+    // Selected WhatsApp records
+let selectedOldStudentWhatsAppRecords = new Map();
+
+ /* =====================================================
+   BULK WHATSAPP - OLD STUDENTS MODULE
+===================================================== */
+
+// Format Indian mobile number
+function formatOldStudentWhatsAppMobile(mobile) {
+
+    mobile = String(mobile || '').replace(/\D/g, '');
+
+    if (mobile.length === 10) {
+        mobile = '91' + mobile;
+    } else if (mobile.length === 11 && mobile.startsWith('0')) {
+        mobile = '91' + mobile.substring(1);
+    }
+
+    if (!/^91[6-9]\d{9}$/.test(mobile)) {
+        return null;
+    }
+
+    return mobile;
+}
+
+
+// Open WhatsApp chat
+function openOldStudentWhatsApp(record, message, appendName) {
+
+    const mobile = formatOldStudentWhatsAppMobile(record.contact);
+
+    if (!mobile) {
+        return false;
+    }
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url =
+        'https://web.whatsapp.com/send?phone=' +
+        mobile +
+        '&text=' +
+        encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+
+    return true;
+}
+
+
+// Start bulk WhatsApp sending
+function startOldStudentWhatsApp(records) {
+
+    if (!records || records.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one record.',
+            'warning'
+        );
+        return;
+    }
+
+    const validRecords = records.filter(record =>
+        formatOldStudentWhatsAppMobile(record.contact)
+    );
+
+    const invalidCount = records.length - validRecords.length;
+
+    if (validRecords.length === 0) {
+        Swal.fire(
+            'Invalid Mobile Numbers',
+            'No selected record has a valid Indian mobile number.',
+            'warning'
+        );
+        return;
+    }
+
+    Swal.fire({
+
+        title: 'Send WhatsApp Message',
+
+        html: `
+            <div class="text-start">
+
+                <label class="form-label">Message</label>
+
+                <textarea
+                    id="oldStudentWhatsappMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message..."
+                ></textarea>
+
+                <div class="form-check mt-3">
+
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="oldStudentWhatsappAppendName"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="oldStudentWhatsappAppendName"
+                    >
+                        Add student name
+                    </label>
+
+                </div>
+
+                <p class="text-muted mt-3 mb-0">
+                    Selected: ${records.length}<br>
+                    Valid: ${validRecords.length}<br>
+                    Invalid: ${invalidCount}
+                </p>
+
+            </div>
+        `,
+
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+
+        preConfirm: () => {
+
+            const message = document
+                .getElementById('oldStudentWhatsappMessage')
+                .value.trim();
+
+            const appendName = document
+                .getElementById('oldStudentWhatsappAppendName')
+                .checked;
+
+            if (!message) {
+                Swal.showValidationMessage(
+                    'Please enter a message.'
+                );
+                return false;
+            }
+
+            const opened = openOldStudentWhatsApp(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            if (!opened) {
+                Swal.showValidationMessage(
+                    'Unable to open WhatsApp chat.'
+                );
+                return false;
+            }
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+        }
+
+    }).then(result => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        let currentIndex = 1;
+
+        function openNextOldStudentWhatsApp() {
+
+            if (currentIndex >= validRecords.length) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'All Chats Opened',
+                    text:
+                        `Opened ${validRecords.length} valid WhatsApp chats. ` +
+                        `Invalid numbers skipped: ${invalidCount}.`
+                });
+
+                return;
+            }
+
+            const currentRecord = validRecords[currentIndex];
+
+            // Escape student details before displaying in popup
+            const safeName = $('<div>')
+                .text(currentRecord.name || 'Student')
+                .html();
+
+            const safeContact = $('<div>')
+                .text(currentRecord.contact || '')
+                .html();
+
+            Swal.fire({
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>
+                        Chat ${currentIndex + 1}
+                        of ${validRecords.length}
+                    </p>
+
+                    <p>
+                        <strong>${safeName}</strong>
+                    </p>
+
+                    <p class="text-muted">
+                        ${safeContact}
+                    </p>
+
+                    <p>
+                        Send the message in WhatsApp, then click
+                        <strong>Open Next</strong>.
+                    </p>
+                `,
+
+                showCancelButton: true,
+                confirmButtonText: 'Open Next',
+                cancelButtonText: 'Finish',
+                reverseButtons: false,
+
+                preConfirm: () => {
+
+                    const opened = openOldStudentWhatsApp(
+                        currentRecord,
+                        result.value.message,
+                        result.value.appendName
+                    );
+
+                    if (!opened) {
+                        Swal.showValidationMessage(
+                            'Unable to open this WhatsApp chat.'
+                        );
+                        return false;
+                    }
+
+                    currentIndex++;
+                }
+
+            }).then(nextResult => {
+
+                if (nextResult.isConfirmed) {
+                    openNextOldStudentWhatsApp();
+                }
+
+            });
+        }
+
+        if (validRecords.length > 1) {
+            openNextOldStudentWhatsApp();
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Chat Opened',
+                text: 'The WhatsApp chat has been opened.'
+            });
+        }
+
+    });
+}
+
+
+// Bulk WhatsApp button
+$(document).on('click', '#sendOldStudentWhatsApp', function () {
+
+    const selectedRecords = Array.from(
+        selectedIds
+    ).map(id =>
+        selectedOldStudentWhatsAppRecords.get(String(id))
+    ).filter(Boolean);
+
+    if (selectedIds.size === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one record.',
+            'warning'
+        );
+        return;
+    }
+
+    if (selectedRecords.length !== selectedIds.size) {
+        Swal.fire(
+            'Selection Details Missing',
+            'Please unselect and select the missing records again.',
+            'warning'
+        );
+        return;
+    }
+
+    startOldStudentWhatsApp(selectedRecords);
+
+});
+
     function syncCheckboxes() {
         table.rows({ page: 'current' }).nodes().to$()
             .find('.old-student-checkbox')
@@ -356,8 +666,14 @@ $(document).ready(function () {
 
         if (this.checked) {
             selectedIds.add(id);
+            selectedOldStudentWhatsAppRecords.set(id, {
+                id: id,
+                name: $(this).data('name') || '',
+                contact: $(this).data('contact') || ''
+            });
         } else {
             selectedIds.delete(id);
+            selectedOldStudentWhatsAppRecords.delete(id);
         }
 
         syncCheckboxes();
@@ -376,8 +692,15 @@ $(document).ready(function () {
 
                 if (checked) {
                     selectedIds.add(id);
+
+                    selectedOldStudentWhatsAppRecords.set(id, {
+                        id: id,
+                        name: $(this).data('name') || '',
+                        contact: $(this).data('contact') || ''
+                    });
                 } else {
                     selectedIds.delete(id);
+                    selectedOldStudentWhatsAppRecords.delete(id);
                 }
             });
 

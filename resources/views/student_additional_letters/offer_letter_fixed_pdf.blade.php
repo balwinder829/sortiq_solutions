@@ -23,6 +23,19 @@
     </style>
 </head>
 <body>
+    @php
+        $duration = (int) $letter->offer_training_duration_months;
+        $ppoMonths = (int) $letter->offer_ppo_evaluation_months;
+
+        $durationText = $duration . ' ' . ($duration == 1 ? 'month' : 'months');
+        $ppoDurationText = $ppoMonths . ' ' . ($ppoMonths == 1 ? 'month' : 'months');
+
+        $internshipType = ucwords($letter->offer_internship_type ?? 'N/A');
+
+        $startDate = $letter->offer_training_start_date
+            ? \Carbon\Carbon::parse($letter->offer_training_start_date)->format('d M Y')
+            : 'N/A';
+    @endphp
 <div class="wrapper" style="width: 100%; overflow: hidden; background-color: #fff;">
     <div class="head-shape">
         <img style="width: 100%; display: block;" src="images/head-shape.png"/>
@@ -111,11 +124,11 @@
                             <tr>
                                 <td width="30"></td>
                                 <td style="font-size: 14px; line-height: 24px;">
-                                     <strong style="margin-left: 20px;">Duration:</strong> 6 Months<br>
-                                    <strong style="margin-left: 20px;">Type:</strong> Free Internship<br>
+                                     <strong style="margin-left: 20px;">Duration:</strong> {{ $durationText }}<br>
+                                    <strong style="margin-left: 20px;">Type:</strong> {{ $internshipType }}<br>
                                     <strong style="margin-left: 20px;">Position:</strong> {{ ucwords($letter->student?->course_name ?? 'N/A') }}<br>
                                     <strong style="margin-left: 20px;">Location:</strong> Mohali / Remote (based on project requirement)<br>
-                                    <strong style="margin-left: 20px;">Start Date:</strong> {{ \Carbon\Carbon::parse($letter->student->start_date)->format('d M Y') }}<br>
+                                    <strong style="margin-left: 20px;">Start Date:</strong>  {{ $startDate }}<br>
                                 </td>
                             </tr>
                         </table>
@@ -130,7 +143,7 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="font-size:14px; line-height:24px; padding-bottom:15px; font-family:'Inter', sans-serif;">
-                        After the <b>first three months</b>, your performance will be evaluated based on: 
+                        After the <b>first {{ $ppoDurationText }}</b>, your performance will be evaluated based on: 
                        <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td width="30"></td>

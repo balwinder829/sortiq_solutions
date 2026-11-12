@@ -23,8 +23,13 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
 
     public function collection()
 {
+
     // $query = Enquiry::where('is_passout', $this->isPassout);
-    $activeSessionId = session('admin_session_id');
+    // $activeSessionId = session('admin_session_id');
+    $activeSessionId = session(
+        'admin_header_session_id',
+        session('admin_session_id')
+    );
 
         $query = Enquiry::where('is_passout', $this->isPassout)
             ->where('session_id', $activeSessionId)
@@ -64,6 +69,14 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
             'study',
             'like',
             '%' . $this->filters['study'] . '%'
+        );
+    }
+
+    if (!empty($this->filters['course_type'])) {
+
+        $query->where(
+            'course_type',
+            $this->filters['course_type']
         );
     }
 
@@ -129,20 +142,90 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
     // DATE FILTER
     // -------------------------------------------------
 
-    if (
-        !empty($this->filters['from_date']) &&
-        !empty($this->filters['to_date'])
-    ) {
+    // -------------------------------------------------
+// DATE RANGE FILTER (MATCH INDEX)
+// -------------------------------------------------
 
-        $query->whereBetween(
-            'created_at',
-            [
+$range = $this->filters['range'] ?? '';
+
+switch ($range) {
+
+    case 'today':
+        $query->whereDate('created_at', today());
+        break;
+
+    case 'yesterday':
+        $query->whereDate('created_at', today()->subDay());
+        break;
+
+    case 'this_week':
+        $query->whereBetween('created_at', [
+            now()->startOfWeek()->startOfDay(),
+            now()->endOfWeek()->endOfDay()
+        ]);
+        break;
+
+    case 'last_week':
+        $query->whereBetween('created_at', [
+            now()->subWeek()->startOfWeek()->startOfDay(),
+            now()->subWeek()->endOfWeek()->endOfDay()
+        ]);
+        break;
+
+    case 'last_7_days':
+        $query->whereBetween('created_at', [
+            now()->subDays(7)->startOfDay(),
+            now()->endOfDay()
+        ]);
+        break;
+
+    case 'last_30_days':
+        $query->whereBetween('created_at', [
+            now()->subDays(30)->startOfDay(),
+            now()->endOfDay()
+        ]);
+        break;
+
+    case 'this_month':
+        $query->whereMonth('created_at', now()->month)
+              ->whereYear('created_at', now()->year);
+        break;
+
+    case 'custom':
+
+        if (!empty($this->filters['from_date'])) {
+            $query->whereDate(
+                'created_at',
+                '>=',
+                $this->filters['from_date']
+            );
+        }
+
+        if (!empty($this->filters['to_date'])) {
+            $query->whereDate(
+                'created_at',
+                '<=',
+                $this->filters['to_date']
+            );
+        }
+
+        break;
+
+    default:
+
+        // Retain support for older export links without range.
+        if (
+            !empty($this->filters['from_date']) &&
+            !empty($this->filters['to_date'])
+        ) {
+            $query->whereBetween('created_at', [
                 $this->filters['from_date'] . ' 00:00:00',
                 $this->filters['to_date'] . ' 23:59:59'
-            ]
-        );
+            ]);
+        }
 
-    }
+        break;
+}
 
 
     // =================================================
@@ -304,6 +387,8 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
 
                 'College'        => $e->collegeData->FullName ?? '',
 
+                'Course Type'    => $e->course_type ?? '',
+
                 'Course'         => ucwords(
                     $e->study
                 ),
@@ -415,6 +500,7 @@ class EnquiriesExport implements FromCollection, WithHeadings, ShouldAutoSize
             'Contact Number',
             'Email',
             'College',
+            'Course Type',
             'Course',
             'Semester',
             'Branch',

@@ -103,7 +103,108 @@ class StudentAdditionalLetterController extends Controller
         return view('student_additional_letters.create', compact('colleges','students','templates'));
     }
 
+
 public function store(Request $request)
+{
+    $data = $request->validate([
+        'internship_type' => [
+            'required',
+            Rule::in([
+                'free', 'stipend', 'offer', 'custom',
+                'mutual_consent', 'noc', 'training_consent',
+                'placement', 'internship', 'internship_with_package',
+                'strict_offer_letter', 'strict_consent_letter',
+                'stipend_policy', 'internship_consent',
+                'part_time_job_opportunity', 'with_roll_number',
+                'with_roll_number_internship', 'confirmation_letter',
+                'student_responsibility', 'placed_student_responsibility'
+            ]),
+        ],
+
+        'student_id' => 'required|array',
+        'student_id.*' => 'exists:students_detail,id',
+
+        'subject' => 'required_if:internship_type,custom|max:255',
+        'roll_number' => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
+        'semester' => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
+        'letter_content' => 'required_if:internship_type,custom,stipend',
+        'issue_date' => 'nullable|date',
+
+        // Normal Offer Letter fields
+        'offer_training_start_date' => 'required_if:internship_type,offer,strict_offer_letter|nullable|date',
+        'offer_training_duration_months' => 'required_if:internship_type,offer,strict_offer_letter|nullable|integer|min:1',
+        'offer_internship_type' => 'required_if:internship_type,offer|nullable|string|max:50',
+        'offer_ppo_evaluation_months' => 'required_if:internship_type,offer|nullable|integer|min:1',
+
+        // Strict Offer Letter fields
+        'offer_probation_duration_months' => 'required_if:internship_type,strict_offer_letter|nullable|integer|min:1',
+        'offer_working_hours' => 'required_if:internship_type,strict_offer_letter|nullable|string|max:100',
+        'offer_service_agreement_duration' => 'required_if:internship_type,strict_offer_letter|nullable|string|max:100',
+        'offer_annual_salary' => 'required_if:internship_type,strict_offer_letter|nullable|numeric|min:0',
+    ]);
+
+    $created = 0;
+    $skipped = 0;
+
+    foreach ($request->student_id as $studentId) {
+
+        $exists = StudentAdditionalLetter::where('student_id', $studentId)
+            ->where('internship_type', $request->internship_type)
+            ->exists();
+
+        if ($exists) {
+            $skipped++;
+            continue;
+        }
+
+        $type = $request->internship_type;
+
+        StudentAdditionalLetter::create([
+            'student_id' => $studentId,
+            'internship_type' => $type,
+            'subject' => $request->subject,
+            'roll_number' => $request->roll_number,
+            'semester' => $request->semester,
+            'letter_content' => $request->letter_content,
+            'issue_date' => $request->issue_date ?: now()->toDateString(),
+
+            // Shared by Normal and Strict Offer Letter
+            'offer_training_start_date' => in_array($type, ['offer', 'strict_offer_letter'])
+                ? $request->offer_training_start_date : null,
+
+            'offer_training_duration_months' => in_array($type, ['offer', 'strict_offer_letter'])
+                ? $request->offer_training_duration_months : null,
+
+            // Normal Offer Letter only
+            'offer_internship_type' => $type === 'offer'
+                ? $request->offer_internship_type : null,
+
+            'offer_ppo_evaluation_months' => $type === 'offer'
+                ? $request->offer_ppo_evaluation_months : null,
+
+            // Strict Offer Letter only
+            'offer_probation_duration_months' => $type === 'strict_offer_letter'
+                ? $request->offer_probation_duration_months : null,
+
+            'offer_working_hours' => $type === 'strict_offer_letter'
+                ? $request->offer_working_hours : null,
+
+            'offer_service_agreement_duration' => $type === 'strict_offer_letter'
+                ? $request->offer_service_agreement_duration : null,
+
+            'offer_annual_salary' => $type === 'strict_offer_letter'
+                ? $request->offer_annual_salary : null,
+        ]);
+
+        $created++;
+    }
+
+    return redirect()
+        ->route('student-additional-letters.index')
+        ->with('success', "$created letter(s) created successfully. $skipped skipped (already existed).");
+}
+
+public function store_10nov(Request $request)
 {
     $data = $request->validate([
         'internship_type' => [
@@ -220,7 +321,89 @@ public function store(Request $request)
         ]);
     }
 
-    public function update(Request $request, StudentAdditionalLetter $studentAdditionalLetter)
+
+public function update(Request $request, StudentAdditionalLetter $studentAdditionalLetter)
+{
+    $data = $request->validate([
+        'internship_type' => [
+            'required',
+            Rule::in([
+                'free', 'stipend', 'offer', 'custom',
+                'mutual_consent', 'noc', 'training_consent',
+                'placement', 'internship', 'internship_with_package',
+                'strict_offer_letter', 'strict_consent_letter',
+                'stipend_policy', 'internship_consent',
+                'part_time_job_opportunity', 'with_roll_number',
+                'with_roll_number_internship', 'confirmation_letter',
+                'student_responsibility', 'placed_student_responsibility'
+            ]),
+            Rule::unique('student_additional_letters')
+                ->where('student_id', $request->student_id)
+                ->ignore($studentAdditionalLetter->id),
+        ],
+
+        'student_id' => 'required|exists:students_detail,id',
+        'subject' => 'required_if:internship_type,custom|max:255',
+        'letter_content' => 'required_if:internship_type,custom,stipend',
+        'issue_date' => 'nullable|date',
+        'roll_number' => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
+        'semester' => 'required_if:internship_type,with_roll_number,with_roll_number_internship,confirmation_letter|max:255',
+
+        // Normal Offer Letter fields
+        'offer_training_start_date' => 'required_if:internship_type,offer,strict_offer_letter|nullable|date',
+        'offer_training_duration_months' => 'required_if:internship_type,offer,strict_offer_letter|nullable|integer|min:1',
+        'offer_internship_type' => 'required_if:internship_type,offer|nullable|string|max:50',
+        'offer_ppo_evaluation_months' => 'required_if:internship_type,offer|nullable|integer|min:1',
+
+        // Strict Offer Letter fields
+        'offer_probation_duration_months' => 'required_if:internship_type,strict_offer_letter|nullable|integer|min:1',
+        'offer_working_hours' => 'required_if:internship_type,strict_offer_letter|nullable|string|max:100',
+        'offer_service_agreement_duration' => 'required_if:internship_type,strict_offer_letter|nullable|string|max:100',
+        'offer_annual_salary' => 'required_if:internship_type,strict_offer_letter|nullable|numeric|min:0',
+    ], [
+        'internship_type.unique' => 'This letter type already exists for this student.',
+    ]);
+
+    $type = $request->internship_type;
+
+    $data['issue_date'] = $request->issue_date ?: now()->toDateString();
+
+    // Shared by Normal and Strict Offer Letter
+    $data['offer_training_start_date'] = in_array($type, ['offer', 'strict_offer_letter'])
+        ? $request->offer_training_start_date : null;
+
+    $data['offer_training_duration_months'] = in_array($type, ['offer', 'strict_offer_letter'])
+        ? $request->offer_training_duration_months : null;
+
+    // Normal Offer Letter only
+    $data['offer_internship_type'] = $type === 'offer'
+        ? $request->offer_internship_type : null;
+
+    $data['offer_ppo_evaluation_months'] = $type === 'offer'
+        ? $request->offer_ppo_evaluation_months : null;
+
+    // Strict Offer Letter only
+    $data['offer_probation_duration_months'] = $type === 'strict_offer_letter'
+        ? $request->offer_probation_duration_months : null;
+
+    $data['offer_working_hours'] = $type === 'strict_offer_letter'
+        ? $request->offer_working_hours : null;
+
+    $data['offer_service_agreement_duration'] = $type === 'strict_offer_letter'
+        ? $request->offer_service_agreement_duration : null;
+
+    $data['offer_annual_salary'] = $type === 'strict_offer_letter'
+        ? $request->offer_annual_salary : null;
+
+    $studentAdditionalLetter->update($data);
+
+    return redirect()
+        ->route('student-additional-letters.index')
+        ->with('success', 'Letter updated successfully.');
+}
+
+
+    public function update_10nov(Request $request, StudentAdditionalLetter $studentAdditionalLetter)
     {
         $data = $request->validate([
             // 'internship_type' => 'required|in:free,stipend,offer,custom,mutual_consent,noc,training_consent,placement',
@@ -403,7 +586,47 @@ public function store(Request $request)
         return $mpdf->Output('', 'S');
     }
 
-    private function getMissingStrictOfferFields($letter): array
+
+private function getMissingOfferFields($letter): array
+{
+    $requiredFields = [];
+
+    if ($letter->internship_type === 'offer') {
+        $requiredFields = [
+            'offer_training_start_date' => 'Internship Start Date',
+            'offer_training_duration_months' => 'Internship Duration',
+            'offer_internship_type' => 'Internship Type',
+            'offer_ppo_evaluation_months' => 'PPO Evaluation Period',
+        ];
+    }
+
+    if ($letter->internship_type === 'strict_offer_letter') {
+        $requiredFields = [
+            'offer_training_start_date' => 'Training Start Date',
+            'offer_training_duration_months' => 'Initial Training Duration',
+            'offer_probation_duration_months' => 'Probation Duration',
+            'offer_working_hours' => 'Working Hours',
+            'offer_service_agreement_duration' => 'Service Agreement Duration',
+            'offer_annual_salary' => 'Annual Salary / Package',
+        ];
+    }
+
+    $missing = [];
+
+    foreach ($requiredFields as $column => $label) {
+        if (
+            $letter->{$column} === null ||
+            trim((string) $letter->{$column}) === ''
+        ) {
+            $missing[] = $label;
+        }
+    }
+
+    return $missing;
+}
+
+
+    private function getMissingStrictOfferFields_10nov($letter): array
     {
         // dd($letter);
         if ($letter->internship_type !== 'strict_offer_letter') {
@@ -429,7 +652,90 @@ public function store(Request $request)
 
         return $missing;
     }
-    public function download(StudentAdditionalLetter $StudentAdditionalLetter)
+
+
+public function download(StudentAdditionalLetter $StudentAdditionalLetter)
+{
+    $missingFields = $this->getMissingOfferFields($StudentAdditionalLetter);
+
+    if (!empty($missingFields)) {
+        $studentName = $StudentAdditionalLetter->student->student_name
+            ?? 'Unknown Student';
+
+        $letterName = $StudentAdditionalLetter->internship_type === 'offer'
+            ? 'Offer Letter'
+            : 'Strict Offer Letter';
+
+        return redirect()->back()->with(
+            'error',
+            "Cannot download {$letterName} for {$studentName}. Please add: "
+            . implode(', ', $missingFields) . '.'
+        );
+    }
+
+    $pdfContent = $this->pdf($StudentAdditionalLetter);
+
+    $internshipTypeMap = [
+        'free' => 'FREE INTERNSHIP LETTER',
+        'stipend' => 'STIPEND INTERNSHIP LETTER',
+        'offer' => 'OFFER LETTER',
+        'custom' => 'CUSTOM LETTER',
+        'mutual_consent' => 'MUTUAL CONSENT LETTER',
+        'noc' => 'INTERNSHIP NO OBJECTION CERTIFICATE',
+        'training_consent' => 'TRAINING CONSENT LETTER',
+        'placement' => 'PLACEMENT CONSENT LETTER',
+        'internship' => 'INTERNSHIP LETTER',
+        'internship_with_package' => 'INTERNSHIP WITH PACKAGE LETTER',
+        'strict_offer_letter' => 'STRICT OFFER LETTER',
+        'strict_consent_letter' => 'STRICT CONSENT LETTER',
+        'stipend_policy' => 'STIPEND POLICY LETTER',
+        'internship_consent' => 'INTERNSHIP CONSENT LETTER',
+        'part_time_job_opportunity' => 'PART TIME JOB OPPORTUNITY LETTER',
+        'with_roll_number' => 'WITH ROLL NUMBER LETTER',
+        'with_roll_number_internship' => 'WITH ROLL NUMBER INTERNSHIP LETTER',
+        'confirmation_letter' => 'CONFIRMATION LETTER',
+        'student_responsibility' => 'STUDENT RESPONSIBILITY LETTER',
+        'placed_student_responsibility' => 'PLACED STUDENT RESPONSIBILITY LETTER',
+    ];
+
+    $sanitize = function ($value) {
+        return strtoupper(
+            trim(
+                preg_replace(
+                    '/_+/',
+                    '_',
+                    preg_replace('/[^A-Za-z0-9]+/', '_', (string) $value)
+                ),
+                '_'
+            )
+        );
+    };
+
+    $studentName = $sanitize(
+        $StudentAdditionalLetter->student->student_name ?? 'STUDENT'
+    );
+
+    $fatherName = $sanitize(
+        $StudentAdditionalLetter->student->f_name ?? ''
+    );
+
+    $internshipKey = $StudentAdditionalLetter->internship_type;
+
+    $internshipFullName = $sanitize(
+        $internshipTypeMap[$internshipKey] ?? 'INTERNSHIP LETTER'
+    );
+
+    $fileName = "{$studentName}_{$fatherName}_{$internshipFullName}.pdf";
+
+    return response($pdfContent)
+        ->header('Content-Type', 'application/pdf')
+        ->header(
+            'Content-Disposition',
+            'attachment; filename="' . $fileName . '"'
+        );
+}
+
+    public function download_10nov(StudentAdditionalLetter $StudentAdditionalLetter)
     {
         // dd($StudentAdditionalLetter);
         $missingFields = $this->getMissingStrictOfferFields($StudentAdditionalLetter);
@@ -509,7 +815,37 @@ public function store(Request $request)
             );
     }
 
-    public function preview(StudentAdditionalLetter $studentAdditionalLetter)
+
+public function preview(StudentAdditionalLetter $studentAdditionalLetter)
+{
+    $missingFields = $this->getMissingOfferFields($studentAdditionalLetter);
+
+    if (!empty($missingFields)) {
+        $studentName = $studentAdditionalLetter->student->student_name
+            ?? 'Unknown Student';
+
+        $letterName = $studentAdditionalLetter->internship_type === 'offer'
+            ? 'Offer Letter'
+            : 'Strict Offer Letter';
+
+        return redirect()->back()->with(
+            'error',
+            "Cannot preview {$letterName} for {$studentName}. Please add: "
+            . implode(', ', $missingFields) . '.'
+        );
+    }
+
+    $pdfContent = $this->pdf($studentAdditionalLetter);
+
+    return response($pdfContent)
+        ->header('Content-Type', 'application/pdf')
+        ->header(
+            'Content-Disposition',
+            'inline; filename="student-letter-preview.pdf"'
+        );
+}
+
+    public function preview_10nov(StudentAdditionalLetter $studentAdditionalLetter)
     {
         $pdfContent = $this->pdf($studentAdditionalLetter);
 

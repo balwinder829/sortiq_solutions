@@ -3085,8 +3085,91 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
     }
 
     /*---Edit Bulk Students-----*/
+    
+public function bulkUpdate(Request $request)
+{
+    // Decode selected student IDs
+    $ids = json_decode($request->ids, true);
 
-    public function bulkUpdate(Request $request)
+    // Validate selected IDs
+    if (empty($ids) || !is_array($ids)) {
+        return back()->with('error', 'Please select at least one student.');
+    }
+
+    $data = [];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Existing Bulk Update Fields
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('college_id')) {
+        $data['college_name'] = $request->college_id;
+    }
+
+    if ($request->filled('technology')) {
+        $data['technology'] = $request->technology;
+    }
+
+    if ($request->filled('start_date')) {
+        $data['start_date'] = $request->start_date;
+    }
+
+    if ($request->filled('end_date')) {
+        $data['end_date'] = $request->end_date;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bulk Referred By Update
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->has('referred_by')) {
+
+        $referredBy = $request->input('referred_by');
+
+        // Keep Existing: do not change either referral column
+        if ($referredBy === '__keep__') {
+            // No changes to referred_by or referred_by_type
+        }
+
+        // Direct: clear both referral columns
+        elseif ($referredBy === '__direct__') {
+            $data['referred_by'] = null;
+            $data['referred_by_type'] = null;
+        }
+
+        // Reference or Sales Staff
+        elseif ($referredBy !== null && $referredBy !== '') {
+
+            $request->validate([
+                'referred_by' => 'required|integer',
+                'referred_by_type' => 'required|in:reference,staff',
+            ]);
+
+            $data['referred_by'] = $referredBy;
+            $data['referred_by_type'] = $request->referred_by_type;
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Selected Students
+    |--------------------------------------------------------------------------
+    */
+
+    if (empty($data)) {
+        return back()->with('info', 'No changes were selected.');
+    }
+
+    Student::whereIn('id', $ids)->update($data);
+
+    return back()->with('success', 'Students updated successfully.');
+}
+
+    public function bulkUpdate_5nov(Request $request)
     {
         $ids = json_decode($request->ids, true);
 

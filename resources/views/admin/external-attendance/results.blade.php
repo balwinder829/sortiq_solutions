@@ -302,6 +302,9 @@
         <input type="hidden" name="return_url" value="{{ request()->fullUrl() }}">
 
         <div class="d-flex gap-2 mb-3 flex-wrap">
+            <button type="button" class="btn btn-success" id="sendAttendanceWhatsAppButton">
+                <i class="fab fa-whatsapp"></i> Send WhatsApp
+            </button>
             <button
                 type="submit"
                 class="btn btn-warning"
@@ -362,6 +365,8 @@
                                         type="checkbox"
                                         class="student-checkbox"
                                         value="{{ $st->id }}"
+                                         data-name="{{ $st->student_name }}"
+                                        data-mobile="{{ $st->student_mobile }}"
                                     >
                                 
                             </td>
@@ -513,6 +518,9 @@ $(document).ready(function () {
     // Keep selected IDs across all pages
     const selectedIds = new Set();
 
+    // Store selected student WhatsApp details
+const selectedAttendanceWhatsAppRecords = new Map();
+
 
     // =====================================================
     // CURRENT DATATABLE PAGE CHECKBOXES ONLY
@@ -657,10 +665,17 @@ $(document).ready(function () {
             if (this.checked) {
 
                 selectedIds.add(id);
+                
+                selectedAttendanceWhatsAppRecords.set(id, {
+                    id: id,
+                    name: $(this).data('name') || '',
+                    mobile: $(this).data('mobile') || ''
+                });
 
             } else {
 
                 selectedIds.delete(id);
+                selectedAttendanceWhatsAppRecords.delete(id);
 
             }
 
@@ -694,9 +709,16 @@ $(document).ready(function () {
 
                 selectedIds.add(id);
 
+                selectedAttendanceWhatsAppRecords.set(id, {
+                    id: id,
+                    name: $(checkbox).data('name') || '',
+                    mobile: $(checkbox).data('mobile') || ''
+                });
+
             } else {
 
                 selectedIds.delete(id);
+                selectedAttendanceWhatsAppRecords.delete(id);
 
             }
 
@@ -719,7 +741,35 @@ $(document).ready(function () {
 
     });
 
+    // =====================================================
+// WHATSAPP BUTTON
+// =====================================================
+$(document).on('click', '#sendAttendanceWhatsAppButton', function () {
 
+    if (selectedIds.size === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one student.',
+            'warning'
+        );
+        return;
+    }
+
+    const selectedRecords = Array.from(selectedIds)
+        .map(id => selectedAttendanceWhatsAppRecords.get(String(id)))
+        .filter(Boolean);
+
+    if (selectedRecords.length !== selectedIds.size) {
+        Swal.fire(
+            'Selection Details Missing',
+            'Some selected students do not have saved contact details. Please unselect and select those students again.',
+            'warning'
+        );
+        return;
+    }
+
+    startAttendanceWhatsApp(selectedRecords);
+});
     // =====================================================
     // MOVE TO ENQUIRIES
     // =====================================================
@@ -844,6 +894,256 @@ $(document).ready(function () {
     restoreCurrentPage();
 
 });
+
+
+/* =========================================================
+   ATTENDANCE BULK WHATSAPP
+   Same popup and sequential workflow as Old Students
+========================================================= */
+
+// Format Indian mobile number
+function formatAttendanceWhatsAppMobile(mobile) {
+    mobile = String(mobile || '').replace(/\D/g, '');
+
+    if (mobile.length === 10) {
+        mobile = '91' + mobile;
+    } else if (mobile.length === 11 && mobile.startsWith('0')) {
+        mobile = '91' + mobile.substring(1);
+    }
+
+    if (!/^91[6-9]\d{9}$/.test(mobile)) return null;
+
+    return mobile;
+}
+
+
+// Open WhatsApp chat
+function openAttendanceWhatsApp(record, message, appendName) {
+    const mobile = formatAttendanceWhatsAppMobile(record.mobile);
+
+    if (!mobile) return false;
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url =
+        'https://web.whatsapp.com/send?phone=' +
+        mobile +
+        '&text=' +
+        encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+
+    return true;
+}
+
+
+// Start bulk WhatsApp sending
+function startAttendanceWhatsApp(records) {
+
+    if (!records || records.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one student.',
+            'warning'
+        );
+        return;
+    }
+
+    const validRecords = records.filter(record =>
+        formatAttendanceWhatsAppMobile(record.mobile)
+    );
+
+    const invalidCount = records.length - validRecords.length;
+
+    if (validRecords.length === 0) {
+        Swal.fire(
+            'Invalid Mobile Numbers',
+            'No selected student has a valid Indian mobile number.',
+            'warning'
+        );
+        return;
+    }
+
+    Swal.fire({
+        title: 'Send WhatsApp Message',
+
+        html: `
+            <div class="text-start">
+                <label class="form-label">Message</label>
+
+                <textarea
+                    id="attendanceWhatsappMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message..."
+                ></textarea>
+
+                <div class="form-check mt-3">
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="attendanceWhatsappAppendName"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="attendanceWhatsappAppendName"
+                    >
+                        Add student name
+                    </label>
+                </div>
+
+                <p class="text-muted mt-3 mb-0">
+                    Selected: ${records.length}<br>
+                    Valid: ${validRecords.length}<br>
+                    Invalid: ${invalidCount}
+                </p>
+            </div>
+        `,
+
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+
+        preConfirm: () => {
+
+            const message = document
+                .getElementById('attendanceWhatsappMessage')
+                .value.trim();
+
+            const appendName = document
+                .getElementById('attendanceWhatsappAppendName')
+                .checked;
+
+            if (!message) {
+                Swal.showValidationMessage('Please enter a message.');
+                return false;
+            }
+
+            const opened = openAttendanceWhatsApp(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            if (!opened) {
+                Swal.showValidationMessage('Unable to open WhatsApp chat.');
+                return false;
+            }
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+        }
+
+    }).then(result => {
+
+        if (!result.isConfirmed) return;
+
+        let currentIndex = 1;
+
+        function openNextAttendanceWhatsApp() {
+
+            if (currentIndex >= validRecords.length) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'All Chats Opened',
+                    text:
+                        `Opened ${validRecords.length} valid WhatsApp chats. ` +
+                        `Invalid numbers skipped: ${invalidCount}.`
+                });
+
+                return;
+            }
+
+            const currentRecord = validRecords[currentIndex];
+
+            const safeName = $('<div>')
+                .text(currentRecord.name || 'Student')
+                .html();
+
+            const safeMobile = $('<div>')
+                .text(currentRecord.mobile || '')
+                .html();
+
+            Swal.fire({
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>
+                        Chat ${currentIndex + 1}
+                        of ${validRecords.length}
+                    </p>
+
+                    <p><strong>${safeName}</strong></p>
+
+                    <p class="text-muted">${safeMobile}</p>
+
+                    <p>
+                        Send the message in WhatsApp, then click
+                        <strong>Open Next</strong>.
+                    </p>
+                `,
+
+                showCancelButton: true,
+                confirmButtonText: 'Open Next',
+                cancelButtonText: 'Finish',
+                reverseButtons: false,
+
+                preConfirm: () => {
+
+                    const opened = openAttendanceWhatsApp(
+                        currentRecord,
+                        result.value.message,
+                        result.value.appendName
+                    );
+
+                    if (!opened) {
+                        Swal.showValidationMessage(
+                            'Unable to open this WhatsApp chat.'
+                        );
+                        return false;
+                    }
+
+                    currentIndex++;
+                }
+
+            }).then(nextResult => {
+
+                if (nextResult.isConfirmed) {
+                    openNextAttendanceWhatsApp();
+                }
+
+            });
+        }
+
+        if (validRecords.length > 1) {
+            openNextAttendanceWhatsApp();
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Chat Opened',
+                text: 'The WhatsApp chat has been opened.'
+            });
+        }
+
+    });
+}
+
+
+// WhatsApp button
+ 
+
+
 </script>
 
 

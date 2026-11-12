@@ -11,9 +11,9 @@
     </div>
 
     <div class="col-md-8 text-end">
-        @include('partials.whatsapp-popover', [
-                'add_margin' => 'mb-3'
-            ])
+        <button type="button" id="sendManualWhatsApp" class="btn btn-success mb-3">
+            <i class="fab fa-whatsapp"></i> Send WhatsApp
+        </button>
         <button id="moveToEnquiry" class="btn btn-warning mb-3">
             Move to Enquiries
         </button>
@@ -349,6 +349,19 @@
 
 let selectedIds = new Set();
 let selectedRecordIds = new Set();
+let selectedManualWhatsAppRecords = new Map();
+
+function escapeManualWhatsAppValue(value) {
+    return String(value ?? '').replace(/[&<>"']/g, function (char) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[char];
+    });
+}
 
 // ✅ DATATABLE
 var table = $('#trainers-table').DataTable({
@@ -391,6 +404,8 @@ var table = $('#trainers-table').DataTable({
                        id="${row.row_id}"
                        class="record_checkbox"
                        value="${row.row_id}"
+                       data-name="${escapeManualWhatsAppValue(row[1])}"
+                       data-contact="${escapeManualWhatsAppValue(row[4])}"
                        ${checked}>
 
                 ${
@@ -465,23 +480,6 @@ $('#manualDateRange').on('change', toggleManualCustomDates);
 toggleManualCustomDates();
 
 
-
-
-// ✅ SELECT SINGLE
-// $(document).on('change', '.record_checkbox', function () {
-//     let id = $(this).val();
-//     let record_id = $(this).attr('id');
-//     // console.log('Checkbox changed:', { id, record_id, checked: $(this).is(':checked') });
-//     if ($(this).is(':checked')) {
-//         selectedIds.add(id);
-//         selectedRecordIds.add(record_id);
-//     } else {
-//         selectedIds.delete(id);
-//         selectedRecordIds.delete(record_id);
-//     }
-// });
-
-
 // ======================================
 // SELECT / UNSELECT SINGLE RECORD
 // ======================================
@@ -493,11 +491,17 @@ $(document).on('change', '.record_checkbox', function () {
 
         selectedIds.add(id);
         selectedRecordIds.add(id);
+        selectedManualWhatsAppRecords.set(id, {
+            id: id,
+            name: $(this).attr('data-name') || '',
+            contact: $(this).attr('data-contact') || ''
+        });
 
     } else {
 
         selectedIds.delete(id);
         selectedRecordIds.delete(id);
+        selectedManualWhatsAppRecords.delete(id);
     }
 
     syncCheckAll();
@@ -529,26 +533,7 @@ function syncCheckAll() {
     console.log(checkedCount);
 }
 
-
-// ✅ SELECT ALL
-// $('#checkAll').on('change', function () {
-//     let checked = this.checked;
-
-//     $('.record_checkbox').each(function () {
-//         let id = $(this).val();
-//         let record_id = $(this).attr('id');
-//         if (checked) {
-//             selectedIds.add(id);
-//             selectedRecordIds.add(record_id);
-//         } else {
-//             selectedIds.delete(id);
-//             selectedRecordIds.delete(record_id);
-//         }
-
-//         $(this).prop('checked', checked);
-//     });
-// });
-
+ 
 // ======================================
 // SELECT ALL - CURRENT PAGE ONLY
 // ======================================
@@ -566,11 +551,19 @@ $('#checkAll').on('change', function () {
 
             selectedIds.add(id);
             selectedRecordIds.add(id);
+            selectedManualWhatsAppRecords.set(id, {
+                id: id,
+                name: $(this).attr('data-name') || '',
+                contact: $(this).attr('data-contact') || ''
+            });
 
         } else {
 
             selectedIds.delete(id);
             selectedRecordIds.delete(id);
+             selectedIds.delete(id);
+            selectedRecordIds.delete(id);
+            selectedManualWhatsAppRecords.delete(id);
 
         }
 
@@ -657,76 +650,281 @@ $('#resetFilters').click(function () {
     table.ajax.reload();
 });
 
-new bootstrap.Popover(document.getElementById('whatsappBtn'), {
-    html: true,
-    sanitize: false,
-    customClass: 'whatsapp-popover',
-    content: function () {
-        return $('#whatsappPopoverContent').html();
+ // ======================================
+// BULK WHATSAPP - MANUAL DATA
+// ======================================
+
+function formatManualWhatsAppMobile(mobile) {
+
+    let number = String(mobile || '').replace(/\D/g, '');
+
+    if (number.length === 10) {
+        number = '91' + number;
+    } else if (number.length === 11 && number.startsWith('0')) {
+        number = '91' + number.substring(1);
     }
-});
 
-$(document).on('click', '#sendWhatsappNotification', function () {
-    
-    let popover = $(this).closest('.popover');
-    let custom_message = popover.find('textarea[name="customMessage"]').val();
-    let append_name = $('input[name="append_name"]:checked').val();
+    return /^91[6-9]\d{9}$/.test(number) ? number : null;
+}
 
-    if (selectedRecordIds.size === 0) {
-        Swal.fire('No selection', 'Select at least one student', 'warning');
+
+function openManualWhatsAppChat(record, message, appendName) {
+
+    const mobile = formatManualWhatsAppMobile(record.contact);
+
+    if (!mobile) {
+        return false;
+    }
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url = 'https://web.whatsapp.com/send?phone='
+        + mobile
+        + '&text='
+        + encodeURIComponent(finalMessage);
+
+    const chatWindow = window.open(url, '_blank');
+
+    return !!chatWindow;
+}
+
+
+function startManualWhatsApp(records) {
+
+    if (!records || records.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one record.',
+            'warning'
+        );
         return;
     }
-    
-    if (custom_message?.length > 0) {
-        custom_message = custom_message;
-    } else {
-        Swal.fire('Message Required', 'Please enter a custom message', 'warning');
+
+    const validRecords = records.filter(record =>
+        formatManualWhatsAppMobile(record.contact)
+    );
+
+    const invalidCount = records.length - validRecords.length;
+
+    if (validRecords.length === 0) {
+        Swal.fire(
+            'Invalid Mobile Numbers',
+            'No selected record has a valid Indian mobile number.',
+            'warning'
+        );
         return;
     }
 
-    let formData = new FormData();
-    formData.append('append_name',append_name);
-    formData.append('message',custom_message);
-    formData.append('_token', "{{ csrf_token() }}");
-    formData.append('message_type', append_name ? 'with_name' : 'same_message');
-    Array.from(selectedRecordIds).forEach(function(id) {
-        formData.append('ids[]', id);
-    });
-    formData.append('existing_file_path', popover.find('#existingFile').val());
-    let fileInput = popover.find('input[type="file"]')[0];
-    // alert(fileInput.files.length);
-    if (fileInput && fileInput.files.length > 0) {
-        formData.append('whatsappFile', fileInput.files[0]);
-        console.log(fileInput.files[0].name);
-    }
+    Swal.fire({
 
-    $.ajax({
-        url: "{{ route('admin.message.send_whatsapp') }}",
-        type: "POST",
-        processData: false,
-        contentType: false,
-        data: formData,
-        beforeSend: function () {
-            popover.find('#message_loader').show();
-            popover.find('#sendWhatsappNotification').prop('disabled', true);
-        },
-        success: function (res) {
-            if(res.status === 'error' || res.status === false) {
-                Swal.fire('Error', res.message, 'error');
+        title: 'Send WhatsApp Message',
+
+        html: `
+            <div class="text-start">
+
+                <label class="form-label">
+                    Message
+                </label>
+
+                <textarea
+                    id="manualWhatsappMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message..."
+                ></textarea>
+
+                <div class="form-check mt-3">
+
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="manualWhatsappAppendName"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="manualWhatsappAppendName"
+                    >
+                        Add student name
+                    </label>
+
+                </div>
+
+                <p class="text-muted mt-3 mb-0">
+                    Selected: ${records.length}<br>
+                    Valid: ${validRecords.length}<br>
+                    Invalid: ${invalidCount}
+                </p>
+
+            </div>
+        `,
+
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+
+        preConfirm: () => {
+
+            const message = document
+                .getElementById('manualWhatsappMessage')
+                .value.trim();
+
+            const appendName = document
+                .getElementById('manualWhatsappAppendName')
+                .checked;
+
+            if (!message) {
+                Swal.showValidationMessage(
+                    'Please enter a message.'
+                );
+                return false;
+            }
+
+            const opened = openManualWhatsAppChat(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            if (!opened) {
+                Swal.showValidationMessage(
+                    'Unable to open WhatsApp chat.'
+                );
+                return false;
+            }
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+        }
+
+    }).then(result => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        let currentIndex = 1;
+
+        function openNextStudent() {
+
+            if (currentIndex >= validRecords.length) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'All Chats Opened',
+                    text:
+                        `Opened ${validRecords.length} valid WhatsApp chats. ` +
+                        `Invalid numbers skipped: ${invalidCount}.`
+                });
+
                 return;
             }
-            Swal.fire('Success', res.message, 'success');
-        },
-        error: function () {
-            Swal.fire('Error', 'Something went wrong', 'error');
-        },
-        complete: function () {
-            popover.find('#message_loader').hide();
-            popover.find('#sendWhatsappNotification').prop('disabled', false);
+
+            const currentRecord = validRecords[currentIndex];
+
+            Swal.fire({
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>
+                        Chat ${currentIndex + 1}
+                        of ${validRecords.length}
+                    </p>
+
+                    <p>
+                        <strong>
+                            ${$('<div>').text(currentRecord.name || 'Student').html()}
+                        </strong>
+                    </p>
+
+                    <p class="text-muted">
+                        ${$('<div>').text(currentRecord.contact || '').html()}
+                    </p>
+
+                    <p>
+                        Send the message in WhatsApp, then click
+                        <strong>Open Next Student</strong>.
+                    </p>
+                `,
+
+                showCancelButton: true,
+                confirmButtonText: 'Open Next Student',
+                cancelButtonText: 'Finish',
+                reverseButtons: false,
+
+                preConfirm: () => {
+
+                    const opened = openManualWhatsAppChat(
+                        currentRecord,
+                        result.value.message,
+                        result.value.appendName
+                    );
+
+                    if (!opened) {
+                        Swal.showValidationMessage(
+                            'Unable to open this WhatsApp chat.'
+                        );
+                        return false;
+                    }
+
+                    currentIndex++;
+                }
+
+            }).then(nextResult => {
+
+                if (nextResult.isConfirmed) {
+                    openNextStudent();
+                }
+
+            });
         }
+
+        if (validRecords.length > 1) {
+            openNextStudent();
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Chat Opened',
+                text: 'The WhatsApp chat has been opened.'
+            });
+        }
+
     });
+}
+
+
+// SEND WHATSAPP BUTTON
+
+$('#sendManualWhatsApp').on('click', function () {
+
+    const selectedRecords = Array.from(
+        selectedManualWhatsAppRecords.values()
+    );
+
+    if (selectedRecords.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            text: 'Please select at least 1 record.'
+        });
+
+        return;
+    }
+
+    startManualWhatsApp(selectedRecords);
+
 });
 
+ 
 
 $('#bulkManualActionBtn').on('click', function () {
 

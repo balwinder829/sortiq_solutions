@@ -20,24 +20,32 @@ use App\Models\Batch;
 use App\Models\Course;
 use App\Rules\NotBlockedNumber;
 use App\Models\BlockedNumber;
+use App\Models\StudentAdditionalLetter;
+use App\Models\StudentSession;
+use Mpdf\Mpdf;
+use Carbon\Carbon;
+use ZipArchive;
+
+use Illuminate\Support\Facades\View;
 
 class InternStudentController extends Controller
 {
-    protected string $permissionPrefix = 'intern-students';
+    use \App\Traits\PdfLayoutTrait;
+    protected string $permissionPrefix = 'intern_students';
 
     protected array $permissionMap = [
-        'index'         => 'view',
+         'index'         => 'view',
         'create'        => 'create',
         'store'         => 'create',
         'edit'          => 'edit',
         'update'        => 'edit',
         'destroy'       => 'delete',
-        'bulkDelete'    => 'bulk_deletes',
+        'bulkDelete'    => 'delete',
         'importForm'    => 'import',
         'import'        => 'import',
-        'exportExcel'   => 'export',
-        'moveOne'       => 'move',
-        'moveSelected'  => 'move',
+        'exportExcel'   => 'view',
+        'moveOne'       => 'view',
+        'moveSelected'  => 'view',
     ];
 
     public function __construct()
@@ -389,6 +397,16 @@ $technologies = Course::query()
         'pg_offer' => ['nullable', 'boolean'],
         'is_online' => ['nullable', 'boolean'],
 
+        // Optional fields used only by Offer / Strict Offer Letter.
+        'offer_training_start_date' => ['required', 'date'],
+        'offer_training_duration_months' => ['required', 'integer', 'min:1'],
+        'internship_type' => ['required', 'string', 'max:100'],
+        'offer_ppo_evaluation_months' => ['required', 'integer', 'min:1', 'max:24'],
+        'offer_probation_duration_months' => ['nullable', 'integer', 'min:1'],
+        'offer_working_hours' => ['nullable', 'string', 'max:100'],
+        'offer_service_agreement_duration' => ['nullable', 'string', 'max:100'],
+        'offer_annual_salary' => ['nullable', 'numeric', 'min:0'],
+
         'referred_by' => ['nullable', 'integer'],
         'referred_by_type' => ['nullable', Rule::in(['staff', 'reference'])],
     ]);
@@ -594,6 +612,7 @@ $technologies = Course::query()
      */
     public function update(Request $request, InternStudent $internStudent)
 {
+
     // Keep the same Father/Husband name prefix behavior as Student.
     $request->merge([
         'f_name' => 'Mr. ' . ucwords(
@@ -632,17 +651,7 @@ $technologies = Course::query()
 
         'technology' => ['nullable', 'array'],
         'technology.*' => ['required', 'string', 'max:255'],
-
-        // 'status' => [
-        //     'required',
-        //     Rule::in([
-        //         'joined',
-        //         'dropout',
-        //         'certificate_only',
-        //         'shift_patiala',
-        //         'passout',
-        //     ]),
-        // ],
+ 
 
         'duration' => ['nullable', 'string', 'max:100'],
         'batch_assign' => ['nullable', 'string', 'max:255'],
@@ -662,6 +671,16 @@ $technologies = Course::query()
         'placement_offer' => ['nullable', 'boolean'],
         'pg_offer' => ['nullable', 'boolean'],
         'is_online' => ['nullable', 'boolean'],
+
+        // Optional fields used only by Offer / Strict Offer Letter.
+        'offer_training_start_date' => ['required', 'date'],
+        'offer_training_duration_months' => ['required', 'integer', 'min:1'],
+        'internship_type' => ['required', 'string', 'max:100'],
+        'offer_ppo_evaluation_months' => ['required', 'integer', 'min:1', 'max:24'],
+        'offer_probation_duration_months' => ['nullable', 'integer', 'min:1'],
+        'offer_working_hours' => ['nullable', 'string', 'max:100'],
+        'offer_service_agreement_duration' => ['nullable', 'string', 'max:100'],
+        'offer_annual_salary' => ['nullable', 'numeric', 'min:0'],
 
         'reference' => ['nullable', 'string', 'max:255'],
         'referred_by' => ['nullable', 'integer'],
@@ -785,6 +804,7 @@ $technologies = Course::query()
     DB::transaction(function () use ($internStudent, $data) {
         $internStudent->update($data);
     });
+
 
     return redirect()
         ->route('intern-students.index')
@@ -1088,5 +1108,385 @@ $technologies = Course::query()
         $columns = Schema::getColumnListing('intern_students');
 
         return array_intersect_key($validated, array_flip($columns));
+    }
+
+    public function downloadLetters(Request $request)
+    {
+        // Accept IDs as either an array or JSON string.
+        if (is_string($request->ids)) {
+            $request->merge([
+                'ids' => json_decode($request->ids, true),
+            ]);
+        }
+
+        $validated = $request->validate([
+            'letter_type' => [
+                'required',
+                Rule::in([
+                    'confirmation_letter',
+                    'internship_confirmation_letter',
+                    'offer',
+                    'strict_offer_letter',
+                ]),
+            ],
+            'ids' => ['required', 'array', 'min:1', 'max:200'],
+            'ids.*' => ['required', 'integer', 'distinct', 'min:1'],
+            'is_monthly' => ['nullable', 'boolean'],
+            'is_logo_show' => ['nullable', 'boolean'],
+        ]);
+
+        $letterType = $validated['letter_type'];
+        $ids = array_map('intval', $validated['ids']);
+
+        $students = InternStudent::with([
+            'collegeData',
+            'batchData',
+        ])
+            ->whereIn('id', $ids)
+            ->get()
+            ->keyBy('id');
+
+        if ($students->count() !== count($ids)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'One or more selected intern students were not found.',
+            ], 422);
+        }
+
+        // Keep the selected IDs in the same order.
+        $students = collect($ids)->map(function ($id) use ($students) {
+            return $students->get($id);
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prepare data and validate all students before generating PDFs
+        |--------------------------------------------------------------------------
+        */
+
+        $validationErrors = [];
+
+        foreach ($students as $student) {
+
+            $missing = [];
+
+            if (blank($student->student_name)) {
+                $missing[] = 'Student Name';
+            }
+
+            if (blank($student->f_name)) {
+                $missing[] = 'Father Name';
+            }
+
+            if (blank($student->gender)) {
+                $missing[] = 'Gender';
+            }
+
+            if (in_array($letterType, [
+                'confirmation_letter',
+                'internship_confirmation_letter',
+            ])) {
+                if (blank($student->start_date)) {
+                    $missing[] = 'Start Date';
+                }
+
+                if (blank($student->end_date)) {
+                    $missing[] = 'End Date';
+                }
+
+                if (!$student->is_place && !$student->collegeData) {
+                    $missing[] = 'College';
+                }
+
+                if ($student->is_place && blank($student->place)) {
+                    $missing[] = 'Place';
+                }
+            }
+
+            if ($letterType === 'offer') {
+                $normalOfferFields = [
+                    'offer_training_start_date' => 'Internship Start Date',
+                    'offer_training_duration_months' => 'Internship Duration',
+                    'internship_type' => 'Internship Type',
+                    'offer_ppo_evaluation_months' => 'PPO Evaluation Period (Months)',
+                ];
+
+                foreach ($normalOfferFields as $field => $label) {
+                    if (blank($student->{$field})) {
+                        $missing[] = $label;
+                    }
+                }
+            }
+
+            if ($letterType === 'strict_offer_letter') {
+                $strictFields = [
+                    'offer_training_start_date' => 'Training Start Date',
+                    'offer_training_duration_months' => 'Training Duration',
+                    'offer_probation_duration_months' => 'Probation Duration',
+                    'offer_working_hours' => 'Working Hours',
+                    'offer_service_agreement_duration' => 'Service Agreement Duration',
+                    'offer_annual_salary' => 'Annual Salary / Package',
+                ];
+
+                foreach ($strictFields as $field => $label) {
+                    if (blank($student->{$field})) {
+                        $missing[] = $label;
+                    }
+                }
+            }
+
+            if (!empty($missing)) {
+                $validationErrors[] =
+                    ($student->student_name ?: 'Student ID: ' . $student->id)
+                    . ': ' . implode(', ', $missing);
+            }
+        }
+
+        if (!empty($validationErrors)) {
+                return redirect()
+                    ->route('intern-students.index')
+                    ->with('letter_validation_error', [
+                        'message' => 'Letters cannot be generated. Please update the following information:',
+                        'errors' => $validationErrors,
+                    ]);
+            }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate PDFs
+        |--------------------------------------------------------------------------
+        */
+
+        $pdfFiles = [];
+
+        foreach ($students as $student) {
+
+            $pdfContent = $this->generateInternStudentLetterPdf(
+                $student,
+                $letterType,
+                $request->boolean('is_monthly'),
+                $request->boolean('is_logo_show')
+            );
+
+            $studentName = Str::upper(
+                Str::slug($student->student_name, '_')
+            );
+
+            $fatherName = Str::upper(
+                Str::slug($student->f_name, '_')
+            );
+
+            $letterName = Str::upper(
+                Str::slug($letterType, '_')
+            );
+
+            $fileName = "{$studentName}_{$fatherName}_{$letterName}.pdf";
+
+            $pdfFiles[] = [
+                'name' => $fileName,
+                'content' => $pdfContent,
+            ];
+
+            // Update existing confirmation download counter.
+            if (in_array($letterType, [
+                'confirmation_letter',
+                'internship_confirmation_letter',
+            ])) {
+                $student->increment('download_count_confirmation');
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Single student: return normal PDF
+        |--------------------------------------------------------------------------
+        */
+
+        if (count($pdfFiles) === 1) {
+
+            return response($pdfFiles[0]['content'])
+                ->header('Content-Type', 'application/pdf')
+                ->header(
+                    'Content-Disposition',
+                    'attachment; filename="' . $pdfFiles[0]['name'] . '"'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Multiple students: create ZIP
+        |--------------------------------------------------------------------------
+        */
+
+        $zipFileName = Str::slug($letterType, '_')
+            . '_' . now()->format('d_F_Y_His')
+            . '.zip';
+
+        $zipPath = storage_path('app/' . Str::uuid() . '.zip');
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Could not create ZIP file.',
+            ], 500);
+        }
+
+        foreach ($pdfFiles as $file) {
+            $zip->addFromString($file['name'], $file['content']);
+        }
+
+        $zip->close();
+
+        return response()->download($zipPath, $zipFileName, [
+            'Content-Type' => 'application/zip',
+        ])->deleteFileAfterSend(true);
+    }
+
+    private function generateInternStudentLetterPdf(
+        InternStudent $student,
+        string $letterType,
+        bool $isMonthly = false,
+        bool $isLogoShow = false
+    ): string {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prepare compatibility properties for existing Student letter templates
+        |--------------------------------------------------------------------------
+        */
+
+        $student->setAttribute(
+            'father_name_with_title',
+            $student->f_name
+        );
+
+        // Existing confirmation templates may use CollegeData (uppercase).
+        $student->setRelation(
+            'CollegeData',
+            $student->collegeData
+        );
+
+        // Existing confirmation templates use sessionData.
+        $sessionData = StudentSession::find($student->session);
+
+        $student->setRelation('sessionData', $sessionData);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Confirmation / Internship Confirmation Letter
+        |--------------------------------------------------------------------------
+        */
+
+        if (in_array($letterType, [
+            'confirmation_letter',
+            'internship_confirmation_letter',
+        ])) {
+
+            $isInternship = $letterType === 'internship_confirmation_letter';
+
+            $view = $isInternship
+                ? 'pdf.internship_detail'
+                : 'pdf.confirmation_detail';
+
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'orientation' => 'P',
+                'margin_left' => 0,
+                'margin_right' => 0,
+                'margin_top' => 0,
+                'margin_bottom' => 0,
+                'tempDir' => storage_path('app/mpdf'),
+            ]);
+
+            $mpdf->SetHTMLHeader(
+                '<div style="position: fixed; top: -35px;" class="head-shape">
+                    <img src="' . public_path('images/confirmation_images/head-shape.png') . '"/>
+                </div>'
+            );
+
+            $mpdf->SetHTMLFooter(
+                '<div style="position: fixed; bottom: -35px;" class="ct-footer-shape">
+                    <img src="' . public_path('images/confirmation_images/footer-shape-11.png') . '"/>
+                </div>'
+            );
+
+            $html = View::make($view, [
+                'student' => $student,
+                'isInternship' => $isInternship,
+                'ismonthly' => $isMonthly,
+                'is_logo_show' => $isLogoShow,
+            ])->render();
+
+            $mpdf->WriteHTML($html);
+
+            return $mpdf->Output('', 'S');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Generate Offer / Strict Offer Letter
+        |--------------------------------------------------------------------------
+        */
+
+        $view = match ($letterType) {
+            'offer' => 'student_additional_letters.intern_offer_letter_fixed_pdf_dynamic',
+            'strict_offer_letter' => 'student_additional_letters.strict_offer_letter_pdf',
+            default => abort(422, 'Invalid letter type.'),
+        };
+
+        /*
+         * The existing Offer Letter templates expect:
+         * $letter->student
+         *
+         * Build an unsaved StudentAdditionalLetter object using
+         * the fields already stored in intern_students.
+         */
+
+        $letter = new StudentAdditionalLetter();
+
+        $letter->forceFill([
+            'student_id' => $student->id,
+            'internship_type' => $letterType,
+            'issue_date' => now()->toDateString(),
+
+            'offer_training_start_date' => $student->offer_training_start_date,
+            'offer_training_duration_months' => $student->offer_training_duration_months,
+            'offer_ppo_evaluation_months' => $student->offer_ppo_evaluation_months,
+            'offer_probation_duration_months' => $student->offer_probation_duration_months,
+            'offer_working_hours' => $student->offer_working_hours,
+            'offer_service_agreement_duration' => $student->offer_service_agreement_duration,
+            'offer_annual_salary' => $student->offer_annual_salary,
+        ]);
+
+        $letter->setRelation('student', $student);
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'orientation' => 'P',
+            'margin_left' => 0,
+            'margin_right' => 0,
+            'margin_top' => 0,
+            'margin_bottom' => 0,
+            'tempDir' => storage_path('app/mpdf'),
+        ]);
+
+        $html = View::make($view, [
+            'letter' => $letter,
+        ])->render();
+
+        $mpdf->SetHTMLHeader('');
+        $mpdf->DefHTMLFooterByName(
+            'lastPageFooter',
+            $this->getPDFFooter()
+        );
+
+        $mpdf->WriteHTML($html);
+        $mpdf->SetHTMLFooterByName('lastPageFooter');
+
+        return $mpdf->Output('', 'S');
     }
 }

@@ -212,7 +212,11 @@ public function index(Request $request)
     }
 
     if ($request->filled('study')) {
-        $query->where('study', 'like', "%{$request->study}%");
+        $query->where('study', $request->study);
+    }
+
+    if ($request->filled('course_type')) {
+        $query->where('course_type', $request->course_type);
     }
 
     if ($request->filled('semester')) {
@@ -271,36 +275,121 @@ public function index(Request $request)
         // =========================
     // QUICK DATE FILTER
     // =========================
-        if ($request->filled('quick_date')) {
+        // if ($request->filled('quick_date')) {
 
-            switch ($request->quick_date) {
-                case 'today':
-                    $query->whereDate('created_at', today());
-                    break;
+        //     switch ($request->quick_date) {
+        //         case 'today':
+        //             $query->whereDate('created_at', today());
+        //             break;
 
-                case 'yesterday':
-                    $query->whereDate('created_at', today()->subDay());
-                    break;
+        //         case 'yesterday':
+        //             $query->whereDate('created_at', today()->subDay());
+        //             break;
 
-                case 'last7':
-                    $query->whereBetween('created_at', [
-                        now()->subDays(7)->startOfDay(),
-                        now()->endOfDay()
-                    ]);
-                    break;
+        //         case 'last7':
+        //             $query->whereBetween('created_at', [
+        //                 now()->subDays(7)->startOfDay(),
+        //                 now()->endOfDay()
+        //             ]);
+        //             break;
 
-                case 'this_month':
-                    $query->whereMonth('created_at', now()->month)
-                          ->whereYear('created_at', now()->year);
-                    break;
+        //         case 'this_month':
+        //             $query->whereMonth('created_at', now()->month)
+        //                   ->whereYear('created_at', now()->year);
+        //             break;
 
-                case 'last_month':
-                    $query->whereMonth('created_at', now()->subMonth()->month)
-                          ->whereYear('created_at', now()->subMonth()->year);
-                    break;
+        //         case 'last_month':
+        //             $query->whereMonth('created_at', now()->subMonth()->month)
+        //                   ->whereYear('created_at', now()->subMonth()->year);
+        //             break;
+        //     }
+
+        // }
+
+    // =========================
+// DATE RANGE FILTER (HARD DATA STYLE)
+// =========================
+
+if ($request->filled('range')) {
+
+    switch ($request->range) {
+
+        case 'today':
+            $query->whereDate('created_at', today());
+            break;
+
+        case 'yesterday':
+            $query->whereDate('created_at', today()->subDay());
+            break;
+
+        case 'this_week':
+            $query->whereBetween('created_at', [
+                now()->startOfWeek()->startOfDay(),
+                now()->endOfWeek()->endOfDay()
+            ]);
+            break;
+
+        case 'last_week':
+            $query->whereBetween('created_at', [
+                now()->subWeek()->startOfWeek()->startOfDay(),
+                now()->subWeek()->endOfWeek()->endOfDay()
+            ]);
+            break;
+
+        case 'last_7_days':
+            $query->whereBetween('created_at', [
+                now()->subDays(7)->startOfDay(),
+                now()->endOfDay()
+            ]);
+            break;
+
+        case 'last_30_days':
+            $query->whereBetween('created_at', [
+                now()->subDays(30)->startOfDay(),
+                now()->endOfDay()
+            ]);
+            break;
+
+        case 'this_month':
+            $query->whereMonth('created_at', now()->month)
+                  ->whereYear('created_at', now()->year);
+            break;
+
+        case 'custom':
+
+            if ($request->filled('from_date')) {
+                $query->whereDate(
+                    'created_at',
+                    '>=',
+                    $request->from_date
+                );
             }
 
-        }
+            if ($request->filled('to_date')) {
+                $query->whereDate(
+                    'created_at',
+                    '<=',
+                    $request->to_date
+                );
+            }
+
+            break;
+    }
+}
+
+// CUSTOM DATE FILTER
+if (
+    (!$request->filled('range') || $request->range === 'custom')
+    && ($request->filled('from_date') || $request->filled('to_date'))
+) {
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+}
         // ===============================
         // FOLLOW-UP FILTERS (SNAPSHOT)
         // ===============================
@@ -361,11 +450,19 @@ public function index(Request $request)
     // =========================
     // DATA
     // =========================
-    $enquiries = $query->paginate(20)->appends($request->all());
+    // $enquiries = $query->paginate(20)->appends($request->all());
+    $enquiries = $query->get();
     // dd($enquiries);
     // dd($activeSessionNo,$enquiries);
     $sales    = SalesStaff::where('status', 'active')->get();
     $colleges = College::orderBy('college_name')->get();
+
+    $studyOptions = Enquiry::where('session_id', $activeSessionNo)
+    ->whereNotNull('study')
+    ->where('study', '!=', '')
+    ->distinct()
+    ->orderBy('study')
+    ->pluck('study');
 
     $previousWhatsappUploadedFiles = collect(
             Storage::disk('public')->files('whatsapp-files')
@@ -390,6 +487,7 @@ public function index(Request $request)
         'assignedLeads',
         'unassignedLeads',
         'saleSessions',
+        'studyOptions',
         'previousWhatsappUploadedFiles'
     ));
 }
@@ -420,10 +518,11 @@ public function index(Request $request)
             'name' => 'required',
             // 'mobile' => 'required',
             'mobile' => ['required', 'digits:10', new NotBlockedNumber],
-            'study' => 'required',
-            'semester' => 'required',
+            'study' => 'nullable',
+            'semester' => 'nullable',
             'competitor_name' => 'nullable',
             'competitor_reason' => 'nullable',
+            'course_type' => 'nullable',
              // 'college_id' => 'nullable|exists:colleges,id',
         ]);
 
@@ -446,6 +545,7 @@ public function index(Request $request)
             'competitor_reason' => $request->competitor_reason,
             'created_by' => auth()->id(),
             'source' => 'manual',
+            'course_type' => $request->course_type,
         ]);
 
         return redirect()->route('enquiries.index');
@@ -474,6 +574,7 @@ public function index(Request $request)
             'is_passout' => 'nullable',
             'competitor_name' => 'nullable',
             'competitor_reason' => 'nullable',
+            'course_type' => 'nullable',
         ]);
 
         // $validated['session_id'] = session('admin_session_id');
@@ -1405,6 +1506,11 @@ public function bulkConvertl(Request $request)
         $parts[] = Str::slug($request->study, '_');
     }
 
+    // Course Type
+    if ($request->filled('course_type')) {
+        $parts[] = Str::slug($request->course_type, '_');
+    }
+
     // Semester
     if ($request->filled('semester')) {
         $parts[] = 'sem_' . $request->semester;
@@ -1436,10 +1542,22 @@ public function bulkConvertl(Request $request)
     }
 
     // Date Range
-    if ($request->filled('from_date') && $request->filled('to_date')) {
-        $from = Carbon::parse($request->from_date)->format('d_M');
-        $to   = Carbon::parse($request->to_date)->format('d_M');
-        $parts[] = strtolower($from . '_to_' . $to);
+    // Date Range
+    if ($request->filled('range')) {
+        $parts[] = $request->range;
+
+        if ($request->range === 'custom') {
+
+            if ($request->filled('from_date')) {
+                $parts[] = 'from_' .
+                    Carbon::parse($request->from_date)->format('d_M');
+            }
+
+            if ($request->filled('to_date')) {
+                $parts[] = 'to_' .
+                    Carbon::parse($request->to_date)->format('d_M');
+            }
+        }
     }
 
     // Quick Date

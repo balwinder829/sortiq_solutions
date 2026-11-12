@@ -11,6 +11,9 @@
     </div>
 
     <div class="col-md-8 text-end">
+        <button type="button" id="bulkWhatsAppRecords" class="btn btn-success mb-3">
+            <i class="fab fa-whatsapp"></i> Send WhatsApp
+        </button>
         <button id="moveToEnquiry" class="btn btn-warning mb-3">
             Move to Enquiries
         </button>
@@ -344,6 +347,22 @@
 let selectedIds = new Set();
 let selectedRecordIds = new Set();
 
+// WhatsApp details for selected records
+let selectedWhatsAppRecords = new Map();
+
+// Safely encode values used inside HTML attributes
+function escapeWhatsAppAttr(value) {
+    return String(value || '').replace(/[&<>"']/g, function (char) {
+        return {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[char];
+    });
+}
+
 // ✅ DATATABLE
 var table = $('#trainers-table').DataTable({
     processing: true,
@@ -392,6 +411,8 @@ var table = $('#trainers-table').DataTable({
                        id="${id}"
                        class="record_checkbox"
                        value="${id}"
+                        data-name="${escapeWhatsAppAttr(row[1])}"
+                        data-mobile="${escapeWhatsAppAttr(row[4])}"
                        ${checked}>
 
                 ${
@@ -493,17 +514,7 @@ $('#filterForm').on('keyup change', 'input:not([name=date]):not([name=from_date]
 
 // Set correct custom-date visibility on page load.
 toggleCustomDateFields();
-
-// ✅ SELECT SINGLE
-// $(document).on('change', '.record_checkbox', function () {
-//     let id = $(this).val();
-
-//     if ($(this).is(':checked')) {
-//         selectedIds.add(id);
-//     } else {
-//         selectedIds.delete(id);
-//     }
-// });
+ 
 
 $(document).on('change', '.record_checkbox', function () {
 
@@ -513,11 +524,18 @@ $(document).on('change', '.record_checkbox', function () {
 
         selectedIds.add(id);
         selectedRecordIds.add(id);
+         selectedWhatsAppRecords.set(id, {
+            id: id,
+            name: this.dataset.name || '',
+            mobile: this.dataset.mobile || ''
+        });
+
 
     } else {
 
         selectedIds.delete(id);
         selectedRecordIds.delete(id);
+         selectedWhatsAppRecords.delete(id);
     }
 
     syncCheckAll();
@@ -547,23 +565,6 @@ function syncCheckAll() {
 }
 
 
-// ✅ SELECT ALL
-// $('#checkAll').on('change', function () {
-//     let checked = this.checked;
-
-//     $('.record_checkbox').each(function () {
-//         let id = $(this).val();
-
-//         if (checked) {
-//             selectedIds.add(id);
-//         } else {
-//             selectedIds.delete(id);
-//         }
-
-//         $(this).prop('checked', checked);
-//     });
-// });
-
 $('#checkAll').on('change', function () {
 
     let checked = this.checked;
@@ -578,12 +579,17 @@ $('#checkAll').on('change', function () {
 
             selectedIds.add(id);
             selectedRecordIds.add(id);
+            selectedWhatsAppRecords.set(id, {
+                id: id,
+                name: this.dataset.name || '',
+                mobile: this.dataset.mobile || ''
+            });
 
         } else {
 
             selectedIds.delete(id);
             selectedRecordIds.delete(id);
-
+            selectedWhatsAppRecords.delete(id);
         }
 
     });
@@ -599,6 +605,293 @@ $('#checkAll').on('change', function () {
 
 });
 
+
+/* =====================================================
+   BULK WHATSAPP - HARD DATA MODULE
+===================================================== */
+
+// Format Indian mobile number
+function formatHardDataWhatsAppMobile(mobile) {
+
+    mobile = String(mobile || '').replace(/\D/g, '');
+
+    if (mobile.length === 10) {
+        mobile = '91' + mobile;
+    } else if (mobile.length === 11 && mobile.startsWith('0')) {
+        mobile = '91' + mobile.substring(1);
+    }
+
+    if (!/^91[6-9]\d{9}$/.test(mobile)) {
+        return null;
+    }
+
+    return mobile;
+}
+
+
+// Open WhatsApp chat
+function openHardDataWhatsApp(record, message, appendName) {
+
+    const mobile = formatHardDataWhatsAppMobile(record.mobile);
+
+    if (!mobile) {
+        return false;
+    }
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url =
+        'https://web.whatsapp.com/send?phone=' +
+        mobile +
+        '&text=' +
+        encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+
+    return true;
+}
+
+
+// Start bulk WhatsApp sending
+function startHardDataWhatsApp(records) {
+
+    if (!records || records.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one record.',
+            'warning'
+        );
+        return;
+    }
+
+    const validRecords = records.filter(record =>
+        formatHardDataWhatsAppMobile(record.mobile)
+    );
+
+    const invalidCount = records.length - validRecords.length;
+
+    if (validRecords.length === 0) {
+        Swal.fire(
+            'Invalid Mobile Numbers',
+            'No selected record has a valid Indian mobile number.',
+            'warning'
+        );
+        return;
+    }
+
+    Swal.fire({
+
+        title: 'Send WhatsApp Message',
+
+        html: `
+            <div class="text-start">
+
+                <label class="form-label">Message</label>
+
+                <textarea
+                    id="hardDataWhatsappMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message..."
+                ></textarea>
+
+                <div class="form-check mt-3">
+
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="hardDataWhatsappAppendName"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="hardDataWhatsappAppendName"
+                    >
+                        Add student name
+                    </label>
+
+                </div>
+
+                <p class="text-muted mt-3 mb-0">
+                    Selected: ${records.length}<br>
+                    Valid: ${validRecords.length}<br>
+                    Invalid: ${invalidCount}
+                </p>
+
+            </div>
+        `,
+
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+
+        preConfirm: () => {
+
+            const message = document
+                .getElementById('hardDataWhatsappMessage')
+                .value.trim();
+
+            const appendName = document
+                .getElementById('hardDataWhatsappAppendName')
+                .checked;
+
+            if (!message) {
+                Swal.showValidationMessage(
+                    'Please enter a message.'
+                );
+                return false;
+            }
+
+            const opened = openHardDataWhatsApp(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            if (!opened) {
+                Swal.showValidationMessage(
+                    'Unable to open WhatsApp chat.'
+                );
+                return false;
+            }
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+        }
+
+    }).then(result => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        let currentIndex = 1;
+
+        function openNextHardDataWhatsApp() {
+
+            if (currentIndex >= validRecords.length) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'All Chats Opened',
+                    text:
+                        `Opened ${validRecords.length} valid WhatsApp chats. ` +
+                        `Invalid numbers skipped: ${invalidCount}.`
+                });
+
+                return;
+            }
+
+            const currentRecord = validRecords[currentIndex];
+
+            Swal.fire({
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>
+                        Chat ${currentIndex + 1}
+                        of ${validRecords.length}
+                    </p>
+
+                    <p>
+                        <strong>
+                            ${escapeWhatsAppAttr(currentRecord.name || 'Student')}
+                        </strong>
+                    </p>
+
+                    <p class="text-muted">
+                        ${escapeWhatsAppAttr(currentRecord.mobile || '')}
+                    </p>
+
+                    <p>
+                        Send the message in WhatsApp, then click
+                        <strong>Open Next</strong>.
+                    </p>
+                `,
+
+                showCancelButton: true,
+                confirmButtonText: 'Open Next',
+                cancelButtonText: 'Finish',
+                reverseButtons: false,
+
+                preConfirm: () => {
+
+                    const opened = openHardDataWhatsApp(
+                        currentRecord,
+                        result.value.message,
+                        result.value.appendName
+                    );
+
+                    if (!opened) {
+                        Swal.showValidationMessage(
+                            'Unable to open this WhatsApp chat.'
+                        );
+                        return false;
+                    }
+
+                    currentIndex++;
+                }
+
+            }).then(nextResult => {
+
+                if (nextResult.isConfirmed) {
+                    openNextHardDataWhatsApp();
+                }
+
+            });
+        }
+
+        if (validRecords.length > 1) {
+            openNextHardDataWhatsApp();
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Chat Opened',
+                text: 'The WhatsApp chat has been opened.'
+            });
+        }
+
+    });
+}
+
+
+// Bulk WhatsApp button
+$(document).on('click', '#bulkWhatsAppRecords', function () {
+
+    const selectedRecords = Array.from(selectedIds)
+        .map(id => selectedWhatsAppRecords.get(String(id)))
+        .filter(Boolean);
+
+    if (selectedIds.size === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one record.',
+            'warning'
+        );
+        return;
+    }
+
+    if (selectedRecords.length !== selectedIds.size) {
+        Swal.fire(
+            'Selection Details Missing',
+            'Please unselect and select the missing records again.',
+            'warning'
+        );
+        return;
+    }
+
+    startHardDataWhatsApp(selectedRecords);
+
+});
 
 // ✅ MOVE TO ENQUIRY
 $('#moveToEnquiry').click(function () {

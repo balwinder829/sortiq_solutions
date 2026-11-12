@@ -2072,7 +2072,7 @@ body.menu-toggle .sidebar-collapse-btn{
 
 
 
-                @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view','student_request.view','online_exam.view','student_leave.view','projects.view','tutorials.view','latest_tech_articles.view','seo_tips.view','interview_preparation_blogs.view','cpanel_explanation.view','hosting.view','faqs_section.view','helpdesk_categories.view','student_projects.view','student_project_assignments.view','student_project_submissions.view','student_project_reviews.view','cv_templates.view','student_cvs.view','student_ppt.view','placement_companies.view','part_time_jobs.view','pgs.view','placements.view','references.view'])
+                @canany(['students.view','certificates.view','close_students.view','student_evaluations.view','fee_status.view','student_letters.view','students_office_test.view','student_request.view','online_exam.view','student_leave.view','projects.view','tutorials.view','latest_tech_articles.view','seo_tips.view','interview_preparation_blogs.view','cpanel_explanation.view','hosting.view','faqs_section.view','helpdesk_categories.view','student_projects.view','student_project_assignments.view','student_project_submissions.view','student_project_reviews.view','cv_templates.view','student_cvs.view','student_ppt.view','placement_companies.view','part_time_jobs.view','pgs.view','placements.view','references.view','intern_students.view'])
                 {{-- Student Main Admin --}}
                 <li class="{{ isParent(['students*','certificates*','close_student*','student-evaluations*','fee.status','student-additional-letters*','admin.office-tests*', 'dropout.fee.status','student-generated-cvs*']) }}">
                     <a class="has-arrow" href="javascript:void(0)">
@@ -2103,6 +2103,15 @@ body.menu-toggle .sidebar-collapse-btn{
                              
                         </li>
                         @endcan   
+
+                        @can('intern_students.view')
+                        <li class="{{ request()->routeIs('intern-students.*') ? 'mm-active' : '' }}">
+                            <a href="{{ route('intern-students.index') }}">
+                                <i class="fas fa-file-signature"></i>
+                                Intern Students
+                            </a>
+                        </li>
+                        @endcan 
                         {{-- Certificates --}}
                          @can('close_students.view')
                         <li class="{{ isParent(['close_student*']) }}">

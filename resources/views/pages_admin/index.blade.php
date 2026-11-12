@@ -116,6 +116,12 @@
         Export Selected
     </a>
 
+    <button type="button"
+            id="sendInternshipWhatsAppButton"
+            class="btn btn-success text-nowrap">
+        <i class="fab fa-whatsapp"></i> Send WhatsApp
+    </button>
+
 </div>
                 </div>
             </form>
@@ -226,22 +232,267 @@ $('#from_date, #to_date').on('change', function () {
     }
 });
 
-});
 
-$(document).on('change', '#select-all', function () {
 
-    $('.row-checkbox').prop('checked', $(this).is(':checked'));
+// $(document).on('change', '#select-all', function () {
 
-});
+//     $('.row-checkbox').prop('checked', $(this).is(':checked'));
 
-$(document).on('change', '.row-checkbox', function () {
+// });
 
-    if (!$(this).is(':checked')) {
-        $('#select-all').prop('checked', false);
+// $(document).on('change', '.row-checkbox', function () {
+
+//     if (!$(this).is(':checked')) {
+//         $('#select-all').prop('checked', false);
+//     }
+
+// });
+
+    // WhatsApp selection
+    const selectedInternshipIds = new Set();
+    const selectedInternshipRecords = new Map();
+
+    function updateInternshipSelectAll() {
+        const visibleCheckboxes = $('#internshipTable .row-checkbox');
+        const checkedCount = visibleCheckboxes.filter(':checked').length;
+
+        $('#select-all').prop(
+            'checked',
+            visibleCheckboxes.length > 0 && checkedCount === visibleCheckboxes.length
+        );
     }
 
+    // Restore selected checkboxes after DataTable redraw
+    table.on('draw', function () {
+        $('#internshipTable .row-checkbox').each(function () {
+            $(this).prop('checked', selectedInternshipIds.has(String($(this).val())));
+        });
+
+        updateInternshipSelectAll();
+    });
+
+    // Select all records on the current page
+    $('#select-all').on('change', function () {
+        const checked = $(this).is(':checked');
+
+        $('#internshipTable .row-checkbox').each(function () {
+            const id = String($(this).val());
+            const row = table.row($(this).closest('tr')).data();
+
+            $(this).prop('checked', checked);
+
+            if (checked) {
+                selectedInternshipIds.add(id);
+
+                selectedInternshipRecords.set(id, {
+                    name: $('<div>').html(row[2]).text().trim(),
+                    mobile: $('<div>').html(row[4]).text().trim()
+                });
+            } else {
+                selectedInternshipIds.delete(id);
+                selectedInternshipRecords.delete(id);
+            }
+        });
+    });
+
+    // Individual checkbox selection
+    $('#internshipTable').on('change', '.row-checkbox', function () {
+        const id = String($(this).val());
+        const row = table.row($(this).closest('tr')).data();
+
+        if ($(this).is(':checked')) {
+            selectedInternshipIds.add(id);
+
+            selectedInternshipRecords.set(id, {
+                name: $('<div>').html(row[2]).text().trim(),
+                mobile: $('<div>').html(row[4]).text().trim()
+            });
+        } else {
+            selectedInternshipIds.delete(id);
+            selectedInternshipRecords.delete(id);
+        }
+
+        updateInternshipSelectAll();
+    });
+
+    // WhatsApp button
+    $('#sendInternshipWhatsAppButton').on('click', function () {
+        if (selectedInternshipIds.size === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Records Selected',
+                text: 'Please select at least one record.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        startInternshipWhatsApp(Array.from(selectedInternshipRecords.values()));
+    });
 });
+
+
 </script>
+
+
+<script>
+function formatInternshipWhatsAppMobile(mobile) {
+    let number = String(mobile || '').replace(/\D/g, '');
+
+    if (number.length === 10) {
+        number = '91' + number;
+    } else if (number.length === 11 && number.startsWith('0')) {
+        number = '91' + number.substring(1);
+    }
+
+    return /^91[6-9]\d{9}$/.test(number) ? number : null;
+}
+
+function openInternshipWhatsApp(record, message, appendName) {
+    const mobile = formatInternshipWhatsAppMobile(record.mobile);
+
+    if (!mobile) return false;
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url = 'https://web.whatsapp.com/send?phone=' +
+        mobile + '&text=' + encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+    return true;
+}
+
+function startInternshipWhatsApp(records) {
+
+    const validRecords = [];
+    let invalidCount = 0;
+
+    records.forEach(function (record) {
+        if (formatInternshipWhatsAppMobile(record.mobile)) {
+            validRecords.push(record);
+        } else {
+            invalidCount++;
+        }
+    });
+
+    if (validRecords.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Valid Mobile Numbers',
+            text: 'None of the selected records has a valid WhatsApp number.',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    let currentIndex = 0;
+
+    Swal.fire({
+        title: 'Send WhatsApp Message',
+        html: `
+            <div class="text-start">
+                <label class="form-label">Message</label>
+                <textarea id="internshipWhatsAppMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message here..."></textarea>
+
+                <div class="form-check mt-3">
+                    <input type="checkbox"
+                        class="form-check-input"
+                        id="internshipAppendName"
+                        checked>
+                    <label class="form-check-label" for="internshipAppendName">
+                        Add student name
+                    </label>
+                </div>
+
+                <hr>
+                <p class="mb-1">Selected: ${records.length}</p>
+                <p class="mb-1">Valid: ${validRecords.length}</p>
+                <p class="mb-0">Invalid: ${invalidCount}</p>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+        focusConfirm: false,
+        preConfirm: function () {
+            const message = document.getElementById(
+                'internshipWhatsAppMessage'
+            ).value.trim();
+
+            if (!message) {
+                Swal.showValidationMessage('Please enter a message.');
+                return false;
+            }
+
+            const appendName = document.getElementById(
+                'internshipAppendName'
+            ).checked;
+
+            openInternshipWhatsApp(validRecords[0], message, appendName);
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+        }
+    }).then(function (result) {
+
+        if (!result.isConfirmed) return;
+
+        const message = result.value.message;
+        const appendName = result.value.appendName;
+
+        currentIndex = 1;
+
+        function showNext() {
+
+            if (currentIndex >= validRecords.length) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sending Completed',
+                    text: 'All selected WhatsApp chats have been processed.',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            const record = validRecords[currentIndex];
+
+            Swal.fire({
+                title: 'WhatsApp Sending',
+                html: `
+                    <p>Chat ${currentIndex + 1} of ${validRecords.length}</p>
+                    <p><strong>${record.name || 'Student'}</strong></p>
+                    <p>${record.mobile}</p>
+                    <small>Click Open Next to open the next WhatsApp chat.</small>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Open Next',
+                cancelButtonText: 'Finish',
+                reverseButtons: false
+            }).then(function (nextResult) {
+
+                if (nextResult.isConfirmed) {
+                    openInternshipWhatsApp(record, message, appendName);
+                    currentIndex++;
+                    showNext();
+                }
+            });
+        }
+
+        showNext();
+    });
+}
+</script>
+
 
 {{-- EXPORT WITH FILTERS --}}
 <script>

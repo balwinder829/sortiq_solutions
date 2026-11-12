@@ -79,28 +79,6 @@
             background: rgba(255, 255, 255, 0.1) !important;
         }
     </style>
-
-    @if(session('success') || session('error'))
-        <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
-            // Clear localStorage
-            localStorage.removeItem('selected_enquiries');
-
-            // Clear JS variables
-            selectedEnquiries = [];
-            selectedRecordIds = new Set();
-
-            // Uncheck checkboxes
-            $('.rowCheck').prop('checked', false);
-            $('#selectAll').prop('checked', false);
-
-            // Hide bulk action bar
-            syncBulkActionBar();
-
-        });
-        </script>
-    @endif
 <div class="container">
 
     {{-- Add Enquiry Button --}}
@@ -199,16 +177,40 @@
             @endif
 
 
+            {{-- COURSE TYPE FILTER (same options as Hard Data) --}}
             <div class="col-md-3 mb-2">
-                <label><strong>Study</strong></label>
-                <input type="text" name="study" class="form-control filterchangetext"
-                       value="{{ request('study') }}">
+                <label><strong>Course Type</strong></label>
+                <select name="course_type" class="form-control filterchange">
+                    <option value="">All Course Types</option>
+                    <option value="Degree" {{ request('course_type') == 'Degree' ? 'selected' : '' }}>Degree</option>
+                    <option value="Diploma" {{ request('course_type') == 'Diploma' ? 'selected' : '' }}>Diploma</option>
+                </select>
             </div>
 
+            {{-- STUDY / CLASS FILTER: uses the existing enquiries.study column --}}
+            <div class="col-md-3 mb-2">
+                <label><strong>Study / Class</strong></label>
+                <select name="study" class="form-control filterchange">
+                    <option value="">All Studies / Classes</option>
+                    @foreach(($studyOptions ?? collect()) as $studyOption)
+                        <option value="{{ $studyOption }}" {{ request('study') == $studyOption ? 'selected' : '' }}>
+                            {{ $studyOption }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            {{-- SEMESTER FILTER (same 1-8 dropdown as Hard Data) --}}
             <div class="col-md-3 mb-2">
                 <label><strong>Semester</strong></label>
-                <input type="text" name="semester" class="form-control filterchangetext"
-                       value="{{ request('semester') }}">
+                <select name="semester" class="form-control filterchange">
+                    <option value="">All Semesters</option>
+                    @for($i = 1; $i <= 8; $i++)
+                        <option value="{{ $i }}" {{ (string) request('semester') === (string) $i ? 'selected' : '' }}>
+                            Semester {{ $i }}
+                        </option>
+                    @endfor
+                </select>
             </div>
 
             <div class="col-md-3 mb-2">
@@ -258,26 +260,30 @@
                 </select>
             </div>
 
+            {{-- DATE RANGE FILTER (same options as Hard Data) --}}
             <div class="col-md-3 mb-2">
-                <label><strong>Quick Date</strong></label>
-                <select name="quick_date" class="form-control filterchange">
-                    <option value="">Select</option>
-                    <option value="today" {{ request('quick_date')=='today' ? 'selected' : '' }}>Today</option>
-                    <option value="yesterday" {{ request('quick_date')=='yesterday' ? 'selected' : '' }}>Yesterday</option>
-                    <option value="last7" {{ request('quick_date')=='last7' ? 'selected' : '' }}>Last 7 Days</option>
-                    <option value="this_month" {{ request('quick_date')=='this_month' ? 'selected' : '' }}>This Month</option>
-                    <option value="last_month" {{ request('quick_date')=='last_month' ? 'selected' : '' }}>Last Month</option>
+                <label><strong>Date Range</strong></label>
+                <select name="range" id="enquiryDateRange" class="form-control filterchange">
+                    <option value="">All Dates</option>
+                    <option value="today" {{ request('range') == 'today' ? 'selected' : '' }}>Today</option>
+                    <option value="yesterday" {{ request('range') == 'yesterday' ? 'selected' : '' }}>Yesterday</option>
+                    <option value="this_week" {{ request('range') == 'this_week' ? 'selected' : '' }}>This Week</option>
+                    <option value="last_week" {{ request('range') == 'last_week' ? 'selected' : '' }}>Last Week</option>
+                    <option value="last_7_days" {{ request('range') == 'last_7_days' ? 'selected' : '' }}>Last 7 Days</option>
+                    <option value="last_30_days" {{ request('range') == 'last_30_days' ? 'selected' : '' }}>Last 30 Days</option>
+                    <option value="this_month" {{ request('range') == 'this_month' ? 'selected' : '' }}>This Month</option>
+                    <option value="custom" {{ request('range') == 'custom' ? 'selected' : '' }}>Custom Date Range</option>
                 </select>
             </div>
 
-
-            <div class="col-md-3 mb-2">
+            {{-- CUSTOM DATE FILTER: shown only for Custom Date Range --}}
+            <div class="col-md-3 mb-2 enquiry-custom-date-filter" style="display:none;">
                 <label><strong>From Date</strong></label>
                 <input type="date" name="from_date" class="form-control filterchange"
                        value="{{ request('from_date') }}">
             </div>
 
-            <div class="col-md-3 mb-2">
+            <div class="col-md-3 mb-2 enquiry-custom-date-filter" style="display:none;">
                 <label><strong>To Date</strong></label>
                 <input type="date" name="to_date" class="form-control filterchange"
                        value="{{ request('to_date') }}">
@@ -334,6 +340,11 @@
                             id="bulkDeleteEnquiries"
                             class="btn btn-danger">
                         <i class="fas fa-trash"></i> Bulk Delete
+                    </button>
+                    <button type="button"
+                            id="resetEnquirySelection"
+                            class="btn btn-outline-secondary">
+                        <i class="fa fa-times-circle"></i> Reset Selection
                     </button>
 
                     
@@ -447,7 +458,7 @@
 </td>
                         @endif
 
-                        <td>{{ $enquiries->firstItem() + $loop->index }}</td>
+                        <td>{{ $loop->iteration }}</td>
                         <td>{{ $enquiry->name }}</td>
                         <td>{{ $enquiry->mobile }}</td>
                         <td>{{ $enquiry->email }}</td>
@@ -503,14 +514,7 @@
             </tbody>
         </table>
     </div>
-
-    <div class="mt-3">
-        {{ $enquiries->links('pagination::bootstrap-5') }}
-    </div>
-
-    
-
-    <div class="mt-3">
+<div class="mt-3">
         <button id="bulkMoveEnquiry" class="btn btn-warning">
         Move / Close Enquiry
     </button>
@@ -853,7 +857,8 @@ $(document).ready(function () {
         );
 
         if (existing) {
-            $(this).prop('checked', true);
+            // Keep WhatsApp contact details cached separately.
+            // Checkbox state is restored only from the in-memory selected-ID Set.
         } else if (this.checked) {
             records.push({
                 id: id,
@@ -1144,11 +1149,7 @@ function startEnquiryWhatsApp(records) {
 
 $(document).on('click', '#bulkWhatsAppEnquiries', function () {
 
-    const selectedIds = (
-        JSON.parse(
-            localStorage.getItem('selected_enquiries') || '[]'
-        ) || []
-    ).map(String);
+    const selectedIds = getSelectedIds().map(String);
 
     const allRecords = getEnquiryWhatsAppSelections();
 
@@ -1181,7 +1182,7 @@ $(document).on('click', '#bulkWhatsAppEnquiries', function () {
 $('#bulkMoveEnquiry').click(function () {
 
     
-    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+    let ids = getSelectedIds();
 
     if (ids.length === 0) {
 
@@ -1250,7 +1251,7 @@ $('#bulkAction').change(function () {
 
     $('#moveEnquiryForm').submit(function(e){
 
-    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+    let ids = getSelectedIds();
 
     if(ids.length===0){
 
@@ -1275,7 +1276,7 @@ $('#bulkAction').change(function () {
 
     }
 
-    localStorage.removeItem('selected_enquiries');
+    clearEnquirySelection();
 
 });
 
@@ -1289,105 +1290,152 @@ $('#bulkAction').change(function () {
 
     });
 
-let selectedEnquiries = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
-let selectedRecordIds = new Set(selectedEnquiries.map(id => parseInt(id)));
-/* ================================
-   DATATABLE
-================================ */
-$(document).ready(function () {
+/*
+|--------------------------------------------------------------------------
+| Enquiry selection state - in-memory, following Certificates reference
+|--------------------------------------------------------------------------
+*/
+var selectedEnquiries = [];
+var selectedRecordIds = new Set();
+var enquiriesTable = null;
 
-    $('#enquiriesTable').DataTable({
-        paging: false,
-        info: false,
-        ordering: false,
-        searching: false,
-        pageLength: 50,
-        order:[]
+function getSelectedIds() {
+    return Array.from(selectedRecordIds).map(id => String(id));
+}
+
+function syncBulkActionBar() {
+    const count = selectedRecordIds.size;
+    const bulkBar = document.getElementById('bulk-bar');
+    const selectedCountBadge = document.getElementById('selected-count-badge');
+    const btnCount = document.getElementById('btn-count');
+    const btnCountName = document.getElementById('btn-count-name');
+    const btnCountApi = document.getElementById('btn-count-api');
+
+    if (bulkBar) bulkBar.classList.toggle('hidden', count === 0);
+    if (selectedCountBadge) selectedCountBadge.textContent = count;
+    if (btnCount) btnCount.textContent = count;
+    if (btnCountName) btnCountName.textContent = count;
+    if (btnCountApi) btnCountApi.textContent = count;
+}
+
+function syncEnquirySelectAll() {
+    if (!enquiriesTable || !document.getElementById('selectAll')) return;
+    const pageCheckboxes = $(enquiriesTable.rows({ page: 'current' }).nodes())
+        .find('.rowCheck:enabled');
+    const checkedCount = pageCheckboxes.filter(':checked').length;
+    $('#selectAll').prop('checked',
+        pageCheckboxes.length > 0 && checkedCount === pageCheckboxes.length
+    );
+}
+
+function restoreEnquiryCheckboxes() {
+    if (!enquiriesTable) return;
+    $(enquiriesTable.rows({ page: 'current' }).nodes()).find('.rowCheck').each(function () {
+        this.checked = selectedRecordIds.has(parseInt(this.value, 10));
     });
+    syncEnquirySelectAll();
+    syncBulkActionBar();
+}
 
-    restoreCheckedBoxes();
-
-});
-
-/* ================================
-   RESTORE CHECKBOXES WHEN PAGE LOAD
-================================ */
-function restoreCheckedBoxes(){
-
-    $('.rowCheck').each(function(){
-
-        let id = $(this).val();
-
-        if(selectedEnquiries.includes(id)){
-            $(this).prop('checked', true);
-        }
-        syncBulkActionBar();
-    });
-
+function clearEnquirySelection() {
+    selectedEnquiries = [];
+    if (typeof ENQUIRY_WHATSAPP_STORAGE !== 'undefined') {
+        localStorage.removeItem(ENQUIRY_WHATSAPP_STORAGE);
+    }
+    selectedRecordIds.clear();
+    if (enquiriesTable) {
+        $(enquiriesTable.rows().nodes()).find('.rowCheck').prop('checked', false);
+    } else {
+        $('.rowCheck').prop('checked', false);
+    }
+    $('#selectAll').prop('checked', false);
+    syncEnquirySelectAll();
+    syncBulkActionBar();
 }
 
 /* ================================
-   SINGLE CHECKBOX SELECT
+   DATATABLE - CLIENT-SIDE PAGINATION
 ================================ */
-$(document).on('change','.rowCheck',function(){
+$(document).ready(function () {
+    const pageStorageKey = 'enquiries_page';
+    const savedPage = sessionStorage.getItem(pageStorageKey);
+    const pageLength = 10;
 
-    let id = $(this).val();
-
-    if($(this).is(':checked')){
-
-        if(!selectedEnquiries.includes(id)){
-            selectedEnquiries.push(id);
-            console.log({ selectedRecordIds });
-            selectedRecordIds.add(parseInt(id));
-        }
-
-    }else{
-
-        // selectedEnquiries = selectedEnquiries.filter(e => e != id);
-        // selectedRecordIds = selectedEnquiries.map(id => parseInt(id));
-        // Remove from array
-        selectedEnquiries = selectedEnquiries.filter(e => e != id);
-
-        // Remove from Set
-        selectedRecordIds.delete(parseInt(id));
-
-    }
-    syncBulkActionBar();
-    localStorage.setItem('selected_enquiries',JSON.stringify(selectedEnquiries));
-
-});
-
-/* ================================
-   SELECT ALL (CURRENT PAGE)
-================================ */
-$('#selectAll').on('change',function(){
-
-    $('.rowCheck:enabled').each(function(){
-
-        let id = $(this).val();
-
-        if($('#selectAll').is(':checked')){
-
-            $(this).prop('checked',true);
-
-            if(!selectedEnquiries.includes(id)){
-                selectedEnquiries.push(id);
-                selectedRecordIds.add(parseInt(id));
-            }
-
-        }else{
-
-            $(this).prop('checked',false);
-            selectedEnquiries = selectedEnquiries.filter(e => e != id);
-            // selectedRecordIds = new Set(selectedEnquiries.map(id => parseInt(id)));
-            selectedRecordIds.delete(parseInt(id));
-        }
+    $('#filterForm').on('submit', function () {
+        sessionStorage.removeItem(pageStorageKey);
     });
-    syncBulkActionBar();
 
-    localStorage.setItem('selected_enquiries',JSON.stringify(selectedEnquiries));
-    console.log(selectedEnquiries);
+    $('a[href="{{ route('enquiries.index') }}"]').on('click', function () {
+        sessionStorage.removeItem(pageStorageKey);
+    });
 
+    const numberColumnIndex = @json(auth()->user()->isAdmin() ? 1 : 0);
+    const dataTableColumnDefs = [
+        @if(auth()->user()->isAdmin())
+        {
+            targets: 0,
+            searchable: false,
+            orderable: false
+        }
+        @endif
+    ];
+
+    enquiriesTable = $('#enquiriesTable').DataTable({
+        pageLength: pageLength,
+        displayStart: savedPage ? (parseInt(savedPage, 10) * pageLength) : 0,
+        paging: true,
+        info: true,
+        ordering: false,
+        searching: false,
+        pagingType: 'full_numbers',
+        lengthMenu: [5, 10, 25, 50, 100],
+        scrollX: true,
+        order: [],
+        columnDefs: dataTableColumnDefs
+    });
+
+    enquiriesTable.on('draw.dt', function () {
+        const pageInfo = enquiriesTable.page.info();
+        enquiriesTable.column(numberColumnIndex, { page: 'current' }).nodes().each(function (cell, index) {
+            cell.innerHTML = pageInfo.start + index + 1;
+        });
+        restoreEnquiryCheckboxes();
+    });
+
+    enquiriesTable.on('page.dt', function () {
+        sessionStorage.setItem(pageStorageKey, enquiriesTable.page());
+    });
+
+    $('#selectAll').on('click', function (event) {
+        event.stopPropagation();
+    });
+
+    $('#selectAll').on('change', function () {
+        const shouldCheck = this.checked;
+        $(enquiriesTable.rows({ page: 'current' }).nodes())
+            .find('.rowCheck:enabled')
+            .each(function () {
+                const id = String(this.value);
+                this.checked = shouldCheck;
+                if (shouldCheck) selectedRecordIds.add(parseInt(id, 10));
+                else selectedRecordIds.delete(parseInt(id, 10));
+            });
+        selectedEnquiries = getSelectedIds();
+        syncEnquirySelectAll();
+        syncBulkActionBar();
+    });
+
+    $('#enquiriesTable').on('change', '.rowCheck', function () {
+        const id = String(this.value);
+        if (this.checked) selectedRecordIds.add(parseInt(id, 10));
+        else selectedRecordIds.delete(parseInt(id, 10));
+        selectedEnquiries = getSelectedIds();
+        syncEnquirySelectAll();
+        syncBulkActionBar();
+    });
+
+    $('#resetEnquirySelection').on('click', clearEnquirySelection);
+    restoreEnquiryCheckboxes();
 });
 
 /* ================================
@@ -1395,7 +1443,7 @@ $('#selectAll').on('change',function(){
 ================================ */
 // $('#assignBtn').on('click',function(){
 
-//     let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+//     let ids = getSelectedIds();
 //     let salesId = $('#salesperson').val();
 
 //     if(ids.length === 0){
@@ -1422,7 +1470,7 @@ $('#selectAll').on('change',function(){
 //     .then(res=>res.json())
 //     .then(data=>{
 
-//         localStorage.removeItem('selected_enquiries');
+//         clearEnquirySelection();
 
 //         if(data.message){
 //             location.reload();
@@ -1434,7 +1482,7 @@ $('#selectAll').on('change',function(){
 
 $('#assignBtn').on('click',function(){
 
-    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+    let ids = getSelectedIds();
 
     if(ids.length === 0){
         Swal.fire({
@@ -1450,7 +1498,7 @@ $('#assignBtn').on('click',function(){
 
 $('#confirmAssign').on('click',function(){
 
-    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+    let ids = getSelectedIds();
     let salesId = $('#salesperson').val();
 
     if(ids.length === 0){
@@ -1484,7 +1532,7 @@ $('#confirmAssign').on('click',function(){
     .then(res=>res.json())
     .then(data=>{
 
-        localStorage.removeItem('selected_enquiries');
+        clearEnquirySelection();
 
         if(data.message){
             location.reload();
@@ -1509,7 +1557,20 @@ $(document).ready(function(){
 
     let timer;
 
+    function toggleEnquiryCustomDateFields() {
+        const isCustom = $('#enquiryDateRange').val() === 'custom';
+        $('.enquiry-custom-date-filter').toggle(isCustom);
+    }
+
+    toggleEnquiryCustomDateFields();
+
     $('.filterchange').on('change', function(){
+        if (this.id === 'enquiryDateRange') {
+            toggleEnquiryCustomDateFields();
+            if ($(this).val() === 'custom') {
+                return;
+            }
+        }
         $('#filterForm').submit();
         
     });
@@ -1748,34 +1809,37 @@ $(document).on('click', '#sendWhatsappNotification', function () {
 
 
     // Sync visual bulk banner
-    function syncBulkActionBar() {
-        const count = selectedRecordIds.size;
-        console.log(count);
-        console.log(selectedRecordIds);
-        if (count > 0) {
-            const bulkBar = document.getElementById('bulk-bar');
-            bulkBar.classList.remove('hidden');
-            selectedCountBadge.textContent = count;
-            btnCount.textContent = count;
-            if (btnCountName) {
-                btnCountName.textContent = count;
-            }
-            if (btnCountApi) {
-                btnCountApi.textContent = count;
-            }
-        } else {
-            const bulkBar = document.getElementById('bulk-bar');
-            bulkBar.classList.add('hidden');
-            btnCount.textContent = count;
-            selectedCountBadge.textContent = count;
-            if (btnCountName) {
-                btnCountName.textContent = count;
-            }
-            if (btnCountApi) {
-                btnCountApi.textContent = count;
-            }
-        }
+    // Sync visual bulk banner
+function syncBulkActionBar() {
+    const count = selectedRecordIds.size;
+
+    const bulkBar = document.getElementById('bulk-bar');
+    const selectedCountBadge = document.getElementById('selected-count-badge');
+    const btnCount = document.getElementById('btn-count');
+    const btnCountName = document.getElementById('btn-count-name');
+    const btnCountApi = document.getElementById('btn-count-api');
+
+    // Bulk bar may not exist in the current Blade layout
+    if (bulkBar) {
+        bulkBar.classList.toggle('hidden', count === 0);
     }
+
+    if (selectedCountBadge) {
+        selectedCountBadge.textContent = count;
+    }
+
+    if (btnCount) {
+        btnCount.textContent = count;
+    }
+
+    if (btnCountName) {
+        btnCountName.textContent = count;
+    }
+
+    if (btnCountApi) {
+        btnCountApi.textContent = count;
+    }
+}
 
 
     // Helper to convert CKEditor HTML to WhatsApp plain-text markdown
@@ -1867,7 +1931,7 @@ $(document).on('click', '#sendWhatsappNotification', function () {
 <script>
 $(document).on('click', '#bulkDeleteEnquiries', function () {
 
-    let ids = JSON.parse(localStorage.getItem('selected_enquiries')) || [];
+    let ids = getSelectedIds();
 
     // Required selection message
     if (ids.length === 0) {
@@ -1902,7 +1966,7 @@ $(document).on('click', '#bulkDeleteEnquiries', function () {
             success: function (response) {
 
                 // Clear selection only after successful deletion
-                localStorage.removeItem('selected_enquiries');
+                clearEnquirySelection();
 
                 Swal.fire({
                     icon: 'success',

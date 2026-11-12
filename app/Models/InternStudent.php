@@ -23,6 +23,7 @@ class InternStudent extends Model
         'pursuing_issue_date' => 'date',
         'certificate_send_date' => 'datetime',
         'close_date' => 'datetime',
+        'offer_training_start_date' => 'date',
     ];
 
     public function sourceStudent()
@@ -33,7 +34,7 @@ class InternStudent extends Model
         )->withTrashed();
     }
 
-     // College relationship: college_name stores the college ID
+    // College relationship: college_name stores the college ID
     public function collegeData()
     {
         return $this->belongsTo(College::class, 'college_name', 'id');
@@ -43,6 +44,15 @@ class InternStudent extends Model
     public function batchData()
     {
         return $this->belongsTo(Batch::class, 'batch_assign', 'id');
+    }
+
+    // Additional letters: Offer Letter and Strict Offer Letter
+    public function additionalLetters()
+    {
+        return $this->hasMany(
+            InternStudentAdditionalLetter::class,
+            'intern_student_id'
+        );
     }
 
     // Get courses associated with this intern student.

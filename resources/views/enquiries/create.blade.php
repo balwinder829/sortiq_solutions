@@ -109,6 +109,20 @@
                         @enderror
                     </div>
                     
+
+                    {{-- Course Type --}}
+                    <div class="form-group col-md-6">
+                        <label><strong>Course Type</strong></label>
+                        <select name="course_type"
+                                class="form-control @error('course_type') is-invalid @enderror">
+                            <option value="">Select Course Type</option>
+                            <option value="Degree" {{ old('course_type') == 'Degree' ? 'selected' : '' }}>Degree</option>
+                            <option value="Diploma" {{ old('course_type') == 'Diploma' ? 'selected' : '' }}>Diploma</option>
+                        </select>
+                        @error('course_type')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
                   {{-- Study --}}
                     <div class="form-group col-md-6">
                         <label><strong>Study</strong></label>
@@ -125,7 +139,7 @@
                      {{-- SEMESTER --}}
                     <div class="form-group col-md-6">
                         <label class="fw-bold">Semester</label>
-                        <select name="semester" class="form-control" required>
+                        <select name="semester" class="form-control">
                             <option value="">Select Semester</option>
                             @for ($i = 1; $i <= 8; $i++)
                         <option value="{{ $i }}" {{ old('semester') == $i ? 'selected' : '' }}>

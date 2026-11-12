@@ -442,6 +442,7 @@ public function exportExcel(Request $request)
 
                     'college'    => $st->college_id ?? null,
                     'study'      => $st->class ?? '',
+                    'course_type' => $st->course_type ?? null,
                     'semester'   => $st->semester ?? null,
 
                     'session_id' => $sessionId,

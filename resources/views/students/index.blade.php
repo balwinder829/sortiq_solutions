@@ -1215,19 +1215,19 @@ data-contact="{{ $student->contact }}"></td>
     <button id="blockSelected" class="btn btn-danger">Block Numbers</button>
     <button id="clearStudentDues" class="btn btn-warning">Clear Pending Fee</button>
     <button id="moveToInternStudents" class="btn btn-success">Move to Intern Students</button>
-    <button type="button"
-        id="sendWhatsAppNotification"
-        class="btn btn-success">
-        <i class="fab fa-whatsapp"></i> Send WhatsApp Notification
-    </button>
-
-    <button type="button"
+        <button type="button"
             id="copyOldStudentsBtn"
             class="btn btn-success">
         <i class="fas fa-copy"></i> Copy to Old Students
     </button>
     <button id="markSelectedAsCR" class="btn btn-info">
         Mark as CR
+    </button>
+
+    <button type="button"
+        id="sendWhatsAppNotification"
+        class="btn btn-success">
+        <i class="fab fa-whatsapp"></i> Send WhatsApp
     </button>
 
 </div>
@@ -1394,8 +1394,12 @@ data-contact="{{ $student->contact }}"></td>
 
 <!--- Edit Bulk Students start------->
 
+ 
+<!--- Edit Bulk Students start------->
+
 <div class="modal fade" id="bulkEditModal" tabindex="-1">
     <div class="modal-dialog">
+
         <form method="POST" action="{{ route('students.bulkUpdate') }}">
             @csrf
 
@@ -1407,6 +1411,7 @@ data-contact="{{ $student->contact }}"></td>
                     <h5 class="modal-title">
                         Bulk Edit Students
                     </h5>
+
                     <button type="button"
                             class="btn-close"
                             data-bs-dismiss="modal"
@@ -1416,10 +1421,14 @@ data-contact="{{ $student->contact }}"></td>
 
                 <div class="modal-body">
 
+                    {{-- College --}}
                     <div class="mb-3">
                         <label>College</label>
 
-                        <select name="college_id" class="form-control" id="bulkCollege">
+                        <select name="college_id"
+                                class="form-control"
+                                id="bulkCollege">
+
                             <option value="">Keep Existing</option>
 
                             @foreach($colleges as $college)
@@ -1427,14 +1436,16 @@ data-contact="{{ $student->contact }}"></td>
                                     {{ $college->FullName }}
                                 </option>
                             @endforeach
+
                         </select>
                     </div>
 
-
+                    {{-- Technology --}}
                     <div class="mb-3">
                         <label>Technology</label>
 
                         <select name="technology" class="form-control">
+
                             <option value="">Keep Existing</option>
 
                             @foreach($courses as $course)
@@ -1442,29 +1453,85 @@ data-contact="{{ $student->contact }}"></td>
                                     {{ $course->course_name }}
                                 </option>
                             @endforeach
+
                         </select>
                     </div>
 
-
+                    {{-- Start Date --}}
                     <div class="mb-3">
                         <label>Start Date</label>
+
                         <input type="date"
                                name="start_date"
                                class="form-control">
                     </div>
 
+                    {{-- End Date --}}
                     <div class="mb-3">
                         <label>End Date</label>
+
                         <input type="date"
                                name="end_date"
                                class="form-control">
+                    </div>
+
+                    {{-- Referred By --}}
+                    <div class="mb-3">
+                        <label>Referred By</label>
+
+                        <select name="referred_by"
+                                id="bulkReferredBy"
+                                class="form-control">
+
+                            <option value="__keep__" selected>
+                                Keep Existing
+                            </option>
+
+                            <option value="__direct__">
+                                Direct
+                            </option>
+
+                            <optgroup label="Reference">
+
+                                @foreach($references as $reference)
+                                    <option value="{{ $reference->id }}"
+                                            data-type="reference">
+                                        {{ $reference->name }}
+                                    </option>
+                                @endforeach
+
+                            </optgroup>
+
+                            <optgroup label="Sales Staff">
+
+                                @foreach($salesStaff as $staff)
+                                    <option value="{{ $staff->id }}"
+                                            data-type="staff">
+                                        {{ $staff->name }}
+                                    </option>
+                                @endforeach
+
+                            </optgroup>
+
+                        </select>
+
+                        <input type="hidden"
+                               name="referred_by_type"
+                               id="bulkReferredByType"
+                               value="">
                     </div>
 
                 </div>
 
                 <div class="modal-footer">
 
-                    <button class="btn btn-success">
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit" class="btn btn-success">
                         Update Selected Students
                     </button>
 
@@ -1472,8 +1539,12 @@ data-contact="{{ $student->contact }}"></td>
 
             </div>
         </form>
+
     </div>
 </div>
+
+<!--- Edit Bulk Students end------->
+
 <!--- Edit Bulk Students end------->
 
 {{-- Copy Selected Students to Old Students --}}
@@ -1828,161 +1899,301 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
 
     
     
-$('#sendWhatsAppNotification').on('click', function () {
-    const selectedForWhatsApp = [];
+ /* =====================================================
+   BULK WHATSAPP - STUDENTS MODULE
+   Same popup and sending flow as Enquiries
+===================================================== */
 
-    table.$('.record_checked:checked').each(function () {
-        selectedForWhatsApp.push({
-            id: $(this).val(),
-            name: $(this).attr('data-name') || '',
-            contact: $(this).attr('data-contact') || ''
-        });
-    });
+// Format Indian mobile number
+function formatStudentWhatsAppMobile(mobile) {
 
-    if (selectedForWhatsApp.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Students Selected',
-            text: 'Please select at least one student.'
-        });
+    mobile = String(mobile || '').replace(/\D/g, '');
+
+    if (mobile.length === 10) {
+        mobile = '91' + mobile;
+    } else if (mobile.length === 11 && mobile.startsWith('0')) {
+        mobile = '91' + mobile.substring(1);
+    }
+
+    if (!/^91[6-9]\d{9}$/.test(mobile)) {
+        return null;
+    }
+
+    return mobile;
+}
+
+
+// Open WhatsApp chat
+function openStudentWhatsApp(record, message, appendName) {
+
+    const mobile = formatStudentWhatsAppMobile(record.contact);
+
+    if (!mobile) {
+        return false;
+    }
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url =
+        'https://web.whatsapp.com/send?phone=' +
+        mobile +
+        '&text=' +
+        encodeURIComponent(finalMessage);
+
+    const tab = window.open(url, '_blank');
+
+    return !!tab;
+}
+
+
+// Start bulk WhatsApp sending
+function startStudentWhatsApp(records) {
+
+    if (!records || records.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one student.',
+            'warning'
+        );
+        return;
+    }
+
+    const validRecords = records.filter(record =>
+        formatStudentWhatsAppMobile(record.contact)
+    );
+
+    const invalidCount = records.length - validRecords.length;
+
+    if (validRecords.length === 0) {
+        Swal.fire(
+            'Invalid Mobile Numbers',
+            'No selected student has a valid Indian mobile number.',
+            'warning'
+        );
         return;
     }
 
     Swal.fire({
-        title: 'Send WhatsApp Notification',
+
+        title: 'Send WhatsApp Message',
+
         html: `
-            <textarea id="whatsappMessage"
-    class="swal2-textarea"
-    placeholder="Type your message here..."
-    style="width:100%; max-width:100%; height:180px; margin:10px 0; box-sizing:border-box; resize:vertical;"></textarea>
+            <div class="text-start">
 
-            <div style="text-align:left;margin-top:10px">
-                <label>
-                    <input type="checkbox" id="whatsappAddName">
-                    Add student name
+                <label class="form-label">
+                    Message
                 </label>
-            </div>
 
-            <p>Selected students: ${selectedForWhatsApp.length}</p>
+                <textarea
+                    id="studentWhatsappMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message..."
+                ></textarea>
+
+                <div class="form-check mt-3">
+
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="studentWhatsappAppendName"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="studentWhatsappAppendName"
+                    >
+                        Add student name
+                    </label>
+
+                </div>
+
+                <p class="text-muted mt-3 mb-0">
+                    Selected: ${records.length}<br>
+                    Valid: ${validRecords.length}<br>
+                    Invalid: ${invalidCount}
+                </p>
+
+            </div>
         `,
+
         showCancelButton: true,
-        confirmButtonText: 'Open First Student',
-        confirmButtonColor: '#198754',
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+
         preConfirm: () => {
+
             const message = document
-                .getElementById('whatsappMessage').value.trim();
+                .getElementById('studentWhatsappMessage')
+                .value.trim();
+
+            const appendName = document
+                .getElementById('studentWhatsappAppendName')
+                .checked;
 
             if (!message) {
-                Swal.showValidationMessage('Please enter a message.');
+                Swal.showValidationMessage(
+                    'Please enter a message.'
+                );
+                return false;
+            }
+
+            // Open first WhatsApp chat from this user action.
+            const opened = openStudentWhatsApp(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            if (!opened) {
+                Swal.showValidationMessage(
+                    'Unable to open WhatsApp chat. Please allow pop-ups in your browser.'
+                );
                 return false;
             }
 
             return {
                 message: message,
-                addName: document.getElementById('whatsappAddName').checked
+                appendName: appendName
             };
         }
+
     }).then(result => {
-        if (!result.isConfirmed) return;
 
-        const message = result.value.message;
-        const addName = result.value.addName;
+        if (!result.isConfirmed) {
+            return;
+        }
 
-        let currentIndex = 0;
-        let openedCount = 0;
-        let invalidCount = 0;
+        let currentIndex = 1;
 
-        function openNextWhatsAppStudent() {
-            // Skip students with invalid mobile numbers
-            let student;
-            let phone;
+        function openNextStudent() {
 
-            while (currentIndex < selectedForWhatsApp.length) {
-                student = selectedForWhatsApp[currentIndex++];
+            if (currentIndex >= validRecords.length) {
 
-                phone = String(student.contact || '')
-                    .replace(/\D/g, '');
-
-                if (phone.length === 10) {
-                    phone = '91' + phone;
-                } else if (
-                    phone.length === 11 &&
-                    phone.startsWith('0')
-                ) {
-                    phone = '91' + phone.substring(1);
-                }
-
-                if (/^91\d{10}$/.test(phone)) {
-                    break;
-                }
-
-                invalidCount++;
-                student = null;
-            }
-
-            if (!student) {
-                Swal.fire({
-                    icon: openedCount ? 'success' : 'warning',
-                    title: 'All Students Processed',
-                    text: openedCount + ' chat(s) opened; ' +
-                        invalidCount + ' invalid number(s) skipped.'
-                });
-                return;
-            }
-
-            let finalMessage = message;
-
-            if (addName) {
-                finalMessage =
-                    'Hi ' + (student.name.trim() || 'Student') +
-                    ',\n\n' + message;
-            }
-
-            const url =
-                'https://web.whatsapp.com/send?phone=' +
-                phone + '&text=' +
-                encodeURIComponent(finalMessage);
-
-            const tab = window.open(url, '_blank');
-
-            if (tab) {
-                openedCount++;
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Popup Blocked',
-                    text: 'Allow pop-ups in your browser, then try again.'
-                });
-                return;
-            }
-
-            if (currentIndex >= selectedForWhatsApp.length) {
                 Swal.fire({
                     icon: 'success',
-                    title: 'All Students Processed',
-                    text: openedCount + ' chat(s) opened; ' +
-                        invalidCount + ' invalid number(s) skipped.'
+                    title: 'All Chats Opened',
+                    text:
+                        `Opened ${validRecords.length} valid WhatsApp chats. ` +
+                        `Invalid numbers skipped: ${invalidCount}.`
                 });
+
                 return;
             }
 
+            const currentRecord = validRecords[currentIndex];
+
             Swal.fire({
-                title: 'Student ' + currentIndex +
-                    ' of ' + selectedForWhatsApp.length,
-                text: 'Send the current message in WhatsApp, then continue.',
-                icon: 'info',
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>
+                        Chat ${currentIndex + 1}
+                        of ${validRecords.length}
+                    </p>
+
+                    <p>
+                        <strong>
+                            ${$('<div>').text(currentRecord.name || 'Student').html()}
+                        </strong>
+                    </p>
+
+                    <p class="text-muted">
+                        ${$('<div>').text(currentRecord.contact || '').html()}
+                    </p>
+
+                    <p>
+                        Send the message in WhatsApp, then click
+                        <strong>Open Next Student</strong>.
+                    </p>
+                `,
+
                 showCancelButton: true,
                 confirmButtonText: 'Open Next Student',
-                cancelButtonText: 'Finish'
-            }).then(nextResult => {
-                if (nextResult.isConfirmed) {
-                    openNextWhatsAppStudent();
+                cancelButtonText: 'Finish',
+                reverseButtons: false,
+
+                preConfirm: () => {
+
+                    const opened = openStudentWhatsApp(
+                        currentRecord,
+                        result.value.message,
+                        result.value.appendName
+                    );
+
+                    if (!opened) {
+                        Swal.showValidationMessage(
+                            'Unable to open this WhatsApp chat. Please allow pop-ups.'
+                        );
+                        return false;
+                    }
+
+                    currentIndex++;
                 }
+
+            }).then(nextResult => {
+
+                if (nextResult.isConfirmed) {
+                    openNextStudent();
+                }
+
             });
         }
 
-        openNextWhatsAppStudent();
+        if (validRecords.length > 1) {
+            openNextStudent();
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Chat Opened',
+                text: 'The WhatsApp chat has been opened.'
+            });
+        }
+
     });
+}
+
+
+// Bulk WhatsApp button
+$('#sendWhatsAppNotification').on('click', function () {
+
+    const selectedForWhatsApp = [];
+
+    // Get selected students across DataTable pages
+    table.$('.record_checked:checked').each(function () {
+
+        selectedForWhatsApp.push({
+
+            id: $(this).val(),
+
+            name: $(this).attr('data-name') || '',
+
+            contact: $(this).attr('data-contact') || ''
+
+        });
+
+    });
+
+    if (selectedForWhatsApp.length === 0) {
+
+        Swal.fire(
+            'No Selection',
+            'Please select at least one student.',
+            'warning'
+        );
+
+        return;
+    }
+
+    startStudentWhatsApp(selectedForWhatsApp);
+
 });
     
     // ========================================
@@ -2475,6 +2686,17 @@ $('#copyOldStudentsForm').on('submit', function (e) {
             $('#bulkEditIds').val(JSON.stringify(ids));
 
             $('#bulkEditModal').modal('show');
+
+        });
+
+        // Set referral type in bulk edit modal
+        $('#bulkReferredBy').on('change', function () {
+
+            let selectedOption = $(this).find(':selected');
+
+            let referralType = selectedOption.data('type') || '';
+
+            $('#bulkReferredByType').val(referralType);
 
         });
 

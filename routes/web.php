@@ -618,7 +618,7 @@ Route::get('/test-analytics', [TestAnalyticsController::class, 'index'])
 
         });
 
-        
+
         Route::get(
             'external-attendance/{test}/links/export',
             [ExternalAttendanceController::class, 'exportCollegeLinks']
@@ -1336,6 +1336,11 @@ Route::middleware(['auth'])->group(function () {
             [StudentController::class, 'moveToOldStudents']
         )->name('students.moveToOldStudents');
 
+        Route::post(
+            'intern-students/letters/download',
+            [InternStudentController::class, 'downloadLetters']
+        )->name('intern-students.letters.download');
+        
         Route::resource('intern-students', InternStudentController::class)
             ->except(['show']);
 

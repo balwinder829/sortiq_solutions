@@ -579,6 +579,8 @@ value="{{ request('registration_fee') }}">
                         data-receipt="{{ $student->count_receipt_download ?? 0 }}"
                         data-fees="{{ $student->pending_fees ?? 0 }}"
                         title="Certificate not eligible"
+                         data-name="{{ $student->student_name }}"
+                        data-mobile="{{ $student->contact }}"
                     >
                 </td>
                 <td></td>
@@ -729,6 +731,9 @@ value="{{ request('registration_fee') }}">
         <button id="clearStudentDues" class="btn btn-warning">Clear Pending Fee</button>
         <button id="moveToInternStudents" class="btn btn-success">Move to Intern Students</button>
         <button type="button" id="copyOldStudentsBtn" class="btn btn-success"><i class="fas fa-copy"></i> Copy to Old Students
+        </button>
+        <button type="button" id="bulkWhatsAppRecords" class="btn btn-success">
+            <i class="fa-brands fa-whatsapp"></i> Send WhatsApp
         </button>
     </div>
 
@@ -941,6 +946,45 @@ value="{{ request('registration_fee') }}">
                                class="form-control">
 
                     </div>
+
+                    {{-- Referred By --}}
+<div class="mb-3">
+    <label class="form-label">Referred By</label>
+
+    <select name="referred_by"
+            id="bulkReferredBy"
+            class="form-control">
+
+        <option value="">Keep Existing</option>
+
+        <option value="direct" data-type="direct">
+            Direct
+        </option>
+
+        <optgroup label="Reference">
+            @foreach($references as $reference)
+                <option value="{{ $reference->id }}"
+                        data-type="reference">
+                    {{ $reference->name }}
+                </option>
+            @endforeach
+        </optgroup>
+
+        <optgroup label="Sales Staff">
+            @foreach($salesStaff as $staff)
+                <option value="{{ $staff->id }}"
+                        data-type="staff">
+                    {{ $staff->name }}
+                </option>
+            @endforeach
+        </optgroup>
+
+    </select>
+
+    <input type="hidden"
+           name="referred_by_type"
+           id="bulkReferredByType">
+</div>
 
                 </div>
 
@@ -1349,6 +1393,421 @@ $(document).ready(function () {
         return selectedStudents;
     }
 
+    /* =====================================================
+   BULK WHATSAPP - CERTIFICATES MODULE
+===================================================== */
+
+const CERTIFICATE_WHATSAPP_STORAGE = 'selected_certificate_whatsapp';
+
+/*
+|--------------------------------------------------------------------------
+| Get saved certificate details
+|--------------------------------------------------------------------------
+*/
+
+function getCertificateWhatsAppSelections() {
+    try {
+        return JSON.parse(
+            localStorage.getItem(CERTIFICATE_WHATSAPP_STORAGE)
+        ) || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveCertificateWhatsAppSelections(records) {
+    localStorage.setItem(
+        CERTIFICATE_WHATSAPP_STORAGE,
+        JSON.stringify(records)
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| Update selected certificate details
+|--------------------------------------------------------------------------
+*/
+
+function updateCertificateWhatsAppSelection(checkbox) {
+
+    let records = getCertificateWhatsAppSelections();
+
+    const id = String(checkbox.value);
+
+    records = records.filter(
+        item => String(item.id) !== id
+    );
+
+    if (checkbox.checked) {
+        records.push({
+            id: id,
+            name: checkbox.dataset.name || '',
+            mobile: checkbox.dataset.mobile || ''
+        });
+    }
+
+    saveCertificateWhatsAppSelections(records);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Checkbox selection
+|--------------------------------------------------------------------------
+*/
+
+$('#certificatesTable').on('change', '.record_checked', function () {
+    updateCertificateWhatsAppSelection(this);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Select all current page
+|--------------------------------------------------------------------------
+*/
+
+$('#checkAll').on('change', function () {
+
+    $(table.rows({ page: 'current' }).nodes())
+        .find('.record_checked:enabled')
+        .each(function () {
+            updateCertificateWhatsAppSelection(this);
+        });
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| Restore current page selection details
+|--------------------------------------------------------------------------
+*/
+
+let certificateRecords = getCertificateWhatsAppSelections();
+
+$('#certificatesTable .record_checked').each(function () {
+
+    const id = String(this.value);
+
+    const existing = certificateRecords.find(
+        item => String(item.id) === id
+    );
+
+    if (!existing && this.checked) {
+        certificateRecords.push({
+            id: id,
+            name: this.dataset.name || '',
+            mobile: this.dataset.mobile || ''
+        });
+    }
+
+});
+
+saveCertificateWhatsAppSelections(certificateRecords);
+
+/*
+|--------------------------------------------------------------------------
+| Format Indian mobile number
+|--------------------------------------------------------------------------
+*/
+
+function formatCertificateWhatsAppMobile(mobile) {
+
+    mobile = String(mobile || '').replace(/\D/g, '');
+
+    if (mobile.length === 10) {
+        mobile = '91' + mobile;
+    } else if (mobile.length === 11 && mobile.startsWith('0')) {
+        mobile = '91' + mobile.substring(1);
+    }
+
+    if (!/^91[6-9]\d{9}$/.test(mobile)) {
+        return null;
+    }
+
+    return mobile;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Open WhatsApp chat
+|--------------------------------------------------------------------------
+*/
+
+function openCertificateWhatsApp(record, message, appendName) {
+
+    const mobile = formatCertificateWhatsAppMobile(record.mobile);
+
+    if (!mobile) {
+        return false;
+    }
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url =
+        'https://web.whatsapp.com/send?phone=' +
+        mobile +
+        '&text=' +
+        encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+
+    return true;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Start bulk WhatsApp sending
+|--------------------------------------------------------------------------
+*/
+
+function startCertificateWhatsApp(records) {
+
+    if (!records || records.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one certificate.',
+            'warning'
+        );
+        return;
+    }
+
+    const validRecords = records.filter(record =>
+        formatCertificateWhatsAppMobile(record.mobile)
+    );
+
+    const invalidCount = records.length - validRecords.length;
+
+    if (validRecords.length === 0) {
+        Swal.fire(
+            'Invalid Mobile Numbers',
+            'No selected certificate has a valid Indian mobile number.',
+            'warning'
+        );
+        return;
+    }
+
+    Swal.fire({
+        title: 'Send WhatsApp Message',
+
+        html: `
+            <div class="text-start">
+
+                <label class="form-label">
+                    Message
+                </label>
+
+                <textarea
+                    id="certificateWhatsappMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message..."
+                ></textarea>
+
+                <div class="form-check mt-3">
+
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="certificateWhatsappAppendName"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="certificateWhatsappAppendName"
+                    >
+                        Add student name
+                    </label>
+
+                </div>
+
+                <p class="text-muted mt-3 mb-0">
+                    Selected: ${records.length}<br>
+                    Valid: ${validRecords.length}<br>
+                    Invalid: ${invalidCount}
+                </p>
+
+            </div>
+        `,
+
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+
+        preConfirm: () => {
+
+            const message = document
+                .getElementById('certificateWhatsappMessage')
+                .value.trim();
+
+            const appendName = document
+                .getElementById('certificateWhatsappAppendName')
+                .checked;
+
+            if (!message) {
+                Swal.showValidationMessage(
+                    'Please enter a message.'
+                );
+                return false;
+            }
+
+            const opened = openCertificateWhatsApp(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            if (!opened) {
+                Swal.showValidationMessage(
+                    'Unable to open WhatsApp chat.'
+                );
+                return false;
+            }
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+        }
+
+    }).then(result => {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        let currentIndex = 1;
+
+        function openNextCertificate() {
+
+            if (currentIndex >= validRecords.length) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'All Chats Opened',
+                    text:
+                        `Opened ${validRecords.length} valid WhatsApp chats. ` +
+                        `Invalid numbers skipped: ${invalidCount}.`
+                });
+
+                return;
+            }
+
+            const currentRecord = validRecords[currentIndex];
+
+            Swal.fire({
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>
+                        Chat ${currentIndex + 1}
+                        of ${validRecords.length}
+                    </p>
+
+                    <p>
+                        <strong>
+                            ${$('<div>').text(currentRecord.name || 'Student').html()}
+                        </strong>
+                    </p>
+
+                    <p class="text-muted">
+                        ${$('<div>').text(currentRecord.mobile || '').html()}
+                    </p>
+
+                    <p>
+                        Send the message in WhatsApp, then click
+                        <strong>Open Next Certificate</strong>.
+                    </p>
+                `,
+
+                showCancelButton: true,
+                confirmButtonText: 'Open Next Certificate',
+                cancelButtonText: 'Finish',
+                reverseButtons: false,
+
+                preConfirm: () => {
+
+                    const opened = openCertificateWhatsApp(
+                        currentRecord,
+                        result.value.message,
+                        result.value.appendName
+                    );
+
+                    if (!opened) {
+                        Swal.showValidationMessage(
+                            'Unable to open this WhatsApp chat.'
+                        );
+                        return false;
+                    }
+
+                    currentIndex++;
+                }
+
+            }).then(nextResult => {
+
+                if (nextResult.isConfirmed) {
+                    openNextCertificate();
+                }
+
+            });
+        }
+
+        if (validRecords.length > 1) {
+            openNextCertificate();
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Chat Opened',
+                text: 'The WhatsApp chat has been opened.'
+            });
+        }
+
+    });
+}
+
+/*
+|--------------------------------------------------------------------------
+| Bulk WhatsApp button
+|--------------------------------------------------------------------------
+*/
+
+$(document).on('click', '#bulkWhatsAppRecords', function () {
+
+    const selectedIds = getSelectedIds().map(String);
+
+    const allRecords = getCertificateWhatsAppSelections();
+
+    const selectedRecords = allRecords.filter(record =>
+        selectedIds.includes(String(record.id))
+    );
+
+    if (selectedIds.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one certificate.',
+            'warning'
+        );
+        return;
+    }
+
+    if (selectedRecords.length !== selectedIds.length) {
+        Swal.fire(
+            'Selection Details Missing',
+            'Please revisit the pages containing your selected certificates and select them again.',
+            'warning'
+        );
+        return;
+    }
+
+    startCertificateWhatsApp(selectedRecords);
+
+});
+
     $('#movedropout').click(function() {
             var ids = getSelectedIds();
 
@@ -1644,6 +2103,7 @@ $('#editBulkStudents').click(function () {
     $('#bulkEditModal').modal('show');
 
 });
+
 $('#bulkEditModal').on('shown.bs.modal', function () {
 
     if (!$('#bulkCollege').hasClass("select2-hidden-accessible")) {
@@ -1658,7 +2118,16 @@ $('#bulkEditModal').on('shown.bs.modal', function () {
     }
 
 });
+// Bulk Referred By type
+$('#bulkReferredBy').on('change', function () {
 
+    let selectedOption = $(this).find('option:selected');
+
+    let type = selectedOption.attr('data-type') || '';
+
+    $('#bulkReferredByType').val(type);
+
+});
 // ========================================
 // COPY SELECTED STUDENTS TO OLD STUDENTS
 // ========================================

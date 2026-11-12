@@ -20,7 +20,11 @@
         <div class="col-md-6">
                 <div class="d-flex justify-content-end">
                     
-                   <a href="{{ route('passouts.create') }}" class="btn mb-3" style="background-color: #6b51df; color: #fff;">        Add Data </a>
+                    <button type="button" id="sendPassoutWhatsApp" class="btn btn-success mb-3 ml-2">
+                        <i class="fab fa-whatsapp"></i> Send WhatsApp
+                    </button>
+                
+                   <a href="{{ route('passouts.create') }}" class="btn mb-3 ml-2" style="background-color: #6b51df; color: #fff;">        Add Data </a>
 
                     <a href="{{ route('passouts.importForm') }}" class="btn mb-3 ml-2" style="background-color: #6b51df; color: #fff;">        Import </a>
             </div>
@@ -160,7 +164,7 @@
                 <!-- <button type="submit" class="btn btn-primary">
                     <i class="fa fa-search"></i> Search
                 </button> -->
-                @include('partials.whatsapp-popover')
+                
                 <a href="{{ route('passouts.index') }}" class="btn btn-secondary">
                     <i class="fa fa-refresh"></i> Reset
                 </a>
@@ -204,7 +208,9 @@
                                 <input
                                     type="checkbox"
                                     class="passoutRowCheck"
-                                    value="{{ $enquiry->id }}">
+                                    value="{{ $enquiry->id }}"
+                                     data-name="{{ $enquiry->name }}"
+                                    data-mobile="{{ $enquiry->mobile }}">
                                     @if($enquiry->assignedTo)
             <i class="fas fa-user-check text-warning  ml-1"
                data-bs-toggle="tooltip"
@@ -584,6 +590,17 @@ $(document).ready(function () {
 let selectedPassouts =
     JSON.parse(localStorage.getItem('selected_passouts')) || [];
 
+    let selectedPassoutWhatsAppRecords = new Map(
+        JSON.parse(localStorage.getItem('selected_passout_whatsapp_records') || '[]')
+    );
+
+    function savePassoutWhatsAppRecords() {
+        localStorage.setItem(
+            'selected_passout_whatsapp_records',
+            JSON.stringify(Array.from(selectedPassoutWhatsAppRecords.entries()))
+        );
+    }
+
 
 /* =========================================================
    SAVE SELECTION
@@ -660,12 +677,23 @@ $(document).on(
 
             }
 
+            selectedPassoutWhatsAppRecords.set(id, {
+                id: id,
+                name: $(this).data('name') || '',
+                mobile: $(this).data('mobile') || ''
+            });
+
+            savePassoutWhatsAppRecords();
+
         } else {
 
             selectedPassouts =
                 selectedPassouts.filter(
                     item => item !== id
                 );
+
+            selectedPassoutWhatsAppRecords.delete(id);
+            savePassoutWhatsAppRecords();
 
         }
 
@@ -706,12 +734,20 @@ $(document).on(
 
                 }
 
+                selectedPassoutWhatsAppRecords.set(id, {
+                    id: id,
+                    name: $(this).data('name') || '',
+                    mobile: $(this).data('mobile') || ''
+                });
+
             } else {
 
                 selectedPassouts =
                     selectedPassouts.filter(
                         item => item !== id
                     );
+
+                    selectedPassoutWhatsAppRecords.delete(id);
 
             }
 
@@ -720,6 +756,8 @@ $(document).on(
         savePassoutSelection();
 
         syncPassoutSelectAll();
+
+        savePassoutWhatsAppRecords();
 
     }
 );
@@ -735,6 +773,10 @@ $(document).on(
     function () {
 
         selectedPassouts = [];
+
+        selectedPassoutWhatsAppRecords.clear();
+
+        localStorage.removeItem('selected_passout_whatsapp_records');
 
         localStorage.removeItem(
             'selected_passouts'
@@ -1304,81 +1346,279 @@ $(document).ready(function(){
 
 });
 
-new bootstrap.Popover(document.getElementById('whatsappBtn'), {
-    html: true,
-    sanitize: false,
-    customClass: 'whatsapp-popover',
-    content: function () {
-        return $('#whatsappPopoverContent').html();
+
+/* =========================================================
+   PASSOUT BULK WHATSAPP - SAME OLD STUDENTS POPUP
+========================================================= */
+
+// Format Indian mobile number
+function formatPassoutWhatsAppMobile(mobile) {
+    mobile = String(mobile || '').replace(/\D/g, '');
+
+    if (mobile.length === 10) {
+        mobile = '91' + mobile;
+    } else if (mobile.length === 11 && mobile.startsWith('0')) {
+        mobile = '91' + mobile.substring(1);
     }
-});
 
-$(document).on('click', '#sendWhatsappNotification', function () {
-    
-    let popover = $(this).closest('.popover');
-    let custom_message = popover.find('textarea[name="customMessage"]').val();
-    let append_name = $('input[name="append_name"]:checked').val() || false;
-    
-    let selectedRecordIds = new Set();
-    $('.passoutRowCheck:checked').each(function () {
-        selectedRecordIds.add($(this).val());
-    });
+    if (!/^91[6-9]\d{9}$/.test(mobile)) return null;
 
-    if (selectedRecordIds.size === 0) {
-        Swal.fire('No selection', 'Select at least one student', 'warning');
+    return mobile;
+}
+
+
+// Open WhatsApp chat
+function openPassoutWhatsApp(record, message, appendName) {
+    const mobile = formatPassoutWhatsAppMobile(record.mobile);
+
+    if (!mobile) return false;
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url =
+        'https://web.whatsapp.com/send?phone=' +
+        mobile +
+        '&text=' +
+        encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+
+    return true;
+}
+
+
+// Start bulk WhatsApp sending
+function startPassoutWhatsApp(records) {
+
+    if (!records || records.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one passout.',
+            'warning'
+        );
         return;
     }
-    
-    if (custom_message?.length > 0) {
-        custom_message = custom_message;
-    } else {
-        Swal.fire('Message Required', 'Please enter a custom message', 'warning');
+
+    const validRecords = records.filter(record =>
+        formatPassoutWhatsAppMobile(record.mobile)
+    );
+
+    const invalidCount = records.length - validRecords.length;
+
+    if (validRecords.length === 0) {
+        Swal.fire(
+            'Invalid Mobile Numbers',
+            'No selected record has a valid Indian mobile number.',
+            'warning'
+        );
         return;
     }
 
-    let formData = new FormData();
-    formData.append('append_name',append_name);
-    formData.append('message',custom_message);
-    formData.append('model', "Enquiry");
-    formData.append('_token', "{{ csrf_token() }}");
-    formData.append('message_type', append_name ? 'with_name' : 'same_message');
-    Array.from(selectedRecordIds).forEach(function(id) {
-        formData.append('ids[]', id);
-    });
-    
-    formData.append('existing_file_path', popover.find('#existingFile').val());
-    let fileInput = popover.find('input[type="file"]')[0];
-    if (fileInput && fileInput.files.length > 0) {
-        formData.append('whatsappFile', fileInput.files[0]);
-        //console.log(fileInput.files[0].name);
-    }
+    Swal.fire({
+        title: 'Send WhatsApp Message',
 
-    $.ajax({
-        url: "{{ route('admin.message.send_whatsapp') }}",
-        type: "POST",
-        processData: false,
-        contentType: false,
-        data: formData,
-        beforeSend: function () {
-            popover.find('#message_loader').show();
-            popover.find('#sendWhatsappNotification').prop('disabled', true);
-        },
-        success: function (res) {
-            if(res.status === 'error' || res.status === false) {
-                Swal.fire('Error', res.message, 'error');
+        html: `
+            <div class="text-start">
+                <label class="form-label">Message</label>
+
+                <textarea
+                    id="passoutWhatsappMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message..."
+                ></textarea>
+
+                <div class="form-check mt-3">
+                    <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="passoutWhatsappAppendName"
+                        checked
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="passoutWhatsappAppendName"
+                    >
+                        Add student name
+                    </label>
+                </div>
+
+                <p class="text-muted mt-3 mb-0">
+                    Selected: ${records.length}<br>
+                    Valid: ${validRecords.length}<br>
+                    Invalid: ${invalidCount}
+                </p>
+            </div>
+        `,
+
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+
+        preConfirm: () => {
+
+            const message = document
+                .getElementById('passoutWhatsappMessage')
+                .value.trim();
+
+            const appendName = document
+                .getElementById('passoutWhatsappAppendName')
+                .checked;
+
+            if (!message) {
+                Swal.showValidationMessage('Please enter a message.');
+                return false;
+            }
+
+            const opened = openPassoutWhatsApp(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            if (!opened) {
+                Swal.showValidationMessage('Unable to open WhatsApp chat.');
+                return false;
+            }
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+        }
+
+    }).then(result => {
+
+        if (!result.isConfirmed) return;
+
+        let currentIndex = 1;
+
+        function openNextPassoutWhatsApp() {
+
+            if (currentIndex >= validRecords.length) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'All Chats Opened',
+                    text:
+                        `Opened ${validRecords.length} valid WhatsApp chats. ` +
+                        `Invalid numbers skipped: ${invalidCount}.`
+                });
+
                 return;
             }
-            Swal.fire('Success', res.message, 'success');
-        },
-        error: function () {
-            Swal.fire('Error', 'Something went wrong', 'error');
-        },
-        complete: function () {
-            popover.find('#message_loader').hide();
-            popover.find('#sendWhatsappNotification').prop('disabled', false);
+
+            const currentRecord = validRecords[currentIndex];
+
+            const safeName = $('<div>')
+                .text(currentRecord.name || 'Student')
+                .html();
+
+            const safeMobile = $('<div>')
+                .text(currentRecord.mobile || '')
+                .html();
+
+            Swal.fire({
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>
+                        Chat ${currentIndex + 1}
+                        of ${validRecords.length}
+                    </p>
+
+                    <p><strong>${safeName}</strong></p>
+
+                    <p class="text-muted">${safeMobile}</p>
+
+                    <p>
+                        Send the message in WhatsApp, then click
+                        <strong>Open Next</strong>.
+                    </p>
+                `,
+
+                showCancelButton: true,
+                confirmButtonText: 'Open Next',
+                cancelButtonText: 'Finish',
+                reverseButtons: false,
+
+                preConfirm: () => {
+
+                    const opened = openPassoutWhatsApp(
+                        currentRecord,
+                        result.value.message,
+                        result.value.appendName
+                    );
+
+                    if (!opened) {
+                        Swal.showValidationMessage(
+                            'Unable to open this WhatsApp chat.'
+                        );
+                        return false;
+                    }
+
+                    currentIndex++;
+                }
+
+            }).then(nextResult => {
+
+                if (nextResult.isConfirmed) {
+                    openNextPassoutWhatsApp();
+                }
+
+            });
         }
+
+        if (validRecords.length > 1) {
+            openNextPassoutWhatsApp();
+        } else {
+            Swal.fire({
+                icon: 'success',
+                title: 'Chat Opened',
+                text: 'The WhatsApp chat has been opened.'
+            });
+        }
+
     });
+}
+
+
+// WhatsApp button
+$(document).on('click', '#sendPassoutWhatsApp', function () {
+
+    if (selectedPassouts.length === 0) {
+        Swal.fire(
+            'No Selection',
+            'Please select at least one passout.',
+            'warning'
+        );
+        return;
+    }
+
+    const selectedRecords = selectedPassouts
+        .map(id => selectedPassoutWhatsAppRecords.get(String(id)))
+        .filter(Boolean);
+
+    if (selectedRecords.length !== selectedPassouts.length) {
+        Swal.fire(
+            'Selection Details Missing',
+            'Some selected records do not have saved contact details. Please unselect and select those records again.',
+            'warning'
+        );
+        return;
+    }
+
+    startPassoutWhatsApp(selectedRecords);
 });
+
+ 
 </script>
 @endpush
 

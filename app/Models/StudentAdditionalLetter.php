@@ -7,20 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 class StudentAdditionalLetter extends Model
 {
     protected $fillable = [
-        // 'student_name',
-        'internship_type',
+         'internship_type',
         'subject',
         'student_id',
         'issue_date',
         'roll_number',
         'semester',
-        // 'email',
+
+        // Normal Offer Letter Dynamic Fields
         'offer_training_start_date',
         'offer_training_duration_months',
+        'offer_internship_type',
+        'offer_ppo_evaluation_months',
+
+        // Strict Offer Letter Fields
         'offer_probation_duration_months',
         'offer_working_hours',
         'offer_service_agreement_duration',
         'offer_annual_salary',
+
         'letter_content'
     ];
 

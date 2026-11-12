@@ -66,9 +66,6 @@
             <a href="{{ route('intern-students.export', request()->query()) }}" class="btn"
                style="background-color:#6b51df;color:#fff;">Download Excel</a>
 
-            <button type="button" id="deleteSelectedInterns" class="btn btn-danger">
-                Delete Selected
-            </button>
         </div>
     </div>
 
@@ -90,6 +87,18 @@
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <ul class="mb-0">
                 @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('letter_validation_error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>{{ data_get(session('letter_validation_error'), 'message', 'Letters cannot be generated. Please update the following information:') }}</strong>
+            <ul class="mb-0 mt-2">
+                @foreach(data_get(session('letter_validation_error'), 'errors', []) as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
@@ -166,11 +175,11 @@
                                 <select name="college_name" class="form-control">
                                     <option value="">--College--</option>
                                     @foreach($colleges as $college)
-									    <option value="{{ $college->id }}"
-									        {{ (string) request('college_name') === (string) $college->id ? 'selected' : '' }}>
-									        {{ $college->college_display_name ?? $college->college_name }}
-									    </option>
-									@endforeach
+                                        <option value="{{ $college->id }}"
+                                            {{ (string) request('college_name') === (string) $college->id ? 'selected' : '' }}>
+                                            {{ $college->college_display_name ?? $college->college_name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
 
@@ -241,6 +250,18 @@
         @csrf
     </form>
 
+    {{-- Common form used by all four letter download buttons --}}
+    <form id="letterDownloadForm"
+          method="POST"
+          action="{{ route('intern-students.letters.download') }}"
+          class="d-none">
+        @csrf
+        <input type="hidden" name="ids" id="letterDownloadIds">
+        <input type="hidden" name="letter_type" id="letterDownloadType">
+        <input type="hidden" name="is_internship" id="letterIsInternship" value="0">
+        <input type="hidden" name="is_logo_show" id="letterIsLogoShow" value="0">
+    </form>
+
     <div class="desktop-view">
         <div class="table-responsive">
             <table id="internStudentsTable" class="table table-bordered table-striped">
@@ -283,9 +304,9 @@
                             <td style="text-transform:none;">{{ $internStudent->email_id ?? '-' }}</td>
                             
                              {{-- Technology / Course --}}
-							<td>
-							    {{ $internStudent->course_name ?: '-' }}
-							</td>
+                            <td>
+                                {{ $internStudent->course_name ?: '-' }}
+                            </td>
                             <td class="text-center">
                                 <span class="badge bg-{{ $internStudent->is_online ? 'success' : 'secondary' }}">
                                     {{ $internStudent->is_online ? 'Online' : 'Offline' }}
@@ -318,6 +339,35 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    {{-- Letter options and actions: intentionally placed immediately below the table --}}
+    <div class="mt-3">
+        <!-- <div class="form-check mb-2">
+            <input type="checkbox" class="form-check-input" id="isInternship" value="1">
+            <label class="form-check-label" for="isInternship">Check it for Internship Confirm</label>
+        </div>
+
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="islogoShow" value="1">
+            <label class="form-check-label" for="islogoShow">Show Letters Footer Logo</label>
+        </div> -->
+
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-primary letter-download-btn" data-letter-type="confirmation_letter">
+                Download Confirmation Letter
+            </button>
+            <button type="button" class="btn btn-primary letter-download-btn" data-letter-type="internship_confirmation_letter">
+                Download Internship Confirmation Letter
+            </button>
+            <button type="button" class="btn btn-primary letter-download-btn" data-letter-type="offer">
+                Download Offer Letter
+            </button>
+            <button type="button" class="btn btn-primary letter-download-btn" data-letter-type="strict_offer_letter">
+                Download Strict Offer Letter
+            </button>
+
         </div>
     </div>
 </div>
@@ -463,6 +513,52 @@ $(document).ready(function () {
         } else if (window.confirm('Delete this intern student?')) {
             form.dataset.confirmed = '1';
             form.submit();
+        }
+    });
+
+    // Download one of the four letter types using the selected IDs across all DataTables pages.
+    $('.letter-download-btn').on('click', function () {
+        const ids = Array.from(selectedInternIds);
+
+        if (!ids.length) {
+            if (window.Swal) {
+                Swal.fire({ icon: 'warning', text: 'Please select at least 1 record.' });
+            } else {
+                window.alert('Please select at least 1 record.');
+            }
+            return;
+        }
+
+        const letterType = String($(this).data('letter-type'));
+        const letterNames = {
+            confirmation_letter: 'Confirmation Letter',
+            internship_confirmation_letter: 'Internship Confirmation Letter',
+            offer: 'Offer Letter',
+            strict_offer_letter: 'Strict Offer Letter'
+        };
+        const button = this;
+        const submitLetterForm = function () {
+            $('#letterDownloadIds').val(JSON.stringify(ids));
+            $('#letterDownloadType').val(letterType);
+            $('#letterIsInternship').val($('#isInternship').is(':checked') ? 1 : 0);
+            $('#letterIsLogoShow').val($('#islogoShow').is(':checked') ? 1 : 0);
+            document.getElementById('letterDownloadForm').submit();
+        };
+
+        if (window.Swal) {
+            Swal.fire({
+                title: 'Download ' + (letterNames[letterType] || 'Letters') + '?',
+                text: ids.length + ' selected student(s).',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Download',
+                cancelButtonText: 'Cancel',
+                reverseButtons: false
+            }).then(function (result) {
+                if (result.isConfirmed) submitLetterForm();
+            });
+        } else if (window.confirm('Download ' + (letterNames[letterType] || 'letters') + ' for ' + ids.length + ' selected student(s)?')) {
+            submitLetterForm();
         }
     });
 
