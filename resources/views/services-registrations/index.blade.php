@@ -128,6 +128,12 @@
                             Export Selected
                         </a>
 
+                        <button type="button"
+                                id="sendServicesWhatsAppButton"
+                                class="btn btn-success text-nowrap">
+                            <i class="fab fa-whatsapp"></i> Send WhatsApp
+                        </button>
+
                     </div>
 
                 </div>
@@ -275,29 +281,264 @@ $(document).ready(function () {
 
     });
 
-});
+     // WHATSAPP SELECTION
+    const selectedServicesIds = new Set();
+    const selectedServicesRecords = new Map();
+
+    function updateServicesSelectAll() {
+        const checkboxes = $('#internshipTable .row-checkbox');
+        const checked = checkboxes.filter(':checked').length;
+
+        $('#select-all').prop(
+            'checked',
+            checkboxes.length > 0 && checked === checkboxes.length
+        );
+    }
+
+    // RESTORE SELECTION AFTER DATATABLE REDRAW
+    table.on('draw', function () {
+        $('#internshipTable .row-checkbox').each(function () {
+            $(this).prop(
+                'checked',
+                selectedServicesIds.has(String($(this).val()))
+            );
+        });
+
+        updateServicesSelectAll();
+    });
+
+    // SELECT ALL CURRENT PAGE
+    $('#select-all').on('change', function () {
+        const checked = $(this).is(':checked');
+
+        $('#internshipTable .row-checkbox').each(function () {
+            const id = String($(this).val());
+            const row = table.row($(this).closest('tr')).data();
+
+            $(this).prop('checked', checked);
+
+            if (checked) {
+                selectedServicesIds.add(id);
+
+                selectedServicesRecords.set(id, {
+                    name: $('<div>').html(row[2]).text().trim(),
+                    mobile: $('<div>').html(row[4]).text().trim()
+                });
+            } else {
+                selectedServicesIds.delete(id);
+                selectedServicesRecords.delete(id);
+            }
+        });
+    });
+
+    // INDIVIDUAL CHECKBOX
+    $('#internshipTable').on('change', '.row-checkbox', function () {
+        const id = String($(this).val());
+        const row = table.row($(this).closest('tr')).data();
+
+        if ($(this).is(':checked')) {
+            selectedServicesIds.add(id);
+
+            selectedServicesRecords.set(id, {
+                name: $('<div>').html(row[2]).text().trim(),
+                mobile: $('<div>').html(row[4]).text().trim()
+            });
+        } else {
+            selectedServicesIds.delete(id);
+            selectedServicesRecords.delete(id);
+        }
+
+        updateServicesSelectAll();
+    });
+
+    // WHATSAPP BUTTON
+    $('#sendServicesWhatsAppButton').on('click', function () {
+        if (selectedServicesIds.size === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Records Selected',
+                text: 'Please select at least one record.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        startServicesWhatsApp(
+            Array.from(selectedServicesRecords.values())
+        );
+    });
+
+}); // END DOCUMENT READY
 
 
 // SELECT ALL
-$(document).on('change', '#select-all', function () {
+// $(document).on('change', '#select-all', function () {
 
-    $('.row-checkbox').prop('checked', $(this).is(':checked'));
+//     $('.row-checkbox').prop('checked', $(this).is(':checked'));
 
-});
+// });
 
 
 // SINGLE CHECKBOX
-$(document).on('change', '.row-checkbox', function () {
+// $(document).on('change', '.row-checkbox', function () {
 
-    if (!$(this).is(':checked')) {
+//     if (!$(this).is(':checked')) {
 
-        $('#select-all').prop('checked', false);
+//         $('#select-all').prop('checked', false);
 
-    }
+//     }
 
-});
+// });
 
 </script>
+
+
+<script>
+function formatServicesWhatsAppMobile(mobile) {
+    let number = String(mobile || '').replace(/\D/g, '');
+
+    if (number.length === 10) {
+        number = '91' + number;
+    } else if (number.length === 11 && number.startsWith('0')) {
+        number = '91' + number.substring(1);
+    }
+
+    return /^91[6-9]\d{9}$/.test(number) ? number : null;
+}
+
+function openServicesWhatsApp(record, message, appendName) {
+    const mobile = formatServicesWhatsAppMobile(record.mobile);
+
+    if (!mobile) return false;
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+    }
+
+    const url = 'https://web.whatsapp.com/send?phone=' +
+        mobile + '&text=' + encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+    return true;
+}
+
+function startServicesWhatsApp(records) {
+    const validRecords = [];
+    let invalidCount = 0;
+
+    records.forEach(function (record) {
+        if (formatServicesWhatsAppMobile(record.mobile)) {
+            validRecords.push(record);
+        } else {
+            invalidCount++;
+        }
+    });
+
+    if (validRecords.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Valid Mobile Numbers',
+            text: 'None of the selected records has a valid WhatsApp number.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Send WhatsApp Message',
+        html: `
+            <div class="text-start">
+                <label class="form-label">Message</label>
+                <textarea id="servicesWhatsAppMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message here..."></textarea>
+
+                <div class="form-check mt-3">
+                    <input type="checkbox"
+                        class="form-check-input"
+                        id="servicesAppendName"
+                        checked>
+                    <label class="form-check-label" for="servicesAppendName">
+                        Add student name
+                    </label>
+                </div>
+
+                <hr>
+                <p>Selected: ${records.length}</p>
+                <p>Valid: ${validRecords.length}</p>
+                <p>Invalid: ${invalidCount}</p>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Start Sending',
+        cancelButtonText: 'Cancel',
+        reverseButtons: false,
+        focusConfirm: false,
+        preConfirm: function () {
+            const message = document.getElementById(
+                'servicesWhatsAppMessage'
+            ).value.trim();
+
+            if (!message) {
+                Swal.showValidationMessage('Please enter a message.');
+                return false;
+            }
+
+            const appendName = document.getElementById(
+                'servicesAppendName'
+            ).checked;
+
+            openServicesWhatsApp(validRecords[0], message, appendName);
+
+            return { message, appendName };
+        }
+    }).then(function (result) {
+        if (!result.isConfirmed) return;
+
+        const message = result.value.message;
+        const appendName = result.value.appendName;
+        let currentIndex = 1;
+
+        function showNext() {
+            if (currentIndex >= validRecords.length) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sending Completed',
+                    text: 'All selected WhatsApp chats have been processed.'
+                });
+                return;
+            }
+
+            const record = validRecords[currentIndex];
+
+            Swal.fire({
+                title: 'WhatsApp Sending',
+                html: `
+                    <p>Chat ${currentIndex + 1} of ${validRecords.length}</p>
+                    <p><strong>${record.name || 'Student'}</strong></p>
+                    <p>${record.mobile}</p>
+                    <small>Click Open Next to open the next WhatsApp chat.</small>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Open Next',
+                cancelButtonText: 'Finish',
+                reverseButtons: false
+            }).then(function (nextResult) {
+                if (nextResult.isConfirmed) {
+                    openServicesWhatsApp(record, message, appendName);
+                    currentIndex++;
+                    showNext();
+                }
+            });
+        }
+
+        showNext();
+    });
+}
+</script>
+
 
 {{-- DELETE WITH SWAL --}}
 <script>
