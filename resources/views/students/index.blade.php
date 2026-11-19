@@ -694,12 +694,22 @@ Reset
 
 </a>
 
-<a href="{{ route('students.export.excel', request()->query()) }}"
+<!-- <a href="{{ route('students.export.excel', request()->query()) }}"
 class="btn btn-primary">Download Excel</a>
 
 <a href="{{ route('students.export.excel', array_merge(request()->query(), ['without_fee' => true])) }}"
-class="btn btn-primary">Without Fee Download Excel</a>
+class="btn btn-primary">Without Fee Download Excel</a> -->
+<a href="{{ route('students.export.excel', request()->query()) }}"
+   id="downloadExcel"
+   class="btn btn-primary">
+    Download Excel
+</a>
 
+<a href="{{ route('students.export.excel', array_merge(request()->query(), ['without_fee' => true])) }}"
+   id="downloadExcelWithoutFee"
+   class="btn btn-primary">
+    Without Fee Download Excel
+</a>
 <button type="button"
 id="copySelected"
 class="btn btn-success">
@@ -1882,22 +1892,95 @@ $('a[href="{{ route('students.index') }}"]').on('click', function () {
     $('#studentsTable').on('change', '.record_checked', syncCheckAll);
  
  
+    // function getSelectedIds() {
+
+    //     $('.record_checked:checked').each(function() {
+
+    //         let id = $(this).val();
+
+    //         if (!selectedStudents.includes(id)) {
+    //             selectedStudents.push(id);
+    //         }
+
+    //     });
+
+    //     return selectedStudents;
+    // }
+
     function getSelectedIds() {
 
-        $('.record_checked:checked').each(function() {
+    // Remove IDs of unchecked students from the current DataTable
+    table.$('.record_checked:not(:checked)').each(function () {
 
-            let id = $(this).val();
+        let id = String($(this).val());
 
-            if (!selectedStudents.includes(id)) {
-                selectedStudents.push(id);
-            }
+        selectedStudents = selectedStudents.filter(
+            selectedId => String(selectedId) !== id
+        );
 
+    });
+
+    // Add currently checked students across DataTable pages
+    table.$('.record_checked:checked').each(function () {
+
+        let id = String($(this).val());
+
+        if (!selectedStudents.includes(id)) {
+            selectedStudents.push(id);
+        }
+
+    });
+
+    return selectedStudents;
+}
+    // ========================================
+// UPDATE STUDENT EXCEL EXPORT LINKS
+// ========================================
+function updateStudentExportLinks() {
+
+    const selectedIds = getSelectedIds();
+
+    const normalUrl = new URL(
+        $('#downloadExcel').attr('href'),
+        window.location.origin
+    );
+
+    const withoutFeeUrl = new URL(
+        $('#downloadExcelWithoutFee').attr('href'),
+        window.location.origin
+    );
+
+    // Remove old selected IDs before updating
+    normalUrl.searchParams.delete('selected_ids[]');
+    withoutFeeUrl.searchParams.delete('selected_ids[]');
+
+    // Add selected IDs only when students are selected
+    if (selectedIds.length > 0) {
+
+        selectedIds.forEach(function (id) {
+            normalUrl.searchParams.append('selected_ids[]', id);
+            withoutFeeUrl.searchParams.append('selected_ids[]', id);
         });
 
-        return selectedStudents;
     }
 
-    
+    $('#downloadExcel').attr('href', normalUrl.toString());
+
+    $('#downloadExcelWithoutFee').attr('href', withoutFeeUrl.toString());
+}
+
+// Initial update
+updateStudentExportLinks();
+
+// Update whenever a student checkbox changes
+$('#studentsTable').on('change', '.record_checked', function () {
+    updateStudentExportLinks();
+});
+
+// Update after DataTable redraw/pagination/search
+table.on('draw.dt', function () {
+    updateStudentExportLinks();
+});
     
  /* =====================================================
    BULK WHATSAPP - STUDENTS MODULE

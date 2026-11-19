@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\InternshipRegistration;
 use Illuminate\Support\Collection;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -12,6 +13,10 @@ class InternshipRegistrationsExport implements FromCollection, WithHeadings, Sho
 {
     protected $request;
 
+    protected ?Collection $exportedCollection = null;
+
+    protected array $exportedIds = [];
+
     public function __construct($request)
     {
         $this->request = $request;
@@ -19,145 +24,186 @@ class InternshipRegistrationsExport implements FromCollection, WithHeadings, Sho
 
     public function collection(): Collection
     {
-        return InternshipRegistration::with(['collegeData', 'courseData'])
+        // Return cached collection if already prepared
+        if ($this->exportedCollection !== null) {
+            return $this->exportedCollection;
+        }
 
-            ->when($this->request->page_type, fn ($q) =>
-                $q->where('page_type', $this->request->page_type)
-            )
-            ->when($this->request->ids, fn ($q) =>
-                $q->whereIn('id', $this->request->ids)
-            )
-            ->when($this->request->college, fn ($q) =>
-                $q->where('college_name', $this->request->college)
-            )
+        $query = InternshipRegistration::with([
+            'collegeData',
+            'courseData'
+        ]);
 
-            ->when($this->request->technology, fn ($q) =>
-                $q->where('technology', $this->request->technology)
-            )
+        /*
+        |--------------------------------------------------------------------------
+        | Selected Export
+        |--------------------------------------------------------------------------
+        | When selected IDs are provided, export only those records.
+        | Ignore all other filters and limits.
+        */
 
-            ->when($this->request->slug, fn ($q) =>
-                $q->where('slug', $this->request->slug)
-            )
+        if ($this->request->filled('ids')) {
 
-            ->when($this->request->status, fn ($q) =>
-                $q->where('status', $this->request->status)
-            )
+            $ids = array_filter((array) $this->request->input('ids'));
+
+            $query->whereIn('id', $ids);
+
+        } else {
 
             /*
             |--------------------------------------------------------------------------
-            | Date Filters
+            | Normal Export Filters
             |--------------------------------------------------------------------------
             */
 
-            ->when($this->request->date_filter == 'today', fn ($q) =>
-                $q->whereDate('created_at', today())
-            )
+            // Page Type
+            if ($this->request->filled('page_type')) {
+                $query->where('page_type', $this->request->page_type);
+            }
 
-            ->when($this->request->date_filter == 'yesterday', fn ($q) =>
-                $q->whereDate('created_at', today()->subDay())
-            )
+            // College
+            if ($this->request->filled('college')) {
+                $query->where('college_name', $this->request->college);
+            }
 
-            ->when($this->request->date_filter == 'this_week', fn ($q) =>
-                $q->whereBetween('created_at', [
-                    now()->startOfWeek(),
-                    now()->endOfWeek()
-                ])
-            )
+            // Technology
+            if ($this->request->filled('technology')) {
+                $query->where('technology', $this->request->technology);
+            }
 
-            ->when($this->request->date_filter == 'last_week', fn ($q) =>
-                $q->whereBetween('created_at', [
-                    now()->subWeek()->startOfWeek(),
-                    now()->subWeek()->endOfWeek()
-                ])
-            )
+            // Slug
+            if ($this->request->filled('slug')) {
+                $query->where('slug', $this->request->slug);
+            }
 
-            ->when($this->request->date_filter == 'this_month', fn ($q) =>
-                $q->whereMonth('created_at', now()->month)
-                  ->whereYear('created_at', now()->year)
-            )
+            // Status
+            if ($this->request->filled('status')) {
+                $query->where('status', $this->request->status);
+            }
 
-            ->when(
-                $this->request->date_filter == 'custom'
-                && $this->request->from_date
-                && $this->request->to_date,
+            // Download Status
+            if ($this->request->download_status === 'downloaded') {
 
-                fn ($q) => $q->whereBetween('created_at', [
-                    \Carbon\Carbon::parse($this->request->from_date)->startOfDay(),
-                    \Carbon\Carbon::parse($this->request->to_date)->endOfDay()
-                ])
-            )
+                $query->whereNotNull('downloaded_at');
 
-            ->when($this->request->limit, fn ($q) =>
-                $q->limit(min((int)$this->request->limit, 100))
-            )
+            } elseif ($this->request->download_status === 'not_downloaded') {
 
-            ->latest()
+                $query->whereNull('downloaded_at');
+            }
 
-            ->get()
+            // Date Filters
+            switch ($this->request->date_filter) {
 
-            ->map(function ($row) {
+                case 'today':
+                    $query->whereDate('created_at', today());
+                    break;
 
-                return [
-                    'Full Name'   => $row->full_name,
-                    'Email'       => $row->email,
-                    'Phone'       => $row->phone,
+                case 'yesterday':
+                    $query->whereDate('created_at', today()->subDay());
+                    break;
 
-                    'College'     => optional($row->collegeData)->college_display_name
-                                        ?? $row->college_name
-                                        ?? '-',
+                case 'this_week':
+                    $query->whereBetween('created_at', [
+                        now()->startOfWeek(),
+                        now()->endOfWeek()
+                    ]);
+                    break;
 
-                    'Technology'  => optional($row->courseData)->course_name
-                                        ?? $row->technology
-                                        ?? '-',
+                case 'last_week':
+                    $query->whereBetween('created_at', [
+                        now()->subWeek()->startOfWeek(),
+                        now()->subWeek()->endOfWeek()
+                    ]);
+                    break;
 
-                    'Status'      => $row->status,
-                    'Message'     => $row->message,
-                    'Created At'  => optional($row->created_at)->format('d-m-Y'),
-                ];
-            });
+                case 'this_month':
+                    $query->whereMonth('created_at', now()->month)
+                          ->whereYear('created_at', now()->year);
+                    break;
+
+                case 'custom':
+
+                    if (
+                        $this->request->from_date &&
+                        $this->request->to_date
+                    ) {
+                        $query->whereBetween('created_at', [
+                            Carbon::parse($this->request->from_date)->startOfDay(),
+                            Carbon::parse($this->request->to_date)->endOfDay()
+                        ]);
+                    }
+
+                    break;
+            }
+
+            // Limit only for normal export
+            if ($this->request->filled('limit')) {
+                $query->limit(min((int) $this->request->limit, 100));
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Fetch Records
+        |--------------------------------------------------------------------------
+        */
+
+        $records = $query->latest()->get();
+
+        // Store exact IDs included in this export
+        $this->exportedIds = $records->pluck('id')->toArray();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prepare Excel Collection
+        |--------------------------------------------------------------------------
+        */
+
+        $this->exportedCollection = $records->map(function ($row) {
+
+            return [
+                'Full Name' => $row->full_name,
+
+                'Email' => $row->email,
+
+                'Phone' => $row->phone,
+
+                'College' => optional($row->collegeData)->college_display_name
+                    ?? $row->college_name
+                    ?? '-',
+
+                'Technology' => optional($row->courseData)->course_name
+                    ?? $row->technology
+                    ?? '-',
+
+                'Status' => $row->status,
+
+                'Message' => $row->message,
+
+                'Created At' => optional($row->created_at)->format('d-m-Y'),
+            ];
+
+        });
+
+        return $this->exportedCollection;
     }
-    public function collection_old(): Collection
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get Exported IDs
+    |--------------------------------------------------------------------------
+    */
+
+    public function getExportedIds(): array
     {
-        return InternshipRegistration::with(['collegeData', 'courseData'])
-            ->when($this->request->page_type, fn ($q) =>
-                $q->where('page_type', $this->request->page_type)
-            )
-            ->when($this->request->college, fn ($q) =>
-                $q->where('college_name', $this->request->college)
-            )
-            ->when($this->request->technology, fn ($q) =>
-                $q->where('technology', $this->request->technology)
-            )
-            ->when($this->request->slug, fn ($q) =>
-                $q->where('slug', $this->request->slug)
-            )
-            ->when($this->request->status, fn ($q) =>
-                $q->where('status', $this->request->status)
-            )
-            ->when($this->request->limit, fn ($q) =>
-                $q->limit(min((int)$this->request->limit, 100))
-            )
-            ->latest()
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'Full Name'   => $row->full_name,
-                    'Email'      => $row->email,
-                    'Phone'      => $row->phone,
-                    'College'     => optional($row->collegeData)->college_display_name 
-                        ?? $row->college_name 
-                        ?? '-',
-
-                    'Technology'  => optional($row->courseData)->course_name 
-                                        ?? $row->technology 
-                                        ?? '-',
-                    // 'Page Type'  => $row->page_type,
-                    'Status'     => $row->status,
-                    'Message'    => $row->message,
-                    'Created At' => optional($row->created_at)->format('d-m-Y'),
-                ];
-            });
+        return $this->exportedIds;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excel Headings
+    |--------------------------------------------------------------------------
+    */
 
     public function headings(): array
     {
@@ -167,7 +213,6 @@ class InternshipRegistrationsExport implements FromCollection, WithHeadings, Sho
             'Phone',
             'College',
             'Technology',
-            // 'Page Type',
             'Status',
             'Message',
             'Submit Date',

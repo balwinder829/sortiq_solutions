@@ -83,4 +83,19 @@ class InternStudent extends Model
             ->pluck('course_name')
             ->implode(', ');
     }
+
+    public function getFatherNameWithTitleAttribute()
+{
+    $name = trim($this->f_name ?? '');
+
+    if ($name === '') {
+        return '';
+    }
+
+    if (!preg_match('/^mr\.?/i', $name)) {
+        $name = 'Mr. ' . $name;
+    }
+
+    return ucwords($name);
+}
 }

@@ -67,6 +67,7 @@ class Student extends Authenticatable
         'referral_type',
         'referred_by',
         'referred_by_type',
+        'student_ref_details',
     ];
 
      // Automatically hash password when setting it

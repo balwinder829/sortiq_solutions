@@ -155,6 +155,7 @@ use App\Http\Controllers\Sales\HardDataController;
 use App\Http\Controllers\FormEntryController;
 use App\Http\Controllers\JobDescriptionController;
 use App\Http\Controllers\StudentRegistrationController;
+use App\Http\Controllers\SeminarRegistrationController;
 use App\Http\Controllers\StudentPptController;
 use App\Http\Controllers\Whatsapp\WhatsappController;
 
@@ -196,6 +197,8 @@ use App\Http\Controllers\Finance\SimController;
 use App\Http\Controllers\Students\InternStudentController;
 use App\Http\Controllers\Students\OldStudentController;
 use App\Http\Controllers\Students\CrStudentController;
+use App\Http\Controllers\Admin\AdminSeminarRegistrationController;
+
 
 Route::get('/student-feedback', [StudentFeedbackController::class, 'create'])
     ->name('student-feedback.create');
@@ -247,6 +250,10 @@ Route::post('/student/leave/apply', [StudentLeaveController::class, 'store'])
 
 Route::get('/register_student', [StudentRegistrationController::class, 'create'])->name('student.register.form');
 Route::post('/join_student', [StudentRegistrationController::class, 'store'])->name('student.register');
+
+Route::get('/register_for_seminar', [SeminarRegistrationController::class, 'create'])->name('seminar.register.form');
+Route::post('/register_for_seminar', [SeminarRegistrationController::class, 'store'])->name('seminar.register');
+
 
 Route::get('/visit-office', [FrontVisitorRecordController::class, 'create'])
     ->name('visitor.create');
@@ -1164,6 +1171,18 @@ Route::prefix('admin')
     ->name('admin.')
     ->middleware('auth')
     ->group(function () {
+
+        Route::get('/seminar-registrations', [AdminSeminarRegistrationController::class, 'index'])
+            ->name('seminar-registration.index');
+
+        Route::delete('/seminar-registration/{seminar_registration}', [AdminSeminarRegistrationController::class, 'destroy'])
+            ->name('seminar-registration.destroy');
+
+        Route::post('/seminar-registration/bulk-destroy', [AdminSeminarRegistrationController::class, 'bulkDestroy'])
+            ->name('seminar-registration.bulkDestroy');
+
+        Route::get('/seminar-registration/export-excel', [AdminSeminarRegistrationController::class, 'exportExcel'])
+            ->name('seminar-registration.exportExcel');
           /*
         |--------------------------------------------------------------------------
         | CR Students Routes
@@ -1743,13 +1762,13 @@ Route::middleware(['auth'])->group(function () {
     // Route::get('joined-students/export', [JoiningStudentController::class, 'export'])
     // ->name('joined_students.export');
 
-    Route::get('/admin/joining-studentssss',
-        [JoiningStudentController::class, 'index']
-    )->name('joined_students.index');
+    // Route::get('/admin/joining-students',
+    //     [JoiningStudentController::class, 'index']
+    // )->name('joined_students.index');
 
-    Route::get('/admin/joining-students/links',
-        [JoiningStudentController::class, 'adminUrl']
-    )->name('joined_students.adminUrl');
+    // Route::get('/admin/joining-students/links',
+    //     [JoiningStudentController::class, 'adminUrl']
+    // )->name('joined_students.adminUrl');
 
     //  Route::get('/admin/joining-students/{id}/edit',
     //     [JoiningStudentController::class, 'edit']
@@ -1936,6 +1955,16 @@ Route::middleware(['auth'])->group(function () {
         'student-additional-letters/{StudentAdditionalLetter}/email',
         [StudentAdditionalLetterController::class, 'sendEmail']
     )->name('student-additional-letters.email');
+
+    Route::post(
+        'student-additional-letters/bulk-download',
+        [StudentAdditionalLetterController::class, 'bulkDownload']
+    )->name('student-additional-letters.bulk-download');
+
+    Route::post(
+    '/student-additional-letters/bulk-delete',
+    [StudentAdditionalLetterController::class, 'bulkDelete']
+)->name('student-additional-letters.bulk-delete');
 
         // Resource routes (CRUD)
     Route::resource('company-ppt', CompanyPptController::class)

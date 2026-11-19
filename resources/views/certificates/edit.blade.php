@@ -424,6 +424,29 @@
     @enderror
 </div>
 
+
+{{-- Student Reference Details --}}
+<div class="form-group col-md-6
+    {{ old('referred_by', $student->referred_by) == 4 &&
+       old('referred_by_type', $student->referred_by_type) == 'reference'
+       ? '' : 'd-none' }}"
+     id="studentRefDetailsWrapper">
+
+    <label for="student_ref_details">
+        Student Reference Details <span class="text-danger">*</span>
+    </label>
+
+    <textarea name="student_ref_details"
+              id="student_ref_details"
+              class="form-control"
+              rows="3"
+              placeholder="Enter student reference details">{{ old('student_ref_details', $student->student_ref_details) }}</textarea>
+
+    @error('student_ref_details')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
+
+</div>
     <div class="form-group col-md-6">
                 <label>Address</label>
                 <textarea name="address"
@@ -947,26 +970,63 @@ $(document).ready(function () {
 });
 </script> -->
 <script>
+    // $(document).ready(function () {
+
+    //     function setReferredByType() {
+
+    //         const selectedOption = $('#referred_by option:selected');
+
+    //         const type = selectedOption.attr('data-type') || '';
+
+    //         $('#referred_by_type').val(type);
+    //     }
+
+    //     // When user changes Referred By
+    //     $('#referred_by').on('change', function () {
+    //         setReferredByType();
+    //     });
+
+    //     // Set correct type when edit page loads
+    //     setReferredByType();
+
+    // });
+
+
     $(document).ready(function () {
 
-        function setReferredByType() {
+    function setReferredByType() {
+        const selectedOption = $('#referred_by option:selected');
+        const type = selectedOption.attr('data-type') || '';
 
-            const selectedOption = $('#referred_by option:selected');
+        $('#referred_by_type').val(type);
+    }
 
-            const type = selectedOption.attr('data-type') || '';
+    function toggleStudentRefDetails() {
 
-            $('#referred_by_type').val(type);
+        let isStudentReference =
+            $('#referred_by').val() == '4' &&
+            $('#referred_by_type').val() === 'reference';
+
+        $('#studentRefDetailsWrapper').toggleClass('d-none', !isStudentReference);
+
+        $('#student_ref_details').prop('required', isStudentReference);
+
+        if (!isStudentReference) {
+            $('#student_ref_details').val('');
         }
+    }
 
-        // When user changes Referred By
-        $('#referred_by').on('change', function () {
-            setReferredByType();
-        });
-
-        // Set correct type when edit page loads
+    // When user changes Referred By
+    $('#referred_by').on('change', function () {
         setReferredByType();
-
+        toggleStudentRefDetails();
     });
+
+    // Set correct type and visibility when edit page loads
+    setReferredByType();
+    toggleStudentRefDetails();
+
+});
 </script>
 
 @endpush

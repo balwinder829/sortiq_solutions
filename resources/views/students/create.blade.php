@@ -481,6 +481,27 @@
     @enderror
 </div>
 
+
+{{-- Student Reference Details --}}
+<div class="form-group col-md-6 {{ old('referred_by') == 4 && old('referred_by_type') == 'reference' ? '' : 'd-none' }}"
+     id="studentRefDetailsWrapper">
+
+    <label for="student_ref_details">
+        Student Reference Details <span class="text-danger">*</span>
+    </label>
+
+    <textarea name="student_ref_details"
+              id="student_ref_details"
+              class="form-control"
+              rows="3"
+              placeholder="Enter student reference details">{{ old('student_ref_details') }}</textarea>
+
+    @error('student_ref_details')
+        <small class="text-danger">{{ $message }}</small>
+    @enderror
+
+</div>
+
             <div class="form-group col-md-6">
                 <label>Address</label>
                 <textarea name="address"
@@ -923,20 +944,52 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 <script>
+    // $(document).ready(function () {
+
+    //     $('#referred_by').on('change', function () {
+
+    //         let selectedOption = $(this).find('option:selected');
+
+    //         let type = selectedOption.data('type') || '';
+
+    //         $('#referred_by_type').val(type);
+    //     });
+
+    //     $('#referred_by').trigger('change');
+
+    // });
+
     $(document).ready(function () {
 
-        $('#referred_by').on('change', function () {
+    function toggleStudentRefDetails() {
 
-            let selectedOption = $(this).find('option:selected');
+        let isStudentReference =
+            $('#referred_by').val() == '4' &&
+            $('#referred_by_type').val() === 'reference';
 
-            let type = selectedOption.data('type') || '';
+        $('#studentRefDetailsWrapper').toggleClass('d-none', !isStudentReference);
 
-            $('#referred_by_type').val(type);
-        });
+        $('#student_ref_details').prop('required', isStudentReference);
 
-        // Set type on page load
-        $('#referred_by').trigger('change');
+        if (!isStudentReference) {
+            $('#student_ref_details').val('');
+        }
+    }
 
+    $('#referred_by').on('change', function () {
+
+        let selectedOption = $(this).find('option:selected');
+
+        let type = selectedOption.data('type') || '';
+
+        $('#referred_by_type').val(type);
+
+        toggleStudentRefDetails();
     });
+
+    // Set type and visibility on page load
+    $('#referred_by').trigger('change');
+
+});
 </script>
 @endpush

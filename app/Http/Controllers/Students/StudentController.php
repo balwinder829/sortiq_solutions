@@ -477,6 +477,16 @@ class StudentController extends Controller
             'referred_by_type' => 'nullable|in:staff,reference',
         ]);
 
+        // Student Reference details validation
+        if (
+            $request->referred_by == 4 &&
+            $request->referred_by_type === 'reference'
+        ) {
+            $request->validate([
+                'student_ref_details' => 'required|string',
+            ]);
+        }
+
         if (($validate['reg_fees'] + $validate['paid_fees']) > $validate['total_fees']) {
             return back()
                 ->withErrors([
@@ -562,6 +572,14 @@ class StudentController extends Controller
 
         $validate['plain_password'] = $validate['password'] = $name . $newSno;
         $validate['session'] = $activeSessionId;
+
+        // Student Reference details
+        $validate['student_ref_details'] = (
+            $validate['referred_by'] == 4 &&
+            $validate['referred_by_type'] === 'reference'
+        )
+            ? $request->student_ref_details
+            : null;
 
         Student::create($validate);
 
@@ -686,6 +704,16 @@ class StudentController extends Controller
             'referred_by'      => 'nullable|integer',
             'referred_by_type' => 'nullable|in:staff,reference',
         ]);
+
+        // Student Reference details validation
+        if (
+            $request->referred_by == 4 &&
+            $request->referred_by_type === 'reference'
+        ) {
+            $request->validate([
+                'student_ref_details' => 'required|string',
+            ]);
+        }
         // dd('Passed validation', $validates);
 
         if (($validates['reg_fees'] + $validates['paid_fees']) > $validates['total_fees']) {
@@ -756,6 +784,15 @@ class StudentController extends Controller
             $validates['plain_password'] = $validates['password'] = trim($request->password);
         }
         // dd($validates);
+
+        // Student Reference details
+        $validates['student_ref_details'] = (
+            $validates['referred_by'] == 4 &&
+            $validates['referred_by_type'] === 'reference'
+        )
+            ? $request->student_ref_details
+            : null;
+            
         $student->update($validates);
 
         return redirect()->route('students.index')
@@ -2976,6 +3013,31 @@ private function generatePdf($student, $isPursuing = false, $isInternship = fals
 
         // Prevent too long filename
         $fileName = substr($fileName, 0, 150);
+
+
+        // Selected checkbox IDs take priority over applied filters.
+        $selectedIds = $request->input('selected_ids', []);
+
+        if (is_string($selectedIds)) {
+            $selectedIds = json_decode($selectedIds, true) ?? [];
+        }
+
+        if (!is_array($selectedIds)) {
+            $selectedIds = [];
+        }
+
+        $selectedIds = array_values(array_unique(array_filter(
+            $selectedIds,
+            function ($id) {
+                return filter_var($id, FILTER_VALIDATE_INT) !== false && (int) $id > 0;
+            }
+        )));
+        // dd($selectedIds);
+        if (!empty($selectedIds)) {
+            $request->merge([
+                'selected_ids' => $selectedIds,
+            ]);
+        }
 
 
         return Excel::download(

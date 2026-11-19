@@ -557,6 +557,13 @@ body.menu-toggle .sidebar-collapse-btn{
                             </a>
                         </li> 
 
+                        <li class="{{ isParent(['admin.seminar-registration*']) }}">
+                            <a href="{{ route('admin.seminar-registration.index') }}">
+                                <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                <span class="nav-text">Seminar Registrations</span>
+                            </a>
+                        </li>
+
                         <li class="{{ isParent(['notifications.byType*']) }}">
                             <a href="{{ route('notifications.byType', 'workshop.reminder.week') }}">
                                 <!-- <i class="fa-regular fa-file-lines"></i> -->
@@ -810,7 +817,7 @@ body.menu-toggle .sidebar-collapse-btn{
                             <a class="{{ isChildActive('student-additional-letters*') }}"
                                 href="{{ route('student-additional-letters.index') }}">
                                 <i class="fas fa-file-signature"></i>
-                                <span class="nav-text">Student Letters</span>
+                                <span class="nav-text">Student & Intern Letters</span>
                             </a>
                         </li> 
 
@@ -1065,7 +1072,7 @@ body.menu-toggle .sidebar-collapse-btn{
                         
                         <li>
                             <a class="{{ isChildActive('admin.joined_students.index') }}"
-                                href="{{ route('joined_students.index') }}">
+                                href="{{ route('admin.joining_students.index') }}">
                                 Joined Students Lists
                             </a>
                         </li>
@@ -1903,7 +1910,7 @@ body.menu-toggle .sidebar-collapse-btn{
                         </li>
                         @endcanany
 
-                         @canany(['workshop.view','college_emails.view','college_calls.view'])
+                         @canany(['workshop.view','college_emails.view','college_calls.view','seminar_registration.view'])
                         {{-- Workshop --}}
 
                         <li class="{{ isParent([ 'workshops*','admin.college-emails*', 'admin.college-calls*']) }}">
@@ -1939,7 +1946,15 @@ body.menu-toggle .sidebar-collapse-btn{
                                       Colleges Calls Records
                                     </a>
                                 </li> 
-                                @endcan                                        
+                                @endcan   
+                                @can('seminar_registration.view')
+                                <li class="{{ isParent(['admin.seminar-registration*']) }}">
+                                    <a href="{{ route('admin.seminar-registration.index') }}">
+                                        <!-- <i class="fa-regular fa-file-lines"></i> -->
+                                        <span class="nav-text">Seminar Registrations</span>
+                                    </a>
+                                </li> 
+                                @endcan                                    
                             </ul>
                         </li>
                         @endcanany
@@ -2167,7 +2182,7 @@ body.menu-toggle .sidebar-collapse-btn{
                             <a class="{{ isChildActive('student-additional-letters*') }}"
                                 href="{{ route('student-additional-letters.index') }}">
                                 <i class="fas fa-file-signature"></i>
-                                <span class="nav-text">Student Letters</span>
+                                <span class="nav-text">Student & Intern Letters</span>
                             </a>
                         </li>
                         @endcan  
@@ -2408,7 +2423,7 @@ body.menu-toggle .sidebar-collapse-btn{
                          @can('joined_students.view')
                         <li>
                             <a class="{{ isChildActive('admin.joined_students.index') }}"
-                                href="{{ route('joined_students.index') }}">
+                                href="{{ route('admin.joining_students.index') }}">
                                 Joined Students Lists
                             </a>
                         </li>

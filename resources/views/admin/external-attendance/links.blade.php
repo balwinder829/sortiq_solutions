@@ -339,7 +339,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="qrCodeModalLabel">Attendance QR Code</h5>
+                    <h5 class="modal-title" id="qrCodeModalLabel">QR Code</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
@@ -621,8 +621,8 @@ $(document).ready(function () {
             const safeCollegeName = activeQrCollege.replace(/[^a-z0-9-_]/gi, '-') || 'College';
             const qrFile = new File([blob], 'attendance-qr-' + safeCollegeName + '.png', { type: 'image/png' });
             const shareData = {
-                title: 'Attendance QR Code - ' + activeQrCollege,
-                text: 'Attendance form QR code for ' + activeQrCollege + '.',
+                title: 'QR Code - ' + activeQrCollege,
+                text: 'Form QR code for ' + activeQrCollege + '.',
                 files: [qrFile]
             };
 
@@ -654,11 +654,11 @@ $(document).ready(function () {
         const college = String($(this).data('college') || 'College').trim();
 
         if (!url) {
-            Swal.fire('Link missing', 'Attendance link is not available.', 'warning');
+            Swal.fire('Link missing', 'Link is not available.', 'warning');
             return;
         }
 
-        const message = 'Attendance form for ' + college + ':\n\n' + url;
+        const message = 'Form for ' + college + ':\n\n' + url;
         const whatsappUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
         window.open(whatsappUrl, '_blank');
     });
@@ -672,7 +672,7 @@ $(document).ready(function () {
 
             Swal.fire(
                 'Copied!',
-                'Attendance link copied to clipboard.',
+                'Link copied to clipboard.',
                 'success'
             );
         } catch (error) {

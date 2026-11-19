@@ -415,66 +415,89 @@
         </div> -->
 
         {{-- Referred By --}}
-<div class="form-group col-md-6">
-    <label for="referred_by" class="form-label">
-        Referred By
-    </label>
+        <div class="form-group col-md-6">
+            <label for="referred_by" class="form-label">
+                Referred By
+            </label>
 
-    <select name="referred_by"
-            id="referred_by"
-            class="form-control">
+            <select name="referred_by"
+                    id="referred_by"
+                    class="form-control">
 
-        {{-- Direct --}}
-        <option value=""
-            {{ old('referred_by', $student->referred_by) === null ||
-               old('referred_by', $student->referred_by) === '' ? 'selected' : '' }}>
-            Direct
-        </option>
-
-        {{-- Reference --}}
-        <optgroup label="Reference">
-            @foreach($references as $reference)
-                <option value="{{ $reference->id }}"
-                        data-type="reference"
-                        {{ old('referred_by', $student->referred_by) == $reference->id &&
-                           old('referred_by_type', $student->referred_by_type) == 'reference'
-                           ? 'selected'
-                           : '' }}>
-                    {{ $reference->name }}
+                {{-- Direct --}}
+                <option value=""
+                    {{ old('referred_by', $student->referred_by) === null ||
+                       old('referred_by', $student->referred_by) === '' ? 'selected' : '' }}>
+                    Direct
                 </option>
-            @endforeach
-        </optgroup>
 
-        {{-- Sales Staff --}}
-        <optgroup label="Sales Staff">
-            @foreach($salesStaff as $staff)
-                <option value="{{ $staff->id }}"
-                        data-type="staff"
-                        {{ old('referred_by', $student->referred_by) == $staff->id &&
-                           old('referred_by_type', $student->referred_by_type) == 'staff'
-                           ? 'selected'
-                           : '' }}>
-                    {{ $staff->name }}
-                </option>
-            @endforeach
-        </optgroup>
+                {{-- Reference --}}
+                <optgroup label="Reference">
+                    @foreach($references as $reference)
+                        <option value="{{ $reference->id }}"
+                                data-type="reference"
+                                {{ old('referred_by', $student->referred_by) == $reference->id &&
+                                   old('referred_by_type', $student->referred_by_type) == 'reference'
+                                   ? 'selected'
+                                   : '' }}>
+                            {{ $reference->name }}
+                        </option>
+                    @endforeach
+                </optgroup>
 
-    </select>
+                {{-- Sales Staff --}}
+                <optgroup label="Sales Staff">
+                    @foreach($salesStaff as $staff)
+                        <option value="{{ $staff->id }}"
+                                data-type="staff"
+                                {{ old('referred_by', $student->referred_by) == $staff->id &&
+                                   old('referred_by_type', $student->referred_by_type) == 'staff'
+                                   ? 'selected'
+                                   : '' }}>
+                            {{ $staff->name }}
+                        </option>
+                    @endforeach
+                </optgroup>
 
-    <input type="hidden"
-           name="referred_by_type"
-           id="referred_by_type"
-           value="{{ old('referred_by_type', $student->referred_by_type) }}">
+            </select>
 
-    @error('referred_by')
-        <span class="text-danger">{{ $message }}</span>
-    @enderror
+            <input type="hidden"
+                   name="referred_by_type"
+                   id="referred_by_type"
+                   value="{{ old('referred_by_type', $student->referred_by_type) }}">
 
-    @error('referred_by_type')
-        <span class="text-danger">{{ $message }}</span>
-    @enderror
-</div>
+            @error('referred_by')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
 
+            @error('referred_by_type')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
+
+
+        {{-- Student Reference Details --}}
+        <div class="form-group col-md-6
+            {{ old('referred_by', $student->referred_by) == 4 &&
+               old('referred_by_type', $student->referred_by_type) == 'reference'
+               ? '' : 'd-none' }}"
+             id="studentRefDetailsWrapper">
+
+            <label for="student_ref_details">
+                Student Reference Details <span class="text-danger">*</span>
+            </label>
+
+            <textarea name="student_ref_details"
+                      id="student_ref_details"
+                      class="form-control"
+                      rows="3"
+                      placeholder="Enter student reference details">{{ old('student_ref_details', $student->student_ref_details) }}</textarea>
+
+            @error('student_ref_details')
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
+
+        </div>
         
                                            {{-- Password --}}
                 <div class="form-group col-md-6">
@@ -1172,26 +1195,67 @@ $(document).ready(function () {
 });
 </script> -->
 <script>
+    // $(document).ready(function () {
+
+    //     function setReferredByType() {
+
+    //         const selectedOption = $('#referred_by option:selected');
+
+    //         const type = selectedOption.attr('data-type') || '';
+
+    //         $('#referred_by_type').val(type);
+    //     }
+
+    //     // When user changes Referred By
+    //     $('#referred_by').on('change', function () {
+    //         setReferredByType();
+    //     });
+
+    //     // Set correct type when edit page loads
+    //     setReferredByType();
+
+    // });
+
     $(document).ready(function () {
 
-        function setReferredByType() {
+    function setReferredByType() {
 
-            const selectedOption = $('#referred_by option:selected');
+        const selectedOption = $('#referred_by option:selected');
 
-            const type = selectedOption.attr('data-type') || '';
+        const type = selectedOption.attr('data-type') || '';
 
-            $('#referred_by_type').val(type);
+        $('#referred_by_type').val(type);
+    }
+
+    function toggleStudentRefDetails() {
+
+        let isStudentReference =
+            $('#referred_by').val() == '4' &&
+            $('#referred_by_type').val() === 'reference';
+
+        $('#studentRefDetailsWrapper').toggleClass('d-none', !isStudentReference);
+
+        $('#student_ref_details').prop('required', isStudentReference);
+
+        if (!isStudentReference) {
+            $('#student_ref_details').val('');
         }
+    }
 
-        // When user changes Referred By
-        $('#referred_by').on('change', function () {
-            setReferredByType();
-        });
+    // When user changes Referred By
+    $('#referred_by').on('change', function () {
 
-        // Set correct type when edit page loads
         setReferredByType();
 
+        toggleStudentRefDetails();
     });
+
+    // Set correct type and visibility when edit page loads
+    setReferredByType();
+
+    toggleStudentRefDetails();
+
+});
 </script>
 
 @endpush

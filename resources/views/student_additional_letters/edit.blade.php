@@ -3,347 +3,184 @@
 
 @section('content')
 <div class="container">
-    <h4>Edit Student Additional Letter</h4>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Edit {{ ucfirst($letterFor) }} Additional Letter</h4>
+
+        <a href="{{ route('student-additional-letters.index', ['letter_for' => $letterFor]) }}"
+           class="btn btn-secondary">
+            Back
+        </a>
+    </div>
 
     <form method="POST"
-          action="{{ route('student-additional-letters.update', $letter) }}">
+          action="{{ route('student-additional-letters.update', $studentAdditionalLetter->id) }}">
         @csrf
         @method('PUT')
 
+        <input type="hidden" name="letter_for" value="{{ $letterFor }}">
+
         <div class="row">
 
-            {{-- Student Name --}}
+            {{-- Student / Intern Selection --}}
             <div class="form-group col-md-12">
-                <label>Select Student</label>
+                <label>
+                    Select {{ $letterFor === 'intern' ? 'Intern' : 'Student' }}
+                    <span class="text-danger">*</span>
+                </label>
 
-                <select name="student_id" id="student_select"
-                        class="form-control" required>
-                    <option value="">Select Student</option>
+                <select
+                    name="{{ $letterFor === 'intern' ? 'intern_student_id' : 'student_id' }}"
+                    id="person_select"
+                    class="form-control"
+                    required
+                >
+                    <option value="">Select {{ ucfirst($letterFor) }}</option>
 
-                    @foreach($students as $student)
-                        <option value="{{ $student->id }}"
-                            data-name="{{ $student->student_name }}"
-                            {{ old('student_id', $letter->student_id) == $student->id ? 'selected' : '' }}>
+                    @if($letterFor === 'student')
+                        @foreach($students as $student)
+                            <option value="{{ $student->id }}"
+                                {{ old('student_id', $studentAdditionalLetter->student_id) == $student->id ? 'selected' : '' }}>
+                                {{ $student->student_name }}
+                                | {{ $student->f_name ?? '' }}
+                                | {{ $student->collegeData->FullName ?? $student->place ?? 'N/A' }}
+                            </option>
+                        @endforeach
+                    @else
+                        @foreach($internStudents as $intern)
+                            <option value="{{ $intern->id }}"
+                                {{ old('intern_student_id', $studentAdditionalLetter->intern_student_id) == $intern->id ? 'selected' : '' }}>
+                                {{ $intern->student_name }}
+                                | Father: {{ $intern->f_name ?? 'N/A' }}
+                                | {{ $intern->collegeData->FullName ?? 'N/A' }}
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
 
-                            {{ $student->student_name }}
-                            {{ in_array(strtolower($student->gender ?? ''), ['male', 'm']) ? 'S/O' : 'D/O' }}
-                            {{ $student->f_name ?: 'NA' }}
-                            from {{ $student->collegeData->FullName ?? 'N/A' }}
+                @error('student_id')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
 
+                @error('intern_student_id')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+
+            {{-- Letter Type --}}
+            <div class="form-group col-md-6">
+                <label>Letter Type <span class="text-danger">*</span></label>
+
+                <select name="internship_type"
+                        id="internship_type"
+                        class="form-control"
+                        required>
+                    <option value="">Select Letter Type</option>
+
+                    @foreach($letterTypes as $value => $label)
+                        <option value="{{ $value }}"
+                            {{ old('internship_type', $studentAdditionalLetter->internship_type) == $value ? 'selected' : '' }}>
+                            {{ $label }}
                         </option>
                     @endforeach
                 </select>
 
-                @error('student_id')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                @enderror
-            </div>
-
-
-            {{-- Letter Type --}}
-            <div class="form-group col-md-6">
-                <label>Internship Type</label>
-
-                <select name="internship_type" id="internship_type"
-                        class="form-control" required>
-
-                    <option value="">Select Type</option>
-
-                    <option value="free" {{ old('internship_type', $letter->internship_type) == 'free' ? 'selected' : '' }}>
-                        Free Internship Letter
-                    </option>
-
-                    <option value="internship" {{ old('internship_type', $letter->internship_type) == 'internship' ? 'selected' : '' }}>
-                        Internship Letter
-                    </option>
-
-                    <option value="internship_with_package" {{ old('internship_type', $letter->internship_type) == 'internship_with_package' ? 'selected' : '' }}>
-                        Internship With Package Letter
-                    </option>
-
-                    <option value="stipend" {{ old('internship_type', $letter->internship_type) == 'stipend' ? 'selected' : '' }}>
-                        Stipend Internship Letter
-                    </option>
-
-                    <option value="offer" {{ old('internship_type', $letter->internship_type) == 'offer' ? 'selected' : '' }}>
-                        Offer Letter
-                    </option>
-
-                    <option value="custom" {{ old('internship_type', $letter->internship_type) == 'custom' ? 'selected' : '' }}>
-                        Custom Type Letter
-                    </option>
-
-                    <option value="noc" {{ old('internship_type', $letter->internship_type) == 'noc' ? 'selected' : '' }}>
-                        Non-Consent Letter
-                    </option>
-
-                    <option value="mutual_consent" {{ old('internship_type', $letter->internship_type) == 'mutual_consent' ? 'selected' : '' }}>
-                        Mutual Consent Letter
-                    </option>
-
-                    <option value="training_consent" {{ old('internship_type', $letter->internship_type) == 'training_consent' ? 'selected' : '' }}>
-                        Training Consent Letter
-                    </option>
-
-                    <option value="placement" {{ old('internship_type', $letter->internship_type) == 'placement' ? 'selected' : '' }}>
-                        Student Placement Letter
-                    </option>
-
-                    <option value="strict_offer_letter" {{ old('internship_type', $letter->internship_type) == 'strict_offer_letter' ? 'selected' : '' }}>
-                        Strict Offer Letter
-                    </option>
-
-                    <option value="strict_consent_letter" {{ old('internship_type', $letter->internship_type) == 'strict_consent_letter' ? 'selected' : '' }}>
-                        Strict Consent Letter
-                    </option>
-
-                    <option value="stipend_policy" {{ old('internship_type', $letter->internship_type) == 'stipend_policy' ? 'selected' : '' }}>
-                        Stipend Policy Letter
-                    </option>
-
-                    <option value="internship_consent" {{ old('internship_type', $letter->internship_type) == 'internship_consent' ? 'selected' : '' }}>
-                        Internship Consent Letter
-                    </option>
-
-                    <option value="part_time_job_opportunity" {{ old('internship_type', $letter->internship_type) == 'part_time_job_opportunity' ? 'selected' : '' }}>
-                        Part Time Job Opportunity Letter
-                    </option>
-
-                    <option value="with_roll_number" {{ old('internship_type', $letter->internship_type) == 'with_roll_number' ? 'selected' : '' }}>
-                        With Roll Number Letter
-                    </option>
-
-                    <option value="with_roll_number_internship" {{ old('internship_type', $letter->internship_type) == 'with_roll_number_internship' ? 'selected' : '' }}>
-                        With Roll Number Internship Letter
-                    </option>
-
-                    <option value="confirmation_letter" {{ old('internship_type', $letter->internship_type) == 'confirmation_letter' ? 'selected' : '' }}>
-                        Confirmation Letter
-                    </option>
-
-                    <option value="student_responsibility" {{ old('internship_type', $letter->internship_type) == 'student_responsibility' ? 'selected' : '' }}>
-                        Student Responsibility Letter
-                    </option>
-
-                    <option value="placed_student_responsibility" {{ old('internship_type', $letter->internship_type) == 'placed_student_responsibility' ? 'selected' : '' }}>
-                        Placed Student Responsibility Letter
-                    </option>
-
-                </select>
-
                 @error('internship_type')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                    <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
-
 
             {{-- Issue Date --}}
             <div class="form-group col-md-6">
                 <label>Issue Date</label>
-
                 <input type="date"
                        name="issue_date"
-                       max="{{ now()->toDateString() }}"
-                       value="{{ old('issue_date', $letter->issue_date ? \Carbon\Carbon::parse($letter->issue_date)->format('Y-m-d') : '') }}"
-                       class="form-control @error('issue_date') is-invalid @enderror"
-                       required>
-
+                       class="form-control"
+                       value="{{ old('issue_date', optional($studentAdditionalLetter->issue_date)->format('Y-m-d') ?? $studentAdditionalLetter->issue_date) }}">
                 @error('issue_date')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                    <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
 
-
-            {{-- NORMAL OFFER LETTER FIELDS --}}
-            <div class="col-md-12 d-none" id="normal_offer_fields">
-
+            {{-- Offer / Strict Offer Fields --}}
+            <div class="col-md-12" id="offer_common_fields" style="display:none;">
                 <div class="card mb-3">
                     <div class="card-header">
-                        <strong>Normal Offer Letter Details</strong>
+                        <strong>Offer Letter Details</strong>
                     </div>
 
                     <div class="card-body">
                         <div class="row">
 
-                            {{-- Internship Start Date --}}
                             <div class="form-group col-md-6">
-                                <label>Internship Start Date</label>
-
+                                <label>Training / Internship Start Date</label>
                                 <input type="date"
                                        name="offer_training_start_date"
-                                       value="{{ old('offer_training_start_date', $letter->offer_training_start_date ? \Carbon\Carbon::parse($letter->offer_training_start_date)->format('Y-m-d') : '') }}"
-                                       class="form-control @error('offer_training_start_date') is-invalid @enderror">
-
-                                @error('offer_training_start_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                       class="form-control offer-common-input"
+                                       value="{{ old('offer_training_start_date', optional($studentAdditionalLetter->offer_training_start_date)->format('Y-m-d') ?? $studentAdditionalLetter->offer_training_start_date) }}">
                             </div>
 
-
-                            {{-- Internship Duration --}}
                             <div class="form-group col-md-6">
-                                <label>Internship Duration (Months)</label>
-
+                                <label>Training / Internship Duration (Months)</label>
                                 <input type="number"
                                        name="offer_training_duration_months"
+                                       class="form-control offer-common-input"
                                        min="1"
-                                       step="1"
-                                       value="{{ old('offer_training_duration_months', $letter->offer_training_duration_months) }}"
-                                       placeholder="e.g. 6"
-                                       class="form-control @error('offer_training_duration_months') is-invalid @enderror">
-
-                                @error('offer_training_duration_months')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                       value="{{ old('offer_training_duration_months', $studentAdditionalLetter->offer_training_duration_months) }}">
                             </div>
 
-
-                            {{-- Internship Type --}}
-                            <div class="form-group col-md-6">
+                            {{-- Normal Offer --}}
+                            <div class="form-group col-md-6 normal-offer-field">
                                 <label>Internship Type</label>
-
                                 <input type="text"
                                        name="offer_internship_type"
-                                       value="{{ old('offer_internship_type', $letter->offer_internship_type) }}"
-                                       placeholder="e.g. Free Internship / Paid Internship"
-                                       class="form-control @error('offer_internship_type') is-invalid @enderror">
-
-                                @error('offer_internship_type')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                       class="form-control normal-offer-input"
+                                       value="{{ old('offer_internship_type', $studentAdditionalLetter->offer_internship_type) }}">
                             </div>
 
-
-                            {{-- PPO Evaluation Period --}}
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-6 normal-offer-field">
                                 <label>PPO Evaluation Period (Months)</label>
-
                                 <input type="number"
                                        name="offer_ppo_evaluation_months"
+                                       class="form-control normal-offer-input"
                                        min="1"
-                                       step="1"
-                                       value="{{ old('offer_ppo_evaluation_months', $letter->offer_ppo_evaluation_months) }}"
-                                       placeholder="e.g. 3"
-                                       class="form-control @error('offer_ppo_evaluation_months') is-invalid @enderror">
-
-                                @error('offer_ppo_evaluation_months')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                       value="{{ old('offer_ppo_evaluation_months', $studentAdditionalLetter->offer_ppo_evaluation_months) }}">
                             </div>
 
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            {{-- STRICT OFFER LETTER FIELDS --}}
-            <div class="col-md-12 d-none" id="strict_offer_fields">
-
-                <div class="card mb-3">
-                    <div class="card-header">
-                        <strong>Strict Offer Letter Details</strong>
-                    </div>
-
-                    <div class="card-body">
-                        <div class="row">
-
-                            {{-- Training Start Date --}}
-                            <div class="form-group col-md-6">
-                                <label>Training Start Date</label>
-
-                                <input type="date"
-                                       name="offer_training_start_date"
-                                       value="{{ old('offer_training_start_date', $letter->offer_training_start_date ? \Carbon\Carbon::parse($letter->offer_training_start_date)->format('Y-m-d') : '') }}"
-                                       class="form-control @error('offer_training_start_date') is-invalid @enderror">
-
-                                @error('offer_training_start_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-
-                            {{-- Initial Training Duration --}}
-                            <div class="form-group col-md-6">
-                                <label>Initial Training Duration (Months)</label>
-
-                                <input type="number"
-                                       name="offer_training_duration_months"
-                                       min="1"
-                                       step="1"
-                                       value="{{ old('offer_training_duration_months', $letter->offer_training_duration_months) }}"
-                                       class="form-control @error('offer_training_duration_months') is-invalid @enderror">
-
-                                @error('offer_training_duration_months')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-
-                            {{-- Probation Duration --}}
-                            <div class="form-group col-md-6">
+                            {{-- Strict Offer --}}
+                            <div class="form-group col-md-6 strict-offer-field">
                                 <label>Probation Duration (Months)</label>
-
                                 <input type="number"
                                        name="offer_probation_duration_months"
+                                       class="form-control strict-offer-input"
                                        min="1"
-                                       step="1"
-                                       value="{{ old('offer_probation_duration_months', $letter->offer_probation_duration_months) }}"
-                                       class="form-control @error('offer_probation_duration_months') is-invalid @enderror">
-
-                                @error('offer_probation_duration_months')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                       value="{{ old('offer_probation_duration_months', $studentAdditionalLetter->offer_probation_duration_months) }}">
                             </div>
 
-
-                            {{-- Working Hours --}}
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-6 strict-offer-field">
                                 <label>Working Hours</label>
-
                                 <input type="text"
                                        name="offer_working_hours"
-                                       value="{{ old('offer_working_hours', $letter->offer_working_hours) }}"
-                                       placeholder="e.g. 9:30 AM to 6:30 PM"
-                                       class="form-control @error('offer_working_hours') is-invalid @enderror">
-
-                                @error('offer_working_hours')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                       class="form-control strict-offer-input"
+                                       value="{{ old('offer_working_hours', $studentAdditionalLetter->offer_working_hours) }}">
                             </div>
 
-
-                            {{-- Service Agreement --}}
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-6 strict-offer-field">
                                 <label>Service Agreement Duration</label>
-
                                 <input type="text"
                                        name="offer_service_agreement_duration"
-                                       value="{{ old('offer_service_agreement_duration', $letter->offer_service_agreement_duration) }}"
-                                       placeholder="e.g. 12 months or 2 years"
-                                       class="form-control @error('offer_service_agreement_duration') is-invalid @enderror">
-
-                                @error('offer_service_agreement_duration')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                       class="form-control strict-offer-input"
+                                       value="{{ old('offer_service_agreement_duration', $studentAdditionalLetter->offer_service_agreement_duration) }}">
                             </div>
 
-
-                            {{-- Annual Salary --}}
-                            <div class="form-group col-md-6">
-                                <label>Annual Salary / Package (₹)</label>
-
+                            <div class="form-group col-md-6 strict-offer-field">
+                                <label>Annual Salary / Package</label>
                                 <input type="number"
                                        name="offer_annual_salary"
+                                       class="form-control strict-offer-input"
                                        min="0"
-                                       step="1"
-                                       value="{{ old('offer_annual_salary', $letter->offer_annual_salary) }}"
-                                       placeholder="e.g. 310000"
-                                       class="form-control @error('offer_annual_salary') is-invalid @enderror">
-
-                                @error('offer_annual_salary')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                       step="0.01"
+                                       value="{{ old('offer_annual_salary', $studentAdditionalLetter->offer_annual_salary) }}">
                             </div>
 
                         </div>
@@ -351,195 +188,186 @@
                 </div>
             </div>
 
-
             {{-- Subject --}}
-            <div class="form-group col-md-6 d-none" id="subject_field">
-                <label>Subject</label>
-
+            <div class="form-group col-md-12" id="subject_field" style="display:none;">
+                <label>Subject <span class="text-danger">*</span></label>
                 <input type="text"
                        name="subject"
-                       value="{{ old('subject', $letter->subject) }}"
-                       class="form-control @error('subject') is-invalid @enderror">
-
+                       class="form-control"
+                       value="{{ old('subject', $studentAdditionalLetter->subject) }}">
                 @error('subject')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                    <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
-
 
             {{-- Roll Number --}}
-            <div class="form-group col-md-6 d-none" id="roll_number_field">
-                <label>Roll Number</label>
-
+            <div class="form-group col-md-6" id="roll_number_field" style="display:none;">
+                <label>Roll Number <span class="text-danger">*</span></label>
                 <input type="text"
                        name="roll_number"
-                       value="{{ old('roll_number', $letter->roll_number) }}"
-                       class="form-control @error('roll_number') is-invalid @enderror">
-
-                @error('roll_number')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                @enderror
+                       class="form-control"
+                       value="{{ old('roll_number', $studentAdditionalLetter->roll_number) }}">
             </div>
 
-
-            {{-- Semester --}}
-            <div class="form-group col-md-6 d-none" id="semester_field">
-                <label id="semester_field_label">
-                    {{ old('internship_type', $letter->internship_type) == 'confirmation_letter' ? 'Batch' : 'Semester' }}
-                </label>
-
+            {{-- Semester / Batch --}}
+            <div class="form-group col-md-6" id="semester_field" style="display:none;">
+                <label id="semester_label">Semester</label>
                 <input type="text"
                        name="semester"
-                       value="{{ old('semester', $letter->semester) }}"
-                       class="form-control @error('semester') is-invalid @enderror">
+                       class="form-control"
+                       value="{{ old('semester', $studentAdditionalLetter->semester) }}">
+            </div>
 
-                @error('semester')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
+            {{-- Letter Content --}}
+            <div class="form-group col-md-12" id="letter_content_field" style="display:none;">
+                <label>Letter Content <span class="text-danger">*</span></label>
+                <textarea name="letter_content"
+                          id="letter_content"
+                          class="form-control"
+                          rows="8">{{ old('letter_content', $studentAdditionalLetter->letter_content) }}</textarea>
+
+                @error('letter_content')
+                    <small class="text-danger">{{ $message }}</small>
                 @enderror
             </div>
 
-
-            {{-- Letter Content --}}
-            <div class="form-group col-md-12 d-none" id="letter_content_field">
-                <label>Letter Content</label>
-
-                <textarea name="letter_content"
-                          id="editor"
-                          class="form-control @error('letter_content') is-invalid @enderror"
-                          rows="8">{{ old('letter_content', $letter->letter_content) }}</textarea>
-
-                @error('letter_content')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                @enderror
+            <div class="col-md-12 mt-3">
+                <button type="submit" class="btn btn-primary">
+                    Update Letter
+                </button>
             </div>
 
         </div>
-
-        <button class="btn btn-primary mt-3">Update</button>
-
-        <a href="{{ route('student-additional-letters.index') }}"
-           class="btn btn-secondary mt-3">Back</a>
-
     </form>
 </div>
 @endsection
 
-
 @push('scripts')
-
-<script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
-
 <script>
-    CKEDITOR.replace('editor');
-</script>
+$(document).ready(function () {
 
-<script>
-const letterTemplates = @json($templates);
-</script>
+    $('#person_select').select2({
+        width: '100%',
+        placeholder: 'Select {{ $letterFor === "intern" ? "Intern" : "Student" }}'
+    });
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
+    const templates = @json($templates);
+    const letterFor = @json($letterFor);
 
-    const letterType = document.getElementById('internship_type');
+    function enableFields(container, enabled) {
+        $(container).find('input, textarea, select').each(function () {
+            $(this).prop('disabled', !enabled);
 
-    const contentField = document.getElementById('letter_content_field');
-    const subjectField = document.getElementById('subject_field');
-    const rollNumberField = document.getElementById('roll_number_field');
-    const semesterField = document.getElementById('semester_field');
-    const semesterFieldLabel = document.getElementById('semester_field_label');
+            if (!enabled) {
+                $(this).prop('required', false);
+            }
+        });
+    }
 
-    const normalOfferFields = document.getElementById('normal_offer_fields');
-    const strictOfferFields = document.getElementById('strict_offer_fields');
+    function toggleLetterFields() {
 
-    const normalOfferInputs = normalOfferFields.querySelectorAll('input');
-    const strictOfferInputs = strictOfferFields.querySelectorAll('input');
+        const type = $('#internship_type').val();
 
-    function toggleFields() {
+        $('#offer_common_fields, #subject_field, #roll_number_field, #semester_field, #letter_content_field').hide();
 
-        const type = letterType.value;
+        $('.normal-offer-field, .strict-offer-field').hide();
 
-        const isContent = [
+        enableFields('#offer_common_fields', false);
+        enableFields('#subject_field', false);
+        enableFields('#roll_number_field', false);
+        enableFields('#semester_field', false);
+        enableFields('#letter_content_field', false);
+
+        // Custom subject
+        if (type === 'custom') {
+            $('#subject_field').show();
+            enableFields('#subject_field', true);
+            $('#subject_field input').prop('required', true);
+        }
+
+        // Student roll number fields
+        const rollTypes = [
+            'with_roll_number',
+            'with_roll_number_internship',
+            'confirmation_letter'
+        ];
+
+        if (letterFor === 'student' && rollTypes.includes(type)) {
+            $('#roll_number_field, #semester_field').show();
+
+            enableFields('#roll_number_field', true);
+            enableFields('#semester_field', true);
+
+            $('#roll_number_field input, #semester_field input').prop('required', true);
+
+            $('#semester_label').text(
+                type === 'confirmation_letter' ? 'Batch' : 'Semester'
+            );
+        }
+
+        // Content fields
+        const contentTypes = [
             'stipend',
             'custom',
             'student_responsibility',
             'placed_student_responsibility'
-        ].includes(type);
+        ];
 
-        const isCustom = type === 'custom';
+        if (contentTypes.includes(type)) {
+            $('#letter_content_field').show();
+            enableFields('#letter_content_field', true);
 
-        const isWithRollNumber = [
-            'with_roll_number',
-            'with_roll_number_internship',
-            'confirmation_letter'
-        ].includes(type);
-
-        const isNormalOffer = type === 'offer';
-        const isStrictOffer = type === 'strict_offer_letter';
-
-        contentField.classList.toggle('d-none', !isContent);
-        subjectField.classList.toggle('d-none', !isCustom);
-
-        rollNumberField.classList.toggle('d-none', !isWithRollNumber);
-        semesterField.classList.toggle('d-none', !isWithRollNumber);
-
-        // Normal Offer Letter
-        normalOfferFields.classList.toggle('d-none', !isNormalOffer);
-
-        normalOfferInputs.forEach(function (input) {
-            input.required = isNormalOffer;
-            input.disabled = !isNormalOffer;
-        });
-
-        // Strict Offer Letter
-        strictOfferFields.classList.toggle('d-none', !isStrictOffer);
-
-        strictOfferInputs.forEach(function (input) {
-            input.required = isStrictOffer;
-            input.disabled = !isStrictOffer;
-        });
-
-        if (type === 'confirmation_letter') {
-            semesterFieldLabel.innerText = 'Batch';
-        } else {
-            semesterFieldLabel.innerText = 'Semester';
+            if (type === 'stipend' || type === 'custom') {
+                $('#letter_content').prop('required', true);
+            }
         }
 
-        // CKEditor template handling
-        if (CKEDITOR.instances.editor) {
+        // Offer / Strict Offer
+        if (type === 'offer' || type === 'strict_offer_letter') {
 
-            const currentContent = CKEDITOR.instances.editor.getData().trim();
+            $('#offer_common_fields').show();
+            enableFields('#offer_common_fields', true);
 
-            if (type === 'student_responsibility' && currentContent === '') {
+            $('.offer-common-input').prop('required', true);
 
-                CKEDITOR.instances.editor.setData(
-                    letterTemplates.student_responsibility ?? ''
-                );
+            if (type === 'offer') {
+                $('.normal-offer-field').show();
+                $('.normal-offer-input').prop('disabled', false).prop('required', true);
+            }
 
-            } else if (type === 'placed_student_responsibility' && currentContent === '') {
+            if (type === 'strict_offer_letter') {
+                $('.strict-offer-field').show();
+                $('.strict-offer-input').prop('disabled', false).prop('required', true);
+            }
+        }
 
-                CKEDITOR.instances.editor.setData(
-                    letterTemplates.placed_student_responsibility ?? ''
-                );
+        // Responsibility templates
+        if (
+            type === 'student_responsibility' ||
+            type === 'placed_student_responsibility'
+        ) {
+            const content = templates[type] || '';
 
+            if (window.letterContentEditor) {
+                window.letterContentEditor.setData(content);
+            } else {
+                $('#letter_content').val(content);
             }
         }
     }
 
-    letterType.addEventListener('change', toggleFields);
+    $('#internship_type').on('change', toggleLetterFields);
 
-    // Show the correct fields for the saved letter type
-    toggleFields();
+    toggleLetterFields();
 
-});
-
-$(document).ready(function () {
-
-    $('#student_select').select2({
-        placeholder: 'Search student name',
-        width: '100%'
-    });
+    if (window.ClassicEditor) {
+        ClassicEditor.create(document.querySelector('#letter_content'))
+            .then(editor => {
+                window.letterContentEditor = editor;
+            })
+            .catch(error => console.error(error));
+    }
 
 });
 </script>
-
 @endpush

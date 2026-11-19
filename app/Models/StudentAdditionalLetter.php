@@ -7,9 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class StudentAdditionalLetter extends Model
 {
     protected $fillable = [
-         'internship_type',
-        'subject',
+        'letter_for',
         'student_id',
+        'intern_student_id',
+
+        'internship_type',
+        'subject',
         'issue_date',
         'roll_number',
         'semester',
@@ -29,15 +32,35 @@ class StudentAdditionalLetter extends Model
         'letter_content'
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope('student_default', function ($query) {
+            $query->where('letter_for', 'student');
+        });
+    }
+
+    // Explicit Intern records
+    public function scopeForInterns($query)
+    {
+        return $query->withoutGlobalScope('student_default')
+                     ->where('letter_for', 'intern');
+    }
+
     public function student()
     {
-        return $this->belongsTo(Student::class);
+        return $this->belongsTo(Student::class, 'student_id');
+    }
+
+    public function intern()
+    {
+        return $this->belongsTo(
+            InternStudent::class,
+            'intern_student_id'
+        );
     }
 
     public function college()
     {
         return $this->belongsTo(College::class);
     }
-
-    
 }

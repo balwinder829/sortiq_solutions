@@ -23,8 +23,13 @@ class InternshipRegistration extends Model
         'page_type',
         'slug',
         'ip',
+        'downloaded_at',
     ];
 
+    protected $casts = [
+        'downloaded_at' => 'datetime',
+    ];
+    
     public function collegeData()
     {
         return $this->belongsTo(College::class, 'college', 'id')->withTrashed();

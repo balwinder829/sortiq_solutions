@@ -70,6 +70,13 @@ class ServicesRegistrationController extends Controller
 
             }
 
+            // Download Status Filter
+            if ($request->download_status === 'downloaded') {
+                $query->whereNotNull('downloaded_at');
+            } elseif ($request->download_status === 'not_downloaded') {
+                $query->whereNull('downloaded_at');
+            }
+
             /*
             |--------------------------------------------------------------------------
             | Date Filters
@@ -177,6 +184,10 @@ class ServicesRegistrationController extends Controller
 
                     $row->created_at->format('d M Y'),
 
+                    $row->downloaded_at
+                        ? $row->downloaded_at->format('d M Y, h:i A')
+                        : '<span class="text-muted">Not Downloaded</span>',
+
                     $actions
 
                 ];
@@ -189,6 +200,9 @@ class ServicesRegistrationController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $lastDownloadedAt = ServicesRegistration::whereNotNull('downloaded_at')
+            ->max('downloaded_at');
+
         $technologies = Course::orderBy('course_name')->get([
             'id',
             'course_name'
@@ -199,7 +213,7 @@ class ServicesRegistrationController extends Controller
             ->orderBy('slug')
             ->pluck('slug');
 
-        return view('services-registrations.index', compact('technologies','slugs'));
+        return view('services-registrations.index', compact('technologies','slugs','lastDownloadedAt'));
     }
 
  public function index22may(Request $request)
@@ -435,6 +449,46 @@ public function index34(Request $request)
     }
 
     public function export(Request $request)
+{
+    $fileName = 'services_registrations';
+
+    if ($request->technology) {
+        $fileName .= '_' . Str::slug($request->technology, '_');
+    }
+
+    if ($request->slug) {
+        $fileName .= '_' . Str::slug($request->slug, '_');
+    }
+
+    if ($request->download_status) {
+        $fileName .= '_' . $request->download_status;
+    }
+
+    if ($request->limit) {
+        $fileName .= '_limit_' . $request->limit;
+    }
+
+    $fileName .= '_' . now()->format('d_F') . '.xlsx';
+
+    $export = new ServicesRegistrationsExport($request);
+
+    // Build collection and capture the exact exported IDs
+    $export->collection();
+
+    $exportedIds = $export->getExportedIds();
+
+    // Prepare Excel response
+    $response = Excel::download($export, $fileName);
+
+    // Mark only records actually included in this export
+    if (!empty($exportedIds)) {
+        ServicesRegistration::whereIn('id', $exportedIds)
+            ->update(['downloaded_at' => now()]);
+    }
+
+    return $response;
+}
+    public function export_13(Request $request)
     {   
         $fileName = 'services_registrations';
 

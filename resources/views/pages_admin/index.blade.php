@@ -7,14 +7,42 @@
         vertical-align: middle;
         text-transform: capitalize;
     }
+    table th:last-child,
+    table td:last-child {
+        min-width: 120px;
+        width: 120px;
+        white-space: nowrap;
+    }
+
+    table td:last-child .btn {
+        margin-right: 4px;
+    }
 </style>
 
 <div class="container">
-     <div class="row mb-2">
+
+    <div class="row mb-3 align-items-center">
+
+        <div class="col-md-6">
+            <h1 class="page_heading mb-0">Internship Registrations</h1>
+        </div>
+
+        <div class="col-md-6  text-md-end">
+            <div class="last-download-info">
+                <strong>Last Downloaded:</strong>
+
+                {{ !empty($lastDownloadedAt)
+                    ? \Carbon\Carbon::parse($lastDownloadedAt)->format('d M Y, h:i A')
+                    : 'Never' }}
+            </div>
+        </div>
+
+    </div>
+     <!-- <div class="row mb-2">
         <div class="col-md-4">
             <h1 class="page_heading">Internship Registrations</h1>
         </div>
-    </div>
+    </div> -->
 
     <div class="row mb-2">
         <div class="col-md-10">
@@ -86,6 +114,15 @@
                         <input type="date" id="to_date" class="form-control" disabled>
                     </div>
 
+
+                    <div class="col-md-2">
+                    <select name="download_status" id="download_status"
+                            class="form-select filterchange">
+                        <option value="">All Download Status</option>
+                        <option value="downloaded">Downloaded</option>
+                        <option value="not_downloaded">Not Downloaded</option>
+                    </select>
+                </div>
                  
 
                 <div class="col-md-2">
@@ -104,7 +141,13 @@
         Reset
     </a>
 
-    <a href="javascript:void(0)"
+   <!--  <select id="exportMode" class="form-select" style="width: auto; min-width: 190px;">
+        <option value="all">All Entries</option>
+        <option value="skip_downloaded">Skip Downloaded</option>
+        <option value="downloaded_only">Downloaded Only</option>
+    </select> -->
+
+    <!-- <a href="javascript:void(0)"
        id="exportBtn"
        class="btn btn-success text-nowrap">
         Export
@@ -114,7 +157,13 @@
        id="exportSelectedBtn"
        class="btn btn-success text-nowrap">
         Export Selected
-    </a>
+    </a> -->
+
+    <a href="javascript:void(0)"
+   id="exportBtn"
+   class="btn btn-success text-nowrap">
+    Export
+</a>
 
     <button type="button"
             id="sendInternshipWhatsAppButton"
@@ -152,6 +201,7 @@
                 <th>College</th>
                 <th>Technology</th>
                 <th>Added At</th>
+                <th>Last Downloaded</th>
                 <th width="100">Actions</th>
             </tr>
             </thead>
@@ -178,6 +228,7 @@ $(document).ready(function () {
                 d.date_filter = $('#date_filter').val();
                 d.from_date = $('#from_date').val();
                 d.to_date = $('#to_date').val();
+                d.download_status = $('#download_status').val();
             }
         },
         columnDefs: [
@@ -196,7 +247,8 @@ $(document).ready(function () {
             { data: 5 },
             { data: 6 },
             { data: 7 },
-            { data: 8, orderable:false, searchable:false }
+            { data: 8, orderable:false, searchable:false },
+            { data: 9, orderable:false, searchable:false }
         ],
         pageLength: 25
     });
@@ -249,7 +301,8 @@ $('#from_date, #to_date').on('change', function () {
 // });
 
     // WhatsApp selection
-    const selectedInternshipIds = new Set();
+    // const selectedInternshipIds = new Set();
+    window.selectedInternshipIds = new Set();
     const selectedInternshipRecords = new Map();
 
     function updateInternshipSelectAll() {
@@ -496,76 +549,195 @@ function startInternshipWhatsApp(records) {
 
 {{-- EXPORT WITH FILTERS --}}
 <script>
-$('#exportBtn').on('click', function () {
+// $('#exportBtn').on('click', function () {
+
+//     let params = new URLSearchParams();
+
+//     let slug = $('select[name=slug]').val();
+//     let college = $('select[name=college]').val();
+//     let technology = $('select[name=technology]').val();
+
+//     let date_filter = $('#date_filter').val();
+//     let from_date = $('#from_date').val();
+//     let to_date = $('#to_date').val();
+
+//     // Existing Filters
+//     if (slug) params.append('slug', slug);
+
+//     if (college) params.append('college', college);
+
+//     if (technology) params.append('technology', technology);
+
+//     // Date Filters
+//     if (date_filter) {
+//         params.append('date_filter', date_filter);
+//     }
+
+//     // Custom Date Range
+//     if (date_filter === 'custom') {
+
+//         if (from_date) {
+//             params.append('from_date', from_date);
+//         }
+
+//         if (to_date) {
+//             params.append('to_date', to_date);
+//         }
+//     }
+
+//     // Export mode and existing record limit
+//     params.append('export_mode', $('#exportMode').val());
+
+//     let limit = $('select[name=limit]').val();
+//     if (limit) params.append('limit', limit);
+
+//     let url = "{{ route('internship-registrations.export') }}?" + params.toString();
+
+//     window.location.href = url;
+// });
+
+// $('#exportSelectedBtn').on('click', function () {
+
+//     let selected = [];
+
+//     $('.row-checkbox:checked').each(function () {
+//         selected.push($(this).val());
+//     });
+
+//     if (selected.length === 0) {
+
+//         Swal.fire({
+//             icon: 'warning',
+//             title: 'No Records Selected',
+//             text: 'Please select at least one record to Export.',
+//             confirmButtonText: 'OK'
+//         });
+
+//         return;
+//     }
+
+//     let params = new URLSearchParams();
+
+//     selected.forEach(id => {
+//         params.append('ids[]', id);
+//     });
+
+//     params.append('export_mode', $('#exportMode').val());
+
+//     let url = "{{ route('internship-registrations.export') }}?" + params.toString();
+
+//     window.location.href = url;
+// });
+
+    // Common function to build export filters
+function getInternshipExportParams() {
 
     let params = new URLSearchParams();
 
     let slug = $('select[name=slug]').val();
     let college = $('select[name=college]').val();
     let technology = $('select[name=technology]').val();
+    let downloadStatus = $('#download_status').val();
 
-    let date_filter = $('#date_filter').val();
-    let from_date = $('#from_date').val();
-    let to_date = $('#to_date').val();
+    let dateFilter = $('#date_filter').val();
+    let fromDate = $('#from_date').val();
+    let toDate = $('#to_date').val();
+    let limit = $('select[name=limit]').val();
 
-    // Existing Filters
     if (slug) params.append('slug', slug);
-
     if (college) params.append('college', college);
-
     if (technology) params.append('technology', technology);
 
-    // Date Filters
-    if (date_filter) {
-        params.append('date_filter', date_filter);
+    if (downloadStatus) {
+        params.append('download_status', downloadStatus);
     }
 
-    // Custom Date Range
-    if (date_filter === 'custom') {
-
-        if (from_date) {
-            params.append('from_date', from_date);
-        }
-
-        if (to_date) {
-            params.append('to_date', to_date);
-        }
+    if (dateFilter) {
+        params.append('date_filter', dateFilter);
     }
 
-    let url = "{{ route('internship-registrations.export') }}?" + params.toString();
+    if (dateFilter === 'custom') {
+        if (fromDate) params.append('from_date', fromDate);
+        if (toDate) params.append('to_date', toDate);
+    }
 
-    window.location.href = url;
-});
+    if (limit) {
+        params.append('limit', limit);
+    }
 
-$('#exportSelectedBtn').on('click', function () {
+    return params;
+}
 
-    let selected = [];
 
-    $('.row-checkbox:checked').each(function () {
-        selected.push($(this).val());
-    });
+// Export All / Filtered Records
+// $('#exportBtn').on('click', function () {
 
-    if (selected.length === 0) {
+//     let params = getInternshipExportParams();
 
-        Swal.fire({
-            icon: 'warning',
-            title: 'No Records Selected',
-            text: 'Please select at least one record to Export.',
-            confirmButtonText: 'OK'
+//     let url = "{{ route('internship-registrations.export') }}";
+
+//     window.location.href = url + '?' + params.toString();
+// });
+
+
+// Export Selected Records
+// $('#exportSelectedBtn').on('click', function () {
+
+//     let selected = [];
+
+//     // Use the persistent selection set from your DataTables code
+//     if (typeof selectedInternshipIds !== 'undefined') {
+//         selected = Array.from(selectedInternshipIds);
+//     } else {
+//         $('.row-checkbox:checked').each(function () {
+//             selected.push($(this).val());
+//         });
+//     }
+
+//     if (selected.length === 0) {
+
+//         Swal.fire({
+//             icon: 'warning',
+//             title: 'No Records Selected',
+//             text: 'Please select at least one record to export.',
+//             confirmButtonText: 'OK',
+//             reverseButtons: false
+//         });
+
+//         return;
+//     }
+
+//     let params = getInternshipExportParams();
+
+//     selected.forEach(function (id) {
+//         params.append('ids[]', id);
+//     });
+
+//     let url = "{{ route('internship-registrations.export') }}";
+
+//     window.location.href = url + '?' + params.toString();
+// });
+
+// Common Export Button - All / Selected Records
+$('#exportBtn').on('click', function () {
+
+    let params = getInternshipExportParams();
+
+    // Persistent selected IDs from DataTable
+    let selected = Array.from(selectedInternshipIds);
+
+    // If records are selected, export only selected records
+    if (selected.length > 0) {
+
+        selected.forEach(function (id) {
+            params.append('ids[]', id);
         });
 
-        return;
     }
 
-    let params = new URLSearchParams();
+    let url = "{{ route('internship-registrations.export') }}";
 
-    selected.forEach(id => {
-        params.append('ids[]', id);
-    });
-
-    let url = "{{ route('internship-registrations.export') }}?" + params.toString();
-
-    window.location.href = url;
+    window.location.href = url + '?' + params.toString();
 });
 </script>
 

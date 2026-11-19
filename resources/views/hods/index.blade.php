@@ -3,9 +3,32 @@
 @section('content')
 
 <div class="container">
-
+<!-- 
     <h1 class="page_heading mb-3">Authority Management</h1>
+     <div class="col-md-4 text-end">
+            <button type="button"
+                    id="sendHodWhatsApp"
+                    class="btn btn-success">
+                <i class="fab fa-whatsapp"></i> Send WhatsApp HOD
+            </button>
 
+            <button type="button"
+                    id="sendTpoWhatsApp"
+                    class="btn btn-success">
+                <i class="fab fa-whatsapp"></i> Send WhatsApp TPO
+            </button>
+            <button type="button"
+                    id="deleteSelected"
+                    class="btn btn-danger">
+                Delete Selected
+            </button>
+
+            <a href="{{ route('hods.create') }}"
+               class="btn btn-primary">
+                Add Authority
+            </a>
+
+        </div>
     {{-- FILTER FORM --}}
     <form method="GET" id="filterForm" class="row mb-3">
 
@@ -36,23 +59,63 @@
 
         </div>
 
+    </form> -->
 
-        <div class="col-md-4 text-end">
+{{-- TOP ROW --}}
+<div class="row mb-3 align-items-center">
+    <div class="col-md-4">
+        <h1 class="page_heading mb-0">Authority Management</h1>
+    </div>
 
-            <button type="button"
-                    id="deleteSelected"
-                    class="btn btn-danger">
-                Delete Selected
-            </button>
+    <div class="col-md-8 text-end">
+        <button type="button"
+                id="sendHodWhatsApp"
+                class="btn btn-success">
+            <i class="fab fa-whatsapp"></i> Send WhatsApp HOD
+        </button>
 
-            <a href="{{ route('hods.create') }}"
-               class="btn btn-primary">
-                Add Authority
-            </a>
+        <button type="button"
+                id="sendTpoWhatsApp"
+                class="btn btn-success">
+            <i class="fab fa-whatsapp"></i> Send WhatsApp TPO
+        </button>
 
-        </div>
+        <button type="button"
+                id="deleteSelected"
+                class="btn btn-danger">
+            Delete Selected
+        </button>
 
-    </form>
+        <a href="{{ route('hods.create') }}"
+           class="btn btn-primary">
+            Add Authority
+        </a>
+    </div>
+</div>
+
+{{-- SECOND ROW: FILTER --}}
+<form method="GET" id="filterForm" class="row mb-3">
+
+    <div class="col-md-4">
+        <select name="state" id="stateFilter" class="form-control">
+            <option value="">All States</option>
+
+            @foreach($states as $state)
+                <option value="{{ $state->name }}"
+                    {{ request('state') == $state->name ? 'selected' : '' }}>
+                    {{ $state->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    <div class="col-md-4">
+        <a href="{{ route('hods.index') }}" class="btn btn-secondary">
+            Reset
+        </a>
+    </div>
+
+</form>
 
 
     @if(session('success'))
@@ -307,35 +370,78 @@ $(document).ready(function () {
     }
 });
 
+// GET HOD AND TPO DETAILS FROM DATATABLE ROW
+function getAuthorityWhatsAppDetails(row) {
 
+    function getName(value) {
+        return $('<div>')
+            .html(value || '')
+            .clone()
+            .children()
+            .remove()
+            .end()
+            .text()
+            .trim();
+    }
+
+    return {
+        tpo: {
+            name: getName(row[5]),
+            mobile: $('<div>').html(row[6] || '').text().trim()
+        },
+        hod: {
+            name: getName(row[7]),
+            mobile: $('<div>').html(row[8] || '').text().trim()
+        }
+    };
+}
     /*
     |--------------------------------------------------------------------------
     | Individual checkbox
     |--------------------------------------------------------------------------
     */
 
-    $(document).on(
-        'change',
-        '#hodtable tbody .hod-checkbox',
-        function () {
+    // $(document).on(
+    //     'change',
+    //     '#hodtable tbody .hod-checkbox',
+    //     function () {
 
-            let id = $(this).val();
+    //         let id = $(this).val();
 
-            if ($(this).is(':checked')) {
+    //         if ($(this).is(':checked')) {
 
-                selectedHods[id] = true;
+    //             selectedHods[id] = true;
 
-            } else {
+    //         } else {
 
-                delete selectedHods[id];
+    //             delete selectedHods[id];
 
-            }
+    //         }
 
-            updateCheckAll();
+    //         updateCheckAll();
 
-        }
-    );
+    //     }
+    // );
+    // INDIVIDUAL CHECKBOX
+$('#hodtable').on('change', '.hod-checkbox', function () {
 
+    let id = String($(this).val());
+
+    if ($(this).is(':checked')) {
+
+        let row = table.row($(this).closest('tr')).data();
+
+        selectedHods[id] = getAuthorityWhatsAppDetails(row);
+
+    } else {
+
+        delete selectedHods[id];
+
+    }
+
+    updateCheckAll();
+
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -343,32 +449,59 @@ $(document).ready(function () {
     |--------------------------------------------------------------------------
     */
 
-    $('#checkAll').on('change', function () {
+    // $('#checkAll').on('change', function () {
 
-        let checked = $(this).is(':checked');
-
-
-        $('#hodtable tbody .hod-checkbox').each(function () {
-
-            let id = $(this).val();
-
-            $(this).prop('checked', checked);
+    //     let checked = $(this).is(':checked');
 
 
-            if (checked) {
+    //     $('#hodtable tbody .hod-checkbox').each(function () {
 
-                selectedHods[id] = true;
+    //         let id = $(this).val();
 
-            } else {
+    //         $(this).prop('checked', checked);
 
-                delete selectedHods[id];
 
-            }
+    //         if (checked) {
 
-        });
+    //             selectedHods[id] = true;
+
+    //         } else {
+
+    //             delete selectedHods[id];
+
+    //         }
+
+    //     });
+
+    // });
+    // SELECT ALL - CURRENT PAGE ONLY
+$('#checkAll').on('change', function () {
+
+    let checked = $(this).is(':checked');
+
+    $('#hodtable tbody .hod-checkbox').each(function () {
+
+        let id = String($(this).val());
+
+        let row = table.row($(this).closest('tr')).data();
+
+        $(this).prop('checked', checked);
+
+        if (checked) {
+
+            selectedHods[id] = getAuthorityWhatsAppDetails(row);
+
+        } else {
+
+            delete selectedHods[id];
+
+        }
 
     });
 
+    updateCheckAll();
+
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -608,6 +741,303 @@ $(document).ready(function () {
         }
     );
 
+
+// ========================================
+// WHATSAPP MOBILE NUMBER VALIDATION
+// ========================================
+
+function formatAuthorityWhatsAppMobile(mobile) {
+
+    let number = String(mobile || '').replace(/\D/g, '');
+
+    if (number.length === 10) {
+
+        number = '91' + number;
+
+    } else if (number.length === 11 && number.startsWith('0')) {
+
+        number = '91' + number.substring(1);
+
+    }
+
+    return /^91[6-9]\d{9}$/.test(number) ? number : null;
+}
+
+
+// ========================================
+// OPEN WHATSAPP CHAT
+// ========================================
+
+function openAuthorityWhatsApp(record, message, appendName) {
+
+    let mobile = formatAuthorityWhatsAppMobile(record.mobile);
+
+    if (!mobile) return false;
+
+    let finalMessage = message;
+
+    if (appendName && record.name) {
+
+        finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+
+    }
+
+    let url = 'https://web.whatsapp.com/send?phone=' +
+        mobile + '&text=' + encodeURIComponent(finalMessage);
+
+    window.open(url, '_blank');
+
+    return true;
+}
+
+
+// ========================================
+// START WHATSAPP SENDING
+// ========================================
+
+function startAuthorityWhatsApp(type) {
+
+    let selectedIds = Object.keys(selectedHods);
+
+    if (selectedIds.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Records Selected',
+            text: 'Please select at least 1 authority.'
+        });
+
+        return;
+    }
+
+    let contactRecords = [];
+
+    selectedIds.forEach(function (id) {
+
+        let authority = selectedHods[id];
+
+        let contact = authority[type];
+
+        contactRecords.push({
+            name: contact.name,
+            mobile: contact.mobile
+        });
+
+    });
+
+
+    // VALIDATE NUMBERS
+
+    let validRecords = [];
+
+    let invalidCount = 0;
+
+    contactRecords.forEach(function (record) {
+
+        if (formatAuthorityWhatsAppMobile(record.mobile)) {
+
+            validRecords.push(record);
+
+        } else {
+
+            invalidCount++;
+
+        }
+
+    });
+
+
+    if (validRecords.length === 0) {
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'No Valid Mobile Numbers',
+            text: 'None of the selected records has a valid WhatsApp number.'
+        });
+
+        return;
+    }
+
+
+    let contactTitle = type === 'hod' ? 'HOD' : 'TPO';
+
+
+    // MESSAGE POPUP
+
+    Swal.fire({
+
+        title: 'Send WhatsApp to ' + contactTitle,
+
+        html: `
+            <div class="text-start">
+
+                <label class="form-label">Message</label>
+
+                <textarea id="authorityWhatsAppMessage"
+                    class="form-control"
+                    rows="5"
+                    placeholder="Type your WhatsApp message here..."></textarea>
+
+                <div class="form-check mt-3">
+
+                    <input type="checkbox"
+                        class="form-check-input"
+                        id="authorityAppendName"
+                        checked>
+
+                    <label class="form-check-label"
+                        for="authorityAppendName">
+                        Add ${contactTitle} name
+                    </label>
+
+                </div>
+
+                <hr>
+
+                <p>Selected: ${contactRecords.length}</p>
+                <p>Valid: ${validRecords.length}</p>
+                <p>Invalid: ${invalidCount}</p>
+
+            </div>
+        `,
+
+        showCancelButton: true,
+
+        confirmButtonText: 'Start Sending',
+
+        cancelButtonText: 'Cancel',
+
+        reverseButtons: false,
+
+        focusConfirm: false,
+
+        preConfirm: function () {
+
+            let message = document.getElementById(
+                'authorityWhatsAppMessage'
+            ).value.trim();
+
+            if (!message) {
+
+                Swal.showValidationMessage('Please enter a message.');
+
+                return false;
+            }
+
+            let appendName = document.getElementById(
+                'authorityAppendName'
+            ).checked;
+
+            openAuthorityWhatsApp(
+                validRecords[0],
+                message,
+                appendName
+            );
+
+            return {
+                message: message,
+                appendName: appendName
+            };
+
+        }
+
+    }).then(function (result) {
+
+        if (!result.isConfirmed) return;
+
+        let message = result.value.message;
+
+        let appendName = result.value.appendName;
+
+        let currentIndex = 1;
+
+
+        // OPEN NEXT CHAT SEQUENTIALLY
+
+        function showNext() {
+
+            if (currentIndex >= validRecords.length) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Completed',
+                    text: 'All ' + contactTitle + ' WhatsApp chats have been processed.'
+                });
+
+                return;
+            }
+
+            let record = validRecords[currentIndex];
+
+            Swal.fire({
+
+                title: 'WhatsApp Sending',
+
+                html: `
+                    <p>Chat ${currentIndex + 1} of ${validRecords.length}</p>
+
+                    <p><strong>${$('<div>').text(record.name || contactTitle).html()}</strong></p>
+
+                    <p>${$('<div>').text(record.mobile).html()}</p>
+
+                    <small>Click Open Next to open the next WhatsApp chat.</small>
+                `,
+
+                showCancelButton: true,
+
+                confirmButtonText: 'Open Next',
+
+                cancelButtonText: 'Finish',
+
+                reverseButtons: false
+
+            }).then(function (nextResult) {
+
+                if (nextResult.isConfirmed) {
+
+                    openAuthorityWhatsApp(
+                        record,
+                        message,
+                        appendName
+                    );
+
+                    currentIndex++;
+
+                    showNext();
+
+                }
+
+            });
+
+        }
+
+        showNext();
+
+    });
+
+}
+
+
+// ========================================
+// HOD WHATSAPP BUTTON
+// ========================================
+
+$('#sendHodWhatsApp').on('click', function () {
+
+    startAuthorityWhatsApp('hod');
+
+});
+
+
+// ========================================
+// TPO WHATSAPP BUTTON
+// ========================================
+
+$('#sendTpoWhatsApp').on('click', function () {
+
+    startAuthorityWhatsApp('tpo');
+
+});
 
     /*
     |--------------------------------------------------------------------------

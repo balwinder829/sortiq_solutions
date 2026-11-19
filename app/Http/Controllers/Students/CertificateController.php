@@ -426,6 +426,17 @@ if (!$request->filled('fee_filter')) {
             'referred_by'      => 'nullable|integer',
             'referred_by_type' => 'nullable|in:staff,reference',
         ]);
+
+        // Student Reference details validation
+        if (
+            $request->referred_by == 4 &&
+            $request->referred_by_type === 'reference'
+        ) {
+            $request->validate([
+                'student_ref_details' => 'required|string|max:2000',
+            ]);
+        }
+
         // dd('Passed validation', $validates);
          /**
      * 🔴 BUSINESS RULE CHECK
@@ -462,37 +473,7 @@ if (!$request->filled('fee_filter')) {
         }
 
         
-
-
-        // old working
-
-        // if ($validates['send_to_close'] == 1) {
-
-        //     if (
-        //         ($student->email_count_confirmation ?? 0) <= 0 ||
-        //         ($student->email_count_certificate ?? 0) <= 0 ||
-        //         ($student->count_receipt_download ?? 0) <= 0 ||
-        //         ($student->pending_fees ?? 0) > 0
-        //     ) {
-        //         return back()
-        //             ->withInput()
-        //             ->with('error', 'Student cannot be sent to close. Please ensure:
-        //                 • Confirmation email sent
-        //                 • Certificate email sent
-        //                 • Receipt downloaded
-        //                 • No pending fees');
-        //     }
-
-        //     // All checks passed
-        //     $validates['certificate_status'] = 3;
-
-        // } else {
-        //     $validates['certificate_status'] = 2;
-        // }
-
-        // Force lowercase before saving
-        // $validates['student_name'] = Str::lower($validates['student_name']);
-        // $validates['f_name']       = Str::lower($validates['f_name']);
+ 
 
          if (!empty($validates['referred_by'])) {
 
@@ -515,6 +496,16 @@ if (!$request->filled('fee_filter')) {
             $validates['referred_by'] = null;
             $validates['referred_by_type'] = null;
         }
+
+        // Student Reference details
+        $validates['student_ref_details'] = (
+            $validates['referred_by'] == 4 &&
+            $validates['referred_by_type'] === 'reference'
+        )
+            ? $request->student_ref_details
+            : null;
+
+            
 
         $validates['paid_fees'] = $validates['paid_fees'] ?? 0;
         $validates['reg_fees'] = $validates['reg_fees'] ?? 0;

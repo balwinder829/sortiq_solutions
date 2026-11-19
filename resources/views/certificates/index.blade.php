@@ -478,12 +478,19 @@ value="{{ request('registration_fee') }}">
        <div class="col-md-4 d-flex align-items-end gap-2">
             <a href="{{ route('certificates.index') }}" class="btn btn-secondary">Reset</a>
 
-            <a href="{{ route('students.export.excel', array_merge(request()->query(), ['certificate_status' => '1'])) }}"
+            <!-- <a href="{{ route('students.export.excel', array_merge(request()->query(), ['certificate_status' => '1'])) }}"
                class="btn btn-primary">
 
                 Download Excel
 
+            </a> -->
+
+            <a href="{{ route('students.export.excel', array_merge(request()->query(), ['certificate_status' => '1'])) }}"
+               id="downloadCertificateExcel"
+               class="btn btn-primary">
+                Download Excel
             </a>
+
             <button type="button"
                 id="copySelected"
                 class="btn btn-success">
@@ -1333,6 +1340,7 @@ $(document).ready(function () {
             currentPageCheckboxes.length > 0 && checkedCount === currentPageCheckboxes.length
         );
 
+         updateCertificateExportLink();
         // console.log('selectedStudents', selectedStudents);
         // console.log('in syncCheckAll', getSelectedIds());
     }
@@ -1378,20 +1386,75 @@ $(document).ready(function () {
 
     
 
+    // function getSelectedIds() {
+
+    //     $('.record_checked:checked').each(function() {
+
+    //         let id = $(this).val();
+
+    //         if (!selectedStudents.includes(id)) {
+    //             selectedStudents.push(id);
+    //         }
+
+    //     });
+    //     // console.log('in getseelcted fn', selectedStudents);
+    //     return selectedStudents;
+    // }
+
     function getSelectedIds() {
 
-        $('.record_checked:checked').each(function() {
+    // Remove unchecked IDs
+    table.$('.record_checked:not(:checked)').each(function () {
 
-            let id = $(this).val();
+        let id = String($(this).val());
 
-            if (!selectedStudents.includes(id)) {
-                selectedStudents.push(id);
-            }
+        selectedStudents = selectedStudents.filter(
+            selectedId => String(selectedId) !== id
+        );
 
+    });
+
+    // Add checked IDs
+    table.$('.record_checked:checked').each(function () {
+
+        let id = String($(this).val());
+
+        if (!selectedStudents.includes(id)) {
+            selectedStudents.push(id);
+        }
+
+    });
+
+    return selectedStudents;
+}
+
+
+function updateCertificateExportLink() {
+
+    const selectedIds = getSelectedIds();
+
+    const exportUrl = new URL(
+        $('#downloadCertificateExcel').attr('href'),
+        window.location.origin
+    );
+
+    // Remove previous selected IDs
+    exportUrl.searchParams.delete('selected_ids[]');
+
+    // Append currently selected IDs
+    if (selectedIds.length > 0) {
+
+        selectedIds.forEach(function (id) {
+            exportUrl.searchParams.append('selected_ids[]', id);
         });
-        // console.log('in getseelcted fn', selectedStudents);
-        return selectedStudents;
+
     }
+
+    $('#downloadCertificateExcel').attr(
+        'href',
+        exportUrl.toString()
+    );
+}
 
     /* =====================================================
    BULK WHATSAPP - CERTIFICATES MODULE

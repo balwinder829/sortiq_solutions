@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -7,16 +8,47 @@
         vertical-align: middle;
         text-transform: capitalize;
     }
+
+    /*.last-download-info {
+        font-size: 13px;
+        color: #6c757d;
+        text-align: right;
+    }*/
+
+     table th:last-child,
+        table td:last-child {
+            min-width: 120px;
+            width: 120px;
+            white-space: nowrap;
+        }
+
+        table td:last-child .btn {
+            margin-right: 4px;
+        }
 </style>
 
 <div class="container">
 
-    <div class="row mb-2">
-        <div class="col-md-4">
-            <h1 class="page_heading">Services Registrations</h1>
+    {{-- PAGE HEADER --}}
+    <div class="row mb-3 align-items-center">
+
+        <div class="col-md-6">
+            <h1 class="page_heading mb-0">Services Registrations</h1>
         </div>
+
+        <div class="col-md-6  text-md-end">
+            <div class="last-download-info">
+                <strong>Last Downloaded:</strong>
+
+                {{ !empty($lastDownloadedAt)
+                    ? \Carbon\Carbon::parse($lastDownloadedAt)->format('d M Y, h:i A')
+                    : 'Never' }}
+            </div>
+        </div>
+
     </div>
 
+    {{-- FILTERS --}}
     <div class="row mb-2">
         <div class="col-md-12">
 
@@ -26,20 +58,29 @@
 
                     {{-- SLUG --}}
                     <div class="col-md-3">
+
                         <select name="slug" class="form-select filterchange">
+
                             <option value="">All Slugs</option>
 
                             @foreach($slugs as $slug)
+
                                 <option value="{{ $slug }}"
                                     {{ request('slug') == $slug ? 'selected' : '' }}>
+
                                     {{ ucfirst($slug) }}
+
                                 </option>
+
                             @endforeach
+
                         </select>
+
                     </div>
 
                     {{-- TECHNOLOGY --}}
                     <div class="col-md-3">
+
                         <select name="technology" class="form-select filterchange">
 
                             <option value="">All Technologies</option>
@@ -64,10 +105,12 @@
                             <option value="Database Management">Database Management</option>
 
                         </select>
+
                     </div>
 
                     {{-- DATE FILTER --}}
                     <div class="col-md-2">
+
                         <select id="date_filter" class="form-control">
 
                             <option value="">Select Date Filter</option>
@@ -79,59 +122,99 @@
                             <option value="custom">Custom Range</option>
 
                         </select>
+
                     </div>
 
                     {{-- FROM DATE --}}
                     <div class="col-md-2">
+
                         <input type="date"
                                id="from_date"
                                class="form-control"
                                disabled>
+
                     </div>
 
                     {{-- TO DATE --}}
                     <div class="col-md-2">
+
                         <input type="date"
                                id="to_date"
                                class="form-control"
                                disabled>
+
+                    </div>
+
+                    {{-- DOWNLOAD STATUS --}}
+                    <div class="col-md-3">
+
+                        <select name="download_status"
+                                id="download_status"
+                                class="form-select filterchange">
+
+                            <option value="">All Download Status</option>
+                            <option value="downloaded">Downloaded</option>
+                            <option value="not_downloaded">Not Downloaded</option>
+
+                        </select>
+
                     </div>
 
                     {{-- LIMIT --}}
                     <div class="col-md-2">
+
                         <select name="limit" class="form-select filterchange">
+
                             <option value="">All</option>
                             <option value="10">10</option>
                             <option value="20">20</option>
                             <option value="50">50</option>
                             <option value="100">100</option>
+
                         </select>
+
                     </div>
 
                     {{-- BUTTONS --}}
-                    <div class="col-md-auto d-flex gap-2 flex-nowrap align-items-start">
+                    <div class="col-md-auto d-flex gap-2 flex-wrap align-items-start">
 
                         <a href="{{ route('services-registrations.index') }}"
                            class="btn btn-secondary text-nowrap">
+
                             Reset
+
                         </a>
 
-                        <a href="javascript:void(0)"
+                       <!--  <a href="javascript:void(0)"
                            id="exportBtn"
                            class="btn btn-success text-nowrap">
-                            Export
+
+                            <i class="fa fa-download"></i> Export
+
                         </a>
 
                         <a href="javascript:void(0)"
                            id="exportSelectedBtn"
                            class="btn btn-success text-nowrap">
-                            Export Selected
-                        </a>
 
+                            <i class="fa fa-download"></i> Export Selected
+
+                        </a> -->
+
+                        <a href="javascript:void(0)"
+                           id="exportBtn"
+                           class="btn btn-success text-nowrap">
+
+                            <i class="fa fa-download"></i> Export
+
+                        </a>
+                        
                         <button type="button"
                                 id="sendServicesWhatsAppButton"
                                 class="btn btn-success text-nowrap">
+
                             <i class="fab fa-whatsapp"></i> Send WhatsApp
+
                         </button>
 
                     </div>
@@ -143,7 +226,7 @@
         </div>
     </div>
 
-    {{-- SUCCESS --}}
+    {{-- SUCCESS MESSAGE --}}
     @if(session('success'))
 
         <div class="alert alert-success alert-dismissible fade show">
@@ -163,22 +246,23 @@
 
             <thead>
 
-            <tr>
+                <tr>
 
-                <th>
-                    <input type="checkbox" id="select-all">
-                </th>
+                    <th>
+                        <input type="checkbox" id="select-all">
+                    </th>
 
-                <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Location</th>
-                <th>Technology</th>
-                <th>Added Date</th>
-                <th width="100">Actions</th>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Location</th>
+                    <th>Technology</th>
+                    <th>Added Date</th>
+                    <th>Last Downloaded</th>
+                    <th width="100">Actions</th>
 
-            </tr>
+                </tr>
 
             </thead>
 
@@ -187,14 +271,22 @@
     </div>
 
 </div>
+
 @endsection
+
 
 @push('scripts')
 
+{{-- DATATABLE, FILTERS AND SELECTION --}}
 <script>
 
 $(document).ready(function () {
 
+    // Maintain selections across DataTable pages.
+    const selectedServicesIds = new Set();
+    const selectedServicesRecords = new Map();
+
+    // DATATABLE
     let table = $('#internshipTable').DataTable({
 
         processing: true,
@@ -217,15 +309,28 @@ $(document).ready(function () {
                 d.from_date = $('#from_date').val();
 
                 d.to_date = $('#to_date').val();
+
+                // DOWNLOAD STATUS FILTER
+                d.download_status = $('#download_status').val();
+
             }
+
         },
 
         columnDefs: [
+
             {
                 targets: 0,
                 orderable: false,
                 searchable: false
+            },
+
+            {
+                targets: [8, 9],
+                orderable: false,
+                searchable: false
             }
+
         ],
 
         columns: [
@@ -238,7 +343,8 @@ $(document).ready(function () {
             { data: 5 },
             { data: 6 },
             { data: 7 },
-            { data: 8, orderable:false, searchable:false }
+            { data: 8 },
+            { data: 9, orderable: false, searchable: false }
 
         ],
 
@@ -246,11 +352,14 @@ $(document).ready(function () {
 
     });
 
-    $('.filterchange').on('change', function(){
+
+    // FILTER CHANGE
+    $('.filterchange').on('change', function () {
 
         table.ajax.reload();
 
     });
+
 
     // DATE FILTER
     $('#date_filter').on('change', function () {
@@ -258,17 +367,21 @@ $(document).ready(function () {
         if ($(this).val() === 'custom') {
 
             $('#from_date').prop('disabled', false);
+
             $('#to_date').prop('disabled', false);
 
         } else {
 
             $('#from_date').prop('disabled', true).val('');
+
             $('#to_date').prop('disabled', true).val('');
 
         }
 
         table.ajax.reload();
+
     });
+
 
     // CUSTOM DATE CHANGE
     $('#from_date, #to_date').on('change', function () {
@@ -281,132 +394,166 @@ $(document).ready(function () {
 
     });
 
-     // WHATSAPP SELECTION
-    const selectedServicesIds = new Set();
-    const selectedServicesRecords = new Map();
 
+    // UPDATE SELECT ALL STATUS
     function updateServicesSelectAll() {
+
         const checkboxes = $('#internshipTable .row-checkbox');
+
         const checked = checkboxes.filter(':checked').length;
 
         $('#select-all').prop(
             'checked',
             checkboxes.length > 0 && checked === checkboxes.length
         );
+
     }
+
 
     // RESTORE SELECTION AFTER DATATABLE REDRAW
     table.on('draw', function () {
+
         $('#internshipTable .row-checkbox').each(function () {
+
             $(this).prop(
                 'checked',
                 selectedServicesIds.has(String($(this).val()))
             );
+
         });
 
         updateServicesSelectAll();
+
     });
+
 
     // SELECT ALL CURRENT PAGE
     $('#select-all').on('change', function () {
+
         const checked = $(this).is(':checked');
 
         $('#internshipTable .row-checkbox').each(function () {
+
             const id = String($(this).val());
+
             const row = table.row($(this).closest('tr')).data();
 
             $(this).prop('checked', checked);
 
             if (checked) {
+
                 selectedServicesIds.add(id);
 
                 selectedServicesRecords.set(id, {
+
                     name: $('<div>').html(row[2]).text().trim(),
+
                     mobile: $('<div>').html(row[4]).text().trim()
+
                 });
+
             } else {
+
                 selectedServicesIds.delete(id);
+
                 selectedServicesRecords.delete(id);
+
             }
+
         });
+
     });
+
 
     // INDIVIDUAL CHECKBOX
     $('#internshipTable').on('change', '.row-checkbox', function () {
+
         const id = String($(this).val());
+
         const row = table.row($(this).closest('tr')).data();
 
         if ($(this).is(':checked')) {
+
             selectedServicesIds.add(id);
 
             selectedServicesRecords.set(id, {
+
                 name: $('<div>').html(row[2]).text().trim(),
+
                 mobile: $('<div>').html(row[4]).text().trim()
+
             });
+
         } else {
+
             selectedServicesIds.delete(id);
+
             selectedServicesRecords.delete(id);
+
         }
 
         updateServicesSelectAll();
+
     });
+
 
     // WHATSAPP BUTTON
     $('#sendServicesWhatsAppButton').on('click', function () {
+
         if (selectedServicesIds.size === 0) {
+
             Swal.fire({
+
                 icon: 'warning',
                 title: 'No Records Selected',
                 text: 'Please select at least one record.',
                 confirmButtonText: 'OK'
+
             });
+
             return;
+
         }
 
         startServicesWhatsApp(
             Array.from(selectedServicesRecords.values())
         );
+
     });
 
-}); // END DOCUMENT READY
 
+    // MAKE SELECTED IDS AVAILABLE TO EXPORT SCRIPT
+    window.selectedServicesIds = selectedServicesIds;
 
-// SELECT ALL
-// $(document).on('change', '#select-all', function () {
-
-//     $('.row-checkbox').prop('checked', $(this).is(':checked'));
-
-// });
-
-
-// SINGLE CHECKBOX
-// $(document).on('change', '.row-checkbox', function () {
-
-//     if (!$(this).is(':checked')) {
-
-//         $('#select-all').prop('checked', false);
-
-//     }
-
-// });
+});
 
 </script>
 
 
+{{-- WHATSAPP FUNCTIONS --}}
 <script>
+
 function formatServicesWhatsAppMobile(mobile) {
+
     let number = String(mobile || '').replace(/\D/g, '');
 
     if (number.length === 10) {
+
         number = '91' + number;
+
     } else if (number.length === 11 && number.startsWith('0')) {
+
         number = '91' + number.substring(1);
+
     }
 
     return /^91[6-9]\d{9}$/.test(number) ? number : null;
+
 }
 
+
 function openServicesWhatsApp(record, message, appendName) {
+
     const mobile = formatServicesWhatsAppMobile(record.mobile);
 
     if (!mobile) return false;
@@ -414,76 +561,117 @@ function openServicesWhatsApp(record, message, appendName) {
     let finalMessage = message;
 
     if (appendName && record.name) {
+
         finalMessage = 'Hi ' + record.name + ',\n\n' + message;
+
     }
 
     const url = 'https://web.whatsapp.com/send?phone=' +
         mobile + '&text=' + encodeURIComponent(finalMessage);
 
     window.open(url, '_blank');
+
     return true;
+
 }
 
+
 function startServicesWhatsApp(records) {
+
     const validRecords = [];
+
     let invalidCount = 0;
 
     records.forEach(function (record) {
+
         if (formatServicesWhatsAppMobile(record.mobile)) {
+
             validRecords.push(record);
+
         } else {
+
             invalidCount++;
+
         }
+
     });
 
+
     if (validRecords.length === 0) {
+
         Swal.fire({
+
             icon: 'warning',
             title: 'No Valid Mobile Numbers',
             text: 'None of the selected records has a valid WhatsApp number.'
+
         });
+
         return;
+
     }
 
+
     Swal.fire({
+
         title: 'Send WhatsApp Message',
+
         html: `
             <div class="text-start">
+
                 <label class="form-label">Message</label>
+
                 <textarea id="servicesWhatsAppMessage"
                     class="form-control"
                     rows="5"
                     placeholder="Type your WhatsApp message here..."></textarea>
 
                 <div class="form-check mt-3">
+
                     <input type="checkbox"
                         class="form-check-input"
                         id="servicesAppendName"
                         checked>
+
                     <label class="form-check-label" for="servicesAppendName">
                         Add student name
                     </label>
+
                 </div>
 
                 <hr>
+
                 <p>Selected: ${records.length}</p>
+
                 <p>Valid: ${validRecords.length}</p>
+
                 <p>Invalid: ${invalidCount}</p>
+
             </div>
         `,
+
         showCancelButton: true,
+
         confirmButtonText: 'Start Sending',
+
         cancelButtonText: 'Cancel',
+
         reverseButtons: false,
+
         focusConfirm: false,
+
         preConfirm: function () {
+
             const message = document.getElementById(
                 'servicesWhatsAppMessage'
             ).value.trim();
 
             if (!message) {
+
                 Swal.showValidationMessage('Please enter a message.');
+
                 return false;
+
             }
 
             const appendName = document.getElementById(
@@ -493,54 +681,88 @@ function startServicesWhatsApp(records) {
             openServicesWhatsApp(validRecords[0], message, appendName);
 
             return { message, appendName };
+
         }
+
     }).then(function (result) {
+
         if (!result.isConfirmed) return;
 
         const message = result.value.message;
+
         const appendName = result.value.appendName;
+
         let currentIndex = 1;
 
+
         function showNext() {
+
             if (currentIndex >= validRecords.length) {
+
                 Swal.fire({
+
                     icon: 'success',
+
                     title: 'Sending Completed',
+
                     text: 'All selected WhatsApp chats have been processed.'
+
                 });
+
                 return;
+
             }
 
             const record = validRecords[currentIndex];
 
             Swal.fire({
+
                 title: 'WhatsApp Sending',
+
                 html: `
                     <p>Chat ${currentIndex + 1} of ${validRecords.length}</p>
+
                     <p><strong>${record.name || 'Student'}</strong></p>
+
                     <p>${record.mobile}</p>
+
                     <small>Click Open Next to open the next WhatsApp chat.</small>
                 `,
+
                 showCancelButton: true,
+
                 confirmButtonText: 'Open Next',
+
                 cancelButtonText: 'Finish',
+
                 reverseButtons: false
+
             }).then(function (nextResult) {
+
                 if (nextResult.isConfirmed) {
+
                     openServicesWhatsApp(record, message, appendName);
+
                     currentIndex++;
+
                     showNext();
+
                 }
+
             });
+
         }
 
         showNext();
+
     });
+
 }
+
 </script>
 
 
-{{-- DELETE WITH SWAL --}}
+{{-- DELETE WITH SWEETALERT --}}
 <script>
 
 $(document).ready(function () {
@@ -552,11 +774,18 @@ $(document).ready(function () {
         Swal.fire({
 
             title: 'Are you sure?',
-            text: "This record will be permanently deleted!",
+
+            text: 'This record will be permanently deleted!',
+
             icon: 'warning',
+
             showCancelButton: true,
+
             confirmButtonColor: '#d33',
-            confirmButtonText: 'Yes, delete it!'
+
+            confirmButtonText: 'Yes, delete it!',
+
+            reverseButtons: false
 
         }).then((result) => {
 
@@ -565,23 +794,26 @@ $(document).ready(function () {
                 $.ajax({
 
                     url: "{{ route('services-registrations.destroy', ':id') }}"
-                            .replace(':id', id),
+                        .replace(':id', id),
 
-                    type: "POST",
+                    type: 'POST',
 
                     data: {
 
                         _token: "{{ csrf_token() }}",
-                        _method: "DELETE"
+
+                        _method: 'DELETE'
 
                     },
 
-                    success: function (response) {
+                    success: function () {
 
                         Swal.fire({
 
                             icon: 'success',
+
                             title: 'Deleted!',
+
                             text: 'Record deleted successfully.'
 
                         });
@@ -595,7 +827,9 @@ $(document).ready(function () {
                         Swal.fire({
 
                             icon: 'error',
+
                             title: 'Error!',
+
                             text: 'Something went wrong.'
 
                         });
@@ -615,11 +849,14 @@ $(document).ready(function () {
 });
 
 </script>
+
+
+{{-- EXPORT FILTERED AND SELECTED --}}
 <script>
 
 
-// EXPORT FILTERED
-$('#exportBtn').on('click', function () {
+// GET ALL ACTIVE FILTERS
+function getServicesExportParams() {
 
     let params = new URLSearchParams();
 
@@ -635,11 +872,26 @@ $('#exportBtn').on('click', function () {
 
     let to_date = $('#to_date').val();
 
-    if (slug) params.append('slug', slug);
+    let download_status = $('#download_status').val();
 
-    if (technology) params.append('technology', technology);
 
-    if (limit) params.append('limit', limit);
+    if (slug) {
+
+        params.append('slug', slug);
+
+    }
+
+    if (technology) {
+
+        params.append('technology', technology);
+
+    }
+
+    if (limit) {
+
+        params.append('limit', limit);
+
+    }
 
     if (date_filter) {
 
@@ -663,52 +915,94 @@ $('#exportBtn').on('click', function () {
 
     }
 
-    let url = "{{ route('services-registrations.export') }}?" + params.toString();
+    // DOWNLOAD STATUS
+    if (download_status) {
 
-    window.location.href = url;
+        params.append('download_status', download_status);
 
-});
+    }
+
+    return params;
+
+}
 
 
-// EXPORT SELECTED
-$('#exportSelectedBtn').on('click', function () {
+// EXPORT FILTERED RECORDS
+// $('#exportBtn').on('click', function () {
 
-    let selected = [];
+//     let params = getServicesExportParams();
 
-    $('.row-checkbox:checked').each(function () {
+//     let url = "{{ route('services-registrations.export') }}?" +
+//         params.toString();
 
-        selected.push($(this).val());
+//     window.location.href = url;
 
-    });
+// });
 
-    if (selected.length === 0) {
 
-        Swal.fire({
+// // EXPORT SELECTED RECORDS
+// $('#exportSelectedBtn').on('click', function () {
 
-            icon: 'warning',
-            title: 'No Records Selected',
-            text: 'Please select at least one record to Export.',
-            confirmButtonText: 'OK'
+//     let selected = Array.from(window.selectedServicesIds || []);
+
+//     if (selected.length === 0) {
+
+//         Swal.fire({
+
+//             icon: 'warning',
+
+//             title: 'No Records Selected',
+
+//             text: 'Please select at least one record to Export.',
+
+//             confirmButtonText: 'OK'
+
+//         });
+
+//         return;
+
+//     }
+
+//     // Include active filters as well as selected IDs.
+//     let params = getServicesExportParams();
+
+//     selected.forEach(function (id) {
+
+//         params.append('ids[]', id);
+
+//     });
+
+//     let url = "{{ route('services-registrations.export') }}?" +
+//         params.toString();
+
+//     window.location.href = url;
+
+// });
+// SINGLE EXPORT BUTTON - FILTERED / SELECTED RECORDS
+$('#exportBtn').on('click', function () {
+
+    let params = getServicesExportParams();
+
+    // Get persistent selected IDs across DataTable pages
+    let selected = Array.from(window.selectedServicesIds || []);
+
+    // If records are selected, export only selected records
+    if (selected.length > 0) {
+
+        selected.forEach(function (id) {
+
+            params.append('ids[]', id);
 
         });
 
-        return;
     }
 
-    let params = new URLSearchParams();
-
-    selected.forEach(id => {
-
-        params.append('ids[]', id);
-
-    });
-
-    let url = "{{ route('services-registrations.export') }}?" + params.toString();
+    let url = "{{ route('services-registrations.export') }}?" +
+        params.toString();
 
     window.location.href = url;
 
 });
-
 </script>
 
 @endpush

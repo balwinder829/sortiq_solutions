@@ -110,6 +110,13 @@ class InternshipRegistrationController extends Controller
             $query->where('slug', $request->slug);
         }
 
+        // Download Status Filter
+        if ($request->download_status === 'downloaded') {
+            $query->whereNotNull('downloaded_at');
+        } elseif ($request->download_status === 'not_downloaded') {
+            $query->whereNull('downloaded_at');
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Date Filters
@@ -162,7 +169,7 @@ class InternshipRegistrationController extends Controller
         }
 
         return DataTablesServerSide::response($request, $query, [
-            'orderable'  => ['id','full_name','email'],
+            'orderable'  => ['id','full_name','email','downloaded_at'],
             'searchable' => ['full_name','email','phone'],
         ], function ($row, $index, $start) {
 
@@ -211,6 +218,9 @@ class InternshipRegistrationController extends Controller
                 e(optional($row->collegeData)->FullName ?? $row->college_name ?? '-'),
                 e(optional($row->courseData)->course_name ?? $row->technology ?? '-'),
                 $row->created_at->format('d M Y'),
+                $row->downloaded_at
+                ? $row->downloaded_at->format('d M Y, h:i A')
+                : '<span class="text-muted">Not Downloaded</span>',
                 $actions
             ];
         });
@@ -232,7 +242,10 @@ class InternshipRegistrationController extends Controller
         ->distinct()
         ->pluck('slug');
 
-    return view('pages_admin.index', compact('colleges','technologies','slugs'));
+        $lastDownloadedAt = InternshipRegistration::whereNotNull('downloaded_at')
+            ->max('downloaded_at');
+
+    return view('pages_admin.index', compact('colleges','technologies','slugs','lastDownloadedAt'));
 }
 
 public function index14may(Request $request)
@@ -255,6 +268,13 @@ public function index14may(Request $request)
 
         if ($request->slug) {
             $query->where('slug', $request->slug);
+        }
+
+        // Download Status Filter
+        if ($request->download_status === 'downloaded') {
+            $query->whereNotNull('downloaded_at');
+        } elseif ($request->download_status === 'not_downloaded') {
+            $query->whereNull('downloaded_at');
         }
 
         return DataTablesServerSide::response($request, $query, [
@@ -466,6 +486,60 @@ public function index14may(Request $request)
     }
 
     public function export(Request $request)
+{
+    $request->validate([
+        'download_status' => 'nullable|in:downloaded,not_downloaded',
+        'ids' => 'nullable|array',
+        'ids.*' => 'integer',
+        'limit' => 'nullable|integer|min:1|max:100',
+    ]);
+
+    $fileName = 'internship_registrations';
+
+    if ($request->college) {
+        $fileName .= '_' . Str::slug($request->college, '_');
+    }
+
+    if ($request->technology) {
+        $fileName .= '_' . Str::slug($request->technology, '_');
+    }
+
+    if ($request->slug) {
+        $fileName .= '_' . Str::slug($request->slug, '_');
+    }
+
+    if ($request->download_status) {
+        $fileName .= '_' . $request->download_status;
+    }
+
+    if ($request->limit) {
+        $fileName .= '_limit_' . $request->limit;
+    }
+
+    $fileName .= '_' . now()->format('d_F') . '.xlsx';
+
+    $export = new InternshipRegistrationsExport($request);
+
+    // Load the exact export collection first
+    $export->collection();
+
+    $exportedIds = $export->getExportedIds();
+
+    // Generate Excel response
+    $response = Excel::download($export, $fileName);
+
+    // Mark only the records included in this export
+    if (!empty($exportedIds)) {
+        InternshipRegistration::whereIn('id', $exportedIds)
+            ->update([
+                'downloaded_at' => now()
+            ]);
+    }
+
+    return $response;
+}
+
+    public function export_13(Request $request)
     {   
           $fileName = 'internship_registrations';
 

@@ -18,6 +18,11 @@ class ServicesRegistration extends Model
         'message',
         'slug',
         'ip',
+        'downloaded_at',
+    ];
+
+    protected $casts = [
+        'downloaded_at' => 'datetime',
     ];
 
     public function courseData()
