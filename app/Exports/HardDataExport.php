@@ -333,6 +333,25 @@ if (
 
         });
 
+           // -------------------------------------------------
+    // 5. INTERNSHIP STUDENTS → NEVER EXPORT
+    // -------------------------------------------------
+
+    $query->whereNotExists(function ($q) {
+
+        $q->selectRaw('1')
+            ->from('intern_students as intern')
+            ->where(function ($mobileQuery) {
+                $mobileQuery->whereRaw(
+                    'BINARY intern.contact = BINARY hard_data.student_mobile'
+                )
+                ->orWhereRaw(
+                    'BINARY intern.alternative_phone = BINARY hard_data.student_mobile'
+                );
+            });
+
+    });
+
 
         // -------------------------------------------------
         // 3. 6-MONTH SESSION

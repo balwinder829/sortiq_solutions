@@ -16,6 +16,7 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
+use App\Helpers\InternsHelper;
 
 use Throwable;
 
@@ -137,6 +138,21 @@ class ManualDataImport implements
             return null;
         }
 
+        /* -------- INTERNSHIP DUPLICATE CHECK -------- */
+
+        if (
+            !empty($row['student_mobile']) &&
+            InternsHelper::exists($row['student_mobile'])
+        ) {
+            $this->skippedRows++;
+
+            if (!in_array($row['student_mobile'], $this->duplicateContacts)) {
+                $this->duplicateContacts[] = $row['student_mobile'];
+            }
+
+            return null;
+        }
+
         /* -------- DUPLICATE CHECK -------- */
         if (
             !empty($row['student_mobile']) &&
@@ -155,6 +171,21 @@ class ManualDataImport implements
             return null;
         }
 
+
+        /* -------- INTERNSHIP DUPLICATE CHECK -------- */
+
+        if (
+            !empty($row['student_mobile']) &&
+            InternsHelper::exists($row['student_mobile'])
+        ) {
+            $this->skippedRows++;
+
+            if (!in_array($row['student_mobile'], $this->duplicateContacts)) {
+                $this->duplicateContacts[] = $row['student_mobile'];
+            }
+
+            return null;
+        }
         /* -------- CLEAN OPTIONAL VALUES -------- */
 
         $gender = strtolower(trim($row['gender'] ?? ''));

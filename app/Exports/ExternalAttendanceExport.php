@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\ExternalAttendanceSubmission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -27,7 +28,29 @@ class ExternalAttendanceExport implements FromCollection, WithHeadings, WithMapp
             $this->test->id
         );
 
-        // ✅ SAME FILTERS AS results()
+        /*
+        |--------------------------------------------------------------------------
+        | Selected Records Have Priority
+        |--------------------------------------------------------------------------
+        */
+
+        $ids = array_filter(
+            array_map('intval', (array) $this->request->input('ids', []))
+        );
+
+        if (!empty($ids)) {
+            return $query
+                ->whereIn('id', $ids)
+                ->with('college')
+                ->latest()
+                ->get();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apply Existing Filters
+        |--------------------------------------------------------------------------
+        */
 
         if ($this->request->filled('college_id')) {
             $query->where('college_id', $this->request->college_id);
@@ -65,11 +88,81 @@ class ExternalAttendanceExport implements FromCollection, WithHeadings, WithMapp
             $query->where('class', $this->request->class);
         }
 
+        if ($this->request->filled('course_type')) {
+            $query->where('course_type', $this->request->course_type);
+        }
+
+        if ($this->request->filled('student_branch')) {
+            $query->where('student_branch', $this->request->student_branch);
+        }
+
         if ($this->request->filled('semester')) {
             $query->where('semester', $this->request->semester);
         }
 
-        return $query->with('college')->latest()->get();
+        /*
+        |--------------------------------------------------------------------------
+        | Category / Linked Test / Exam Given Filters
+        |--------------------------------------------------------------------------
+        */
+
+        $examStatus = $this->request->input('exam_status');
+
+        if (!in_array($examStatus, ['given', 'not_given'], true)) {
+            $examStatus = '';
+        }
+
+        $hasAttemptFilters =
+            $this->request->filled('category_id') ||
+            $this->request->filled('linked_test_id');
+
+        if ($hasAttemptFilters || $examStatus !== '') {
+
+            $attemptCondition = function ($subQuery) {
+
+                $subQuery->selectRaw('1')
+                    ->from('student_tests as st')
+                    ->join(
+                        'external_attendance_test_options as o',
+                        'o.test_id',
+                        '=',
+                        'st.test_id'
+                    )
+                    ->whereColumn(
+                        'st.external_attendance_submission_id',
+                        'external_attendance_submissions.id'
+                    )
+                    ->where(
+                        'o.external_attendance_test_id',
+                        $this->test->id
+                    );
+
+                if ($this->request->filled('category_id')) {
+                    $subQuery->where(
+                        'o.category_id',
+                        $this->request->category_id
+                    );
+                }
+
+                if ($this->request->filled('linked_test_id')) {
+                    $subQuery->where(
+                        'o.test_id',
+                        $this->request->linked_test_id
+                    );
+                }
+            };
+
+            if ($examStatus === 'not_given') {
+                $query->whereNotExists($attemptCondition);
+            } else {
+                $query->whereExists($attemptCondition);
+            }
+        }
+
+        return $query
+            ->with('college')
+            ->latest()
+            ->get();
     }
 
     public function headings(): array

@@ -111,31 +111,7 @@
             <option value="1" {{ old('is_active', $test->is_active) == 1 ? 'selected' : '' }}>Active</option>
             <option value="0" {{ old('is_active', $test->is_active) == 0 ? 'selected' : '' }}>Inactive</option>
         </select>
-    </div>
-
-     
-
-    {{-- Exam Start Time --}}
-    <div class="col-md-6 mb-3">
-        <label class="fw-bold">Exam Start Time</label>
-        <input type="date"
-               name="exam_start_at"
-               class="form-control"
-               value="{{ optional($test->exam_start_at)->format('Y-m-d') }}"
-               >
-    </div>
-
-    {{-- Exam End Time --}}
-    <div class="col-md-6 mb-3">
-        <label class="fw-bold">Exam End Time</label>
-        <input type="date"
-               name="exam_end_at"
-               class="form-control"
-               value="{{ optional($test->exam_end_at)->format('Y-m-d') }}"
-               >
-    </div>
-
-     
+    </div>     
 
 </div>
 <div class="form-group col-md-6">

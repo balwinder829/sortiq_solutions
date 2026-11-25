@@ -197,7 +197,24 @@ class ManualDataExport implements FromCollection, WithHeadings, WithMapping, Sho
 
         });
 
+        // -------------------------------------------------
+    // 5. INTERNSHIP STUDENTS → NEVER EXPORT
+    // -------------------------------------------------
 
+    $query->whereNotExists(function ($q) {
+
+        $q->selectRaw('1')
+            ->from('intern_students as intern')
+            ->where(function ($mobileQuery) {
+                $mobileQuery->whereRaw(
+                    'BINARY intern.contact = BINARY manual_data.student_mobile'
+                )
+                ->orWhereRaw(
+                    'BINARY intern.alternative_phone = BINARY manual_data.student_mobile'
+                );
+            });
+
+    });
         // -------------------------------------------------
         // 2. RECENTLY ENROLLED → SKIP
         // -------------------------------------------------

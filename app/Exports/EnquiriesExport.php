@@ -367,6 +367,25 @@ switch ($range) {
 
 
     // -------------------------------------------------
+    // 5. INTERNSHIP STUDENTS → NEVER EXPORT
+    // -------------------------------------------------
+
+    $query->whereNotExists(function ($q) {
+
+        $q->selectRaw('1')
+            ->from('intern_students as intern')
+            ->where(function ($mobileQuery) {
+                $mobileQuery->whereRaw(
+                    'BINARY intern.contact = BINARY enquiries.mobile'
+                )
+                ->orWhereRaw(
+                    'BINARY intern.alternative_phone = BINARY enquiries.mobile'
+                );
+            });
+
+    });
+
+    // -------------------------------------------------
     // LOAD RELATIONSHIPS
     // -------------------------------------------------
 

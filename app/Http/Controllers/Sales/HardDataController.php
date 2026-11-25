@@ -279,6 +279,14 @@ public function store(Request $request)
         'semester'       => 'nullable|integer|min:1|max:8',
     ]);
 
+    if (\App\Helpers\InternsHelper::exists($request->student_mobile)) {
+        return back()
+            ->withInput()
+            ->withErrors([
+                'student_mobile' => 'This mobile number already exists in Intern records. Entry skipped.'
+            ]);
+    }
+
     $activeSessionId = session(
         'admin_header_session_id',
         session('admin_session_id')
@@ -346,6 +354,14 @@ public function update(Request $request, $id)
         'class'          => 'nullable|string|max:500',
         'semester'       => 'nullable|integer|min:1|max:8',
     ]);
+
+    if (\App\Helpers\InternsHelper::exists($request->student_mobile)) {
+        return back()
+            ->withInput()
+            ->withErrors([
+                'student_mobile' => 'This mobile number already exists in Intern records. Entry skipped.'
+            ]);
+    }
 
     $collegeName = trim((string) ($validated['college_name'] ?? ''));
     $validated['college_name'] = $collegeName !== '' ? $collegeName : null;

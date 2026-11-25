@@ -248,197 +248,6 @@ class ManualDataController extends Controller
 
     return view('manual_data.index', compact('collegeNames', 'classNames', 'states','districtsGrouped','sessionsList', 'previousWhatsappUploadedFiles','saleSessions'));
 }
-public function index_30(Request $request)
-{   
-    if ($request->ajax()) {
-
-        // $activeSessionNo = session('admin_session_id');
-        $activeSessionNo = session(
-            'admin_header_session_id',
-            session('admin_session_id')
-        );
-
-        $query = ManualData::with('college')
-                    ->where('session_id', $activeSessionNo)
-                     ->where('enquiry_status', 'active');
-
-        // FILTERS
-
-        // if ($request->college_id) {
-        //     $query->where('college_id', $request->college_id);
-        // }
-
-        if ($request->filled('college_name')) {
-            $query->where('college_name', $request->college_name);
-        }
-
-        if ($request->state_id) {
-            $query->whereHas('college', function ($q) use ($request) {
-                $q->where('state_id', $request->state_id);
-            });
-        }
-
-        if ($request->district_id) {
-            $query->whereHas('college', function ($q) use ($request) {
-                $q->where('district_id', $request->district_id);
-            });
-        }
-
-        if ($request->college_type !== null && $request->college_type !== '') {
-            $query->whereHas('college', function ($q) use ($request) {
-                $q->where('college_type', $request->college_type);
-            });
-        }
-
-        if ($request->is_moved !== null && $request->is_moved !== '') {
-            $query->where('is_moved_to_enquiry', (int) $request->is_moved);
-        }
-        if ($request->email) {
-            $query->where('student_email', 'like', '%' . $request->email . '%');
-        }
-
-        if ($request->mobile) {
-            $query->where('student_mobile', 'like', '%' . $request->mobile . '%');
-        }
-        if ($request->gender) {
-            $query->where('gender', $request->gender);
-        }
-
-        if ($request->course_type) {
-            $query->where('course_type', $request->course_type);
-        }
-
-        if ($request->class) {
-            $query->where('class', $request->class);
-        }
-
-        if ($request->semester) {
-            $query->where('semester', $request->semester);
-        }
-
-        if ($request->source) {
-            $query->where('source', $request->source);
-        }
-
-        // DATE FILTER
-        if ($request->date && !$request->range) {
-            $query->whereDate('created_at', $request->date);
-        }
-
-        if ($request->range) {
-
-            switch ($request->range) {
-
-                case 'today':
-                    $query->whereDate('created_at', today());
-                    break;
-
-                case 'yesterday':
-                    $query->whereDate('created_at', today()->subDay());
-                    break;
-
-                case 'last_7_days':
-                    $query->whereBetween('created_at', [now()->subDays(7), now()]);
-                    break;
-
-                case 'last_30_days':
-                    $query->whereBetween('created_at', [now()->subDays(30), now()]);
-                    break;
-
-                case 'this_month':
-                    $query->whereMonth('created_at', now()->month);
-                    break;
-            }
-        }
-
-        // ✅ LATEST RECORDS FIRST
-        $query->latest('updated_at');
-
-        return DataTablesServerSide::response($request, $query, [
-            'orderable'  => ['id','student_name','student_email','created_at'],
-            'searchable' => ['student_name','student_email','student_mobile'],
-        ], function ($data, $index, $start) {
-
-            $mobile = preg_replace('/\D/', '', $data->student_mobile); // remove non-digits
-            if(strlen($mobile) == 10){
-                $mobile = '91'.$mobile;
-            }
-            $actions = '<a href="https://wa.me/'.$mobile.'?text=Hello '.$data->student_name.'," target="_blank"><i class="fa-brands fa-whatsapp"></i></a>';
-            $actions .= '<a href="' . route('admin.manual_data.edit', $data->id) . '" class="btn btn-sm" title="Edit"><i class="fa fa-edit"></i></a> ';
-            $actions .= '<form action="' . route('admin.manual_data.destroy', $data->id) . '" method="POST" style="display:inline-block;" class="manual-data-delete-form">'
-                        . csrf_field()
-                        . method_field('DELETE') .
-                        '<button type="submit" class="btn btn-sm" title="Delete" data-swal-confirm="Are you sure?">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                        </form>';
-
-            $rowNum = $start + $index + 1;
-
-            return [
-                $rowNum,
-                e($data->student_name),
-                e($data->college ? $data->college->FullName : $data->college_name),
-                e($data->student_email),
-                e($data->student_mobile),
-                e($data->class),
-                e($data->semester),
-                e($data->course_type),
-                e($data->gender),
-                $data->created_at?->format('d M Y'),
-                $actions,
-                'is_moved_to_enquiry' => $data->is_moved_to_enquiry,
-                'row_id' => $data->id
-            ];
-        });
-    }
-
-    $collegeNames = ManualData::where('session_id', session('admin_header_session_id', session('admin_session_id')))
-        ->whereNotNull('college_name')
-        ->where('college_name', '!=', '')
-        ->select('college_name')
-        ->distinct()
-        ->orderBy('college_name')
-        ->pluck('college_name');
-
-    $states = State::orderBy('name')->get();
-
-    $districtsGrouped = District::with('state')
-        ->orderBy('name')
-        ->get()
-        ->groupBy('state_id');
-
-    $sessionsList = StudentSession::where('status', 'active') // ✅ string status
-            ->orderBy('start_date', 'desc')
-            ->get()
-            ->pluck('display_name', 'id');
-
-    // $saleSessions = StudentSession::withoutGlobalScope('normalSession')
-    // ->where('session_type', 1)
-    // ->where('status', 'active')
-    // ->orderBy('start_date', 'desc')
-    // ->get();
-
-    $saleSessions = StudentSession::withoutGlobalScopes()
-    ->where('status', 'active')
-    ->where('session_type', 1)
-    ->orderBy('start_date', 'desc')
-    ->pluck('session_name', 'id');
-
-    $previousWhatsappUploadedFiles = collect(
-            Storage::disk('public')->files('whatsapp-files')
-        )->map(function ($file) {
-            return [
-                'path' => $file,
-                'name' => basename($file),
-            ];
-        });
-
-    return view('manual_data.index', compact('collegeNames', 'states','districtsGrouped','sessionsList', 'previousWhatsappUploadedFiles','saleSessions'));
-}
-
-    
- 
     
     /**
      * Show the form for creating a new resource.
@@ -465,6 +274,13 @@ public function store(Request $request)
         'semester'        => 'nullable|integer|min:1|max:8',
     ]);
 
+    if (\App\Helpers\InternsHelper::exists($request->student_mobile)) {
+        return back()
+            ->withInput()
+            ->withErrors([
+                'student_mobile' => 'This mobile number already exists in Intern records. Entry skipped.'
+            ]);
+    }
     // $activeSessionId = session('admin_session_id');
     $activeSessionId = $activeSessionNo = session(
         'admin_header_session_id',
@@ -523,6 +339,13 @@ public function update(Request $request, $id)
         'semester'        => 'nullable|integer|min:1|max:8',
     ]);
 
+    // if (\App\Helpers\InternsHelper::exists($request->student_mobile)) {
+    //     return back()
+    //         ->withInput()
+    //         ->withErrors([
+    //             'student_mobile' => 'This mobile number already exists in Intern records. Entry skipped.'
+    //         ]);
+    // }
     $validated['college_name'] = trim($validated['college_name']);
     $validated['college_id'] = null;
 

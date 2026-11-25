@@ -78,15 +78,7 @@
     </div>
 
     {{-- Date --}}
-    <div class="col-md-6 mb-3">
-        <label class="fw-bold">Date</label>
-        <input type="date" name="test_date"
-               value="{{ old('test_date') }}"
-               class="form-control @error('test_date') is-invalid @enderror">
-        @error('test_date')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
+   
 
     {{-- Description --}}
     <div class="col-md-12 mb-3">

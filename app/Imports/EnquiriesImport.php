@@ -5,7 +5,7 @@ namespace App\Imports;
 use App\Models\Enquiry;
 use App\Models\BlockedNumber;
 use App\Services\CollegeResolver;
-
+use App\Helpers\InternsHelper;
 use Throwable;
 
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -139,6 +139,18 @@ class EnquiriesImport implements
         ) {
             $this->blockedNumbers[] = "Row {$rowNumber} – Blocked number: {$mobile}";
             $this->skippedRows++;
+            return null;
+        }
+
+        /* ===== INTERNSHIP DUPLICATE CHECK ===== */
+
+        if (!empty($mobile) && InternsHelper::exists($mobile)) {
+
+            $this->duplicateEntries[] =
+                "Row {$rowNumber} – Already exists in Internship records: {$mobile}";
+
+            $this->skippedRows++;
+
             return null;
         }
 

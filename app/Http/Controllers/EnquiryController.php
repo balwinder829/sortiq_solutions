@@ -526,6 +526,13 @@ if (
              // 'college_id' => 'nullable|exists:colleges,id',
         ]);
 
+        if (\App\Helpers\InternsHelper::exists($request->mobile)) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'mobile' => 'This mobile number already exists in Intern records. Entry skipped.'
+                ]);
+        }
         // $activeSessionNo = session('admin_session_id');
         $activeSessionNo = session(
             'admin_header_session_id',
@@ -577,6 +584,14 @@ if (
             'course_type' => 'nullable',
         ]);
 
+         
+        if (\App\Helpers\InternsHelper::exists($request->mobile)) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'mobile' => 'This mobile number already exists in Intern records. Entry skipped.'
+                ]);
+        }
         // $validated['session_id'] = session('admin_session_id');
         $validated['session_id'] = session(
             'admin_header_session_id',

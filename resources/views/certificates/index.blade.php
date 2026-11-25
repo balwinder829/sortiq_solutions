@@ -545,6 +545,8 @@ value="{{ request('registration_fee') }}">
                 <th class="text-center">Duration</th>
                 <th class="text-center" width="100px">Start Date</th>
                 <th class="text-center" width="100px">End Date</th>
+                <th class="text-center">Referred By</th>
+                <th class="text-center">Referral Name</th>
                  <th class="text-center">Part-Time Job Offer</th>
                 <th class="text-center">Placement Offer</th>
                 <th class="text-center">PG Offer</th>
@@ -613,6 +615,50 @@ value="{{ request('registration_fee') }}">
                 <td>{{ $student->sessionData->session_display_name ?? '-' }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->start_date)->format('d M Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($student->end_date)->format('d M Y') }}</td>
+
+      {{-- Referred By --}}
+<td class="text-center">
+    @php
+        $reference = $student->referred_by_type == 'reference'
+            ? $references->firstWhere('id', $student->referred_by)
+            : null;
+
+        $referenceName = $reference->name ?? '';
+    @endphp
+
+    @if(empty($student->referred_by))
+        Direct
+
+    @elseif($student->referred_by_type == 'reference')
+        {{ $referenceName ?: '-' }}
+
+    @elseif($student->referred_by_type == 'staff')
+        Sale Team
+
+    @else
+        -
+    @endif
+</td>
+
+{{-- Referral Name / Details --}}
+<td class="text-center">
+    @if(empty($student->referred_by))
+        Direct
+
+    @elseif($student->referred_by_type == 'reference')
+        @if(strcasecmp(trim($referenceName), 'Student Reference') === 0)
+            {{ $student->student_ref_details ?? '-' }}
+        @else
+            {{ $referenceName }}
+        @endif
+
+    @elseif($student->referred_by_type == 'staff')
+        {{ optional($salesStaff->firstWhere('id', $student->referred_by))->name ?? '-' }}
+
+    @else
+        -
+    @endif
+</td>
                 <td class="text-center">
                     <span class="badge bg-{{ $student->part_time_offer ? 'success' : 'secondary' }}">
                         {{ $student->part_time_offer ? 'Yes' : 'No' }}
@@ -643,10 +689,10 @@ value="{{ request('registration_fee') }}">
                 </td>
                 <td>{{ $student->email_count_certificate ?? 0 }}</td>
                  <td>{{ $student->count_receipt_download ?? 0 }}</td>
-                 <td>
+                 <td data-order="{{ $student->created_at ?   \Carbon\Carbon::parse($student->created_at)->format('Y-m-d H:i:s') : '' }}">
                     {{ $student->created_at ? \Carbon\Carbon::parse($student->created_at)->format('d M Y') : '-' }}
                 </td>
-                <td>
+                <td data-order="{{ $student->updated_at ? \Carbon\Carbon::parse($student->updated_at)->format('Y-m-d H:i:s') : '' }}">
                     {{ $student->updated_at ? \Carbon\Carbon::parse($student->updated_at)->format('d M Y') : '-' }}
                 </td>
                <!--  <td class="text-center">

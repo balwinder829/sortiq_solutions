@@ -281,6 +281,35 @@
             </select>
         </div>
 
+        {{-- Category Filter --}}
+        <div class="col-md-2">
+            <select name="category_id" class="form-select filterchange">
+                <option value="">All Categories</option>
+
+                @foreach($categories as $category)
+                    <option
+                        value="{{ $category->category_id }}"
+                        {{ request('category_id') == $category->category_id ? 'selected' : '' }}
+                    >
+                        {{ $category->category_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Exam Given Filter --}}
+        <div class="col-md-2">
+            <select name="exam_status" class="form-select filterchange">
+                <option value="">All Exam Status</option>
+                <option value="given" {{ request('exam_status') == 'given' ? 'selected' : '' }}>
+                    Given
+                </option>
+                <option value="not_given" {{ request('exam_status') == 'not_given' ? 'selected' : '' }}>
+                    Not Given
+                </option>
+            </select>
+        </div>
+
         <div class="col-md-2">
             <a
                 href="{{ route('admin.external-attendance.results', $test->id) }}"
@@ -314,20 +343,27 @@
                 Move to Enquiries
             </button>
 
-            <a
+           <!--  <a
                 href="{{ route('admin.external-attendance.export.results', [$test->id] + request()->query()) }}"
                 class="btn btn-success"
             >
                 Export All Excel
-            </a>
+            </a> -->
+
+            <button type="button"
+                    class="btn btn-success"
+                    id="exportResultsBtn"
+                    data-url="{{ route('admin.external-attendance.export.results', $test->id) }}">
+                <i class="fas fa-file-excel"></i> Export Excel
+            </button>
 
             <button type="button" class="btn btn-primary" id="updateSelectedScoresButton">
                 Update Selected Scores
             </button>
 
-            <button type="button" class="btn btn-info text-white" id="downloadSelectedButton">
+            <!-- <button type="button" class="btn btn-info text-white" id="downloadSelectedButton">
                 Download Selected
-            </button>
+            </button> -->
         </div>
 
         {{-- ORIGINAL TABLE STYLE PRESERVED --}}
@@ -1234,6 +1270,34 @@ $(document).ready(function () {
             // Hidden inputs are already synchronized by the existing selection script.
         }
     });
+
+
+    $('#exportResultsBtn').on('click', function () {
+
+    let exportUrl = $(this).data('url');
+
+    // Collect currently applied filters
+    let filterData = $('#filterForm').serializeArray();
+
+    let params = new URLSearchParams();
+
+    filterData.forEach(function (item) {
+        if (item.value !== '') {
+            params.append(item.name, item.value);
+        }
+    });
+
+    // Collect selected attendance submission IDs
+    $('#selectedAttendanceInputs input[name="attendance_ids[]"]').each(function () {
+        if ($(this).val()) {
+            params.append('ids[]', $(this).val());
+        }
+    });
+
+    let queryString = params.toString();
+
+    window.location.href = exportUrl + (queryString ? '?' + queryString : '');
+});
 });
 </script>
 

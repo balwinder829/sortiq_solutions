@@ -286,29 +286,11 @@
 
 
             {{-- From Date --}}
-            <div class="col-md-2 mb-2">
-
-                <label>From Date</label>
-
-                <input type="date"
-                       name="from_date"
-                       class="form-control filterchange"
-                       value="{{ request('from_date') }}">
-
-            </div>
+             
 
 
             {{-- To Date --}}
-            <div class="col-md-2 mb-2">
-
-                <label>To Date</label>
-
-                <input type="date"
-                       name="to_date"
-                       class="form-control filterchange"
-                       value="{{ request('to_date') }}">
-
-            </div>
+             
 
 
             {{-- Reset --}}
@@ -356,10 +338,6 @@
                     <th>Status</th>
 
                     <th>Active</th>
-
-                    <th>Start Date</th>
-
-                    <th>End Date</th>
 
                     <th>Total Questions</th>
 
@@ -484,28 +462,6 @@
                                 </span>
 
                             @endif
-
-                        </td>
-
-
-                        {{-- Start Date --}}
-                        <td>
-
-                            {{ $test->exam_start_at
-                                ? \Carbon\Carbon::parse($test->exam_start_at)->format('d M Y')
-                                : '-'
-                            }}
-
-                        </td>
-
-
-                        {{-- End Date --}}
-                        <td>
-
-                            {{ $test->exam_end_at
-                                ? \Carbon\Carbon::parse($test->exam_end_at)->format('d M Y')
-                                : '-'
-                            }}
 
                         </td>
 
@@ -814,7 +770,7 @@ $(document).ready(function () {
             },
 
             {
-                targets: 15,
+                targets: 13,
                 orderable: false,
                 searchable: false
             }

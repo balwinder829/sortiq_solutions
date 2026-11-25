@@ -24,6 +24,7 @@ use App\Models\ExternalAttendanceLink;
 use App\Models\ExternalAttendanceSubmission;
 use App\Models\StudentSession;
 use App\Exports\ExternalAttendanceExport;
+use App\Exports\SelectedExternalAttendanceResultsExport;
 use Illuminate\Support\Facades\DB;
 use App\Models\TestLink;
 use App\Models\StudentTest;
@@ -432,268 +433,7 @@ class ExternalAttendanceController extends Controller
         );
     }
 
-    public function results_2nov(Request $request, ExternalAttendanceTest $test)
-{
-    /*
-    |--------------------------------------------------------------------------
-    | Linked categories and tests for this attendance form
-    |--------------------------------------------------------------------------
-    */
-
-    $linkedOptions = DB::table('external_attendance_test_options as o')
-        ->join('attendance_test_categories as c', 'c.id', '=', 'o.category_id')
-        ->join('tests as t', 't.id', '=', 'o.test_id')
-        ->where('o.external_attendance_test_id', $test->id)
-        ->when($request->filled('college_id'), function ($query) use ($request) {
-            $query->whereExists(function ($subQuery) use ($request) {
-                $subQuery->selectRaw('1')
-                    ->from('test_links as tl')
-                    ->whereColumn('tl.test_id', 'o.test_id')
-                    ->where('tl.college_id', $request->college_id);
-            });
-        })
-        ->select(
-            'o.id as option_id',
-            'o.category_id',
-            'o.test_id',
-            'o.display_name',
-            'o.test_type',
-            'c.name as category_name',
-            't.title as test_title'
-        )
-        ->selectSub(function ($query) use ($request) {
-            $query->from('student_tests as st')
-                ->whereColumn('st.test_id', 'o.test_id');
-
-            if ($request->filled('college_id')) {
-                $query->where('st.college_id', $request->college_id);
-            }
-
-            $query->selectRaw('COUNT(*)');
-        }, 'student_count')
-        ->orderBy('c.sort_order')
-        ->orderBy('c.name')
-        ->orderBy('o.sort_order')
-        ->get();
-
-    $categories = $linkedOptions
-        ->unique('category_id')
-        ->values();
-
-    /*
-    |--------------------------------------------------------------------------
-    | Base attendance submissions query
-    |--------------------------------------------------------------------------
-    */
-
-    $query = ExternalAttendanceSubmission::query()
-        ->where(
-            'external_attendance_submissions.external_attendance_test_id',
-            $test->id
-        );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Existing filters
-    |--------------------------------------------------------------------------
-    */
-
-    if ($request->filled('college_id')) {
-        $query->where(
-            'external_attendance_submissions.college_id',
-            $request->college_id
-        );
-    }
-
-    if ($request->filled('name')) {
-        $query->where(
-            'external_attendance_submissions.student_name',
-            'like',
-            '%' . $request->name . '%'
-        );
-    }
-
-    if ($request->filled('email')) {
-        $query->where(
-            'external_attendance_submissions.student_email',
-            'like',
-            '%' . $request->email . '%'
-        );
-    }
-
-    if ($request->filled('mobile')) {
-        $query->where(
-            'external_attendance_submissions.student_mobile',
-            'like',
-            '%' . $request->mobile . '%'
-        );
-    }
-
-    if ($request->filled('gender')) {
-        $query->where(
-            'external_attendance_submissions.gender',
-            $request->gender
-        );
-    }
-
-    if ($request->filled('finalized')) {
-        $query->where(
-            'external_attendance_submissions.is_finalized',
-            $request->finalized
-        );
-    }
-
-    if ($request->filled('status')) {
-        $query->where(
-            'external_attendance_submissions.is_moved_to_enquiry',
-            $request->status
-        );
-    }
-
-    // Course Type filter: Degree / Diploma
-    if ($request->filled('course_type')) {
-        $query->where('course_type', $request->course_type);
-    }
-
-    // Branch filter
-    if ($request->filled('student_branch')) {
-        $query->where('student_branch', $request->student_branch);
-    }
-
-    if ($request->filled('semester')) {
-        $query->where(
-            'external_attendance_submissions.semester',
-            $request->semester
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Category filter
-    |--------------------------------------------------------------------------
-    | Only submissions whose linked StudentTest belongs to a test mapped
-    | under the selected category are returned.
-    */
-
-    if ($request->filled('category_id')) {
-        $query->whereExists(function ($subQuery) use ($request, $test) {
-            $subQuery->selectRaw('1')
-                ->from('student_tests as st')
-                ->join(
-                    'external_attendance_test_options as o',
-                    'o.test_id',
-                    '=',
-                    'st.test_id'
-                )
-                ->whereColumn(
-                    'st.external_attendance_submission_id',
-                    'external_attendance_submissions.id'
-                )
-                ->where(
-                    'o.external_attendance_test_id',
-                    $test->id
-                )
-                ->where(
-                    'o.category_id',
-                    $request->category_id
-                );
-        });
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Linked test filter
-    |--------------------------------------------------------------------------
-    */
-
-    if ($request->filled('linked_test_id')) {
-        $query->whereExists(function ($subQuery) use ($request, $test) {
-            $subQuery->selectRaw('1')
-                ->from('student_tests as st')
-                ->join(
-                    'external_attendance_test_options as o',
-                    'o.test_id',
-                    '=',
-                    'st.test_id'
-                )
-                ->whereColumn(
-                    'st.external_attendance_submission_id',
-                    'external_attendance_submissions.id'
-                )
-                ->where(
-                    'o.external_attendance_test_id',
-                    $test->id
-                )
-                ->where(
-                    'o.test_id',
-                    $request->linked_test_id
-                );
-
-            if ($request->filled('category_id')) {
-                $subQuery->where(
-                    'o.category_id',
-                    $request->category_id
-                );
-            }
-        });
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dropdown data
-    |--------------------------------------------------------------------------
-    */
-
-    $collegeIds = ExternalAttendanceSubmission::where(
-            'external_attendance_test_id',
-            $test->id
-        )
-        ->whereNotNull('college_id')
-        ->orderByDesc('created_at')
-        ->pluck('college_id')
-        ->unique()
-        ->values();
-
-    $colleges = College::whereIn('id', $collegeIds)
-        ->orderBy('college_name')
-        ->get();
-
-    $courses = StudentCourse::whereNotIn('course_name', [
-            'Not decided',
-            'n/a',
-            'na',
-        ])
-        ->orderBy('course_name')
-        ->get();
-
-    $sessionsList = StudentSession::where('status', 'active')
-        ->orderBy('start_date', 'desc')
-        ->get()
-        ->pluck('display_name', 'id');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Attendance submissions
-    |--------------------------------------------------------------------------
-    */
-
-    $students = $query
-        ->with(['college', 'course'])
-        ->latest('external_attendance_submissions.created_at')
-        ->get();
-
-    return view('admin.external-attendance.results', compact(
-        'test',
-        'students',
-        'courses',
-        'sessionsList',
-        'colleges',
-        'categories',
-        'linkedOptions'
-    ));
-}
-
-public function results(Request $request, ExternalAttendanceTest $test)
+public function results_19nov(Request $request, ExternalAttendanceTest $test)
     {
         /*
         |--------------------------------------------------------------------------
@@ -1103,6 +843,243 @@ public function results(Request $request, ExternalAttendanceTest $test)
     ));
 }
 
+public function results(Request $request, ExternalAttendanceTest $test)
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Linked categories and tests for this attendance form
+    |--------------------------------------------------------------------------
+    */
+
+    $linkedOptions = DB::table('external_attendance_test_options as o')
+        ->join('attendance_test_categories as c', 'c.id', '=', 'o.category_id')
+        ->join('tests as t', 't.id', '=', 'o.test_id')
+        ->where('o.external_attendance_test_id', $test->id)
+        ->when($request->filled('college_id'), function ($query) use ($request) {
+            $query->whereExists(function ($subQuery) use ($request) {
+                $subQuery->selectRaw('1')
+                    ->from('test_links as tl')
+                    ->whereColumn('tl.test_id', 'o.test_id')
+                    ->where('tl.college_id', $request->college_id);
+            });
+        })
+        ->select(
+            'o.id as option_id',
+            'o.category_id',
+            'o.test_id',
+            'o.display_name',
+            'o.test_type',
+            'c.name as category_name',
+            't.title as test_title'
+        )
+        ->selectSub(function ($query) use ($request, $test) {
+            $query->from('student_tests as st')
+                ->join('external_attendance_submissions as s', function ($join) use ($test) {
+                    $join->on('s.id', '=', 'st.external_attendance_submission_id')
+                        ->where('s.external_attendance_test_id', '=', $test->id);
+                })
+                ->whereColumn('st.test_id', 'o.test_id');
+
+            if ($request->filled('college_id')) {
+                $query->where('s.college_id', $request->college_id);
+            }
+
+            $query->selectRaw('COUNT(DISTINCT st.external_attendance_submission_id)');
+        }, 'student_count')
+        ->orderBy('c.sort_order')
+        ->orderBy('c.name')
+        ->orderBy('o.sort_order')
+        ->get();
+
+    $categories = $linkedOptions->unique('category_id')->values();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Latest StudentTest per attendance submission
+    |--------------------------------------------------------------------------
+    */
+
+    $latestStudentTests = DB::table('student_tests as st')
+        ->join('external_attendance_test_options as mapped_option', function ($join) use ($test) {
+            $join->on('mapped_option.test_id', '=', 'st.test_id')
+                ->where('mapped_option.external_attendance_test_id', '=', $test->id);
+        })
+        ->selectRaw('st.external_attendance_submission_id, MAX(st.id) as latest_student_test_id')
+        ->groupBy('st.external_attendance_submission_id');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Base attendance submissions query
+    |--------------------------------------------------------------------------
+    */
+
+    $query = ExternalAttendanceSubmission::query()
+        ->leftJoinSub($latestStudentTests, 'latest_attempt', function ($join) {
+            $join->on(
+                'latest_attempt.external_attendance_submission_id',
+                '=',
+                'external_attendance_submissions.id'
+            );
+        })
+        ->leftJoin('student_tests as latest_st', 'latest_st.id', '=', 'latest_attempt.latest_student_test_id')
+        ->leftJoin('tests as latest_test', 'latest_test.id', '=', 'latest_st.test_id')
+        ->leftJoin('external_attendance_test_options as latest_option', function ($join) use ($test) {
+            $join->on('latest_option.test_id', '=', 'latest_st.test_id')
+                ->where('latest_option.external_attendance_test_id', '=', $test->id);
+        })
+        ->leftJoin('attendance_test_categories as latest_category', 'latest_category.id', '=', 'latest_option.category_id')
+        ->where('external_attendance_submissions.external_attendance_test_id', $test->id)
+        ->select(
+            'external_attendance_submissions.*',
+            'latest_st.id as latest_student_test_id',
+            'latest_st.test_id as latest_test_id',
+            'latest_st.score as latest_score',
+            'latest_category.name as latest_category_name',
+            'latest_option.test_type as latest_test_type'
+        )
+        ->selectSub(function ($subQuery) {
+            $subQuery->from('questions')
+                ->whereColumn('questions.test_id', 'latest_st.test_id')
+                ->selectRaw('COUNT(*)');
+        }, 'latest_max_score');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Existing filters
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('college_id')) {
+        $query->where('external_attendance_submissions.college_id', $request->college_id);
+    }
+
+    if ($request->filled('name')) {
+        $query->where('external_attendance_submissions.student_name', 'like', '%' . $request->name . '%');
+    }
+
+    if ($request->filled('email')) {
+        $query->where('external_attendance_submissions.student_email', 'like', '%' . $request->email . '%');
+    }
+
+    if ($request->filled('mobile')) {
+        $query->where('external_attendance_submissions.student_mobile', 'like', '%' . $request->mobile . '%');
+    }
+
+    if ($request->filled('gender')) {
+        $query->where('external_attendance_submissions.gender', $request->gender);
+    }
+
+    if ($request->filled('finalized')) {
+        $query->where('external_attendance_submissions.is_finalized', $request->finalized);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('external_attendance_submissions.is_moved_to_enquiry', $request->status);
+    }
+
+    if ($request->filled('course_type')) {
+        $query->where('external_attendance_submissions.course_type', $request->course_type);
+    }
+
+    if ($request->filled('student_branch')) {
+        $query->where('external_attendance_submissions.student_branch', $request->student_branch);
+    }
+
+    if ($request->filled('semester')) {
+        $query->where('external_attendance_submissions.semester', $request->semester);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Category / Test / Exam Given Filters
+    |--------------------------------------------------------------------------
+    */
+
+    $examStatus = $request->input('exam_status');
+
+    if (!in_array($examStatus, ['given', 'not_given'], true)) {
+        $examStatus = '';
+    }
+
+    $hasAttemptFilters = $request->filled('category_id')
+        || $request->filled('linked_test_id');
+
+    if ($hasAttemptFilters || $examStatus !== '') {
+
+        $attemptCondition = function ($subQuery) use ($request, $test) {
+            $subQuery->selectRaw('1')
+                ->from('student_tests as st')
+                ->join('external_attendance_test_options as o', 'o.test_id', '=', 'st.test_id')
+                ->whereColumn(
+                    'st.external_attendance_submission_id',
+                    'external_attendance_submissions.id'
+                )
+                ->where('o.external_attendance_test_id', $test->id);
+
+            if ($request->filled('category_id')) {
+                $subQuery->where('o.category_id', $request->category_id);
+            }
+
+            if ($request->filled('linked_test_id')) {
+                $subQuery->where('o.test_id', $request->linked_test_id);
+            }
+        };
+
+        if ($examStatus === 'not_given') {
+            $query->whereNotExists($attemptCondition);
+        } elseif ($examStatus === 'given' || $hasAttemptFilters) {
+            $query->whereExists($attemptCondition);
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dropdown data
+    |--------------------------------------------------------------------------
+    */
+
+    $collegeIds = ExternalAttendanceSubmission::where('external_attendance_test_id', $test->id)
+        ->whereNotNull('college_id')
+        ->orderByDesc('created_at')
+        ->pluck('college_id')
+        ->unique()
+        ->values();
+
+    $colleges = College::whereIn('id', $collegeIds)
+        ->orderBy('college_name')
+        ->get();
+
+    $courses = StudentCourse::whereNotIn('course_name', ['Not decided', 'n/a', 'na'])
+        ->orderBy('course_name')
+        ->get();
+
+    $sessionsList = StudentSession::where('status', 'active')
+        ->orderBy('start_date', 'desc')
+        ->get()
+        ->pluck('display_name', 'id');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Final students
+    |--------------------------------------------------------------------------
+    */
+
+    $students = $query
+        ->with(['college', 'course'])
+        ->latest('external_attendance_submissions.created_at')
+        ->get();
+
+    return view('admin.external-attendance.results', compact(
+        'test',
+        'students',
+        'courses',
+        'sessionsList',
+        'colleges',
+        'categories',
+        'linkedOptions'
+    ));
+}
+
     
     public function bulkFinalize(Request $request)
     {
@@ -1361,13 +1338,36 @@ public function results(Request $request, ExternalAttendanceTest $test)
 
     
 
+// public function exportResults(Request $request, ExternalAttendanceTest $test)
+// {
+//     return Excel::download(
+//         new ExternalAttendanceExport($test, $request),
+//         'test-'.$test->id.'-results-' . now()->format('Ymd_His') . '.xlsx'
+//     );
+// }
+
+    
 public function exportResults(Request $request, ExternalAttendanceTest $test)
 {
+    $ids = array_filter(
+        array_map('intval', (array) $request->input('ids', []))
+    );
+
+    // If students are selected, download only the 7 selected-export columns.
+    if (!empty($ids)) {
+        return Excel::download(
+            new SelectedExternalAttendanceResultsExport($test->id, $ids),
+            'test-'.$test->id.'-selected-results-' . now()->format('Ymd_His') . '.xlsx'
+        );
+    }
+
+    // If no students are selected, download all filtered results.
     return Excel::download(
         new ExternalAttendanceExport($test, $request),
         'test-'.$test->id.'-results-' . now()->format('Ymd_His') . '.xlsx'
     );
 }
+
 
 /**
  * Create missing TestLink records for tests mapped to this
